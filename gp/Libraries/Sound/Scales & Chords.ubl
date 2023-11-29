@@ -2,9 +2,9 @@ module 'Scales & Chords' Data
 author MicroBlocks
 version 1 6 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
+choices arpeggio_dst 'MIDI channel' 'tone pin' 
 choices pentatonics major minor 
 choices chords major minor diminished 'major 7th' 'minor 7th' Maj7 
-choices arpeggio_dst 'MIDI channel' 'tone pin'
 description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales.
 
 It also includes intervals for the most common chords and progressions, and an abstraction of the circle of fifths.
@@ -17,7 +17,7 @@ variables _scales_degrees _scales_circle5ths _tonePin
   spec 'r' 'chord' '_ chord root _ : steps _' 'menu.chords num num' 'major' 60 4
   spec 'r' 'chord2 with roman numeral' '_ chord for root _ : steps _' 'auto auto auto' 'IV' 60 4
   space
-  spec ' ' 'arpeggiate' 'arpeggiate _ in order _ duration _ and volume _ on _ _' 'auto auto auto num menu.arpeggio_dst auto' 'aListOfNotes' 'aListOfPositions' 'aDurationOrListOfDurations' 100 'MIDI channel' 1
+  spec ' ' 'arpeggiate' 'arpeggiate _ in order _ duration _ and volume _ on _ _' 'auto auto auto num menu.arpeggio_dst auto' 'aListOfNotes' '1,3,4,2' '100,200' 100 'MIDI channel' 1
   space
   spec 'r' 'transposed' '_ transposed _ semitones' 'auto auto' 60 12
   space
@@ -55,10 +55,21 @@ to '_scales_init_circle' {
 }
 
 to arpeggiate 'note list' order duration volume destination channel/pin {
+  if (order == '') {
+    order = ('[data:range]' 1 (size (v 'note list')))
+  } (isType order 'string') {
+    order = ('[data:split]' order ',')
+  }
+  if (isType duration 'string') {
+    duration = ('[data:split]' duration ',')
+    for idx (size duration) {
+      if ((at idx duration) < 33) {atPut idx duration ('_rhy duration of note value' (at idx duration))}
+    }
+  }
   for i (size order) {
     local 'start' (millisOp)
     if (isType duration 'list') {
-      local 'dur' (at i duration)
+      local 'dur' ('_scales circular item' i duration)
     } else {
       local 'dur' duration
     }

@@ -933,17 +933,17 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
-// Experimental! Optional BLE support (compile with -D BLE_PRIMS)
+// Experimental! Optional BLE support (compile with -D BLE_NUS_PRIMS)
 // Code provided by Wenji Wu
 
-#if defined(BLE_PRIMS)
+#if defined(BLE_NUS_PRIMS)
 
 //https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
 // client debug: chrome://bluetooth-internals/
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
+#include <NimBLEDevice.h>
+#include <NimBLEServer.h>
+#include <NimBLEAdvertisedDevice.h>
+
 static bool BLEServerStarted = false;
 BLEServer *pServer = NULL;
 BLECharacteristic * pTxCharacteristic;
@@ -953,7 +953,8 @@ uint8_t txValue = 0;
 static char lastBLE_UART_Message[1000];
 static bool hasBLE_UART_Message = false;
 
-#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+// UUIDs for the Nordic UART Service (NUS)
+#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
@@ -1005,14 +1006,15 @@ static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
   // Create a BLE Characteristic
   pTxCharacteristic = pService->createCharacteristic(
 										CHARACTERISTIC_UUID_TX,
-										BLECharacteristic::PROPERTY_NOTIFY
-									);
+										NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ
+										); 
 
-  pTxCharacteristic->addDescriptor(new BLE2902());
+  // https://github.com/h2zero/NimBLE-Arduino/blob/release/1.4/docs/Migration_guide.md#descriptors
+  // pTxCharacteristic->addDescriptor(new BLE2902());
 
   BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
-											 CHARACTERISTIC_UUID_RX,
-											BLECharacteristic::PROPERTY_WRITE
+											CHARACTERISTIC_UUID_RX,
+											NIMBLE_PROPERTY::WRITE
 										);
 
   pRxCharacteristic->setCallbacks(new MyCallbacks());
@@ -1063,13 +1065,21 @@ static OBJ primBLE_UART_LastEvent(int argCount, OBJ *args) {
 
 static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 	char* message = obj2str(args[0]);
-	pTxCharacteristic->setValue(message);
+	pTxCharacteristic->setValue((uint8_t*)message, strlen(message));
     pTxCharacteristic->notify();
 	delay(10); // bluetooth stack will go into congestion, if too many packets are sent
 	return falseObj;
 }
 
-#endif // BLE_PRIMS
+static OBJ primBLE_UART_ServerStop(int argCount, OBJ *args)
+{
+	BLEDevice::stopAdvertising();
+	BLEDevice::deinit(false);
+	BLEServerStarted = false;
+	return falseObj;
+}
+
+#endif // BLE_NUS_PRIMS
 
 #if defined(OCTO_PRIMS)
 /*
@@ -1429,7 +1439,7 @@ static PrimEntry entries[] = {
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 
-  #if defined(BLE_PRIMS)
+  #if defined(BLE_NUS_PRIMS)
 	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
 	{"BLE_DeviceConnected", primBLE_DeviceConnected},
 	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
