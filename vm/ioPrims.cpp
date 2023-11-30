@@ -1932,7 +1932,11 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 // Software serial (output only)
 
-static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
+#if !defined(__not_in_flash_func)
+  #define __not_in_flash_func(funcName) funcName
+#endif
+
+static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *args) {
 	// Write a byte to the given pin at the given baudrate using software serial.
 
 	if (argCount < 3) return fail(notEnoughArguments);
@@ -1941,22 +1945,16 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 	int baud = evalInt(args[2]);
 	int bitTime = 1000000 / baud;
 
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			if ((pinNum < 0) || (pinNum >= DIGITAL_PINS)) return falseObj;
-			pinNum = digitalPin[pinNum];
-	#endif
-
 	// adjust the bitTime for slower cpu's
 	#if defined(ARDUINO_ARCH_SAMD)
 		bitTime -= 3;
-	#elif defined(NRF51)
+	#elif defined(NRF51) || defined(ESP8266) || defined(ARDUINO_SAM_DUE) || defined(RP2040_PHILHOWER)
 		bitTime -= 2;
-	#elif defined(ESP8266)
-		bitTime -= 2;
+	#else
+		bitTime -= 1;
 	#endif
 
+	pinNum = mapDigitalPinNum(pinNum);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
 
