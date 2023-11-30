@@ -16,7 +16,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(PICO_ED)
+#if defined(PICO_ED) || defined(XRP)
 	#define Wire Wire1
 #endif
 
