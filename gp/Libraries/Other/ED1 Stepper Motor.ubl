@@ -130,7 +130,7 @@ to 'move motor ' 'direction 1' 'direction 2' steps {
 }
 
 to 'set motor pin' pin motor value {
-  '_init motor pins'
+  '_ED1 init motor pins'
   local 'pins' (i2cGet (hexToInt '20') _ED1_exp_register)
   waitMillis 1
   if value {
