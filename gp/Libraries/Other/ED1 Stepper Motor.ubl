@@ -1,18 +1,24 @@
 module 'ED1 Stepper Motor' Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags '28byj-48' stepper motor fantastic ed1 
 choices directions clockwise 'counter-clockwise' 
 description 'Provides blocks to control 28BYJ-48 stepper motors, like the ones included in the Fantastic robot kit for the Citilab ED1 board.
+
+It also exposes the IO expander pins to be used as extra digital pins.
 '
 variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register 
 
-	spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
-	spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
-	spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
-	spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'
-	spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
-	spec ' ' 'stop steppers' 'stop steppers'
+  spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
+  spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
+  spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
+  spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'
+  spec ' ' 'stop steppers' 'stop steppers'
+  space
+  spec ' ' 'set motor pin' 'set motor pin _ for motor _ to _' 'auto auto bool' 2 1 true
+  space
+  spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
+  spec ' ' '_ED1 init motor pins' '_ED1 init motor pins'
 
 to '_ED1_stepper_init' {
   if (_ED1_stepper_init == 0) {
@@ -27,6 +33,19 @@ to '_ED1_stepper_init' {
     _ED1_CCW1 = (hexToInt '3')
     _ED1_CCW2 = (hexToInt 'C')
     _ED1_stepper_init = (booleanConstant true)
+    i2cSet (hexToInt '20') 0 0
+    i2cSet (hexToInt '20') 6 255
+  }
+}
+
+to '_ED1 init motor pins' {
+  if (_ED1_stepper_init == 0) {
+    if ((i2cGet (hexToInt '20') 1) == 0) {
+      _ED1_exp_register = (hexToInt 'A')
+    } else {
+      _ED1_exp_register = (hexToInt '14')
+    }
+    _ED1_stepper_init = true
     i2cSet (hexToInt '20') 0 0
     i2cSet (hexToInt '20') 6 255
   }
@@ -108,6 +127,19 @@ to 'move motor ' 'direction 1' 'direction 2' steps {
     }
   }
   'stop steppers'
+}
+
+to 'set motor pin' pin motor value {
+  '_init motor pins'
+  local 'pins' (i2cGet (hexToInt '20') _ED1_exp_register)
+  waitMillis 1
+  if value {
+    pins = (pins | ((1 << (pin - 1)) << ((motor % 2) << 2)))
+  } else {
+    pins = (pins & ('~' ((1 << (pin - 1)) << ((motor % 2) << 2))))
+  }
+  i2cSet (hexToInt '20') _ED1_exp_register pins
+  waitMillis 20
 }
 
 to 'stop steppers' {
