@@ -93,7 +93,7 @@ void hardwareInit() {
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
-		touchSetCycles(0x800, 0x800);
+		touchSetCycles(0x800, 0x900);
 		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
 	tftInit();
