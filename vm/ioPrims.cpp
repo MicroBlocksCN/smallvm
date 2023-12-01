@@ -31,17 +31,30 @@ static void stopRF(); // forward reference
 
 #define USE_NRF5x_CLOCK true
 
+// Both NIMBLE and the Nordic Softdevice BLE systems use Timer0.
+// MicroBlocks only supports BLE on the nRF52, we use TIMER1 on nRF52.
+// Use TIMER0 on the nRF51, since that is the only 32-bit timer on the nRF51.
+#if defined(NRF52)
+  #define MB_TIMER NRF_TIMER1
+  #define MB_TIMER_IRQn TIMER1_IRQn
+  #define MB_TIMER_IRQHandler TIMER1_IRQHandler
+#else
+  #define MB_TIMER NRF_TIMER0
+  #define MB_TIMER_IRQn TIMER0_IRQn
+  #define MB_TIMER_IRQHandler TIMER0_IRQHandler
+#endif
+
 static void initClock_NRF5x() {
-	NRF_TIMER0->TASKS_SHUTDOWN = true;
-	NRF_TIMER0->MODE = 0; // timer (not counter) mode
-	NRF_TIMER0->BITMODE = 3; // 32-bit
-	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
-	NRF_TIMER0->TASKS_START = true;
+	MB_TIMER->TASKS_SHUTDOWN = true;
+	MB_TIMER->MODE = 0; // timer (not counter) mode
+	MB_TIMER->BITMODE = 3; // 32-bit
+	MB_TIMER->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	MB_TIMER->TASKS_START = true;
 }
 
 uint32 microsecs() {
-	NRF_TIMER0->TASKS_CAPTURE[0] = true;
-	return NRF_TIMER0->CC[0];
+	MB_TIMER->TASKS_CAPTURE[0] = true;
+	return MB_TIMER->CC[0];
 }
 
 uint32 millisecs() {
@@ -1346,36 +1359,36 @@ static char servoToneTimerStarted = 0;
 
 static void startServoToneTimer() {
 	// enable timer interrupts
-	NVIC_EnableIRQ(TIMER0_IRQn);
+	NVIC_EnableIRQ(MB_TIMER_IRQn);
 
 	// get current timer value
- 	NRF_TIMER0->TASKS_CAPTURE[0] = true;
- 	uint32_t wakeTime = NRF_TIMER0->CC[0];
+ 	MB_TIMER->TASKS_CAPTURE[0] = true;
+ 	uint32_t wakeTime = MB_TIMER->CC[0];
 
 	// set initial wake times a few (at least 2) usecs in the future to kick things off
-	NRF_TIMER0->CC[2] = wakeTime + 5;
-	NRF_TIMER0->CC[3] = wakeTime + 5;
+	MB_TIMER->CC[2] = wakeTime + 5;
+	MB_TIMER->CC[3] = wakeTime + 5;
 
 	// enable interrrupts on CC[2] and CC[3]
-	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
+	MB_TIMER->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
 
 	servoToneTimerStarted = true;
 }
 
-extern "C" void TIMER0_IRQHandler() {
-	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
-		uint32_t wakeTime = NRF_TIMER0->CC[2];
-		NRF_TIMER0->EVENTS_COMPARE[2] = 0; // clear interrupt
+extern "C" void MB_TIMER_IRQHandler() {
+	if (MB_TIMER->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
+		uint32_t wakeTime = MB_TIMER->CC[2];
+		MB_TIMER->EVENTS_COMPARE[2] = 0; // clear interrupt
 		if (tonePin >= 0) {
 			tonePinState = !tonePinState;
 			digitalWrite(tonePin, tonePinState);
-			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
+			MB_TIMER->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
 		}
 	}
 
-	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
-		uint32_t wakeTime = NRF_TIMER0->CC[3] + 12;
-		NRF_TIMER0->EVENTS_COMPARE[3] = 0; // clear interrupt
+	if (MB_TIMER->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
+		uint32_t wakeTime = MB_TIMER->CC[3] + 12;
+		MB_TIMER->EVENTS_COMPARE[3] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
 			digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
@@ -1390,11 +1403,11 @@ extern "C" void TIMER0_IRQHandler() {
 		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
 			digitalWrite(servoPin[servoIndex], HIGH);
 			servoPinHigh = true;
-			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
+			MB_TIMER->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER0->CC[3] = (wakeTime + 18000);
+			MB_TIMER->CC[3] = (wakeTime + 18000);
 		}
 	}
 }
@@ -1599,8 +1612,8 @@ static void setTone(int pin, int frequency) {
 	if (!servoToneTimerStarted) {
 		startServoToneTimer();
 	}
-	NRF_TIMER0->TASKS_CAPTURE[2] = true;
-	NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // set next wakeup time
+	MB_TIMER->TASKS_CAPTURE[2] = true;
+	MB_TIMER->CC[2] = (MB_TIMER->CC[2] + toneHalfPeriod); // set next wakeup time
 }
 
 void stopTone() { tonePin = -1; }
