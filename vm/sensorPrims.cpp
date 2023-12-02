@@ -1492,7 +1492,7 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 #else
 
 // for now, stub out readDHT() when using NimBLE because pulseIn() function gives linker error
-readDHTData(int pin) { return false; }
+static int readDHTData(int pin) { return false; }
 
 #endif
 
