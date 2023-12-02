@@ -961,13 +961,14 @@ static bool hasBLE_UART_Message = false;
 class UARTServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pUARTServer) {
 		outputString("UART connected");
+		pUARTServer->stopAdvertising();
 		deviceConnected = true;
 	}
 
 	void onDisconnect(BLEServer* pUARTServer) {
 		outputString("UART disconnected");
+		pUARTServer->startAdvertising();
 		deviceConnected = false;
-		pUARTServer->startAdvertising(); // restart advertising
 	}
 };
 
@@ -1010,6 +1011,9 @@ static OBJ primBLE_UART_Start(int argCount, OBJ *args) {
 
 	// Start the service
 	pService->start();
+
+	// Add the service to the advertisment data
+	pUARTServer->getAdvertising()->addServiceUUID(pService->getUUID());
 
 	// Start advertising
 	pUARTServer->getAdvertising()->start();
