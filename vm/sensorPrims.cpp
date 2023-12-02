@@ -712,7 +712,11 @@ static int readAcceleration(int registerID) {
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 200) / 127); // invert sign and scale to range 0-200
-	if (5 == registerID) val = -val; // invert z-axis
+	#if defined(XRP)
+		if (1 == registerID) val = -val; // invert x-axis
+	#elif defined(ARDUINO_NRF52840_CLUE)
+		if (5 == registerID) val = -val; // invert z-axis
+	#endif
 	return val;
 }
 
