@@ -995,7 +995,7 @@ static OBJ primBLE_UART_Start(int argCount, OBJ *args) {
 	bleUARTStarted = true;
 
 	// Create BLE Device
-	BLEDevice::init("NimBLE UART");
+	BLEDevice::init(name); 
 
 	// Create BLE Server
 	pUARTServer = BLEDevice::createServer();
@@ -1005,7 +1005,7 @@ static OBJ primBLE_UART_Start(int argCount, OBJ *args) {
 	BLEService *pService = pUARTServer->createService(SERVICE_UUID);
 
 	// Create BLE Characteristics
-	pUARTTxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
+	pUARTTxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
 	pUARTRxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE);
 	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
 
@@ -1017,7 +1017,6 @@ static OBJ primBLE_UART_Start(int argCount, OBJ *args) {
 
 	// Start advertising
 	pUARTServer->getAdvertising()->start();
-outputString("Waiting for client connection..."); // xxx
 
 	return falseObj;
 }

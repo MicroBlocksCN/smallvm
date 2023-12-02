@@ -1,25 +1,21 @@
 module 'BLE UART server' Comm
-author wwj718
-version 1 0 
-description 'BLE UART server.'
-variables event valid_event 
+author 'wwj718 & CWEIB'
+version 1 1 
+description 'BLE UART server. Firmware URL: https://wwj718.github.io/post/img/esp32-ble-nus-20231202.bin'
+variables _oldname 
 
   spec ' ' 'start BLE UART server' 'start BLE UART server _' 'auto' 'MicroBlocks BLE UART server'
-	spec 'r' 'BLE Device connected' 'BLE Device connected'
+  spec 'r' 'BLE Device connected' 'BLE UART connected'
   spec 'r' 'last BLE UART message' 'last BLE UART message'
-	spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
-  spec ' ' '_start advertising and reconnect loop' '_start advertising and reconnect loop'
+  spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
+  spec ' ' 'stop BLE UART server' 'stop BLE UART server'
 
 to 'BLE Device connected' {
-  return (callCustomReporter '[net:BLE_DeviceConnected]')
+  return (callCustomReporter '[net:BLE_UART_Connected]')
 }
 
 to 'BLE UART write' message {
   callCustomCommand '[net:BLE_UART_Write]' ('[data:makeList]' message)
-}
-
-to '_start advertising and reconnect loop' {
-  callCustomCommand '[net:StartAdvertisingAndReconnectLoop]'
 }
 
 to 'last BLE UART message' {
@@ -32,15 +28,10 @@ to 'last BLE UART message' {
 }
 
 to 'start BLE UART server' name {
-  comment 'Blocked'
-  callCustomCommand '[net:BLE_UART_ServerStart]' ('[data:makeList]' name)
-  forever {
-    '_start advertising and reconnect loop'
-    if ('BLE Device connected') {
-      sayIt 'Client is connected'
-    } else {
-      sayIt 'Waiting a client connection...'
-    }
-  }
+  callCustomCommand '[net:BLE_UART_Start]' ('[data:makeList]' name)
+}
+
+to 'stop BLE UART server' {
+  callCustomCommand '[net:BLE_UART_Stop]'
 }
 
