@@ -42,15 +42,15 @@ variables _oldname
   spec ' ' 'stop BLE UART server' 'stop BLE UART server'
 
 to 'BLE Device connected' {
-  return (callCustomReporter '[net:BLE_UART_Connected]')
+  return (callCustomReporter '[ble:BLE_UART_Connected]')
 }
 
 to 'BLE UART write' message {
-  callCustomCommand '[net:BLE_UART_Write]' ('[data:makeList]' message)
+  callCustomCommand '[ble:BLE_UART_Write]' ('[data:makeList]' message)
 }
 
 to 'last BLE UART message' {
-  local 'tmp' (callCustomReporter '[net:BLE_UART_LastEvent]')
+  local 'tmp' (callCustomReporter '[ble:BLE_UART_LastEvent]')
   if (tmp != (booleanConstant false)) {
     return (at 1 tmp)
   } else {
@@ -59,10 +59,10 @@ to 'last BLE UART message' {
 }
 
 to 'start BLE UART server' name {
-  callCustomCommand '[net:BLE_UART_Start]' ('[data:makeList]' name)
+  callCustomCommand '[ble:BLE_UART_Start]' ('[data:makeList]' name)
 }
 
 to 'stop BLE UART server' {
-  callCustomCommand '[net:BLE_UART_Stop]'
+  callCustomCommand '[ble:BLE_UART_Stop]'
 }
 
