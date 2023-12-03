@@ -285,19 +285,16 @@ static OBJ primOctoScanning(int argCount, OBJ *args) {
 
 #include <BleKeyboard.h>
 
-#if defined(ARDUINO_ARCH_RP2040)
-	#define DELAY_IF_NEEDED() { taskSleep(8); } // workaround for issue with Pico HID library
-#else
-	#define DELAY_IF_NEEDED() { } // noop on SAM boards
-#endif
-
 BleKeyboard bleKeyboard;
-char bleKeyboardInitialized = 0;
+int bleKeyboardInitialized = false;
 
 void initBLEKeyboard () {
 	if (!bleKeyboardInitialized) {
-		bleKeyboard.begin(); // name
-		bleKeyboardInitialized = 1;
+		char kbName[40];
+		sprintf(kbName, "%s KB", boardType());
+		bleKeyboard.setName(kbName);
+		bleKeyboard.begin();
+		bleKeyboardInitialized = true;
 	}
 }
 
@@ -323,7 +320,6 @@ OBJ primBLEPressKey(int argCount, OBJ *args) {
 				bleKeyboard.press(KEY_RIGHT_ALT);
 				break;
 		}
-		DELAY_IF_NEEDED();
 	}
 
 	// accept both characters and ASCII values
@@ -332,12 +328,10 @@ OBJ primBLEPressKey(int argCount, OBJ *args) {
 	} else if (isInt(key)) {
 		bleKeyboard.write(obj2int(key));
 	}
-	DELAY_IF_NEEDED();
 
 	if (modifier) bleKeyboard.releaseAll();
 	return falseObj;
 }
-
 
 OBJ primBLEHoldKey(int argCount, OBJ *args) {
 	initBLEKeyboard();
@@ -349,7 +343,6 @@ OBJ primBLEHoldKey(int argCount, OBJ *args) {
 	} else if (isInt(key)) {
 		bleKeyboard.press(obj2int(key));
 	}
-	DELAY_IF_NEEDED();
 	return falseObj;
 }
 
@@ -363,16 +356,13 @@ OBJ primBLEReleaseKey(int argCount, OBJ *args) {
 	} else if (isInt(key)) {
 		bleKeyboard.release(obj2int(key));
 	}
-	DELAY_IF_NEEDED();
 	return falseObj;
 }
 
 OBJ primBLEReleaseAllKeys(int argCount, OBJ *args) {
 	bleKeyboard.releaseAll();
-	DELAY_IF_NEEDED();
 	return falseObj;
 }
-
 
 static OBJ primStartBLEKeyboard(int argCount, OBJ *args) {
 	initBLEKeyboard();
