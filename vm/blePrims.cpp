@@ -8,6 +8,7 @@
 // Wenjie Wu, December 2023
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "mem.h"
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
@@ -135,14 +136,9 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 #endif // BLE_NUS_PRIMS
 
 #if defined(OCTO_PRIMS)
-/*
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEAdvertisedDevice.h>
-*/
+
 #include <NimBLEDevice.h>
 #include <set>
-//#include <string>
 
 BLEServer* pServer = NULL;
 BLEAdvertising* pAdvertising = NULL;

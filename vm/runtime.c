@@ -34,7 +34,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 20
+#define MAX_PRIM_SETS 18
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
