@@ -400,6 +400,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
 	if (f) return (int) f;
 
+	fail(primitiveNotImplemented);
 	return -1;
 }
 
