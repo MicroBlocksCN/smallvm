@@ -34,7 +34,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 15
+#define MAX_PRIM_SETS 20
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
@@ -129,6 +129,7 @@ void primsInit() {
 	addIOPrims();
 	addMiscPrims();
 	addNetPrims();
+	addBLEPrims();
 	addRadioPrims();
 	addSensorPrims();
 	addSerialPrims();

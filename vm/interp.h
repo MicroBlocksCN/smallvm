@@ -352,6 +352,7 @@ void addFilePrims();
 void addIOPrims();
 void addMiscPrims();
 void addNetPrims();
+void addBLEPrims();
 void addRadioPrims();
 void addSensorPrims();
 void addSerialPrims();
