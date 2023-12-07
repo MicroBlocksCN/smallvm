@@ -604,7 +604,7 @@ method deleteChunkFor SmallRuntime key {
 method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 
-    step scripter // save recently edited scripts
+	step scripter // save recently edited scripts
 
 	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
@@ -835,10 +835,10 @@ method tryToInstallVM SmallRuntime {
 }
 
 method connectedToBoard SmallRuntime {
-    pingTimeout = 8000
-    if (or (isNil port) (not (isOpenSerialPort port))) { return false }
- 	if (or (isNil lastPingRecvMSecs) (lastPingRecvMSecs == 0)) { return false }
-    return (((msecsSinceStart) - lastPingRecvMSecs) < pingTimeout)
+	pingTimeout = 8000
+	if (or (isNil port) (not (isOpenSerialPort port))) { return false }
+	if (or (isNil lastPingRecvMSecs) (lastPingRecvMSecs == 0)) { return false }
+	return (((msecsSinceStart) - lastPingRecvMSecs) < pingTimeout)
 }
 
 method updateConnection SmallRuntime {
@@ -1881,7 +1881,7 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 	sendMsg this msgName chunkID byteList
 	if ('boardie' == portName) { return } // don't wait for a response
 
-    if (not (connectedToBoard this)) { return }
+	if (not (connectedToBoard this)) { return }
 
 	ok = (waitForResponse this)
 	if (not ok) {
@@ -2673,7 +2673,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 	if ('MICROBIT' == driveName) {
 		vmFileName = 'vm_microbit-universal.hex'
- 	} ('MINI' == driveName) {
+	} ('MINI' == driveName) {
 		vmFileName = 'vm_calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
 		vmFileName = 'vm_circuitplay.uf2'
