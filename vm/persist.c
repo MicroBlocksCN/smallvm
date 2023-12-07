@@ -786,7 +786,7 @@ static void compactFlash() {
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted Flash code store (%d msecs)\n%d bytes used (%d%%) of %d",
+	sprintf(s, "Compacted Flash code store (%lu msecs)\n%d bytes used (%d%%) of %d",
 		millisecs() - startT,
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
