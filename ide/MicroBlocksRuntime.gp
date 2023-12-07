@@ -2048,8 +2048,6 @@ method handleMessage SmallRuntime msg {
 		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
-	} (op == (msgNameToID this 'chunkAttributeMsg')) {
-		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
 	} (op == (msgNameToID this 'fileInfo')) {

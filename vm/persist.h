@@ -24,21 +24,12 @@ extern "C" {
 
 typedef enum {
 	chunkCode = 10,
-	chunkAttribute = 11,
+	chunkAttribute = 11, // deprecated
 	chunkDeleted = 19,
 	varName = 21,
 	varsClearAll = 29,
 	deleteAll = 218, // 218 in hex is 0xDA, short for "delete all"
 } RecordType_t;
-
-// Chunk Attributes
-
-typedef enum {
-	sourcePosition = 0,
-	snapSourceString = 1,
-	gpSourceString = 2,
-	CHUNK_ATTRIBUTE_COUNT,
-} ChunkAttributeType_t;
 
 // Persistent Memory Operations
 

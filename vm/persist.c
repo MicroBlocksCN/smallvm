@@ -659,6 +659,8 @@ static void updateChunkTable() {
 
 #ifndef RAM_CODE_STORE
 
+#define CHUNK_ATTRIBUTE_COUNT 3 // feature not longer used
+
 struct {
 	int *chunkCodeRec;
 	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];

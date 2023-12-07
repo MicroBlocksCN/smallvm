@@ -387,12 +387,6 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	sendChunkCRC(chunkIndex);
 }
 
-static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
-	unsigned char attributeID = data[0];
-	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= CHUNK_ATTRIBUTE_COUNT)) return;
-	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
-}
-
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
 	uint8 buf[100];
 	if (byteCount > 99) byteCount = 99;
@@ -874,30 +868,7 @@ void sendAllCRCs() {
 	}
 }
 
-// Retrieving source code and attributes
-
-// static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
-// 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
-//
-// 	int wordCount = *(persistentRecord + 1);
-// 	int bodyBytes = 1 + (4 * wordCount);
-// 	waitForOutbufBytes(5 + bodyBytes);
-//
-// 	queueByte(251);
-// 	queueByte(chunkAttributeMsg);
-// 	queueByte(chunkIndex);
-// 	queueByte(bodyBytes & 0xFF); // low byte of size
-// 	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
-// 	queueByte(attributeID);
-// 	int *src = persistentRecord + 2;
-// 	for (int i = 0; i < wordCount; i++) {
-// 		int w = *src++;
-// 		queueByte(w & 0xFF);
-// 		queueByte((w >> 8) & 0xFF);
-// 		queueByte((w >> 16) & 0xFF);
-// 		queueByte((w >> 24) & 0xFF);
-// 	}
-// }
+// Retrieving source code
 
 static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chunkData) {
 	int msgSize = 1 + chunkBytes;
@@ -915,7 +886,7 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 }
 
 static void sendAllCode() {
-	// Send the code and attributes for all chunks to the IDE.
+	// Send the code for all chunks to the IDE.
 
 	int delayPerWord = extraByteDelay / 250; // derive from extraByteDelay
 	for (int chunkID = 0; chunkID < MAX_CHUNKS; chunkID++) {
@@ -1152,9 +1123,6 @@ static void processLongMessage() {
 		break;
 	case broadcastMsg:
 		startReceiversOfBroadcast((char *) &rcvBuf[5], bodyBytes);
-		break;
-	case chunkAttributeMsg:
-		storeChunkAttribute(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
 	case varNameMsg:
 		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
