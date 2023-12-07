@@ -604,6 +604,8 @@ method deleteChunkFor SmallRuntime key {
 method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 
+    step scripter // save recently edited scripts
+
 	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
