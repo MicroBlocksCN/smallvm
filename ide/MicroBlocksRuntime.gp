@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastCRC lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
@@ -1378,17 +1378,15 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		return false
 	}
 
+	// record if chunk is running
 	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
 
-	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
-	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
-		sendMsg this 'chunkCodeMsg' chunkID data
-		sendMsg this 'pingMsg'
+	chunkCRC = (computeCRC this chunkBytes)
+	if (storeChunkOnBoard this chunkID data chunkCRC) {
+		atPut entry 2 chunkCRC // remember the CRC of the code we just saved
 	} else {
-		sendMsgSync this 'chunkCodeMsg' chunkID data
+		atPut entry 2 nil // save failed; clear CRC
 	}
-	processMessages this
-	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
 	// restart the chunk if it was running
 	if restartChunk {
@@ -1398,6 +1396,24 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		waitForResponse this
 	}
 	return true
+}
+
+method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
+	// Send the given chunk to the board and wait for the board to return the CRC.
+	// That ensures that the chunk has been saved to Flash memory.
+	// This can take several seconds if the board does a Flash compaction.
+
+	lastCRC = nil
+	sendMsg this 'chunkCodeMsg' chunkID data
+	sendMsg this 'getChunkCRCMsg' chunkID
+
+	// wait for CRC to be reported
+	startT = (msecsSinceStart)
+	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < 10000)) {
+		processMessages this
+		waitMSecs 1
+	}
+	return (lastCRC == chunkCRC)
 }
 
 method computeCRC SmallRuntime chunkData {
@@ -1561,6 +1577,7 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	// Record the CRC for the given chunkID.
 
 	lastRcvMSecs = (msecsSinceStart)
+	lastCRC = chunkCRC
 	if (notNil crcDict) {
 		atPut crcDict chunkID chunkCRC
 	}

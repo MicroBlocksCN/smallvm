@@ -384,6 +384,7 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
+	sendChunkCRC(chunkIndex);
 }
 
 static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
