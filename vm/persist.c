@@ -747,6 +747,8 @@ static void compactFlash() {
 	//	5. switch to the other half-space
 	//	6. remember the free pointer for the new half-space
 
+	uint32_t startT = millisecs();
+
 	// clear the processed flags
 	memset(chunkProcessed, 0, sizeof(chunkProcessed));
 	memset(varProcessed, 0, sizeof(varProcessed));
