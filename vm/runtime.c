@@ -24,7 +24,10 @@
 
 // Forward Reference Declarations
 
+void delay(int); // Arduino delay function
+
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
+static void sendChunkCRC(int chunkID);
 
 // Named Primitive Support
 
@@ -815,7 +818,7 @@ uint32_t crc32(uint8_t *buf, int byteCount) {
 	return ~crc;
 }
 
-void sendChunkCRC(int chunkID) {
+static void sendChunkCRC(int chunkID) {
 	// Send the 4-byte CRC-32 for the given chunk. Do nothing if the chunk is not in use.
 
 	if ((chunkID < 0) || (chunkID >= MAX_CHUNKS)) return;
@@ -828,8 +831,6 @@ void sendChunkCRC(int chunkID) {
 		sendMessage(chunkCRCMsg, chunkID, 4, (char *) &crc);
 	}
 }
-
-void delay(int); // Arduino delay function
 
 void sendAllCRCs() {
 	// count chunks
