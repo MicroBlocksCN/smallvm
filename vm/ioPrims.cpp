@@ -120,33 +120,6 @@ void hardwareInit() {
 	#endif
 }
 
-// Communication Functions
-
-int recvBytes(uint8 *buf, int count) {
-	int bytesRead = Serial.available();
-	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
-	for (int i = 0; i < bytesRead; i++) {
-		buf[i] = Serial.read();
-	}
-	return bytesRead;
-}
-
-int sendByte(char aByte) {
-	#ifdef ARDUINO_ARCH_RP2040
-		// Workaround for Pico Arduino bug (both mbed and Philhower):
-		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
-		Serial.write(aByte);
-		return 1; // assume byte was actually written
-	#else
-		return Serial.write(aByte);
-	#endif
-}
-
-void restartSerial() {
-	Serial.end();
-	Serial.begin(115200);
-}
-
 // General Purpose I/O Pins
 
 #define BUTTON_PRESSED LOW

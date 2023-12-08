@@ -260,7 +260,7 @@ uint32 millisecs(void);
 
 int serialConnected();
 int recvBytes(uint8 *buf, int count);
-int sendByte(char aByte);
+int sendBytes(uint8 *buf, int start, int end);
 void restartSerial();
 
 const char *boardType();

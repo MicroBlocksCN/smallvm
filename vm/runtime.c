@@ -28,6 +28,7 @@ void delay(int); // Arduino delay function
 
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
+static void sendData();
 
 // Named Primitive Support
 
@@ -493,10 +494,11 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
-int sendBytes(uint8 *buf, int start, int end);
+static void sendData() {
+	int byteCount = 0;
 
-static inline void sendData() {
 #ifdef EMSCRIPTEN
+	// xxx can this special case for EMSCRIPTEN be removed? try it and test w/ boardie.
 	if (outBufStart > outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
 			outBufStart = 0;
@@ -508,9 +510,13 @@ static inline void sendData() {
 		}
 	}
 #else
-	while (outBufStart != outBufEnd) {
-		if (!sendByte(outBuf[outBufStart])) break;
-		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+	if (outBufStart > outBufEnd) {
+		byteCount = sendBytes(outBuf, outBufStart, OUTBUF_SIZE);
+		outBufStart = (outBufStart + byteCount) & OUTBUF_MASK;
+	}
+	if (outBufStart < outBufEnd) {
+		byteCount = sendBytes(outBuf, outBufStart, outBufEnd);
+		outBufStart = (outBufStart + byteCount) & OUTBUF_MASK;
 	}
 #endif
 }
