@@ -1,7 +1,7 @@
 module '未来科技盒主控'
 author '邵悦 '
 version 1 0 
-depends 'Basic Sensors' 
+depends 'Basic Sensors' '未来科技盒电机扩展'
 choices LED_all '1' '2' '3' '4' '5' '6' '7' '8' '9' 
 choices LED_index '1' '2' '3' 
 description '腾讯未来科技盒子配套主控
