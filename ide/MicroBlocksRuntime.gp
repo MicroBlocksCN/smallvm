@@ -1294,6 +1294,9 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'touchScreenPrims'
 	} ('ESP32' == boardType) {
 		importEmbeddedLibrary scripter 'HTTP client'
+	} ('cocorobo' == boardType) {
+		importEmbeddedLibrary scripter '未来科技盒主控'
+		importEmbeddedLibrary scripter '未来科技盒电机扩展'
 	} ('TTGO RP2040' == boardType) {
 		importEmbeddedLibrary scripter 'LED Display'
 	} ('Pico:ed' == boardType) {
