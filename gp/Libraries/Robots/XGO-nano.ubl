@@ -1,469 +1,83 @@
-module 'XGO-nano' Output
-author luwudynamics
-version 3 1 
-choices XGO_motor_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
-choices XGO_direction_Menu 'counter-clockwise' clockwise 
-choices XGO_attitude_Menu R P Y 
-choices XGO_move_Menu 'Forward(0mm~25mm)' 'Backward(-25mm~0mm)' 'Left Shift(0mm~18mm)' 'Right Shift(-18mm~0mm)' 
-choices XGO_arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
-choices XGO_angle_Menu roll pitch yaw 
-choices XGO_move_XGO_direction_Menu X Y 
-choices XGO_transmove_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
-choices XGO_gait_Menu Trot Walk 'High Walk' 'Micro Trot' 
-choices XGO_button_Menu A B 
-choices XGO_speed_Menu Fast Normal Slow 
-choices XGO_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pitch' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
-choices XGO_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
-choices XGO_translation_Menu X Y Z 
-choices XGO_transrotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
-description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
-'
-variables _XGO_actions _buttons 
+module 'XGO-nano' Control
+author LUWU
+version 1 4 
+choices leg_Menu '左前' '右前' '左后' '右后' 
+choices arm_Menu '上（-65°-65°）' '中（-60°-70°）' '下（-90°-105°）' 
+choices move_direction_Menu X Y 
+choices motor_Menu '上（-30°-30°）' '中（-70°-90°）' '下（-85°-50°）' 
+choices direction_Menu '逆时针' '顺时针' 
+choices speed_Menu '正常' '慢速' '快速' 
+choices translation_Menu X Y Z 
+choices gait_Menu '对角' '行走' '高抬腿' '微调' 
+choices attitude_Menu R P Y 
+choices move_Menu '前平移（0mm~25mm）' '后平移（-25mm~0mm）' '左平移（0mm~18mm）' '右平移（-18mm~0mm）' 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' 
+description 'ESP32
+XGO-nano'
+variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata 
 
-  spec ' ' 'XGO-nano_init' 'XGO init'
-  spec ' ' 'XGO_reset' 'XGO reset'
+  spec ' ' '初始化XGO-nano' 'XGO初始化'
+  spec ' ' 'XGO复位' 'XGO恢复初始状态'
   space
-  spec 'r' 'XGO_battery_level' 'get battery level'
-  spec 'r' 'XGO_read_motor' 'get all servos angle'
-  spec 'r' 'XGO_read_gyro' 'get gyro angle _' 'menu.XGO_angle_Menu' 'roll'
+  spec 'r' '读取机器狗电量' '读取当前电量'
+  spec 'r' '获取机器狗版本' '读取全部舵机角度'
   space
-  spec ' ' 'XGO_set_towards_0' 'set towards 0'
-  spec ' ' 'XGO_set_rotation_to' 'rotation to _' 'auto' '10'
+  spec ' ' '设置迈步频率为' '设置迈步频率为 _' 'menu.speed_Menu num' '正常'
+  spec ' ' '设置运动步态为' '设置运动步态为 _' 'menu.gait_Menu num' '对角'
+  spec ' ' '单个舵机运动' '设置 _  腿 _ 关节舵机转动至 _ °' 'menu.leg_Menu menu.motor_Menu num' '左前' '上（-30°-30°）' 40
+  spec ' ' '机械臂运动' '设置机械臂 _ 关节舵机转动至 _ °' 'menu.arm_Menu num' '上（-65°-65°）' 40
   space
-  spec ' ' 'XGO_set_stride_frequency' 'set frequency _' 'menu.XGO_speed_Menu' 'Normal'
-  spec ' ' 'XGO_set_gait' 'set gait _' 'menu.XGO_gait_Menu' 'Trot'
-  spec ' ' 'XGO_set_leg' 'set _ leg _ joint servos to _ °' 'menu.XGO_leg_Menu menu.XGO_motor_Menu num' 'Left Front' 'Upper(-30°~30°)' 40
-  spec ' ' 'XGO_set_arm' 'set arm _ joint servos to _ °' 'menu.XGO_arm_Menu num' 'Upper(-65°~65°)' 40
+  spec ' ' '执行动作组编号' '执行编号 _ 动作组' 'auto' 1
+  spec ' ' '机器狗平移' '向 _ 步幅为 _ 毫米持续 _ 毫秒' 'menu.move_Menu num num' '前平移（0mm~25mm）' 15 3000
+  spec ' ' '机器狗旋转' '向 _ 方向以速度 _ 度/秒旋转 _ 毫秒' 'menu.direction_Menu num num' '逆时针' 100 3000
+  spec ' ' '机器狗轴向平移' '沿 _ 轴平移 _ mm' 'menu.translation_Menu num' 'X' 5
+  spec ' ' '机器狗轴向旋转' '沿 _ 旋转 _ °' 'menu.attitude_Menu num' 'R' 5
+  spec ' ' '机器狗单腿运动' '设置 _ 腿足尖坐标位置为 X（-25-25） _ mm Y（-15-15） _ mm Z（60-110） _ mm' 'menu.leg_Menu num num num' '左前' 0 0 70
   space
-  spec ' ' 'XGO_action' 'execute action _' 'menu.XGO_action_Menu' 'Lie Down'
-  spec ' ' 'XGO_move' 'move _ with stride _ mm for _ ms' 'menu.XGO_move_Menu num num' 'Forward(0mm~25mm)' 15 3000
-  spec ' ' 'XGO_rotate' 'Rotate _ at speed _ degrees/second for _ ms' 'menu.XGO_direction_Menu num num' 'counter-clockwise' 100 3000
-  spec ' ' 'XGO_translation_along' 'Translation along _ _ mm' 'menu.XGO_transmove_Menu num' 'X(-25mm~25mm)' 5
-  spec ' ' 'XGO_axial_rotate' 'Rotate _ _ °' 'menu.XGO_transrotate_Menu num' 'X(-20°~20°)' 5
-  spec ' ' 'XGO_set_a_leg' 'set _ foot position to X(-25~25) _ mm Y(-15~15) _ mm Z(60~110) _ mm' 'menu.XGO_leg_Menu num num num' 'Left Front' 0 0 70
+  spec ' ' '机器狗机械臂' '设置机械臂末端坐标位置X（-80-155） _ mm Z（-95-155） _ mm' 'auto auto' '50' '50'
+  spec ' ' '机器狗夹爪' '机械爪开合 _' 'auto' '128'
   space
-  spec ' ' 'XGO_set_a_arm' 'set arm position X(-80~155) _ mm Z(-95~155) _ mm' 'auto auto' 100 -60
-  spec ' ' 'XGO_set_claw' 'claw _' 'auto' '128'
+  spec ' ' '陀螺仪' '陀螺仪 _' 'bool' true
+  spec ' ' '表演模式' '表演模式 _' 'bool' true
+  spec ' ' '卸载所有舵机' '卸载所有舵机 _' 'bool' true
   space
-  spec ' ' 'XGO_gyros' 'gyros _' 'bool' false
-  spec ' ' 'XGO_performance_mode' 'performance mode _' 'bool' false
-  spec ' ' 'XGO_unload_all_servo' 'unload all servo _' 'bool' false
-  spec ' ' 'XGO_2P' '2Pin 5V output _' 'bool' false
-  spec ' ' 'XGO_digital_IO' 'digtial IO output _' 'bool' false
-  spec 'r' 'XGO_read_button' 'readbutton _' 'menu.XGO_button_Menu' 'A'
-  space
-  spec ' ' '_XGO_action' 'perform action _' 'auto' 1
-  spec 'r' '_button double pressed' 'button _ double pressed' 'auto' 'A'
-  spec 'r' '_button pressed' 'button _ pressed' 'auto' 5
-  spec 'r' '_button long pressed' 'button _ long pressed' 'auto' 5
-  spec ' ' '_XGO_turn_towards' 'XGO turn towards _' 'auto' '10'
-  spec ' ' '_XGO_move' 'XGO-nano move _ step _' 'menu.XGO_move_XGO_direction_Menu num' 'X' 2
+  spec ' ' '_XGO转向' 'XGO转向 _' 'auto' '10'
+  spec ' ' '_移动机器狗' 'XGO-nano 移动方向 _ 步数 _' 'menu.move_direction_Menu num' 'X' 2
   spec 'r' '_conver2u8t' '_conver2u8t _ _ _' 'auto auto auto' '10' '10' '10'
   spec 'r' '_conver2u8' '_conver2u8 _ _' 'num num' 30 96
-  spec ' ' '_XGO_set_a_foot' 'set _ foot position X _ Y _ Z _' 'num num num num' 1 2 2 66
+  spec ' ' '_机器狗单腿运动' '设置 _ 腿足尖坐标位置 X _ Y _ Z _' 'num num num num' 1 2 2 66
+  spec ' ' '_HLgetdata_from_cmd' '_read_data'
   spec 'r' '_conver2float' '_conver2float _ _ _' 'auto auto auto' '10' '10' '10'
-  spec ' ' '_XGO_set_a_servo' 'oneservo _ _ _ _' 'auto auto auto auto' 10 10 '10' '10'
-  spec ' ' '_XGO_set_gait' 'set gait _' 'auto' '10'
-  spec ' ' '_XGO_set_leg' 'servo _  angle _ °' 'num num' 1 40
-  spec 'r' '_button' '_button _' 'auto' 10
-  spec ' ' '_updateButtons' '_updateButtons'
-  spec 'r' '_read button' '_read button _' 'auto' 10
-  spec ' ' '_XGO_sendCmd' '_XGO_sendCmd _ _' 'num num' 0 0
-  spec ' ' '_XGO_sendRequest' '_XGO_sendRequest _ _' 'num num' 1 1
+  spec ' ' '_单个舵机' '单个舵机 _ _ _ _' 'auto auto auto auto' 10 10 '10' '10'
+  spec ' ' '_运动步态' '运动步态 _' 'auto' '10'
+  spec ' ' '_单个舵机运动' '舵机编号 _  角度 _ °' 'num num' 1 40
 
-to 'XGO-nano_init' {
-  if ('micro:bit v2' == (boardType)) {callCustomCommand '[serial:setPins]' ('[data:makeList]' 13 14)}
-  '[serial:open]' 115200
+to 'XGO复位' {
+  '执行动作编号' 255
+  waitMicros 750
 }
 
-to XGO_2P mode {
-  if (mode == (booleanConstant true)) {
-    '_XGO_sendCmd' 144 1
-  } else {
-    '_XGO_sendCmd' 144 0
-  }
-}
-
-to XGO_action foo {
-  if (not (isType _XGO_actions 'list')) {_XGO_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pitch,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
-  local 'an' ('[data:find]' foo _XGO_actions)
-  if (an == 25) {
-    '_XGO_action' 128
-  } (an == 26) {
-    '_XGO_action' 129
-  } (an == 27) {
-    '_XGO_action' 130
-  } else {
-    '_XGO_action' an
-  }
-}
-
-to XGO_axial_rotate direction steps {
-  if (direction == 'X(-20°~20°)') {
-    '_XGO_sendCmd' 54 ('_conver2u8' 20 steps)
-  } (direction == 'Y(-20°~20°)') {
-    '_XGO_sendCmd' 55 ('_conver2u8' 20 steps)
-  } (direction == 'Z(-12°~12°)') {
-    '_XGO_sendCmd' 56 ('_conver2u8' 12 steps)
-  }
-}
-
-to XGO_battery_level {
-  '_XGO_sendRequest' 1 1
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    return (at 6 rx_data)
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-to XGO_digital_IO mode {
-  if (mode == (booleanConstant true)) {
-    '_XGO_sendCmd' 145 1
-  } else {
-    '_XGO_sendCmd' 145 0
-  }
-}
-
-to XGO_gyros mode {
-  if (mode == (booleanConstant true)) {
-    '_XGO_sendCmd' 97 1
-  } else {
-    '_XGO_sendCmd' 97 0
-  }
-}
-
-to XGO_move move_direction steps times {
-  if (move_direction == 'Forward(0mm~25mm)') {
-    '_XGO_move' 'X' steps
-    waitMillis times
-    '_XGO_move' 'X' 0
-    waitMillis 50
-    '_XGO_move' 'Y' 0
-  } (move_direction == 'Backward(-25mm~0mm)') {
-    '_XGO_move' 'X' (0 - steps)
-    waitMillis times
-    '_XGO_move' 'X' 0
-    waitMillis 50
-    '_XGO_move' 'Y' 0
-  } (move_direction == 'Left Shift(0mm~18mm)') {
-    '_XGO_move' 'Y' steps
-    waitMillis times
-    '_XGO_move' 'Y' 0
-    waitMillis 50
-    '_XGO_move' 'X' 0
-  } (move_direction == 'Right Shift(-18mm~0mm)') {
-    '_XGO_move' 'Y' (0 - steps)
-    waitMillis times
-    '_XGO_move' 'Y' 0
-    waitMillis 50
-    '_XGO_move' 'X' 0
-  }
-}
-
-to XGO_performance_mode mode {
-  if (mode == (booleanConstant true)) {
-    '_XGO_sendCmd' 3 1
-  } else {
-    '_XGO_sendCmd' 3 0
-  }
-}
-
-to XGO_read_button button {
-  if (button == 'A') {
-    return (digitalReadOp 34)
-  } (button == 'B') {
-    return (digitalReadOp 35)
-  }
-}
-
-to XGO_read_gyro angel {
-  if (angel == 'roll') {
-    '_XGO_sendRequest' 102 2
-  } (angel == 'pitch') {
-    '_XGO_sendRequest' 103 2
-  } (angel == 'yaw') {
-    '_XGO_sendRequest' 104 2
-  }
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    if ((at 6 rx_data) > 128) {
-      return ((at 7 rx_data) + (((at 6 rx_data) - 256) * 256))
-    } else {
-      return ((at 7 rx_data) + ((at 6 rx_data) * 256))
-    }
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-to XGO_read_motor {
-  '_XGO_sendRequest' 80 15
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    return ('[data:makeList]' ('_conver2float' (at 6 rx_data) -70 50) ('_conver2float' (at 7 rx_data) -70 90) ('_conver2float' (at 8 rx_data) -30 30) ('_conver2float' (at 9 rx_data) -70 50) ('_conver2float' (at 10 rx_data) -70 90) ('_conver2float' (at 11 rx_data) -30 30) ('_conver2float' (at 12 rx_data) -70 50) ('_conver2float' (at 13 rx_data) -70 90) ('_conver2float' (at 14 rx_data) -30 30) ('_conver2float' (at 15 rx_data) -70 50) ('_conver2float' (at 16 rx_data) -70 90) ('_conver2float' (at 17 rx_data) -30 30) ('_conver2float' (at 18 rx_data) -65 65) ('_conver2float' (at 19 rx_data) -70 60) ('_conver2float' (at 20 rx_data) -90 105))
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-to XGO_reset {
-  '_XGO_action' 255
-  waitMillis 100
-}
-
-to XGO_rotate direction steps times {
-  if (direction == 'counter-clockwise') {
-    '_XGO_turn_towards' steps
-    waitMillis times
-    '_XGO_turn_towards' 0
-  } (direction == 'clockwise') {
-    '_XGO_turn_towards' (0 - steps)
-    waitMillis times
-    '_XGO_turn_towards' 0
-  }
-}
-
-to XGO_set_a_arm arm_x arm_z {
-  '_XGO_sendCmd' 115 ('_conver2u8t' -80 155 arm_x)
-  '_XGO_sendCmd' 116 ('_conver2u8t' -95 155 arm_z)
-}
-
-to XGO_set_a_leg leg X Y Z {
-  if (leg == 'Left Front') {
-    '_XGO_set_a_foot' 0 X Y Z
-  } (leg == 'Right Front') {
-    '_XGO_set_a_foot' 3 X Y Z
-  } (leg == 'Right Rear') {
-    '_XGO_set_a_foot' 6 X Y Z
-  } (leg == 'Left Rear') {
-    '_XGO_set_a_foot' 9 X Y Z
-  }
-}
-
-to XGO_set_arm arm degree {
-  if (arm == 'Upper(-65°~65°)') {
-    '_XGO_set_leg' 13 degree
-  } (arm == 'Middle(-115°~70°)') {
-    '_XGO_set_leg' 14 degree
-  } (arm == 'Lower(-90°~105°)') {
-    '_XGO_set_leg' 15 degree
-  }
-}
-
-to XGO_set_claw pos {
-  '_XGO_sendCmd' 113 pos
-}
-
-to XGO_set_gait mode {
-  if (mode == 'Trot') {
-    '_XGO_set_gait' 0
-  } (mode == 'Walk') {
-    '_XGO_set_gait' 1
-  } (mode == 'High Walk') {
-    '_XGO_set_gait' 2
-  } (mode == 'Micro Trot') {
-    '_XGO_set_gait' 3
-  }
-}
-
-to XGO_set_leg legs motor degree {
-  if (legs == 'Left Front') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 3 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 2 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 1 degree
-    }
-  } (legs == 'Right Front') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 6 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 5 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 4 degree
-    }
-  } (legs == 'Right Rear') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 9 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 8 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 7 degree
-    }
-  } (legs == 'Left Rear') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 12 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 11 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 10 degree
+to '_HLgetdata_from_cmd' {
+  repeatUntil (0 == (('[data:joinStrings]' _buffer) + 0)) {
+    _buffer = (newList 32)
+    local 'idx' 1
+    local 'serBuff' ('[serial:read]')
+    waitMillis 20
+    if ((size serBuff) > 0) {
+      for byte serBuff {
+        atPut idx _buffer byte
+        idx += 1
+      }
     }
   }
 }
 
-to XGO_set_rotation_to angle {
-  comment 'What does this do?'
-  local 'angleHigh' ((angle >> 8) & 255)
-  local 'angleLow' (angle & 255)
-  local 'checksum' (255 - ((11 + (63 + (angleHigh + angleLow))) & 255))
-  '[serial:write]' ('[data:convertType]' ('[data:makeList]' 85 0 10 1 63 angleHigh angleLow checksum 0 170) 'byte array')
+to '_XGO转向' steps {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 50 ('_conver2u8' 100 steps)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (60 + ('_conver2u8' 100 steps))) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
   waitMillis 50
-}
-
-to XGO_set_stride_frequency mode {
-  if (mode == 'Normal') {
-    '_XGO_sendCmd' 61 0
-  } (mode == 'Slow') {
-    '_XGO_sendCmd' 61 1
-  } (mode == 'Fast') {
-    '_XGO_sendCmd' 61 2
-  }
-}
-
-to XGO_set_towards_0 {
-  comment 'What does this do?'
-  '_XGO_sendCmd' 6 1
-}
-
-to XGO_translation_along direction steps {
-  if (direction == 'X(-25mm~25mm)') {
-    '_XGO_sendCmd' 51 ('_conver2u8' 25 steps)
-  } (direction == 'Y(-18mm~18mm)') {
-    '_XGO_sendCmd' 52 ('_conver2u8' 18 steps)
-  } (direction == 'Z(60mm~110mm)') {
-    '_XGO_sendCmd' 53 ('_conver2u8t' 60 110 steps)
-  }
-}
-
-to XGO_unload_all_servo mode {
-  if (mode == (booleanConstant true)) {
-    '_XGO_sendCmd' 32 1
-  } else {
-    '_XGO_sendCmd' 32 0
-  }
-}
-
-to '_XGO_action' data {
-  '_XGO_sendCmd' 62 data
-}
-
-to '_XGO_move' move_direction steps {
-  if (move_direction == 'X') {
-    '_XGO_sendCmd' 48 ('_conver2u8' 25 steps)
-  } (move_direction == 'Y') {
-    '_XGO_sendCmd' 49 ('_conver2u8' 18 steps)
-  }
-}
-
-to '_XGO_sendCmd' cmd arg {
-  local 'checksum' (255 - ((10 + (cmd + arg)) & 255))
-  '[serial:write]' ('[data:convertType]' ('[data:makeList]' 85 0 9 1 cmd arg checksum 0 170) 'byte array')
-  waitMillis 50
-}
-
-to '_XGO_sendRequest' request arg {
-  local 'checksum' (255 - ((11 + (request + arg)) & 255))
-  '[serial:write]' ('[data:convertType]' ('[data:makeList]' 85 0 9 2 request arg checksum 0 170) 'byte array')
-  waitMillis 50
-}
-
-to '_XGO_set_a_foot' leg X Y Z {
-  '_XGO_sendCmd' (leg + 64) ('_conver2u8' 25 X)
-  '_XGO_sendCmd' (leg + 65) ('_conver2u8' 18 Y)
-  '_XGO_sendCmd' (leg + 66) ('_conver2u8t' 60 110 Z)
-}
-
-to '_XGO_set_a_servo' args steps min max {
-  '_XGO_sendCmd' args ('_conver2u8t' min max steps)
-}
-
-to '_XGO_set_gait' x {
-  '_XGO_sendCmd' 9 x
-}
-
-to '_XGO_set_leg' nums steps {
-  if (nums == 1) {
-    '_XGO_set_a_servo' 80 steps -70 50
-  } (nums == 2) {
-    '_XGO_set_a_servo' 81 steps -70 90
-  } (nums == 3) {
-    '_XGO_set_a_servo' 82 steps -30 30
-  } (nums == 4) {
-    '_XGO_set_a_servo' 83 steps -70 50
-  } (nums == 5) {
-    '_XGO_set_a_servo' 84 steps -70 90
-  } (nums == 6) {
-    '_XGO_set_a_servo' 85 steps -30 30
-  } (nums == 7) {
-    '_XGO_set_a_servo' 86 steps -70 50
-  } (nums == 8) {
-    '_XGO_set_a_servo' 87 steps -70 90
-  } (nums == 9) {
-    '_XGO_set_a_servo' 88 steps -30 30
-  } (nums == 10) {
-    '_XGO_set_a_servo' 89 steps -70 50
-  } (nums == 11) {
-    '_XGO_set_a_servo' 90 steps -70 90
-  } (nums == 12) {
-    '_XGO_set_a_servo' 91 steps -30 30
-  } (nums == 13) {
-    '_XGO_set_a_servo' 113 steps -65 65
-  } (nums == 14) {
-    '_XGO_set_a_servo' 93 steps -115 70
-  } (nums == 15) {
-    '_XGO_set_a_servo' 94 steps -85 100
-  }
-}
-
-to '_XGO_turn_towards' steps {
-  '_XGO_sendCmd' 50 ('_conver2u8' 100 steps)
-}
-
-to '_button' 'pin or name' {
-  '_updateButtons'
-  for 'each button' _buttons {
-    if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
-  }
-  comment 'This button has not been initialized. Let''s add it.'
-  local 'new button' ('[data:makeList]' (v 'pin or name') '' '' 'waiting')
-  '[data:addLast]' (v 'new button') _buttons
-  return (v 'new button')
-}
-
-to '_button double pressed' 'pin or name' {
-  local 'button' ('_button' (v 'pin or name'))
-  local 'state' (at 4 button)
-  if (state == 'double press') {
-    comment 'We only go back to "waiting" after a double press if the event has been handled
-and the user has released the button. Otherwise we''ll cause false "single press"
-positives.'
-    atPut 4 button 'double press handled'
-    return (booleanConstant true)
-  }
-  return (booleanConstant false)
-}
-
-to '_button long pressed' 'pin or name' {
-  local 'button' ('_button' (v 'pin or name'))
-  local 'state' (at 4 button)
-  if (state == 'long press') {
-    atPut 4 button 'waiting'
-    return (booleanConstant true)
-  }
-  return (booleanConstant false)
-}
-
-to '_button pressed' 'pin or name' {
-  local 'button' ('_button' (v 'pin or name'))
-  local 'state' (at 4 button)
-  if (state == 'single press') {
-    atPut 4 button 'waiting'
-    return (booleanConstant true)
-  }
-  return (booleanConstant false)
 }
 
 to '_conver2float' data min max {
@@ -482,49 +96,369 @@ to '_conver2u8t' min max data {
   return ((255 * (data - min)) / (max - min))
 }
 
-to '_read button' 'pin or name' {
-  if ((v 'pin or name') == 'A') {
-    return (buttonA)
-  } ((v 'pin or name') == 'B') {
-    return (buttonB)
-  } else {
-    return (digitalReadOp (v 'pin or name'))
+to '_单个舵机' args steps min max {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 args ('_conver2u8t' min max steps)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - ((10 + args) + ('_conver2u8t' min max steps))) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '_单个舵机运动' nums steps {
+  if (nums == 1) {
+    '_单个舵机' 80 steps -70 50
+  } (nums == 2) {
+    '_单个舵机' 81 steps -70 90
+  } (nums == 3) {
+    '_单个舵机' 82 steps -90 105
+  } (nums == 4) {
+    '_单个舵机' 83 steps -70 50
+  } (nums == 5) {
+    '_单个舵机' 84 steps -70 90
+  } (nums == 6) {
+    '_单个舵机' 85 steps -90 105
+  } (nums == 7) {
+    '_单个舵机' 86 steps -70 50
+  } (nums == 8) {
+    '_单个舵机' 87 steps -70 90
+  } (nums == 9) {
+    '_单个舵机' 88 steps -90 105
+  } (nums == 10) {
+    '_单个舵机' 89 steps -70 50
+  } (nums == 11) {
+    '_单个舵机' 90 steps -70 90
+  } (nums == 12) {
+    '_单个舵机' 91 steps -90 105
+  } (nums == 13) {
+    '机器狗夹爪' steps
+  } (nums == 14) {
+    '_单个舵机' 93 steps -70 90
+  } (nums == 15) {
+    '_单个舵机' 94 steps -90 105
   }
 }
 
-to '_updateButtons' {
-  if (_buttons == 0) {_buttons = ('[data:makeList]')}
-  for button _buttons {
-    local 'currently pressed' ('_read button' (at 1 button))
-    local 'previous state' (at 4 button)
-    if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
-      comment 'save state change time'
-      atPut 2 button (millisOp)
-      atPut 3 button (v 'currently pressed')
-      atPut 4 button 'pressed'
-    } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
-      local 'press time' ((millisOp) - (at 2 button))
-      comment 'There''s been a press. Let''s check how long it was.'
-      if ((v 'press time') > 500) {
-        atPut 4 button 'long press'
-      } ((v 'press time') > 250) {
-        atPut 4 button 'single press'
-      } else {
-        comment 'This is an internal intermediate state.
-It could turn out to be a single press or a double press.'
-        atPut 2 button (millisOp)
-        atPut 4 button 'short press'
-      }
-    } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
-      atPut 4 button 'double press'
-    } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
-      atPut 4 button 'single press'
-    } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
-      comment 'We only go back to "waiting" after a double press if the event has been handled
-and the user has released the button. Otherwise we''ll cause false "single press"
-positives.'
-      atPut 4 button 'waiting'
+to '_机器狗单腿运动' leg X Y Z {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 64) ('_conver2u8' 25 X)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - ((leg + 74) + ('_conver2u8' 25 X))) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 65) ('_conver2u8' 18 Y)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - ((leg + 75) + ('_conver2u8' 18 Y))) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 66) ('_conver2u8t' 60 110 Z)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - ((leg + 76) + ('_conver2u8t' 60 110 Z))) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '_移动机器狗' move_direction steps {
+  if (move_direction == 'X') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 48 ('_conver2u8' 25 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (58 + ('_conver2u8' 25 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (move_direction == 'Y') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 49 ('_conver2u8' 18 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (59 + ('_conver2u8' 18 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '_运动步态' x {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 9 x))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (19 + x)) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '初始化XGO-nano' {
+  '[serial:open]' 115200
+}
+
+to '单个舵机运动' legs motor degree {
+  if (legs == '左前') {
+    if (motor == '上（-30°-30°）') {
+      '_单个舵机运动' 1 degree
+    } (motor == '中（-70°-90°）') {
+      '_单个舵机运动' 2 degree
+    } (motor == '下（-85°-50°）') {
+      '_单个舵机运动' 3 degree
     }
+  } (legs == '右前') {
+    if (motor == '上（-30°-30°）') {
+      '_单个舵机运动' 4 degree
+    } (motor == '中（-70°-90°）') {
+      '_单个舵机运动' 5 degree
+    } (motor == '下（-85°-50°）') {
+      '_单个舵机运动' 6 degree
+    }
+  } (legs == '左后') {
+    if (motor == '上（-30°-30°）') {
+      '_单个舵机运动' 7 degree
+    } (motor == '中（-70°-90°）') {
+      '_单个舵机运动' 8 degree
+    } (motor == '下（-85°-50°）') {
+      '_单个舵机运动' 9 degree
+    }
+  } (legs == '右后') {
+    if (motor == '上（-30°-30°）') {
+      '_单个舵机运动' 10 degree
+    } (motor == '中（-70°-90°）') {
+      '_单个舵机运动' 11 degree
+    } (motor == '下（-85°-50°）') {
+      '_单个舵机运动' 12 degree
+    }
+  }
+}
+
+to '卸载所有舵机' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 32 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (42 + 1)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 32 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (42 + 0)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '执行动作组编号' data {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 62 data))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (72 + data)) % 256))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '机器狗单腿运动' leg X Y Z {
+  if (leg == '左前') {
+    '_机器狗单腿运动' 0 X Y Z
+  } (leg == '右前') {
+    '_机器狗单腿运动' 3 X Y Z
+  } (leg == '左后') {
+    '_机器狗单腿运动' 6 X Y Z
+  } (leg == 'right_behind') {
+    '_机器狗单腿运动' 9 X Y Z
+  }
+}
+
+to '机器狗夹爪' pos {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 113 ('_conver2u8t' 0 255 arm_z)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (123 + ('_conver2u8t' 0 255 arm_z))) % 255))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '机器狗平移' move_direction steps times {
+  if (move_direction == '前平移（0mm~25mm）') {
+    '_移动机器狗' 'X' steps
+    waitMillis times
+    '_移动机器狗' 'X' 0
+  } (move_direction == '后平移（-25mm~0mm）') {
+    '_移动机器狗' 'X' (0 - steps)
+    waitMillis times
+    '_移动机器狗' 'X' 0
+  } (move_direction == '左平移（0mm~18mm）') {
+    '_移动机器狗' 'Y' steps
+    waitMillis times
+    '_移动机器狗' 'Y' 0
+  } (move_direction == '右平移（-18mm~0mm）') {
+    '_移动机器狗' 'Y' (0 - steps)
+    waitMillis times
+    '_移动机器狗' 'Y' 0
+  }
+}
+
+to '机器狗旋转' direction steps times {
+  if (direction == '逆时针') {
+    '_XGO转向' steps
+    waitMillis times
+    '_XGO转向' 0
+  } (direction == '顺时针') {
+    '_XGO转向' (0 - steps)
+    waitMillis times
+    '_XGO转向' 0
+  }
+}
+
+to '机器狗机械臂' arm_x arm_z {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 115 ('_conver2u8t' -80 155 arm_x)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (125 + ('_conver2u8t' -80 155 arm_x))) % 255))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 116 ('_conver2u8t' -95 155 arm_z)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (126 + ('_conver2u8t' -95 155 arm_z))) % 255))))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '机器狗机械臂稳定模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 114 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (124 + 1)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 114 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (124 + 0)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '机器狗轴向平移' direction steps {
+  if (direction == 'X') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 51 ('_conver2u8' 25 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (61 + ('_conver2u8' 25 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (direction == 'Y') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 52 ('_conver2u8' 18 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (62 + ('_conver2u8' 18 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (direction == 'Z') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 53 ('_conver2u8t' 60 110 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (63 + ('_conver2u8t' 60 110 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '机器狗轴向旋转' direction steps {
+  if (direction == 'R') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 54 ('_conver2u8' 20 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (64 + ('_conver2u8' 20 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (direction == 'P') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 55 ('_conver2u8' 10 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (65 + ('_conver2u8' 10 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (direction == 'Y') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 56 ('_conver2u8' 12 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (66 + ('_conver2u8' 12 steps))) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '机械臂运动' arm degree {
+  if (arm == '上（-65°-65°）') {
+    '_单个舵机运动' 13 degree
+  } (arm == '中（-60°-70°）') {
+    '_单个舵机运动' 14 degree
+  } (arm == '下（-90°-105°）') {
+    '_单个舵机运动' 15 degree
+  }
+}
+
+to '获取机器狗版本' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 80 15 149))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return ('[data:makeList]' ('_conver2float' (at 6 rx_data) -70 50) ('_conver2float' (at 7 rx_data) -70 90) ('_conver2float' (at 8 rx_data) -30 30) ('_conver2float' (at 9 rx_data) -70 50) ('_conver2float' (at 10 rx_data) -70 90) ('_conver2float' (at 11 rx_data) -30 30) ('_conver2float' (at 12 rx_data) -70 50) ('_conver2float' (at 13 rx_data) -70 90) ('_conver2float' (at 14 rx_data) -30 30) ('_conver2float' (at 15 rx_data) -70 50) ('_conver2float' (at 16 rx_data) -70 90) ('_conver2float' (at 17 rx_data) -30 30) ('_conver2float' (at 18 rx_data) -65 65) ('_conver2float' (at 19 rx_data) -70 60) ('_conver2float' (at 20 rx_data) -90 105))
+  } else {
+    sayIt '通信失败！！！'
+  }
+}
+
+to '表演模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 1)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '设置迈步频率为' mode {
+  if (mode == '正常') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 0)) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (mode == '慢速') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 1)) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } (mode == '快速') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 2))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 2)) % 256))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '设置运动步态为' mode {
+}
+
+to '读取机器狗电量' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 1 1 242))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 60
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt '通信失败！！！'
+  }
+}
+
+to '陀螺仪' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 97 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (107 + 1)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 97 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (107 + 0)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
   }
 }
 
