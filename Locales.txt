@@ -876,6 +876,359 @@ play WAV file _
 filename
 
 ####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+
+set tempo to _ bpm
+
+set time signature to _ / _
+
+set up _ bars pattern
+
+start playing
+
+stop playing
+
+add _ at bar _ beat _
+
+remove _ from bar _ beat _
+
+mute _ _
+
+solo _ _
+
+current beat
+
+current bar
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+
+Bass Drum 1
+
+Side Stick
+
+Acoustic Snare
+
+Hand Clap
+
+Electric Snare
+
+Low Floor Tom
+
+Closed Hi-Hat
+
+High Floor Tom
+
+Pedal Hi-Hat
+
+Low Tom
+
+Open Hi-Hat
+
+Low-Mid Tom
+
+Hi-Mid Tom
+
+Crash Cymbal 1
+
+High Tom
+
+Ride Cymbal 1
+
+Chinese Cymbal
+
+Ride Bell
+
+Tambourine 
+
+Splash Cymbal
+
+Cowbell 
+
+Crash Cymbal 2
+
+Vibraslap 
+
+Ride Cymbal 2
+
+Hi Bongo
+
+Low Bongo
+
+Mute Hi Conga
+
+Open Hi Conga
+
+Low Conga
+
+High Timbale
+
+Low Timbale
+
+High Agogo
+
+Low Agogo
+
+Cabasa Maracas 
+
+Short Whistle
+
+Long Whistle
+
+Short Guiro
+
+Long Guiro
+
+Claves 
+
+Hi Wood Block
+
+Low Wood Block
+
+Mute Cuica
+
+Open Cuica
+
+Mute Triangle
+
+Open Triangle
+
+# General MIDI instrument categories
+
+piano 
+
+chromatic percussion
+
+organ
+
+guitar
+
+bass
+
+strings
+
+ensemble
+
+brass
+
+reed
+
+pipe 
+
+synth lead
+
+synth pad
+
+synth SFX
+
+ethnic
+
+percussive
+
+SFX 
+
+# General MIDI drum sets
+
+standard
+
+room
+
+power
+
+electronic 
+
+TR-808
+
+jazz
+
+brush
+
+orchestra
+
+SFX 
+
+CM-64/CM-32L
+
+# General MIDI control changes
+
+bank select 1
+
+bank select 2
+
+modulation 
+
+portamento time
+
+volume
+
+pan
+
+expression
+
+hold
+
+portamento
+
+sostenuto
+
+soft
+
+resonance 
+
+release time
+
+attack time
+
+cutoff 
+
+decay time
+
+vibrato rate
+
+vibrato depth
+
+vibrato delay
+
+portamento control
+
+effect 1
+
+effect 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+
+set MIDI note _ to _ on channel _ volume _
+
+note _ octave _ to MIDI key
+
+select MIDI instrument _ for channel _
+
+instrument _ number _
+
+select MIDI drum kit _
+
+play MIDI drum _ for _ ms volume _
+
+drum _
+
+change MIDI control _ on channel _ to _
+
+pitch bend MIDI channel _ to _ %
+
+send MIDI reset
+
+send MIDI start playing
+
+send MIDI stop playing
+
+send MIDI continue playing
+
+set MIDI signal to pin _ : use USB MIDI _
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+
+# scale names
+
+ionian
+
+dorian
+
+phrygian
+
+lydian
+
+mixolydian
+
+aeolian
+
+locrian 
+
+major
+
+minor 
+
+# chord types
+
+major
+
+minor
+
+diminished
+
+major 7th
+
+minor 7th
+
+Maj7 
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+
+tone pin 
+
+# library blocks
+
+_ scale root _ : steps _
+
+pentatonic _ scale root _ : steps _
+
+_ chord root _ : steps _
+
+_ chord for root _ : steps _
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+
+_ transposed _ semitones
+
+chord progression _ with root _ : and _ steps per chord
+
+rotation _ of circle of 5ths _ M _ m _ º
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+
+tom for _ ms pitch shifted by _ on pin _
+
+laser for _ ms with frequency _ speed _ on pin _
+
+noise for _ ms pitch shifted by _ on pin _
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+
+snare for _ ms on DAC pin _
+
+hihat for _ ms on DAC pin _
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+
+play chord _ for _ ms
+
+set digital chord pins _ _ _
+
+####
 # Turtle geometry library
 
 Turtle
