@@ -31,17 +31,30 @@ static void stopRF(); // forward reference
 
 #define USE_NRF5x_CLOCK true
 
+// Both NIMBLE and the Nordic Softdevice BLE systems use Timer0.
+// MicroBlocks only supports BLE on the nRF52, we use TIMER1 on nRF52.
+// Use TIMER0 on the nRF51, since that is the only 32-bit timer on the nRF51.
+#if defined(NRF52)
+  #define MB_TIMER NRF_TIMER1
+  #define MB_TIMER_IRQn TIMER1_IRQn
+  #define MB_TIMER_IRQHandler TIMER1_IRQHandler
+#else
+  #define MB_TIMER NRF_TIMER0
+  #define MB_TIMER_IRQn TIMER0_IRQn
+  #define MB_TIMER_IRQHandler TIMER0_IRQHandler
+#endif
+
 static void initClock_NRF5x() {
-	NRF_TIMER0->TASKS_SHUTDOWN = true;
-	NRF_TIMER0->MODE = 0; // timer (not counter) mode
-	NRF_TIMER0->BITMODE = 3; // 32-bit
-	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
-	NRF_TIMER0->TASKS_START = true;
+	MB_TIMER->TASKS_SHUTDOWN = true;
+	MB_TIMER->MODE = 0; // timer (not counter) mode
+	MB_TIMER->BITMODE = 3; // 32-bit
+	MB_TIMER->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	MB_TIMER->TASKS_START = true;
 }
 
 uint32 microsecs() {
-	NRF_TIMER0->TASKS_CAPTURE[0] = true;
-	return NRF_TIMER0->CC[0];
+	MB_TIMER->TASKS_CAPTURE[0] = true;
+	return MB_TIMER->CC[0];
 }
 
 uint32 millisecs() {
@@ -93,7 +106,7 @@ void hardwareInit() {
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
-		touchSetCycles(0x800, 0x800);
+		touchSetCycles(0x800, 0x900);
 		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
 	tftInit();
@@ -105,33 +118,6 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
-}
-
-// Communication Functions
-
-int recvBytes(uint8 *buf, int count) {
-	int bytesRead = Serial.available();
-	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
-	for (int i = 0; i < bytesRead; i++) {
-		buf[i] = Serial.read();
-	}
-	return bytesRead;
-}
-
-int sendByte(char aByte) {
-	#ifdef ARDUINO_ARCH_RP2040
-		// Workaround for Pico Arduino bug (both mbed and Philhower):
-		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
-		Serial.write(aByte);
-		return 1; // assume byte was actually written
-	#else
-		return Serial.write(aByte);
-	#endif
-}
-
-void restartSerial() {
-	Serial.end();
-	Serial.begin(115200);
 }
 
 // General Purpose I/O Pins
@@ -1346,36 +1332,36 @@ static char servoToneTimerStarted = 0;
 
 static void startServoToneTimer() {
 	// enable timer interrupts
-	NVIC_EnableIRQ(TIMER0_IRQn);
+	NVIC_EnableIRQ(MB_TIMER_IRQn);
 
 	// get current timer value
- 	NRF_TIMER0->TASKS_CAPTURE[0] = true;
- 	uint32_t wakeTime = NRF_TIMER0->CC[0];
+ 	MB_TIMER->TASKS_CAPTURE[0] = true;
+ 	uint32_t wakeTime = MB_TIMER->CC[0];
 
 	// set initial wake times a few (at least 2) usecs in the future to kick things off
-	NRF_TIMER0->CC[2] = wakeTime + 5;
-	NRF_TIMER0->CC[3] = wakeTime + 5;
+	MB_TIMER->CC[2] = wakeTime + 5;
+	MB_TIMER->CC[3] = wakeTime + 5;
 
 	// enable interrrupts on CC[2] and CC[3]
-	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
+	MB_TIMER->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
 
 	servoToneTimerStarted = true;
 }
 
-extern "C" void TIMER0_IRQHandler() {
-	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
-		uint32_t wakeTime = NRF_TIMER0->CC[2];
-		NRF_TIMER0->EVENTS_COMPARE[2] = 0; // clear interrupt
+extern "C" void MB_TIMER_IRQHandler() {
+	if (MB_TIMER->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
+		uint32_t wakeTime = MB_TIMER->CC[2];
+		MB_TIMER->EVENTS_COMPARE[2] = 0; // clear interrupt
 		if (tonePin >= 0) {
 			tonePinState = !tonePinState;
 			digitalWrite(tonePin, tonePinState);
-			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
+			MB_TIMER->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
 		}
 	}
 
-	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
-		uint32_t wakeTime = NRF_TIMER0->CC[3] + 12;
-		NRF_TIMER0->EVENTS_COMPARE[3] = 0; // clear interrupt
+	if (MB_TIMER->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
+		uint32_t wakeTime = MB_TIMER->CC[3] + 12;
+		MB_TIMER->EVENTS_COMPARE[3] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
 			digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
@@ -1390,11 +1376,11 @@ extern "C" void TIMER0_IRQHandler() {
 		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
 			digitalWrite(servoPin[servoIndex], HIGH);
 			servoPinHigh = true;
-			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
+			MB_TIMER->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER0->CC[3] = (wakeTime + 18000);
+			MB_TIMER->CC[3] = (wakeTime + 18000);
 		}
 	}
 }
@@ -1599,8 +1585,8 @@ static void setTone(int pin, int frequency) {
 	if (!servoToneTimerStarted) {
 		startServoToneTimer();
 	}
-	NRF_TIMER0->TASKS_CAPTURE[2] = true;
-	NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // set next wakeup time
+	MB_TIMER->TASKS_CAPTURE[2] = true;
+	MB_TIMER->CC[2] = (MB_TIMER->CC[2] + toneHalfPeriod); // set next wakeup time
 }
 
 void stopTone() { tonePin = -1; }
@@ -1932,7 +1918,11 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 // Software serial (output only)
 
-static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
+#if !defined(__not_in_flash_func)
+  #define __not_in_flash_func(funcName) funcName
+#endif
+
+static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *args) {
 	// Write a byte to the given pin at the given baudrate using software serial.
 
 	if (argCount < 3) return fail(notEnoughArguments);
@@ -1941,22 +1931,16 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 	int baud = evalInt(args[2]);
 	int bitTime = 1000000 / baud;
 
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			if ((pinNum < 0) || (pinNum >= DIGITAL_PINS)) return falseObj;
-			pinNum = digitalPin[pinNum];
-	#endif
-
 	// adjust the bitTime for slower cpu's
 	#if defined(ARDUINO_ARCH_SAMD)
 		bitTime -= 3;
-	#elif defined(NRF51)
+	#elif defined(NRF51) || defined(ESP8266) || defined(ARDUINO_SAM_DUE) || defined(RP2040_PHILHOWER)
 		bitTime -= 2;
-	#elif defined(ESP8266)
-		bitTime -= 2;
+	#else
+		bitTime -= 1;
 	#endif
 
+	pinNum = mapDigitalPinNum(pinNum);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
 

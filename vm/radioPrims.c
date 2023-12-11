@@ -32,7 +32,7 @@ static int receivedMessageType = -1;
 static int receivedInteger = 0;
 static char receivedString[20];
 
-#if defined(NRF51) || defined(NRF52)
+#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
 
 #if defined(NRF51)
 	#include <nrf51.h>

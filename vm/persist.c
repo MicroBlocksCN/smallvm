@@ -659,11 +659,6 @@ static void updateChunkTable() {
 
 #ifndef RAM_CODE_STORE
 
-struct {
-	int *chunkCodeRec;
-	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];
-} chunkData;
-
 static char chunkProcessed[256];
 static char varProcessed[256];
 
@@ -673,36 +668,25 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 
 	if (chunkProcessed[id]) return dst;
 
-	// clear chunkData
-	memset(&chunkData, 0, sizeof(chunkData));
+	int *chunkSrc = 0;
 
 	// scan rest of the records to get the most recent info about this chunk
 	while (src) {
-		int attributeID;
 		if (id == ((*src >> 8) & 0xFF)) { // id field matches
 			int type = (*src >> 16) & 0xFF;
 			switch (type) {
 			case chunkCode:
-				chunkData.chunkCodeRec = src;
-				break;
-			case chunkAttribute:
-				attributeID = *src & 0xFF;
-				if (attributeID < CHUNK_ATTRIBUTE_COUNT) {
-					chunkData.attributeRecs[attributeID] = src;
-				}
+				chunkSrc = src;
 				break;
 			case chunkDeleted:
-				memset(&chunkData, 0, sizeof(chunkData)); // clear chunkData
+				chunkSrc = 0;
 				break;
 			}
 		}
 		src = recordAfter(src);
 	}
-	if (chunkData.chunkCodeRec) {
-		dst = copyChunk(dst, chunkData.chunkCodeRec);
-		for (int i = 0; i < CHUNK_ATTRIBUTE_COUNT; i++) {
-			if (chunkData.attributeRecs[i]) dst = copyChunk(dst, chunkData.attributeRecs[i]);
-		}
+	if (chunkSrc) {
+		dst = copyChunk(dst, chunkSrc);
 	}
 	chunkProcessed[id] = true;
 	return dst;
@@ -747,6 +731,8 @@ static void compactFlash() {
 	//	5. switch to the other half-space
 	//	6. remember the free pointer for the new half-space
 
+	uint32_t startT = millisecs();
+
 	// clear the processed flags
 	memset(chunkProcessed, 0, sizeof(chunkProcessed));
 	memset(varProcessed, 0, sizeof(varProcessed));
@@ -782,7 +768,8 @@ static void compactFlash() {
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted Flash code store\n%d bytes used (%d%%) of %d",
+	sprintf(s, "Compacted Flash code store (%lu msecs)\n%d bytes used (%d%%) of %d",
+		millisecs() - startT,
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 }
@@ -800,7 +787,6 @@ static int keepCodeChunk(int id, int header, int *start) {
 
 	int *rec = start;
 	while (rec) {
-		// superceded only if all fields of header match (i.e. type, id, attributeType)
 		if (*rec == header) return false; // superceded
 		rec = recordAfter(rec);
 	}
@@ -829,6 +815,8 @@ static void compactRAM(int printStats) {
 	//	6. update the compaction count
 	//	7. re-write the code file
 
+	uint32_t startT = millisecs();
+
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord();
 
@@ -847,7 +835,7 @@ static void compactRAM(int printStats) {
 		int header = *src;
 		int type = (header >> 16) & 0xFF;
 		int id = (header >> 8) & 0xFF;
-		if ((chunkCode <= type) && (type <= chunkAttribute) && keepCodeChunk(id, header, next)) {
+		if ((type == chunkCode) && keepCodeChunk(id, header, next)) {
 			dst = copyChunk(dst, src);
 		} else if ((varName == type) && (src >= varsStart)) {
 			dst = copyChunk(dst, src);
@@ -872,7 +860,9 @@ static void compactRAM(int printStats) {
 	if (printStats) {
 		char s[100];
 		int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-		sprintf(s, "Compacted RAM code store\n%d bytes used (%d%%) of %d",
+
+		sprintf(s, "Compacted RAM code store (%lu msecs)\n%d bytes used (%d%%) of %d",
+			millisecs() - startT,
 			bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 		outputString(s);
 	}

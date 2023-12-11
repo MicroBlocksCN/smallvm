@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
+defineClass SmallRuntime ideVersion latestVmVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastCRC lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
@@ -604,6 +604,8 @@ method deleteChunkFor SmallRuntime key {
 method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 
+	step scripter // save recently edited scripts
+
 	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
@@ -833,10 +835,10 @@ method tryToInstallVM SmallRuntime {
 }
 
 method connectedToBoard SmallRuntime {
-    pingTimeout = 8000
-    if (or (isNil port) (not (isOpenSerialPort port))) { return false }
- 	if (or (isNil lastPingRecvMSecs) (lastPingRecvMSecs == 0)) { return false }
-    return (((msecsSinceStart) - lastPingRecvMSecs) < pingTimeout)
+	pingTimeout = 8000
+	if (or (isNil port) (not (isOpenSerialPort port))) { return false }
+	if (or (isNil lastPingRecvMSecs) (lastPingRecvMSecs == 0)) { return false }
+	return (((msecsSinceStart) - lastPingRecvMSecs) < pingTimeout)
 }
 
 method updateConnection SmallRuntime {
@@ -1376,17 +1378,15 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		return false
 	}
 
+	// record if chunk is running
 	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
 
-	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
-	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
-		sendMsg this 'chunkCodeMsg' chunkID data
-		sendMsg this 'pingMsg'
+	chunkCRC = (computeCRC this chunkBytes)
+	if (storeChunkOnBoard this chunkID data chunkCRC) {
+		atPut entry 2 chunkCRC // remember the CRC of the code we just saved
 	} else {
-		sendMsgSync this 'chunkCodeMsg' chunkID data
+		atPut entry 2 nil // save failed; clear CRC
 	}
-	processMessages this
-	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
 	// restart the chunk if it was running
 	if restartChunk {
@@ -1396,6 +1396,24 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		waitForResponse this
 	}
 	return true
+}
+
+method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
+	// Send the given chunk to the board and wait for the board to return the CRC.
+	// That ensures that the chunk has been saved to Flash memory.
+	// This can take several seconds if the board does a Flash compaction.
+
+	lastCRC = nil
+	sendMsg this 'chunkCodeMsg' chunkID data
+	sendMsg this 'getChunkCRCMsg' chunkID
+
+	// wait for CRC to be reported
+	startT = (msecsSinceStart)
+	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < 10000)) {
+		processMessages this
+		waitMSecs 1
+	}
+	return (lastCRC == chunkCRC)
 }
 
 method computeCRC SmallRuntime chunkData {
@@ -1559,6 +1577,7 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	// Record the CRC for the given chunkID.
 
 	lastRcvMSecs = (msecsSinceStart)
+	lastCRC = chunkCRC
 	if (notNil crcDict) {
 		atPut crcDict chunkID chunkCRC
 	}
@@ -1862,7 +1881,7 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 	sendMsg this msgName chunkID byteList
 	if ('boardie' == portName) { return } // don't wait for a response
 
-    if (not (connectedToBoard this)) { return }
+	if (not (connectedToBoard this)) { return }
 
 	ok = (waitForResponse this)
 	if (not ok) {
@@ -2029,8 +2048,6 @@ method handleMessage SmallRuntime msg {
 		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
-	} (op == (msgNameToID this 'chunkAttributeMsg')) {
-		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
 	} (op == (msgNameToID this 'fileInfo')) {
@@ -2654,7 +2671,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 	if ('MICROBIT' == driveName) {
 		vmFileName = 'vm_microbit-universal.hex'
- 	} ('MINI' == driveName) {
+	} ('MINI' == driveName) {
 		vmFileName = 'vm_calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
 		vmFileName = 'vm_circuitplay.uf2'

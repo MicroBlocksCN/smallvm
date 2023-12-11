@@ -158,6 +158,10 @@ static void serialOpen(int baudRate) {
 			// so use pins 4-5 for serial
 			SERIAL_PORT.setTX(4);
 			SERIAL_PORT.setRX(5);
+		#elif defined(XRP)
+			// use pins 16-17 (servo 1 & 2) for serial on XRP
+			SERIAL_PORT.setTX(16);
+			SERIAL_PORT.setRX(17);
 		#endif
 		SERIAL_PORT.setFIFOSize(1023);
 		SERIAL_PORT.setTimeout(1);

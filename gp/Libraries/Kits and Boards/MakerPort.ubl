@@ -1,7 +1,7 @@
 module MakerPort Output
 author MicroBlocks
-version 1 9 
-depends 'LCD Display' 'MP3 Player' Touch 'IR Remote' 
+version 1 10 
+depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 variables _makerport_microSDInserted _makerport_time_averages 

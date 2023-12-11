@@ -216,7 +216,6 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
-void vmLoop(void);
 void interpretStep();
 void taskSleep(int msecs);
 void vmPanic(const char *s);
@@ -261,7 +260,7 @@ uint32 millisecs(void);
 
 int serialConnected();
 int recvBytes(uint8 *buf, int count);
-int sendByte(char aByte);
+int sendBytes(uint8 *buf, int start, int end);
 void restartSerial();
 
 const char *boardType();
@@ -353,6 +352,7 @@ void addFilePrims();
 void addIOPrims();
 void addMiscPrims();
 void addNetPrims();
+void addBLEPrims();
 void addRadioPrims();
 void addSensorPrims();
 void addSerialPrims();

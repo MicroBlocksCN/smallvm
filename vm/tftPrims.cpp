@@ -27,7 +27,7 @@ static int deferUpdates = false;
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(PICO_ED) || defined(OLED_128_64)
+	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64)
 
 	#define BLACK 0
 
@@ -526,6 +526,26 @@ static int deferUpdates = false;
 			tft.init(TFT_HEIGHT, TFT_WIDTH);
 			tft.setRotation(1);
 			tftClear();
+			useTFT = true;
+		}
+
+	#elif defined(GAMEPAD_DISPLAY)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_MOSI 13
+		#define TFT_SCLK 14
+		#define TFT_CS 18
+		#define TFT_DC 16
+		#define TFT_RST 17
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_144GREENTAB);
+			tft.setRotation(3);
+			tft.fillScreen(ST77XX_BLACK);
 			useTFT = true;
 		}
 

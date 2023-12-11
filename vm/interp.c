@@ -400,6 +400,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
 	if (f) return (int) f;
 
+	fail(primitiveNotImplemented);
 	return -1;
 }
 
@@ -1313,31 +1314,23 @@ static void runTask(Task *task) {
 		DISPATCH();
 }
 
-// Task Scheduler
-
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || \
-	defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
-		#define HAS_WIFI true
-#endif
+// Interpreter Entry Point
 
 static int currentTaskIndex = -1;
 
-void vmLoop() {
-	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
+void interpretStep() {
+	// Run the interpreter for little while.
 
-	int count = 0;
-	while (true) {
-		if (count-- < 0) {
-			// do background VM tasks once every N VM loop cycles
-			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
-					updateMicrobitDisplay();
-			#endif
-			checkButtons();
-			processMessage();
-			count = 25; // must be under 30 when building on mbed to avoid serial errors
-		}
+	// do housekeeping tasks
+	processMessage();
+	checkButtons();
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+		defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
+		defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
+			updateMicrobitDisplay();
+	#endif
+
+	for (int step = 0; step < 100; step++) { // run multiple task scheduler cycles before returning
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {

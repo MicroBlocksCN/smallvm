@@ -16,7 +16,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(PICO_ED)
+#if defined(PICO_ED) || defined(XRP)
 	#define Wire Wire1
 #endif
 
@@ -194,10 +194,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	int stop = ((argCount < 3) || (trueObj == args[2]));
 
 	if (!wireStarted) startWire();
-	if (!wireStarted) {
-		fail(i2cTransferFailed);
-		return falseObj;
-	}
+	if (!wireStarted) return falseObj;
 
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
@@ -230,7 +227,8 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		}
 	}
 	int error = Wire.endTransmission(stop);
-	if (error) fail(i2cTransferFailed);
+	if (error) reportNum("i2c write error", error);
+
 	return falseObj;
 }
 
@@ -714,7 +712,11 @@ static int readAcceleration(int registerID) {
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 200) / 127); // invert sign and scale to range 0-200
-	if (5 == registerID) val = -val; // invert z-axis
+	#if defined(XRP)
+		if (1 == registerID) val = -val; // invert x-axis
+	#elif defined(ARDUINO_NRF52840_CLUE)
+		if (5 == registerID) val = -val; // invert z-axis
+	#endif
 	return val;
 }
 
@@ -1464,6 +1466,8 @@ static uint8_t dhtData[5];
   #define __not_in_flash_func(f) (f)
 #endif
 
+#if !defined(USE_NIMBLE)
+
 static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
 
@@ -1488,6 +1492,13 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 	setPinMode(pin, INPUT);
 	return true;
 }
+
+#else
+
+// for now, stub out readDHT() when using NimBLE because pulseIn() function gives linker error
+static int readDHTData(int pin) { return false; }
+
+#endif
 
 static OBJ primReadDHT(int argCount, OBJ *args) {
 	// Read DHT data into dhtData. Assume the 18 msec LOW start pulse has been sent.

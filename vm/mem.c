@@ -40,7 +40,7 @@
 #if defined(NRF51)
   #define OBJSTORE_BYTES 2400 // max is 2480
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
-  #define OBJSTORE_BYTES 92000
+  #define OBJSTORE_BYTES 64000
 #elif defined(ARDUINO_NRF52_PRIMO)
   #define OBJSTORE_BYTES 16000
 #elif defined(NRF52)
@@ -53,7 +53,7 @@
   // object store is allocated from heap on ESP32
   #if defined(BLE_NUS_PRIMS)
 	#define OBJSTORE_BYTES 28000
-  #elif defined(OCTO_PRIMS)
+  #elif defined(OCTO_PRIMS) || defined(BLE_KEYBOARD)
     #define OBJSTORE_BYTES 48000
   #else
     #define OBJSTORE_BYTES 80000
