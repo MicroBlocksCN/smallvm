@@ -945,7 +945,7 @@ function GP_openSerialPort(id, path, baud) {
 		}
 	}
 	if (GP.boardie.isOpen) { return 1; }
-	if (hasWebBluetooth()) {
+	if (hasWebBluetooth() && (path == 'webBLE')) {
 		bleSerial.connect();
 	} else if (hasWebSerial()) {
 		webSerialConnect();
