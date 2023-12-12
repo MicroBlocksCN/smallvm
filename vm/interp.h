@@ -224,6 +224,7 @@ void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 void suspendCodeFileUpdates();
 void resumeCodeFileUpdates();
+void startBLE_UART();
 
 // Integer Evaluation
 
