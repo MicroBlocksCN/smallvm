@@ -18,11 +18,11 @@
 
 #include <NimBLEDevice.h>
 
-BLEServer *pServer = NULL;
-BLECharacteristic *pTxCharacteristic;
-BLECharacteristic *pRxCharacteristic;
-bool deviceConnected = false;
-int lastRC = 0;
+static BLEServer *pServer = NULL;
+static BLECharacteristic *pTxCharacteristic;
+static BLECharacteristic *pRxCharacteristic;
+static bool ideConnected = false;
+static int lastRC = 0;
 
 #define RECV_BUF_MAX 1024
 static uint8_t bleRecvBuf[RECV_BUF_MAX];
@@ -41,17 +41,12 @@ static void reportNum2(const char *label, int n) {
 	Serial.println(n);
 }
 
-
 static void bleReceiveData(const uint8_t *data, int byteCount) {
 	int available = RECV_BUF_MAX - bleBytesAvailable;
 	if (byteCount > available) {
 		overRuns++;
 		byteCount = available;
 	}
-reportNum2("Recv", byteCount);
-// reportNum2("  available", available);
-// reportNum2("  overRuns", overRuns);
-
 	memcpy(&bleRecvBuf[bleBytesAvailable], data, byteCount);
 	bleBytesAvailable += byteCount;
 }
@@ -66,11 +61,6 @@ static int bleSendData(uint8_t *data, int byteCount) {
 		byteCount = BLE_SEND_MAX;
 	}
 
-// reportNum2("bleSendData byteCount", byteCount);
-// reportNum2("  [0]", data[0]);
-// reportNum2("  [1]", data[1]);
-// reportNum2("  [2]", data[2]);
-
 	lastRC = 0; // will be set to non-zero if notify() call fails
 	pTxCharacteristic->setValue(data, byteCount);
 	pTxCharacteristic->notify();
@@ -78,17 +68,15 @@ static int bleSendData(uint8_t *data, int byteCount) {
 //xxx		byteCount = 0; // write+notify failed; retry later
 		delay(5); // wait a bit to avoid NimBLE failure (e.g. disconnect)
 	}
-reportNum2("Sent", byteCount);
-
 	return byteCount;
 }
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
-		deviceConnected = true;
+		ideConnected = true;
 	}
 	void onDisconnect(BLEServer* pServer) {
-		deviceConnected = false;
+		ideConnected = false;
 	}
 };
 
@@ -111,7 +99,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 void startBLE_UART() {
 	// Create BLE Device
-	BLEDevice::init("MicroBlocks UART");
+	BLEDevice::init("MicroBlocks BLE");
 
 	// Create BLE Server
 	pServer = BLEDevice::createServer();
@@ -134,7 +122,7 @@ void startBLE_UART() {
 
 	// Start advertising
 	pServer->getAdvertising()->start();
-Serial.println("BLE Started"); // xxx
+	Serial.println("MicroBlocks BLE Started");
 }
 
 int recvBytes(uint8 *buf, int count) {
