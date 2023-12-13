@@ -1994,7 +1994,7 @@ static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *a
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
-#if defined(NRF51) || defined(NRF52)
+#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
 
 static void stopRF() {
 	NRF_PPI->CHEN = 0;
