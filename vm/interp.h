@@ -224,7 +224,6 @@ void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 void suspendCodeFileUpdates();
 void resumeCodeFileUpdates();
-void startBLE_UART();
 
 // Integer Evaluation
 
@@ -259,6 +258,7 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
+void startBLE_UART();
 int serialConnected();
 int recvBytes(uint8 *buf, int count);
 int sendBytes(uint8 *buf, int start, int end);
