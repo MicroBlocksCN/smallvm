@@ -1,6 +1,6 @@
 module 'WiFi Radio' Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends WiFi 
 tags radio communication messaging network 
 description 'This library supports easy message exchange among WiFi-enabled boards on the same network.
@@ -47,6 +47,13 @@ to wifiRadio_messageReceived {
     return (booleanConstant false)
   }
   _wifiRadio_lastNumber = ((at 5 msg) | (((at 6 msg) << 8) | (((at 7 msg) << 16) | ((at 8 msg) << 24))))
+  local 'highByte' (at 8 msg)
+  if (and (64 <= highByte) (highByte <= 127)) {
+    _wifiRadio_lastNumber = 'out of range number (positve)'
+  }
+  if (and (128 <= highByte) (highByte <= 191)) {
+    _wifiRadio_lastNumber = 'out of range number (negative)'
+  }
   _wifiRadio_lastString = ('[data:join]' '' ('[data:copyFromTo]' msg 9))
   return (booleanConstant true)
 }
