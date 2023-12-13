@@ -22,6 +22,12 @@ static BLEServer *pServer = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
 static bool ideConnected = false;
+
+// BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
+// INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
+#define BLE_SEND_MAX 250
+#define INTER_SEND_TIME 20
+static uint32 lastSendTime = 0;
 static int lastRC = 0;
 
 #define RECV_BUF_MAX 1024
@@ -47,27 +53,29 @@ static void bleReceiveData(const uint8_t *data, int byteCount) {
 		overRuns++;
 		byteCount = available;
 	}
+
 	memcpy(&bleRecvBuf[bleBytesAvailable], data, byteCount);
 	bleBytesAvailable += byteCount;
 }
 
-// Maximum bytes to send in a single attribute write (max is 512)
-#define BLE_SEND_MAX 250
-
 static int bleSendData(uint8_t *data, int byteCount) {
 	if (bleSendData <= 0) return 0;
 
-	if (byteCount > BLE_SEND_MAX) {
-		byteCount = BLE_SEND_MAX;
-	}
+	// do not send more often than INTER_SEND_TIME msecs
+	uint32 now = millisecs();
+	if (lastSendTime > now) lastSendTime = 0; // clock wrap
+	if ((now - lastSendTime) < INTER_SEND_TIME) return 0;
 
+	// send byteCount bytes
+	if (byteCount > BLE_SEND_MAX) byteCount = BLE_SEND_MAX;
 	lastRC = 0; // will be set to non-zero if notify() call fails
 	pTxCharacteristic->setValue(data, byteCount);
 	pTxCharacteristic->notify();
 	if (lastRC != 0) {
-//xxx		byteCount = 0; // write+notify failed; retry later
-		delay(5); // wait a bit to avoid NimBLE failure (e.g. disconnect)
+		byteCount = 0; // write+notify failed; retry later
 	}
+
+	lastSendTime = now;
 	return byteCount;
 }
 
