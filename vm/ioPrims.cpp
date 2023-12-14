@@ -118,6 +118,9 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
+	#if defined(BLE_IDE)
+		startBLE_UART();
+	#endif
 }
 
 // General Purpose I/O Pins
@@ -1991,7 +1994,7 @@ static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *a
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
-#if defined(NRF51) || defined(NRF52)
+#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
 
 static void stopRF() {
 	NRF_PPI->CHEN = 0;

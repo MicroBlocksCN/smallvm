@@ -654,7 +654,11 @@ method webSerialConnect SmallRuntime action {
 			inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
 			return
 		}
-		openSerialPort 'webserial' 115200
+		if (beginsWith action 'connect (BLE)') {
+		    openSerialPort 'webBLE' 115200
+		} else {
+		    openSerialPort 'webserial' 115200
+		}
 		disconnected = false
 		connectionStartTime = (msecsSinceStart)
 		portName = 'webserial'
@@ -670,6 +674,11 @@ method selectPort SmallRuntime {
 		if (and (isNil port) ('boardie' != portName)) {
 			if (browserHasWebSerial) {
 				addItem menu 'connect'
+				allowBLEConnect = false
+				if allowBLEConnect {
+				    addItem menu 'connect (BLE) (Experimental!)'
+				    addLine menu
+				}
 			}
 			addItem menu 'open Boardie'
 		} else {
