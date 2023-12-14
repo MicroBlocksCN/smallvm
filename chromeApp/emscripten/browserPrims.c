@@ -406,7 +406,7 @@ static OBJ primBrowserIsChromeOS(int nargs, OBJ args[]) {
 
 static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
 	int hasWebSerial = EM_ASM_INT({
-		return hasWebSerial();
+		return hasWebSerial() || hasWebBluetooth();
 	}, NULL);
 	return hasWebSerial ? trueObj : falseObj;
 }

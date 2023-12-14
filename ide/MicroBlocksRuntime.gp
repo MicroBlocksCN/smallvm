@@ -674,7 +674,8 @@ method selectPort SmallRuntime {
 		if (and (isNil port) ('boardie' != portName)) {
 			if (browserHasWebSerial) {
 				addItem menu 'connect'
-				if (devMode) {
+				allowBLEConnect = false
+				if allowBLEConnect {
 				    addItem menu 'connect (BLE) (Experimental!)'
 				    addLine menu
 				}
