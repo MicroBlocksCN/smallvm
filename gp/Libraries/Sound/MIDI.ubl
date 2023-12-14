@@ -1,6 +1,6 @@
 module MIDI Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
 choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
@@ -64,10 +64,14 @@ to '_MIDI command' cmd channel arg1 arg2 {
       '[serial:midiSend]' cmdByte arg1 arg2
     }
   } else {
-    '[io:softWriteByte]' cmdByte _MIDI_pin 31250
-    '[io:softWriteByte]' arg1 _MIDI_pin 31250
-    if (not oneArgByte) {
-      '[io:softWriteByte]' arg2 _MIDI_pin 31250
+    for map _MIDI_pin {
+      if (('[data:find]' channel (at 2 map)) > 0) {
+        '[io:softWriteByte]' cmdByte (at 1 map) 31250
+        '[io:softWriteByte]' arg1 (at 1 map) 31250
+        if (not oneArgByte) {
+          '[io:softWriteByte]' arg2 (at 1 map) 31250
+        }
+      }
     }
   }
 }
@@ -94,7 +98,9 @@ to '_MIDI send bytes' byteList {
     } (_MIDI_pin == 'USB') {
       '[serial:midiSend]' byte
     } else {
-      '[io:softWriteByte]' byte _MIDI_pin 31250
+      for map _MIDI_pin {
+        '[io:softWriteByte]' byte (at 1 map) 31250
+      }
     }
   }
 }
@@ -210,7 +216,11 @@ to 'set MIDI pin' pin USB {
   if USB {
     _MIDI_pin = 'USB'
   } else {
-    _MIDI_pin = pin
+    if (isType pin 'list') {
+      _MIDI_pin = pin
+    } else {
+      _MIDI_pin = ('[data:makeList]' ('[data:makeList]' pin ('[data:range]' 1 16)))
+    }
   }
   _MIDI_initialized = (booleanConstant false)
   '_MIDI init'
