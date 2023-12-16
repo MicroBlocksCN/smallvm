@@ -258,6 +258,7 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
+void getMACAddress(uint8 *sixBytes);
 void startBLE_UART();
 int ideConnected();
 

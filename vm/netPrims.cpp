@@ -16,6 +16,14 @@
 
 #include "mem.h"
 
+#if defined(NRF51)
+	#include <nrf51.h>
+	#include <nrf51_bitfields.h>
+#elif defined(NRF52)
+	#include <nrf52.h>
+	#include <nrf52_bitfields.h>
+#endif
+
 #define NO_WIFI() (false)
 
 #if defined(ESP8266)
@@ -48,6 +56,14 @@ static char serverStarted = false;
 int serverPort = 80;
 WiFiServer server(serverPort);
 WiFiClient client;
+
+// MAC Address
+
+void getMACAddress(uint8 *sixBytes) {
+	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+	if (!NO_WIFI()) WiFi.macAddress(mac);
+	memcpy(sixBytes, mac, 6);
+}
 
 // WiFi Connection
 
@@ -654,6 +670,22 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
 #endif
 
 #else // WiFi is not supported
+
+void getMACAddress(uint8 *sixBytes) {
+	// Store up to six bytes of unique chip ID into the argument array
+	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+	#if defined(NRF51) || defined(NRF52)
+		uint32 deviceID = NRF_FICR->DEVICEID[0];
+		mac[5] = deviceID & 255;
+		mac[4] = (deviceID >> 8) & 255;
+		mac[3] = (deviceID >> 16) & 255;
+		mac[2] = (deviceID >> 24) & 255;
+		deviceID = NRF_FICR->DEVICEID[1];
+		mac[1] = deviceID & 255;
+		mac[0] = (deviceID >> 8) & 255;
+	#endif
+	memcpy(sixBytes, mac, 6);
+}
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }

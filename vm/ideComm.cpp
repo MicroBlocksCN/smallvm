@@ -22,6 +22,7 @@ static BLEServer *pServer = NULL;
 static BLEService *pService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
+static char uniqueName[32];
 static int serviceOnline = false;
 static bool bleConnected = false;
 static uint16_t connID = -1;
@@ -60,13 +61,30 @@ static void flashUserLED() {
 	updateMicrobitDisplay();
 }
 
+static void initName() {
+	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+	getMACAddress(mac);
+	int machineNum = (mac[4] << 8) | mac[5]; // least signifcant bits
+
+	strcat(uniqueName, "MicroBlocks BLE");
+
+	// replace last three bytes ("BLE") of uniqueName with three capital letters
+	int i = strlen(uniqueName) - 1;
+	uniqueName[i] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	uniqueName[i-1] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	uniqueName[i-2] = 65 + (machineNum % 26);
+	Serial.println(uniqueName);
+}
+
 static int gotSerialPing() {
 	char buf[20];
 	int byteCount = Serial.available();
 	if (byteCount < 3) return false;
 	delay(5); // wait for a few more bytes
 	byteCount = Serial.available();
-	if (byteCount > sizeof(buf)) byteCount = sizeof(buf);
+	if (byteCount > (int) sizeof(buf)) byteCount = sizeof(buf);
 	byteCount = Serial.readBytes((char *) buf, byteCount);
 	for (int i = 0; i < byteCount - 2; i++) {
 		if ((buf[i] == 0xFA) && (buf[i+1] == 0x1A) && (buf[i+2] == 0)) {
@@ -160,7 +178,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 void startBLE_UART() {
 	// Create BLE Device
-	BLEDevice::init("MicroBlocks BLE");
+	initName();
+	BLEDevice::init(uniqueName);
 
 	// Create BLE Server
 	pServer = BLEDevice::createServer();
@@ -182,6 +201,7 @@ void startBLE_UART() {
 	pServer->getAdvertising()->addServiceUUID(pService->getUUID());
 
 	// Start advertising
+	pServer->getAdvertising()->setName(uniqueName);
 	pServer->getAdvertising()->start();
 	serviceOnline = true;
 	Serial.println("MicroBlocks BLE Started");
