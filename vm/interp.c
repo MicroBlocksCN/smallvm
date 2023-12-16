@@ -1318,6 +1318,8 @@ static void runTask(Task *task) {
 
 static int currentTaskIndex = -1;
 
+#if !defined(EMSCRIPTEN)
+
 void interpretStep() {
 	// Run the interpreter for little while.
 
@@ -1371,6 +1373,8 @@ void interpretStep() {
 #endif
 	}
 }
+
+#endif // not EMSCRIPTEN
 
 // Boardie support
 

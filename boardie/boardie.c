@@ -189,6 +189,7 @@ void readScriptsFromURL() {
 // Stubs for functions not used by Boardie
 
 void addSerialPrims() {}
+void addBLEPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
 void addCameraPrims() {}

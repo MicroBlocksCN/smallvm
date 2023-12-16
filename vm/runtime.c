@@ -495,8 +495,6 @@ static int outBufEnd = 0;
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
 static void sendData() {
-	int byteCount = 0;
-
 #ifdef EMSCRIPTEN
 	// xxx can this special case for EMSCRIPTEN be removed? try it and test w/ boardie.
 	if (outBufStart > outBufEnd) {
@@ -510,6 +508,8 @@ static void sendData() {
 		}
 	}
 #else
+	int byteCount = 0;
+
 	if (outBufStart > outBufEnd) {
 		byteCount = sendBytes(outBuf, outBufStart, OUTBUF_SIZE);
 		outBufStart = (outBufStart + byteCount) & OUTBUF_MASK;
