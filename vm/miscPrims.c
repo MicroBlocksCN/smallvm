@@ -92,7 +92,7 @@ static OBJ jsonValue(char *item) {
 }
 
 static OBJ primConnectedToIDE(int argCount, OBJ *args) {
-	return serialConnected() ? trueObj : falseObj;
+	return ideConnected() ? trueObj : falseObj;
 }
 
 static OBJ primJSONGet(int argCount, OBJ *args) {

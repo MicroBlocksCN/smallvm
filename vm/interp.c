@@ -1093,7 +1093,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
 		}
@@ -1109,7 +1109,7 @@ static void runTask(Task *task) {
 		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
 	logData_op:
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
 		}

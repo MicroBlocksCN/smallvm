@@ -681,7 +681,7 @@ void logData(char *s) {
 void outputString(const char *s) {
 	// Sending a debug string. Use chunkID 255.
 
-	if (!serialConnected()) return; // serial port not open; do nothing
+	if (!ideConnected()) return; // serial port not open; do nothing
 
 	char data[200];
 	data[0] = 2; // data type (2 is string)
@@ -765,7 +765,7 @@ static void sendVersionString() {
 void sendBroadcastToIDE(char *s, int len) {
 	int spaceNeeded = len + 50; // leave room for header and a few other messages
 	if (!hasOutputSpace(spaceNeeded)) {
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			return; // apparently not connected to IDE
 		} else {
 			waitForOutbufBytes(spaceNeeded);
@@ -1014,7 +1014,7 @@ static int receiveTimeout() {
 
 #if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
 
-int serialConnected() {
+int ideConnected() {
 	// Return true if the board is connected to the MicroBlocks IDE
 	// (i.e. if it has received a message from the IDE in the past 3 seconds).
 
