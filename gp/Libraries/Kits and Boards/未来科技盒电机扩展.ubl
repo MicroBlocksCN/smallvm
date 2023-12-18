@@ -16,9 +16,9 @@ variables _robotbitMicrosecsPerCycle _sr04_last zeroCount
   spec ' ' '电机' '电机 _ 速度 _ （-100～100）' 'menu.motorMenu num' 'A' 60
   spec ' ' '平滑调速' '平稳调速 初始速度 _ 目标速度 _ 耗时 _ （毫秒） 电机 _' 'auto auto auto menu.motorMenu' 0 100 1000 'A'
   space
-  spec 'r' '巡线传感器' '巡线传感器 _' 'menu.PosMenu' 'left'
+  spec 'r' '巡线传感器' '巡线传感器 _ 检测到黑线?' 'menu.PosMenu' 'left'
   spec 'r' '巡线状态' '巡线状态 左在线 _ 右在线 _' 'bool bool' true true
-  spec 'r' 'distance (cm)' 'distance (cm) trigger _ echo _' 'num num' 16 17
+  spec 'r' 'distance (cm)' '距离 (cm) 触发 _ 回声 _' 'num num' 14 13
   space
   spec ' ' '_cocoroboMotorAllOff' '_cocoroboMotorAllOff'
   spec ' ' '_setPWM2' '_setPWM2 _ _ _' 'auto auto auto' 1 0 2048
@@ -44,6 +44,7 @@ to '_setPWM2' channel on off {
 }
 
 to 'distance (cm)' trig ech {
+  comment '触发蓝色 接14引脚，回声黄色接13引脚'
   comment 'Contributed by Joan Guillén and Josep Ferràndiz'
   digitalWriteOp trig false
   waitMicros 2
@@ -70,9 +71,10 @@ to 'distance (cm)' trig ech {
 }
 
 to '巡线传感器' lr {
-  comment '检测到在黑线上返回0，否则返回1'
-  local '_pin_line_left' 16
-  local '_pin_line_right' 17
+  comment '检测到在黑线返回True真，否则返回 False 假
+左边LO蓝色引脚25，右边RO黄色引脚27'
+  local '_pin_line_left' 25
+  local '_pin_line_right' 27
   if (lr == 'left') {
     return (digitalReadOp _pin_line_left)
   } (lr == 'right') {
@@ -82,7 +84,7 @@ to '巡线传感器' lr {
 
 to '巡线状态' leftSide rightSide {
   comment '在线上是指检测到在黑线上'
-  return (and (leftSide == (not ('巡线传感器' 'left'))) (rightSide == (not ('巡线传感器' 'right'))))
+  return (and (leftSide == ('巡线传感器' 'left')) (rightSide == ('巡线传感器' 'right')))
 }
 
 to '平滑调速' start target time motor {
