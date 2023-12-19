@@ -2032,6 +2032,9 @@ connect (BLE)
 open Boardie
 连接模拟器
 
+connect (BLE) (Experimental!)
+无线连接 (BLE) (实验功能!)
+
 disconnect
 断开连接
 
