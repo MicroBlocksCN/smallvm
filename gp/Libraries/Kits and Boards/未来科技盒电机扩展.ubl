@@ -1,13 +1,13 @@
 module '未来科技盒电机扩展'
 author '邵悦'
-version 1 1 
+version 1 2 
 choices motorMenu A B C D 
 choices PosMenu left right 
 description '腾讯未来科技盒子配套电机扩展
 小车项目需要用的库
 PCA9865 控制芯片I2C控制 A B C D 4路电机
-超声波HC-SR04 触发16 接收17
-巡线 左接16 右接17
+超声波HC-SR04 触发14 接收13
+巡线 左接25 右接27
 '
 variables _robotbitMicrosecsPerCycle _sr04_last zeroCount 
 
@@ -96,6 +96,7 @@ to '平滑调速' start target time motor {
 }
 
 to '电机' foo speed {
+  '电机初始化'
   if (speed < -100) {
     speed = -100
   } (100 < speed) {
@@ -149,14 +150,16 @@ to '电机全部停止' {
 }
 
 to '电机初始化' {
-  comment 'PCA9865 初始化'
-  comment 'Enter sleep mode'
-  i2cSet 64 0 (hexToInt '10')
-  comment 'Set prescale register to generate 50 Hz'
-  i2cSet 64 (hexToInt 'FE') (25000000 / (50 * 4096))
-  '_cocoroboMotorAllOff'
-  comment 'Start PWM again (with autoincrement enabled)'
-  i2cSet 64 0 (hexToInt '20')
-  _robotbitMicrosecsPerCycle = 20000
+  if (_robotbitMicrosecsPerCycle == 0) {
+    comment 'PCA9865 初始化'
+    comment 'Enter sleep mode'
+    i2cSet 64 0 (hexToInt '10')
+    comment 'Set prescale register to generate 50 Hz'
+    i2cSet 64 (hexToInt 'FE') (25000000 / (50 * 4096))
+    '_cocoroboMotorAllOff'
+    comment 'Start PWM again (with autoincrement enabled)'
+    i2cSet 64 0 (hexToInt '20')
+    _robotbitMicrosecsPerCycle = 20000
+  }
 }
 
