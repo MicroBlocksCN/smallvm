@@ -1008,8 +1008,7 @@ function GP_writeSerialPort(data) {
 		GP.boardie.iframe.contentWindow.postMessage(data);
 		return data.buffer.byteLength;
 	} else if (webBluetoothConnected()) {
-		bleSerial.write_data(data);
-		return data.length;
+		return bleSerial.write_data(data);
 	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
 	} else if (hasChromeSerial()) {
@@ -1076,11 +1075,13 @@ class NimBLESerial {
 		this.service = undefined;
 		this.rx_char = undefined;
 		this.connected = false;
+		this.sendInProgress = false;
 	}
 
 	handle_disconnected(event) {
 		this.rx_char = undefined;
 		this.connected = false;
+		this.sendInProgress = false;
 	}
 
 	handle_read(event) {
@@ -1102,6 +1103,7 @@ class NimBLESerial {
 		// bind overrides the default this=tx_char to this=the NimBLESerial
 		tx_char.addEventListener("characteristicvaluechanged", this.handle_read.bind(this));
  		this.connected = true;
+		this.sendInProgress = false;
 		console.log("MicroBlocks BLE connected");
    }
 
@@ -1115,19 +1117,35 @@ class NimBLESerial {
 		return this.connected;
 	}
 
-	async write_data(data) {
-		// Write a Uint8Array as chunks that can fit into a single BLE packet
+	write_data(data) {
+		// Write the given data (a Uint8Array) and return the number of bytes written.
+		// Detail: if not busy, start write_loop with as much data as we can send.
 
 		if (this.rx_char == undefined) {
 			throw TypeError("Not connected");
 		}
-		let start_ind = 0;
-		while (start_ind < data.length) {
-			await this.rx_char.writeValue(data.subarray(start_ind, start_ind + BLE_PACKET_LEN));
-			start_ind += BLE_PACKET_LEN;
-			await new Promise(r => setTimeout(r, 1));
+		if (this.sendInProgress) {
+			return 0;
 		}
-		return data.length;
+		let byteCount = (data.length > BLE_PACKET_LEN) ? BLE_PACKET_LEN : data.length;
+		this.write_loop(data.subarray(0, byteCount));
+		return byteCount;
+ 	}
+
+	async write_loop(data) {
+		this.sendInProgress = true;
+		while (true) {
+			// try to send the given data until success
+			try {
+				await this.rx_char.writeValue(data);
+				this.sendInProgress = false;
+				return;
+			} catch (error) {
+				// for now: print the error but keep trying to send
+				// later: check error an give up if BLE disconnected
+				console.log(error);
+			}
+		}
 	}
 }
 
