@@ -22,6 +22,8 @@
 //		void flashWriteData(int *dst, int wordCount, uint8 *src)
 //		void flashWriteWord(int *addr, int value)
 
+#include <Arduino.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,6 +59,9 @@
 			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
 			startAddr += pageSize;
+			#if defined(BLE_IDE)
+				delay(15);
+			#endif
 		}
 		NRF_NVMC->CONFIG = 0; // disable Flash erase
 	}
