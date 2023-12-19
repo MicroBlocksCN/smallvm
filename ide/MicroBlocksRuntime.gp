@@ -620,6 +620,7 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	suspendCodeFileUpdates this
 	saveAllChunks this true
 	resumeCodeFileUpdates this
+    showDownloadProgress (findMicroBlocksEditor) 3 1
 }
 
 method softReset SmallRuntime {
@@ -1228,6 +1229,7 @@ method saveAllChunksAfterLoad SmallRuntime {
 	suspendCodeFileUpdates this
 	saveAllChunks this true
 	resumeCodeFileUpdates this
+    showDownloadProgress (findMicroBlocksEditor) 3 1
 }
 
 method saveAllChunks SmallRuntime checkCRCs {
