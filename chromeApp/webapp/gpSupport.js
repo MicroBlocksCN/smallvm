@@ -1065,7 +1065,7 @@ const UART_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
 const UART_RX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e' // board receive characteristic
 const UART_TX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e' // board transmit characteristic
 
-const BLE_PACKET_LEN = 250; // Max length of BLE packet
+const BLE_PACKET_LEN = 240; // Max BLE attribute length is 512 but 240 gives best performance
 
 class NimBLESerial {
 	// Device to communicate over BLE using the Nordic Semiconductor UART service
