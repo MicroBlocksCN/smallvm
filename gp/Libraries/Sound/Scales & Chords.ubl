@@ -10,7 +10,7 @@ description 'Lists of relative semitone intervals for all Western diatonic scale
 
 It also includes intervals for the most common chords and progressions, and an abstraction of the circle of fifths.
 '
-variables _scales_degrees _scales_circle5ths
+variables _scales_degrees _scales_circle5ths 
 
   spec 'r' 'scale' '_ scale root _ : steps _' 'menu.scales num num' 'ionian' 60 7
   spec 'r' 'pentatonic scale' 'pentatonic _ scale root _ : steps _' 'menu.pentatonics num num' 'major' 60 7
@@ -75,11 +75,15 @@ to arpeggiate 'note list' order duration volume destination channel/pin {
     } else {
       local 'dur' duration
     }
-    if (destination == 'MIDI channel') {
-      'play MIDI note' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin volume
+    if ((at i order) == '0') {
+      waitMillis (dur - ((millisOp) - start))
     } else {
-      if (channel/pin != '') {_tonePin = channel/pin}
-      playMIDIKey (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1)
+      if (destination == 'MIDI channel') {
+        'play MIDI note' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin volume
+      } else {
+        if (channel/pin != '') {_tonePin = channel/pin}
+        playMIDIKey (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1)
+      }
     }
   }
 }
