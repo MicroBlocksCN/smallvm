@@ -53,7 +53,7 @@
   // object store is allocated from heap on ESP32
   #if defined(BLE_NUS_PRIMS)
 	#define OBJSTORE_BYTES 28000
-  #elif defined(OCTO_PRIMS) || defined(BLE_KEYBOARD)
+  #elif defined(OCTO_PRIMS) || defined(BLE_KEYBOARD) || defined(BLE_IDE)
     #define OBJSTORE_BYTES 48000
   #else
     #define OBJSTORE_BYTES 80000
