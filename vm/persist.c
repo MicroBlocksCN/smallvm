@@ -60,7 +60,7 @@
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
 			startAddr += pageSize;
 			#if defined(BLE_IDE)
-				delay(15);
+				delay(30);
 			#endif
 		}
 		NRF_NVMC->CONFIG = 0; // disable Flash erase
