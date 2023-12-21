@@ -39,6 +39,10 @@
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 22
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+	// Note: SDA and SCL are reversed from most other ESP32 boards!
+	#define PIN_WIRE_SCL 21
+	#define PIN_WIRE_SDA 25
 #elif !defined(PIN_WIRE_SCL)
 	#if defined(PIN_WIRE0_SCL)
 		#define PIN_WIRE_SCL PIN_WIRE0_SCL
