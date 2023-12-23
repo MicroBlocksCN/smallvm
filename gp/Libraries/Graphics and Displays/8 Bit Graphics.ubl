@@ -1,9 +1,11 @@
 module '8 Bit Graphics' Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 tags graphics 
 choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
-choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX 'RISC 2' grayscale 
+choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX Pico8 'RISC 2' grayscale 
+choices orthoRotations 0 90 180 270
+choices mirrorAxis horizontal vertical 'ascending diagonal' 'descending diagonal'
 description 'Provides a full 8-bit (and lower depth) framework to create retro-looking games and applications.
 
 By combining different scales and bit depths you can adapt your project to work on virtually any board.
@@ -22,9 +24,11 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette _bmpIsRGB565 
   spec 'r' 'bitmap from BMP file' 'bitmap from BMP file _' 'auto' '8bit.bmp'
   spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
   spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
+  space
+  spec 'r' 'rotated sprite' 'bitmap _ rotated _ º' 'auto menu.orthoRotations' 'aBitmap' 270
+  spec 'r' 'mirrored bitmap' 'bitmap _ mirrored across _ axis' 'auto menu.mirrorAxis' 'aBitmap' 'vertical'
+  space
   spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto num num' '' 10 20
-  spec ' ' 'merge2 tile' 'merge tile _ at tile position _ , _' 'auto auto auto' 'aBitmap' 1 2
-  spec ' ' 'merge3 tile' 'merge tile _ from _ , _ to _ , _' 'auto auto auto auto auto' 'aBitmap' 10 20 15 30
   space
   spec ' ' 'set palette' 'set palette _' 'auto' ''
   spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
@@ -43,6 +47,7 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette _bmpIsRGB565 
   spec 'r' '_8bit_4bit_Win & OS/2 palette' '_8bit_4bit_Win & OS/2 palette'
   spec 'r' '_8bit_4bit_grayscale palette' '_8bit_4bit_grayscale palette'
   spec 'r' '_8bit_4bit_MSX palette' '_8bit_4bit_MSX palette'
+  spec 'r' '_8bit_4bit_Pico8 palette' '_8bit_4bit_Pico8 palette'
   spec 'r' '_8bit_4bit_RISC 2 palette' '_8bit_4bit_RISC 2 palette'
   spec 'r' '_8bit_8bit_grayscale palette' '_8bit_8bit_grayscale palette'
   spec 'r' '_8bit_8bit_green hues palette' '_8bit_8bit_green hues palette'
@@ -58,6 +63,8 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette _bmpIsRGB565 
   spec 'r' '_bmp_readInt16' '_bmp read int16 file _' 'str' ''
   spec 'r' '_bmp_readInt32' '_bmp read int32 file _' 'str' ''
   spec ' ' '_bmp_alignLineData' '_bmp_alignLineData file _' 'auto' ''
+  spec ' ' 'merge3 tile' 'merge tile _ from _ , _ to _ , _' 'auto auto auto auto auto' 'aBitmap' 10 20 15 30
+  spec ' ' 'merge2 tile' 'merge tile _ at tile position _ , _' 'auto auto auto' 'aBitmap' 1 2
 
 to '4 bit palette' selector {
   return (callCustomReporter ('[data:join]' '_8bit_4bit_' selector ' palette'))
@@ -73,6 +80,10 @@ to '_8bit_4bit_CGA palette' {
 
 to '_8bit_4bit_MSX palette' {
   return ('[data:makeList]' (hexToInt '0') (hexToInt '010101') (hexToInt '3eb849') (hexToInt '74d07d') (hexToInt '5955e0') (hexToInt '8076f1') (hexToInt 'b95e51') (hexToInt '65dbef') (hexToInt 'db6559') (hexToInt 'ff897d') (hexToInt 'ccc35e') (hexToInt 'ded087') (hexToInt '3aa241') (hexToInt 'b766b5') (hexToInt 'cccccc') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_Pico8 palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '1d2b53') (hexToInt '7e2553') (hexToInt '008751') (hexToInt 'ab5236') (hexToInt '5f574f') (hexToInt 'c2c3c7') (hexToInt 'fff1e8') (hexToInt 'ff004d') (hexToInt 'ffa300') (hexToInt 'fff024') (hexToInt '00e756') (hexToInt '29adff') (hexToInt '83769c') (hexToInt 'ff77a8') (hexToInt 'ffccaa'))
 }
 
 to '_8bit_4bit_Machintosh II palette' {
@@ -327,6 +338,31 @@ to 'merge3 tile' bitmap x1 y1 x2 y2 {
   }
 }
 
+to 'mirrored bitmap' bitmap axis {
+  local 'bitmap width' (at 1 bitmap)
+  local 'index list' (at 2 bitmap)
+  local 'index length' (size (v 'index list'))
+  local 'new array' ('[data:newByteArray]' (v 'index length'))
+  if (axis == 'vertical') {
+    for i (v 'index length') {
+      atPut i (v 'new array') (at (((v 'index length') - (((((i - 1) / (v 'bitmap width')) + 1) * (v 'bitmap width')) - ((i - 1) % (v 'bitmap width')))) + 1) (v 'index list'))
+    }
+  } (axis == 'horizontal') {
+    for i (v 'index length') {
+      atPut i (v 'new array') (at (((((i - 1) / (v 'bitmap width')) + 1) * (v 'bitmap width')) - ((i - 1) % (v 'bitmap width'))) (v 'index list'))
+    }
+  } (axis == 'descending diagonal') {
+    for i (v 'index length') {
+      atPut i (v 'new array') (at (((((i - 1) * (v 'bitmap width')) + ((i - 1) / (v 'bitmap width'))) % (v 'index length')) + 1) (v 'index list'))
+    }
+  } (axis == 'ascending diagonal') {
+    for i (v 'index length') {
+      atPut i (v 'new array') (at ((v 'index length') - ((((i - 1) * (v 'bitmap width')) + ((i - 1) / (v 'bitmap width'))) % (v 'index length'))) (v 'index list'))
+    }
+  }
+  return ('[data:makeList]' (v 'bitmap width') (v 'new array'))
+}
+
 to 'palette from BMP file' filename {
   if ('_bmp_readHeader' filename) {return _bmpPalette}
 }
@@ -346,6 +382,31 @@ to rgb_to_color r g b {
   g = (maximum 0 (minimum g 255))
   b = (maximum 0 (minimum b 255))
   return (((r << 16) | (g << 8)) | b)
+}
+
+to 'rotated sprite' bitmap degs {
+  local 'bitmap width' (at 1 bitmap)
+  local 'index list' (at 2 bitmap)
+  local 'index length' (size (v 'index list'))
+  if ((degs % 360) == 0) {
+    return bitmap
+  } else {
+    local 'new array' ('[data:newByteArray]' (v 'index length'))
+    if ((absoluteValue (degs % 360)) == 180) {
+      for i (v 'index length') {
+        atPut ((v 'index length') - (i - 1)) (v 'new array') (at i (v 'index list'))
+      }
+    } ((degs % 360) == 90) {
+      for i (v 'index length') {
+        atPut i (v 'new array') (at (((v 'index length') - (((((i - 1) % (v 'bitmap width')) + 1) * (v 'bitmap width')) - ((i - 1) / (v 'bitmap width')))) + 1) (v 'index list'))
+      }
+    } ((degs % 360) == 270) {
+      for i (v 'index length') {
+        atPut i (v 'new array') (at (((((i - 1) % (v 'bitmap width')) + 1) * (v 'bitmap width')) - ((i - 1) / (v 'bitmap width'))) (v 'index list'))
+      }
+    }
+  }
+  return ('[data:makeList]' (v 'bitmap width') (v 'new array'))
 }
 
 to 'screen height' {
