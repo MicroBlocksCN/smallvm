@@ -3,9 +3,9 @@ author MicroBlocks
 version 1 4 
 tags graphics 
 choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
+choices mirrorAxis horizontal vertical 'ascending diagonal' 'descending diagonal' 
 choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX Pico8 'RISC 2' grayscale 
-choices orthoRotations 0 90 180 270
-choices mirrorAxis horizontal vertical 'ascending diagonal' 'descending diagonal'
+choices orthoRotations '0' '90' '180' '270' 
 description 'Provides a full 8-bit (and lower depth) framework to create retro-looking games and applications.
 
 By combining different scales and bit depths you can adapt your project to work on virtually any board.
@@ -38,6 +38,7 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette _bmpIsRGB565 
   spec 'r' '8 bit palette' '8 bit _ palette' 'menu.eightBitPalettes' 'MicroBlocks'
   spec 'r' 'rgb_to_color' 'color number for r _ g _ b _ (0-255)' 'num num num' 128 0 0
   spec ' ' 'draw palette table' 'draw palette table _' 'auto' ''
+  spec 'r' 'current palette' 'current palette'
   space
   spec 'r' 'screen width' 'screen width'
   spec 'r' 'screen height' 'screen height'
@@ -82,12 +83,12 @@ to '_8bit_4bit_MSX palette' {
   return ('[data:makeList]' (hexToInt '0') (hexToInt '010101') (hexToInt '3eb849') (hexToInt '74d07d') (hexToInt '5955e0') (hexToInt '8076f1') (hexToInt 'b95e51') (hexToInt '65dbef') (hexToInt 'db6559') (hexToInt 'ff897d') (hexToInt 'ccc35e') (hexToInt 'ded087') (hexToInt '3aa241') (hexToInt 'b766b5') (hexToInt 'cccccc') (hexToInt 'ffffff'))
 }
 
-to '_8bit_4bit_Pico8 palette' {
-  return ('[data:makeList]' (hexToInt '0') (hexToInt '1d2b53') (hexToInt '7e2553') (hexToInt '008751') (hexToInt 'ab5236') (hexToInt '5f574f') (hexToInt 'c2c3c7') (hexToInt 'fff1e8') (hexToInt 'ff004d') (hexToInt 'ffa300') (hexToInt 'fff024') (hexToInt '00e756') (hexToInt '29adff') (hexToInt '83769c') (hexToInt 'ff77a8') (hexToInt 'ffccaa'))
-}
-
 to '_8bit_4bit_Machintosh II palette' {
   return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'fcf400') (hexToInt 'ff6400') (hexToInt 'dd0202') (hexToInt 'f10285') (hexToInt '4600a6') (hexToInt 'd5') (hexToInt 'aee9') (hexToInt '1ab90c') (hexToInt '6408') (hexToInt '582800') (hexToInt '917135') (hexToInt 'c1c1c1') (hexToInt '818181') (hexToInt '3e3e3e') (hexToInt '0'))
+}
+
+to '_8bit_4bit_Pico8 palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '1d2b53') (hexToInt '7e2553') (hexToInt '008751') (hexToInt 'ab5236') (hexToInt '5f574f') (hexToInt 'c2c3c7') (hexToInt 'fff1e8') (hexToInt 'ff004d') (hexToInt 'ffa300') (hexToInt 'fff024') (hexToInt '00e756') (hexToInt '29adff') (hexToInt '83769c') (hexToInt 'ff77a8') (hexToInt 'ffccaa'))
 }
 
 to '_8bit_4bit_RISC 2 palette' {
@@ -285,6 +286,10 @@ to 'clear display' {
   '[display:mbDisplayOff]'
 }
 
+to 'current palette' {
+  return _8bit_palette
+}
+
 to 'draw buffer' 'region x' 'region y' width height {
   if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
   if ((pushArgCount) < 1) {
@@ -410,10 +415,12 @@ to 'rotated sprite' bitmap degs {
 }
 
 to 'screen height' {
+  if (_8bit_scale == 0) {'set scale _' 2}
   return (('[tft:getHeight]') / _8bit_scale)
 }
 
 to 'screen width' {
+  if (_8bit_scale == 0) {'set scale _' 2}
   return (('[tft:getWidth]') / _8bit_scale)
 }
 
