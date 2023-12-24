@@ -307,7 +307,7 @@ to 'draw palette table' palette {
     return 0
   }}
   local 'side' ('_sqrt _' (size palette))
-  local 'width' (('[tft:getWidth]') / side)
+  local 'width' (minimum (('[tft:getHeight]') / side) (('[tft:getWidth]') / side))
   for y side {
     for x side {
       local 'index' (((y - 1) * side) + x)
