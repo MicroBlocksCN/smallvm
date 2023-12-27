@@ -51,10 +51,8 @@
   #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
 #elif defined(ARDUINO_ARCH_ESP32)
   // object store is allocated from heap on ESP32
-  #if defined(BLE_NUS_PRIMS)
+  #if defined(USE_NIMBLE)
 	#define OBJSTORE_BYTES 28000
-  #elif defined(OCTO_PRIMS) || defined(BLE_KEYBOARD)
-    #define OBJSTORE_BYTES 48000
   #else
     #define OBJSTORE_BYTES 80000
   #endif
