@@ -182,16 +182,17 @@ function initGPEventHandlers() {
 			if (evt.keyIdentifier.startsWith('U+')) {
 				charCode = parseInt(evt.keyIdentifier.substring(2), 16);
 			}
-		} else if (evt.key && evt.key.charCodeAt) { // Chrome, Firefox
+		} else if (evt.key && evt.key.charCodeAt && (evt.key.length == 1)) { // Chrome, Firefox
 			if (evt.key.length == 1) {
 				charCode = evt.key.charCodeAt(0);
 			}
 		}
 		if (0 == charCode) {
-			if (8 == evt.keyCode) charCode = 8; // delete
+			if (8 == evt.keyCode) charCode = 8; // backspace key
 			if (9 == evt.keyCode) charCode = 9; // tab
 			if (13 == evt.keyCode) charCode = 13; // enter
 			if (27 == evt.keyCode) charCode = 27; // escape
+			if (46 == evt.keyCode) charCode = 8; // map delete key to backspace
 		}
 		if ((65 <= charCode) && (charCode <= 90) && !evt.shiftKey) charCode += 32; // lowercase
 
@@ -242,9 +243,10 @@ function initGPEventHandlers() {
 			GP.events.push([TEXTINPUT, key]); // suppress, but do generate a textinput event
 			evt.preventDefault();
 		}
-		if (8 == key) evt.preventDefault(); // delete
+		if (8 == key) evt.preventDefault(); // backspace key
 		if ((33 <= evt.which) && (evt.which <= 36)) evt.preventDefault(); // home, end, page up/down keys
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
+		if (46 == key) evt.preventDefault(); // delete key
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
 			// special case for ctrl/cmd-C, ctrl/cmd-V, and ctrl/cmd-X  (copy, paste, cut)
