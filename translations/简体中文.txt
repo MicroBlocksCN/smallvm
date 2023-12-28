@@ -229,7 +229,7 @@ New variable name?
 新变量的名字是？
 
 set _ to _
-把 _ 设定为 _
+把 _ 设为 _
 
 change _ by _
 把 _ 增加 _
