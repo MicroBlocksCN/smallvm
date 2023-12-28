@@ -13,7 +13,7 @@ var filesToCache = [
   '/run/gp_wasm.wasm',
   // '/run/gp_wasm.data',
   // use cloud file for speeding up
-  'https://scratch3-files.just4fun.site/gp_wasm-1-2-5.data',
+  // 'https://scratch3-files.just4fun.site/gp_wasm-1-2-5.data',
 ];
 
 self.addEventListener('install', function(e) {

@@ -235,7 +235,7 @@ change _ by _
 把 _ 增加 _
 
 initialize local _ to _
-将本地的 _ 初始化为 _
+将局部变量 _ 初始化为 _
 
 Data
 数据
