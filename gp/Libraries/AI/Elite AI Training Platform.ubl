@@ -1,0 +1,18 @@
+module 'Elite AI Training Platform'
+author yinxi
+version 1 1 
+description 'work with https://trainv2.aimaker.space and wireless programming firmware: https://wwj718.github.io/post/%E7%BC%96%E7%A8%8B/microblocks-wireless-programming '
+
+  spec 'r' 'class' 'class _ > probability _ %' 'auto num' '石头' 80
+
+to class object_class probability {
+  if ((getLastBroadcast) != 0) {
+    local 'last_message' ('[misc:jsonGet]' (getLastBroadcast) object_class)
+    if (last_message > probability) {
+      return (booleanConstant true)
+    }
+  } else {
+    return (booleanConstant false)
+  }
+}
+
