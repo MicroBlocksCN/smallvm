@@ -3253,6 +3253,14 @@ turn off display
 turn on display
 打开屏幕
 
+#### Elite AI Training Platform
+
+Elite AI Training Platform
+英荔 AI 训练平台
+
+class _ > probability _ %
+类别 _ > 概率 _ %
+
 ##################
 # MicroBlocks UI #
 ##################
