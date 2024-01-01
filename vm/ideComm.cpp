@@ -12,25 +12,28 @@
 #include "mem.h"
 #include "interp.h"
 
+int BLE_Enabled = false;
+
 #if defined(BLE_IDE)
 
 // BLE Communications
 
 #include <NimBLEDevice.h>
 
+// BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
+// INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
+#define BLE_SEND_MAX 250
+#define INTER_SEND_TIME 20
+
 static BLEServer *pServer = NULL;
 static BLEService *pService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
 static char uniqueName[32];
-static int serviceOnline = false;
+static bool serviceOnline = false;
 static bool bleConnected = false;
 static uint16_t connID = -1;
 
-// BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
-// INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
-#define BLE_SEND_MAX 250
-#define INTER_SEND_TIME 20
 static uint32 lastSendTime = 0;
 static int lastRC = 0;
 
@@ -176,7 +179,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // Start BLE
 
-void startBLE_UART() {
+void startBLE() {
 	// Create BLE Device
 	initName();
 	BLEDevice::init(uniqueName);
@@ -204,7 +207,13 @@ void startBLE_UART() {
 	pServer->getAdvertising()->setName(uniqueName);
 	pServer->getAdvertising()->start();
 	serviceOnline = true;
+	BLE_Enabled = true;
 	Serial.println("MicroBlocks BLE Started");
+}
+
+void stopBLE() {
+	BLEDevice::deinit();
+	BLE_Enabled = false;
 }
 
 int recvBytes(uint8 *buf, int count) {

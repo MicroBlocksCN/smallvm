@@ -32,7 +32,7 @@ static int receivedMessageType = -1;
 static int receivedInteger = 0;
 static char receivedString[20];
 
-#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
+#if (defined(NRF51) || defined(NRF52))
 
 #if defined(NRF51)
 	#include <nrf51.h>
@@ -124,7 +124,7 @@ static void initializeRadio() {
 
 // Radio Interrupt Handler
 
-void RADIO_IRQHandler(void) {
+void MB_RADIO_IRQHandler(void) {
 	if (NRF_RADIO->EVENTS_READY) {
 		// READY event: start the receiver and wait for the END event
 
@@ -460,7 +460,33 @@ static OBJ primDeviceID(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
-static OBJ primReceivedInteger() {
+#if defined(USE_NIMBLE)
+
+#include <NimBLEDevice.h>
+
+static OBJ primEnableBLE(int argCount, OBJ *args) {
+	if (argCount < 1) return falseObj;
+	if (args[0] == trueObj) {
+		startBLE();
+	} else {
+		stopBLE();
+		ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
+	}
+	return falseObj;
+}
+
+#else
+
+// In the Nimble configuration, the interrupt handler is switched between Nimble and
+// the MicroBlocks radio hander using ble_npl_hw_set_isr().
+// In the non-Nimble configuration, RADIO_IRQHandler alwayss call MB_RADIO_IRQHandler.
+void RADIO_IRQHandler(void) { MB_RADIO_IRQHandler(); }
+
+static OBJ primEnableBLE(int argCount, OBJ *args) { return falseObj; }
+
+#endif // USE_NIMBLE
+
+static OBJ primReceivedInteger(int argCount, OBJ *args) {
 	return int2obj(receivedInteger);
 }
 
@@ -476,7 +502,7 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 	return newStringFromBytes(s, strlen(s));
 }
 
-static OBJ primReceivedString() {
+static OBJ primReceivedString(int argCount, OBJ *args) {
 	return newStringFromBytes(receivedString, strlen(receivedString));
 }
 
@@ -510,6 +536,7 @@ static PrimEntry entries[] = {
 	{"signalStrength", primSignalStrength},
 	{"deviceID", primDeviceID},
 	{"lastMessageID", primMessageSenderID},
+	{"enableBLE", primEnableBLE},
 };
 
 void addRadioPrims() {
