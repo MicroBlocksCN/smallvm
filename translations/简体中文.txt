@@ -973,7 +973,7 @@ fract _ / _
 fract _ + _
 分数 _ + _
 
-fract _ - _
+fract _ − _
 分数 _ - _
 
 fract _ × _
