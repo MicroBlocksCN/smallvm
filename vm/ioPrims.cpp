@@ -635,6 +635,22 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(QIANKUN)
+	#define BOARD_TYPE "QIANKUN"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED 12
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 2
+	#define DEFAULT_TONE_PIN 16
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
 #elif defined(COCOROBO)
 	#define BOARD_TYPE "cocorobo"
 	#define DIGITAL_PINS 40
@@ -679,48 +695,22 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-	#define BOARD_TYPE "ESP32-S3"
-	#define DIGITAL_PINS 49
-	#define ANALOG_PINS 20
-	#define TOTAL_PINS 49
+#elif defined(FUTURE_LITE)
+	#define BOARD_TYPE "FUTURE-LITE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 50
 	static const int analogPin[] = {};
-	#ifdef BUILTIN_LED
-		#define PIN_LED BUILTIN_LED
-	#else
-		#define PIN_LED 2
-	#endif
-	#if !defined(PIN_BUTTON_A)
-		#if defined(KEY_BUILTIN)
-			#define PIN_BUTTON_A KEY_BUILTIN
-		#else
-			#define PIN_BUTTON_A 0
-		#endif
-	#endif
-	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
-	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
-	// USB pins: 19 (USB D-), 20 (USB D+)
-	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
-		1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-		1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 1, 1, 0, 0};
-
-#elif defined(AIRM2MC3)
-	#define BOARD_TYPE "airm2m_core_esp32c3"
-	#define DIGITAL_PINS 22
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 22
-	static const int analogPin[] = {0, 1, 2, 3, 4};
-	#define PIN_LED 12
-	#define PIN_BUTTON_A 9
+	#define PIN_LED 10
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 16
+	#define DEFAULT_TONE_PIN 8
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
-		1, 1};
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
