@@ -695,6 +695,22 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(QIANKUN)
+	#define BOARD_TYPE "QIANKUN"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED 12
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 2
+	#define DEFAULT_TONE_PIN 16
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
 #elif defined(COCOROBO)
 	#define BOARD_TYPE "cocorobo"
 	#define DIGITAL_PINS 40
@@ -739,85 +755,22 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(ESP32_S2)
-	#define BOARD_TYPE "ESP32-S2"
-	#define DIGITAL_PINS 48
-	#define ANALOG_PINS 20
-	#define TOTAL_PINS 48
+#elif defined(FUTURE_LITE)
+	#define BOARD_TYPE "FUTURE-LITE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 50
 	static const int analogPin[] = {};
-	#ifdef LED_BUILTIN
-		#define PIN_LED LED_BUILTIN
-	#elif !defined(PIN_LED)
-		#define PIN_LED -1
-	#endif
-	#if !defined(PIN_BUTTON_A)
-		#if defined(KEY_BUILTIN)
-			#define PIN_BUTTON_A KEY_BUILTIN
-		#else
-			#define PIN_BUTTON_A 0
-		#endif
-	#endif
-	// See https://docs.espressif.com/projects/esp-idf/en/stable/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html
-	// strapping pins 0 (Boot), 45 (VSPI), 46 (LOG)
-	// USB pins: 19 (USB D-), 20 (USB D+)
-	static const char reservedPin[TOTAL_PINS] = {
-		1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0};
-
-#elif defined(ESP32_S3)
-	#define BOARD_TYPE "ESP32-S3"
-	#define DIGITAL_PINS 49
-	#define ANALOG_PINS 20
-	#define TOTAL_PINS 49
-	static const int analogPin[] = {};
-	#ifdef LED_BUILTIN
-		#define PIN_LED LED_BUILTIN
-	#elif !defined(PIN_LED)
-		#define PIN_LED -1
-	#endif
-	#if !defined(PIN_BUTTON_A)
-		#if defined(KEY_BUILTIN)
-			#define PIN_BUTTON_A KEY_BUILTIN
-		#else
-			#define PIN_BUTTON_A 0
-		#endif
-	#endif
-	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
-	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
-	// USB pins: 19 (USB D-), 20 (USB D+)
-	// also possibly: 39-42 (JTAG pins)
+	#define PIN_LED 10
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 16
+	#define DEFAULT_TONE_PIN 8
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 0, 0, 0, 0};
-
-#elif defined(ESP32_C3)
-	#define BOARD_TYPE "ESP32-C3"
-	#define DIGITAL_PINS 20
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 20
-	static const int analogPin[] = {};
-	#ifdef LED_BUILTIN
-		#define PIN_LED LED_BUILTIN
-	#elif !defined(PIN_LED)
-		#define PIN_LED -1
-	#endif
-	#if !defined(PIN_BUTTON_A)
-		#if defined(KEY_BUILTIN)
-			#define PIN_BUTTON_A KEY_BUILTIN
-		#else
-			#define PIN_BUTTON_A 0
-		#endif
-	#endif
-	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
