@@ -27,7 +27,7 @@ static int deferUpdates = false;
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64)
+	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE)
 
 	#define BLACK 0
 
@@ -113,7 +113,7 @@ static int deferUpdates = false;
 			digitalWrite(32, HIGH);
 			useTFT = true;
 		}
-
+	
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
@@ -611,6 +611,28 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
+	
+	#elif defined(FUTURE_LITE)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_MOSI 48
+		#define TFT_SCLK 45
+		#define TFT_CS	46
+		#define TFT_DC	12
+		#define TFT_RST	-1
+		#define TFT_BL 10
+		#define TFT_WIDTH 160
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_BLACKTAB);
+			tft.setRotation(3);
+			tftClear();
+			useTFT = true;
+		}
+
 
 	#elif defined(PICO_ED)
 		#include <Adafruit_GFX.h>
@@ -876,6 +898,9 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	#if defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);
 		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
+	#elif defined(FUTURE_LITE)
+		pinMode(TFT_BL, OUTPUT);
+		digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
 	#elif defined(ARDUINO_M5Stack_Core_ESP32)
 		pinMode(32, OUTPUT);
 		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
