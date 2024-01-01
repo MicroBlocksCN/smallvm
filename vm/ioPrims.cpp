@@ -119,7 +119,7 @@ void hardwareInit() {
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
 	#if defined(BLE_IDE)
-		startBLE_UART();
+		startBLE();
 	#endif
 }
 

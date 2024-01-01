@@ -258,10 +258,6 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
-void getMACAddress(uint8 *sixBytes);
-void startBLE_UART();
-int ideConnected();
-
 int recvBytes(uint8 *buf, int count);
 int sendBytes(uint8 *buf, int start, int end);
 void restartSerial();
@@ -346,6 +342,15 @@ void tftInit();
 void tftClear();
 void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
+
+// BLE Support
+
+extern int BLE_Enabled;
+
+void startBLE();
+void stopBLE();
+void getMACAddress(uint8 *sixBytes);
+int ideConnected();
 
 // Primitive Sets
 
