@@ -612,6 +612,22 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(QIANKUN)
+	#define BOARD_TYPE "QIANKUN"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED 12
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 2
+	#define DEFAULT_TONE_PIN 16
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
 #elif defined(COCOROBO)
 	#define BOARD_TYPE "cocorobo"
 	#define DIGITAL_PINS 40
@@ -655,6 +671,23 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
+#elif defined(FUTURE_LITE)
+	#define BOARD_TYPE "FUTURE-LITE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 50
+	static const int analogPin[] = {};
+	#define PIN_LED 10
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 16
+	#define DEFAULT_TONE_PIN 8
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
