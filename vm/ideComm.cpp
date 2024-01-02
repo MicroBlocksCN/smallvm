@@ -12,7 +12,7 @@
 #include "mem.h"
 #include "interp.h"
 
-int BLE_Running = false;
+int BLE_connected_to_IDE = false;
 
 #if defined(BLE_IDE)
 
@@ -30,8 +30,8 @@ static BLEService *pService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
 static char uniqueName[32];
+static bool bleRunning = false;
 static bool serviceOnline = false;
-static bool bleConnected = false;
 static uint16_t connID = -1;
 
 static uint32 lastSendTime = 0;
@@ -97,12 +97,13 @@ static int gotSerialPing() {
 }
 
 static void updateConnectionMode() {
-	if (bleConnected) {
+	if (BLE_connected_to_IDE) {
 		if (gotSerialPing()) {
 			// new serial connection; disconnect BLE
-			pServer->disconnect(connID);
+			if (connID != -1) { pServer->disconnect(connID); }
+			connID = -1;
 			pServer->removeService(pService);
-			bleConnected = false;
+			BLE_connected_to_IDE = false;
 			serviceOnline = false;
 			return;
 		}
@@ -152,12 +153,12 @@ class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		pServer->getAdvertising()->stop(); // don't advertise while connected
 		connID = desc->conn_handle;
-		bleConnected = true;
+		BLE_connected_to_IDE = true;
 	}
 	void onDisconnect(BLEServer* pServer) {
 		pServer->getAdvertising()->start(); // restart advertising
 		connID = -1;
-		bleConnected = false;
+		BLE_connected_to_IDE = false;
 	}
 };
 
@@ -179,7 +180,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 // Start BLE
 
 void startBLE() {
-	if (BLE_Running) return; // BLE already running
+	if (bleRunning) return; // BLE already running
 
 	// Create BLE Device
 	initName();
@@ -208,14 +209,15 @@ void startBLE() {
 	pServer->getAdvertising()->setName(uniqueName);
 	pServer->getAdvertising()->start();
 	serviceOnline = true;
-	BLE_Running = true;
+	bleRunning = true;
 }
 
 void stopBLE() {
-	if (!BLE_Running) return; // BLE already stopped
+	if (!bleRunning) return; // BLE already stopped
 
-	if (bleConnected) { pServer->disconnect(connID); }
-	bleConnected = false;
+	if (connID != -1) { pServer->disconnect(connID); }
+	connID = -1;
+	BLE_connected_to_IDE = false;
 	serviceOnline = false;
 
 	pServer->getAdvertising()->stop();
@@ -227,7 +229,7 @@ void stopBLE() {
 	pTxCharacteristic = NULL;
 	pRxCharacteristic = NULL;
 
-	BLE_Running = false;
+	bleRunning = false;
 }
 
 int recvBytes(uint8 *buf, int count) {
@@ -235,7 +237,7 @@ int recvBytes(uint8 *buf, int count) {
 
 	updateConnectionMode();
 
-	if (!bleConnected) { // no BLE connection; use Serial
+	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
 		bytesRead = Serial.available();
 		if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
 		return Serial.readBytes((char *) buf, bytesRead);
@@ -260,7 +262,7 @@ int recvBytes(uint8 *buf, int count) {
 int sendBytes(uint8 *buf, int start, int end) {
 	// Send bytes buf[start] through buf[end - 1] and return the number of bytes sent.
 
-	if (!bleConnected) { // no BLE connection; use Serial
+	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
 		return Serial.write(&buf[start], end - start);
 	}
 

@@ -196,6 +196,7 @@ extern int extraByteDelay;
 #define cannotConvertToByteArray 47	// Cannot convert that to a byte array
 #define unknownDatatype			48	// Unknown datatype
 #define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
+#define cannotUseRadioWithBLE	50	// Cannot use radio blocks when board connected to IDE via Bluetooth
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
@@ -258,6 +259,7 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
+int ideConnected();
 int recvBytes(uint8 *buf, int count);
 int sendBytes(uint8 *buf, int start, int end);
 void restartSerial();
@@ -345,12 +347,11 @@ void tftSetHugePixelBits(int bits);
 
 // BLE Support
 
-extern int BLE_Running;
+extern int BLE_connected_to_IDE;
 
 void startBLE();
 void stopBLE();
 void getMACAddress(uint8 *sixBytes);
-int ideConnected();
 
 // Primitive Sets
 

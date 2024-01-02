@@ -42,6 +42,10 @@ static char receivedString[20];
 	#include <nrf52_bitfields.h>
 #endif
 
+#if defined(USE_NIMBLE)
+	#include <NimBLEDevice.h>
+#endif
+
 #define PACKET_SIZE 32
 #define MAX_PACKETS 4 // number of packets in the receive buffer; must be a power of 2
 static uint8_t receiveBuffer[MAX_PACKETS * PACKET_SIZE];
@@ -68,17 +72,22 @@ static void startReceiving() {
 }
 
 static void disableRadio() {
+	// Turn off the radio hardware (either trasmit or receive mode).
 	NVIC_DisableIRQ(RADIO_IRQn);
 	NRF_RADIO->EVENTS_DISABLED = 0;
 	NRF_RADIO->TASKS_DISABLE = 1;
 	while (NRF_RADIO->EVENTS_DISABLED == 0);
 }
 
+static void MB_RADIO_IRQHandler(void); // forward reference
+
 static void initializeRadio() {
 	// Set up the Nordic radio for peer-to-peer communication.
 	// The radio configuration is interoperable with the micro:bit DAL radio commands.
 
 	if (radioInitialized) return;
+	stopBLE();
+	ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
 
 	// start high-frequency clock, needed by the radio
 	NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
@@ -86,7 +95,7 @@ static void initializeRadio() {
 	while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 
 	// start radio with default power, frequency, and bitrate.
-	NRF_RADIO->TXPOWER = 0;
+	NRF_RADIO->TXPOWER = 0; // level 6 = 0 dB
 	NRF_RADIO->FREQUENCY = 7;
 	NRF_RADIO->MODE = RADIO_MODE_MODE_Nrf_1Mbit;
 
@@ -125,7 +134,7 @@ outputString("radioInitialized"); // xxx
 
 // Radio Interrupt Handler
 
-void MB_RADIO_IRQHandler(void) {
+static void MB_RADIO_IRQHandler(void) {
 	if (NRF_RADIO->EVENTS_READY) {
 		// READY event: start the receiver and wait for the END event
 
@@ -151,6 +160,14 @@ void MB_RADIO_IRQHandler(void) {
 		NRF_RADIO->TASKS_START = 1;
 	}
 }
+
+#if !defined(USE_NIMBLE)
+	// In the Nimble configuration, the interrupt handler is switched between Nimble and
+	// the MicroBlocks radio hander using ble_npl_hw_set_isr().
+	// In the non-Nimble configuration, this RADIO_IRQHandler always calls MB_RADIO_IRQHandler.
+
+	void RADIO_IRQHandler(void) { MB_RADIO_IRQHandler(); }
+#endif
 
 // Radio Functions
 
@@ -311,7 +328,6 @@ static void initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int pack
 void resetRadio() {
 	// called by softReset to restore radio defaults
 
-	if (BLE_Running) return;
 	if (!radioInitialized) return; // do nothing if radio has not been initialized
 
 	setChannel(7);
@@ -323,15 +339,16 @@ void resetRadio() {
 // primitives
 
 static OBJ primDisableRadio(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (!radioInitialized) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
-	if (radioInitialized) disableRadio();
+	disableRadio();
 	radioInitialized = false;
 	return falseObj;
 }
 
 static OBJ primMessageReceived(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	return receiveMakeCodeMessage() ? trueObj : falseObj;
 }
@@ -340,7 +357,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
@@ -360,7 +377,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
@@ -375,7 +392,7 @@ static OBJ primPacketSend(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		int n = obj2int(args[0]);
@@ -391,7 +408,7 @@ static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 1) && IS_TYPE(args[0], StringType) && isInt(args[1])) {
 		char *s = obj2str(args[0]);
@@ -414,7 +431,7 @@ static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], StringType)) {
 		char *s = obj2str(args[0]);
@@ -432,7 +449,7 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
 }
 
 static OBJ primSetChannel(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setChannel(obj2int(args[0]));
@@ -441,7 +458,7 @@ static OBJ primSetChannel(int argCount, OBJ *args) {
 }
 
 static OBJ primSetGroup(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setGroup(obj2int(args[0]));
@@ -450,7 +467,7 @@ static OBJ primSetGroup(int argCount, OBJ *args) {
 }
 
 static OBJ primSetPower(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setPower(obj2int(args[0]));
@@ -469,7 +486,7 @@ static OBJ primDeviceID(int argCount, OBJ *args) {
 // stubs
 
 void resetRadio() { }
-void MB_RADIO_IRQHandler(void) { }
+static void MB_RADIO_IRQHandler(void) { }
 
 static OBJ primDisableRadio(int argCount, OBJ *args) { return falseObj; }
 static OBJ primMessageReceived(int argCount, OBJ *args) { return falseObj; }
@@ -485,42 +502,16 @@ static OBJ primDeviceID(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
-#if defined(USE_NIMBLE)
-
-#include <NimBLEDevice.h>
-
-static OBJ primEnableBLE(int argCount, OBJ *args) {
-	if (argCount < 1) return falseObj;
-	if (args[0] == trueObj) {
-		startBLE();
-outputString("BLE Started");
-	} else {
-		stopBLE();
-		ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
-outputString("BLE Stopped");
-	}
-	return falseObj;
-}
-
-#else
-
-// In the Nimble configuration, the interrupt handler is switched between Nimble and
-// the MicroBlocks radio hander using ble_npl_hw_set_isr().
-// In the non-Nimble configuration, RADIO_IRQHandler alwayss call MB_RADIO_IRQHandler.
-void RADIO_IRQHandler(void) { MB_RADIO_IRQHandler(); }
-
-static OBJ primEnableBLE(int argCount, OBJ *args) { return falseObj; }
-
-#endif // USE_NIMBLE
+// Additional Primitives
 
 static OBJ primReceivedInteger(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	return int2obj(receivedInteger);
 }
 
 static OBJ primReceivedMessageType(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	const char *s = "other";
 	if (-1 == receivedMessageType) s = "none";
@@ -534,7 +525,7 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 }
 
 static OBJ primReceivedString(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	return newStringFromBytes(receivedString, strlen(receivedString));
 }
@@ -543,12 +534,12 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 	// Return the signal strength (RSSI) of the most recently received packet.
 	// Values are negative, with higher values for stronger signals.
 
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 	return int2obj(radioSignalStrength);
 }
 
 static OBJ primMessageSenderID(int argCount, OBJ *args) {
-	if (BLE_Running) return falseObj;
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
 
 	char s[10];
 	sprintf(s, "%08x", receivedMessageSenderID);
@@ -572,7 +563,6 @@ static PrimEntry entries[] = {
 	{"signalStrength", primSignalStrength},
 	{"deviceID", primDeviceID},
 	{"lastMessageID", primMessageSenderID},
-	{"enableBLE", primEnableBLE},
 };
 
 void addRadioPrims() {
