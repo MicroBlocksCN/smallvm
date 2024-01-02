@@ -817,24 +817,15 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
-#elif defined(MATRIXBIT)
-	#define BOARD_TYPE "Matrix:bit"
-	#define DIGITAL_PINS 40
-	#define ANALOG_PINS 16
-	#define TOTAL_PINS 40
-	static const int analogPin[] = {};
-	#define PIN_LED 12
-	#define PIN_BUTTON_A 0
-	#define PIN_BUTTON_B 2
-	#define DEFAULT_TONE_PIN 16
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(QIANKUN)
-	#define BOARD_TYPE "QIANKUN"
+#elif defined(ARDUINO_Labplus_mPython)
+	#if defined(MATRIXBIT)
+		#define BOARD_TYPE "Matrix Bit"	
+	#elif defined(QIANKUN)
+		#define BOARD_TYPE "QIAN KUN"	
+	#else
+		#define BOARD_TYPE "Labplus mPython"
+	#endif
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
@@ -843,6 +834,8 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 0
 	#define PIN_BUTTON_B 2
 	#define DEFAULT_TONE_PIN 16
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
