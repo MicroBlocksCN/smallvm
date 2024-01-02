@@ -897,6 +897,8 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 16
 	#define DEFAULT_TONE_PIN 8
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
