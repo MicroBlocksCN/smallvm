@@ -460,7 +460,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		lightLevel = lightLevel;
 	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;
-	#elif defined(MATRIXBIT) || defined(COCOROBO)
+	#elif defined(ARDUINO_Labplus_mPython) || defined(COCOROBO)
 		lightLevel = analogRead(39) * 1000 / 4095;
 	#elif defined(DATABOT)
 		const char *msg = "Use 'Light & Gesture' library on Databot.";
