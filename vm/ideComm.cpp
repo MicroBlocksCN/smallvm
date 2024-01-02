@@ -12,7 +12,7 @@
 #include "mem.h"
 #include "interp.h"
 
-int BLE_Enabled = false;
+int BLE_Running = false;
 
 #if defined(BLE_IDE)
 
@@ -78,7 +78,6 @@ static void initName() {
 	uniqueName[i-1] = 65 + (machineNum % 26);
 	machineNum = machineNum / 26;
 	uniqueName[i-2] = 65 + (machineNum % 26);
-	Serial.println(uniqueName);
 }
 
 static int gotSerialPing() {
@@ -180,6 +179,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 // Start BLE
 
 void startBLE() {
+	if (BLE_Running) return; // BLE already running
+
 	// Create BLE Device
 	initName();
 	BLEDevice::init(uniqueName);
@@ -207,13 +208,26 @@ void startBLE() {
 	pServer->getAdvertising()->setName(uniqueName);
 	pServer->getAdvertising()->start();
 	serviceOnline = true;
-	BLE_Enabled = true;
-	Serial.println("MicroBlocks BLE Started");
+	BLE_Running = true;
 }
 
 void stopBLE() {
+	if (!BLE_Running) return; // BLE already stopped
+
+	if (bleConnected) { pServer->disconnect(connID); }
+	bleConnected = false;
+	serviceOnline = false;
+
+	pServer->getAdvertising()->stop();
+	pServer->removeService(pService);
 	BLEDevice::deinit();
-	BLE_Enabled = false;
+
+	pServer = NULL;
+	pService = NULL;
+	pTxCharacteristic = NULL;
+	pRxCharacteristic = NULL;
+
+	BLE_Running = false;
 }
 
 int recvBytes(uint8 *buf, int count) {

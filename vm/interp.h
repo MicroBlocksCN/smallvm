@@ -345,7 +345,7 @@ void tftSetHugePixelBits(int bits);
 
 // BLE Support
 
-extern int BLE_Enabled;
+extern int BLE_Running;
 
 void startBLE();
 void stopBLE();
