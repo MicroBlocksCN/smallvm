@@ -1831,6 +1831,7 @@ method errorString SmallRuntime errID {
 #define cannotConvertToByteArray 47	// Cannot convert that to a byte array
 #define unknownDatatype			48	// Unknown datatype
 #define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
+#define cannotUseRadioWithBLE	50	// Cannot use radio blocks when board connected to IDE via Bluetooth
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
