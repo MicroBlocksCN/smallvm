@@ -80,6 +80,36 @@ static void initName() {
 	uniqueName[i-2] = 65 + (machineNum % 26);
 }
 
+
+static void displayFor(int msecs) {
+	uint32 endMSecs = millisecs() + msecs;
+	while (millisecs() < endMSecs) {
+		processMessage();
+		updateMicrobitDisplay();
+		delay(1);
+	}
+}
+
+static void show_BLE_ID() {
+	OBJ args[5]; // used to call primitives
+
+	int nameLen = strlen(uniqueName);
+	for (int iters = 0; iters < 2; iters++) {
+		for (int i = nameLen - 4; i < nameLen; i++) {
+			args[0] = newStringFromBytes(&uniqueName[i], 1);
+			OBJ letterShape = primMBShapeForLetter(1, args);
+
+			args[0] = letterShape;
+			args[1] = int2obj(1);
+			args[2] = int2obj(1);
+			primMBDrawShape(3, args);
+			displayFor(400);
+		}
+		primMBDisplayOff(0, args);
+		displayFor(300);
+	}
+}
+
 static int gotSerialPing() {
 	char buf[20];
 	int byteCount = Serial.available();
@@ -177,7 +207,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 	}
 };
 
-// Start BLE
+// Start/Stop BLE
 
 void startBLE() {
 	if (bleRunning) return; // BLE already running
@@ -210,6 +240,7 @@ void startBLE() {
 	pServer->getAdvertising()->start();
 	serviceOnline = true;
 	bleRunning = true;
+	show_BLE_ID();
 }
 
 void stopBLE() {
