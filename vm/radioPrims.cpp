@@ -129,7 +129,6 @@ static void initializeRadio() {
 
 	startReceiving();
 	radioInitialized = true;
-outputString("radioInitialized"); // xxx
 }
 
 // Radio Interrupt Handler

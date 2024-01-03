@@ -12,9 +12,12 @@ void setup() {
 #ifdef ARDUINO_NRF52_PRIMO
 	sd_softdevice_disable();
 #endif
-	hardwareInit();
 	memInit();
 	primsInit();
+	hardwareInit();
+	#if defined(BLE_IDE)
+		startBLE();
+	#endif
 	outputString((char *) "Welcome to MicroBlocks!");
 	restoreScripts();
 	startAll();
