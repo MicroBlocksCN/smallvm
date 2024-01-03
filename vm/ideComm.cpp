@@ -170,7 +170,7 @@ static int bleSendData(uint8_t *data, int byteCount) {
 	if (byteCount > BLE_SEND_MAX) byteCount = BLE_SEND_MAX;
 	lastRC = 0; // will be set to non-zero if notify() call fails
 	pTxCharacteristic->setValue(data, byteCount);
-	pTxCharacteristic->notify();
+	pTxCharacteristic->indicate();
 	if (lastRC != 0) {
 		byteCount = 0; // write+notify failed; retry later
 	}
