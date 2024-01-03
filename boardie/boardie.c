@@ -190,11 +190,14 @@ void readScriptsFromURL() {
 
 void addSerialPrims() {}
 void addBLEPrims() {}
+void addCameraPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
-void addCameraPrims() {}
+void addRadioPrims() {}
+
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
+void resetRadio() {}
 
 // Stubs for code file (persistence) not yet used by Boardie
 
