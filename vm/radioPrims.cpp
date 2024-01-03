@@ -87,7 +87,9 @@ static void initializeRadio() {
 
 	if (radioInitialized) return;
 	stopBLE();
-	ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
+	#if defined(USE_NIMBLE)
+		ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
+	#endif
 
 	// start high-frequency clock, needed by the radio
 	NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
