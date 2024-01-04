@@ -27,6 +27,10 @@
   #define RP2040_PHILHOWER 1
 #endif
 
+#if defined(BLE_IDE) || defined(BLE_KEYBOARD) || defined(BLE_UART) || defined(BLE_OCTO)
+  #define USE_NIMBLE 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

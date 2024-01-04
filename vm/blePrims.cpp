@@ -12,9 +12,9 @@
 #include "mem.h"
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-#if defined(BLE_NUS_PRIMS)
+#if defined(BLE_UART)
 
-// Experimental! Optional BLE UART support (compile with -D BLE_NUS_PRIMS)
+// Experimental! Optional BLE UART support (compile with -D BLE_UART)
 // Code provided by Wenji Wu
 
 // https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
@@ -133,9 +133,9 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-#endif // BLE_NUS_PRIMS
+#endif // BLE_UART
 
-#if defined(OCTO_PRIMS)
+#if defined(BLE_OCTO)
 
 #include <NimBLEDevice.h>
 #include <set>
@@ -275,13 +275,12 @@ static OBJ primOctoScanning(int argCount, OBJ *args) {
 	return BLEScanning ? trueObj : falseObj;
 }
 
-#endif // OCTO_PRIMS
+#endif // BLE_OCTO
 
 #if defined(BLE_KEYBOARD)
 
-// Experimental! Optional BLE keyboard support (compile with -D BLE_KEYBOARD)
-// Code provided by Wenji Wu
-// remixed primitives from hidPrims.cpp
+// BLE keyboard support
+// Code provided by Wenji Wu based on hidPrims.cpp API
 
 #include <BleKeyboard.h>
 
@@ -291,7 +290,7 @@ int bleKeyboardInitialized = false;
 void initBLEKeyboard () {
 	if (!bleKeyboardInitialized) {
 		char kbName[40];
-		sprintf(kbName, "%s KB", boardType());
+		sprintf(kbName, "MicroBlocks KB %s", BLE_ThreeLetterID);
 		bleKeyboard.setName(kbName);
 		bleKeyboard.begin();
 		bleKeyboardInitialized = true;
@@ -437,7 +436,7 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 
-	#if defined(BLE_NUS_PRIMS)
+	#if defined(BLE_UART)
 		{"BLE_UART_Start", primBLE_UART_Start},
 		{"BLE_UART_Stop", primBLE_UART_Stop},
 		{"BLE_UART_Connected", primBLE_UART_Connected},
@@ -445,7 +444,7 @@ static PrimEntry entries[] = {
 		{"BLE_UART_Write", primBLE_UART_Write},
 	#endif
 
-	#if defined(OCTO_PRIMS)
+	#if defined(BLE_OCTO)
 		{"OctoGetBLEInitialized", primOctoGetBLEInitialized},
 		{"OctoInitBLE", primOctoInitBLE},
 		{"OctoDeinitBLE", primOctoDeinitBLE},
