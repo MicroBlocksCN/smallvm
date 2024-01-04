@@ -13,6 +13,7 @@
 #include "interp.h"
 
 int BLE_connected_to_IDE = false;
+char BLE_ThreeLetterID[4];
 
 #if defined(BLE_IDE)
 
@@ -67,19 +68,17 @@ static void flashUserLED() {
 static void initName() {
 	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
 	getMACAddress(mac);
-	int machineNum = (mac[4] << 8) | mac[5]; // least signifcant bits
+	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
 
-	strcat(uniqueName, "MicroBlocks BLE");
+	BLE_ThreeLetterID[0] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[1] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[2] = 65 + (machineNum % 26);
+	BLE_ThreeLetterID[3] = 0;
 
-	// replace last three bytes ("BLE") of uniqueName with three capital letters
-	int i = strlen(uniqueName) - 1;
-	uniqueName[i] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	uniqueName[i-1] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	uniqueName[i-2] = 65 + (machineNum % 26);
+	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
 }
-
 
 static void displayFor(int msecs) {
 	uint32 endMSecs = millisecs() + msecs;

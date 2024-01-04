@@ -348,6 +348,7 @@ void tftSetHugePixelBits(int bits);
 // BLE Support
 
 extern int BLE_connected_to_IDE;
+extern char BLE_ThreeLetterID[4];
 
 void startBLE();
 void stopBLE();
