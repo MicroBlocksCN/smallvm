@@ -1,0 +1,40 @@
+{
+  "build": {
+    "arduino": {
+        "ldscript": "nrf52833_xxaa.ld"
+    },
+    "core": "nRF5",
+    "cpu": "cortex-m4",
+    "extra_flags": "-DNRF52833_XXAA -DARDUINO_CALLIOPE_MINI_V3",
+    "f_cpu": "64000000",
+    "hwids": [
+      [
+        "0x0d28",
+        "0x0204"
+      ]
+    ],
+    "mcu": "cortex-m4",
+    "system": "nrf52",
+    "usb_product": "CalliopeMiniV3",
+    "variant": "CalliopeminiV3"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "MakerPort",
+  "upload": {
+    "disable_flushing": true,
+    "maximum_ram_size": 131072,
+    "maximum_size": 524288,
+    "native_usb": false,
+    "protocol": "cmsis-dap",
+    "protocols": [
+      "cmsis-dap"
+    ],
+    "require_upload_port": true,
+    "use_1200bps_touch": false,
+    "wait_for_upload_port": false
+  },
+  "url": "https://https://calliope.cc",
+  "vendor": "Calliope gGmbH"
+}

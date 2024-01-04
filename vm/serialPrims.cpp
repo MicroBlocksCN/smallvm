@@ -23,7 +23,7 @@ static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2) // use UART directly
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || ARDUINO_CALLIOPE_MINI_V3 // use UART directly
 
 // Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
 // not updated correctly. As a work around (hack!), we fill the receive buffer with
