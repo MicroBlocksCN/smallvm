@@ -460,7 +460,7 @@ static PrimEntry entries[] = {
 
 	#if defined(BLE_KEYBOARD)
 		{"startKeyboard", primStartBLEKeyboard},
-		{"PressKey", primBLEPressKey},
+		{"pressKey", primBLEPressKey},
 		{"holdKey", primBLEHoldKey},
 		{"releaseKey", primBLEReleaseKey},
 		{"releaseKeys", primBLEReleaseAllKeys},
