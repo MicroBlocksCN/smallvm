@@ -172,8 +172,7 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	#endif
 
 	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) return int2obj(i); /* no more data */;
-		int byte = Wire.read();
+		int byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
 		FIELD(obj, i + 1) = int2obj(byte);
 	}
 	return int2obj(count);
@@ -1149,8 +1148,11 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 		// Use Wire1, the internal i2c bus
 		Wire1.beginTransmission(deviceID);
 		Wire1.write(reg);
-		int error = Wire1.endTransmission();
-		if (error) return;
+		int error = Wire1.endTransmission((bool) false);
+		if (error) {
+			reportNum("i2c read error", error);
+			return;
+		}
 		Wire1.requestFrom(deviceID, bufSize);
 		for (int i = 0; i < bufSize; i++) {
 			buf[i] = Wire1.available() ? Wire1.read() : 0;
@@ -1160,7 +1162,10 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 		Wire.beginTransmission(deviceID);
 		Wire.write(reg);
 		int error = Wire.endTransmission((bool) false);
-		if (error) return;
+		if (error) {
+			reportNum("i2c read error", error);
+			return;
+		}
 
 		#if defined(NRF51)
 			noInterrupts();
