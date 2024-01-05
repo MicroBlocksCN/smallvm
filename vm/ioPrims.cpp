@@ -580,9 +580,12 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		CAP_THRESHOLD + 1, CAP_THRESHOLD, CAP_THRESHOLD,
 		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD };
 
-#elif defined(ARDUINO_M5Stack_Core_ESP32)
-
-	#define BOARD_TYPE "M5Stack-Core"
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
+	#if defined(ARDUINO_M5STACK_FIRE)
+		#define BOARD_TYPE "M5STACK-FIRE"	
+	#else
+		#define BOARD_TYPE "M5Stack-Core"
+	#endif
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
@@ -1898,6 +1901,9 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(2, coords);
 		}
+	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
+		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
+			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (useTFT) {
 			tftSetHugePixel(3, 1, (trueObj == args[0]));

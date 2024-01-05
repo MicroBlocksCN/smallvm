@@ -62,7 +62,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	}
 #endif
 
-#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
+#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
@@ -92,7 +92,9 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			}
 		}
 
-	#elif defined(ARDUINO_M5Stack_Core_ESP32)
+	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h"
 		#define TFT_CS	14
 		#define TFT_DC	27
 		#define TFT_RST	33
@@ -1085,7 +1087,7 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	#elif defined(FUTURE_LITE)
 		pinMode(TFT_BL, OUTPUT);
 		digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
-	#elif defined(ARDUINO_M5Stack_Core_ESP32)
+	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
 		pinMode(32, OUTPUT);
 		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
 	#elif defined(ARDUINO_M5Stick_Plus)
