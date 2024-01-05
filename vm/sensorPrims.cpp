@@ -633,7 +633,7 @@ static int readAcceleration(int registerID) {
 	if (error) return 0; // error; return 0
 
 	Wire1.requestFrom(LIS3DH_ID, 1);
-	int val = if Wire1.available() ? Wire1.read() : 0;
+	int val = Wire1.available() ? Wire1.read() : 0;
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
