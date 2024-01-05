@@ -1,5 +1,5 @@
 module M5FireKits Input
-author 'Shao Yue'
+author '邵悦'
 version 1 0 
 depends NeoPixel 
 tags m5fire 
