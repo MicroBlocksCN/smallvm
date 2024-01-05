@@ -3261,6 +3261,168 @@ Elite AI Training Platform
 class _ > probability _ %
 类别 _ > 概率 _ %
 
+#### M5FireKits
+
+M5FireKits
+M5Fire M5Go底座
+
+buttonC
+按键 C
+
+LEDStripPin15
+灯带引脚15
+
+IRTxPin
+红外发射引脚13
+
+readMicValue
+麦克风读数
+
+PortA _
+端口A _
+
+PortB _
+端口B _
+
+PortC _
+端口C _
+
+clearStrip
+清除灯带
+
+setStripLED _ _ _ _ _ _ _ _ _ _
+灯带 _ _ _ _ _ _ _ _ _ _
+
+setStripRight _ _ _ _ _
+右边灯带 _ _ _ _ _
+
+setStripLeft _ _ _ _ _
+左边灯带 _ _ _ _ _
+
+_MicPin34
+麦克风引脚34
+
+Screen _
+屏幕开关 _
+
+#### 8 Bit Graphics
+
+8 Bit Graphics
+8 Bit 图像
+
+set scale _
+设置比例 _
+
+draw buffer : starting at x _ y _ width _ height _
+
+
+bitmap from BMP file _
+来自 BMP 文件的位图 _
+
+bitmap of width _ from raw indexed file _
+宽度 _ 的位图 来自 raw indexed 文件 _
+
+bitmap of width _ from string _
+宽度 _ 的位图 来自字串 _
+
+merge bitmap _ at _ , _
+合并位图 _ 在 _ , _
+
+merge tile _ at tile position _ , _
+合并背景图 _ 从 背景位置 _ , _
+
+merge tile _ from _ , _ to _ , _
+合并背景图 _ 从 _ , _ 到 _ , _
+
+set palette _
+设置调色板 _
+
+set transparent color index _
+设置透明颜色索引 _
+
+palette from pal file _
+调色板来自调色板文件 _
+
+palette from BMP file _
+来自 BMP 文件的调色板 _
+
+4 bit _ palette
+4 位 _ 调色板
+
+8 bit _ palette
+8 位 _ 调色板
+
+color number for r _ g _ b _ (0-255)
+_ g _ b _ (0-255) 转颜色数值
+
+draw palette table _
+绘制调色板表 _
+
+screen width
+屏幕宽度
+
+screen height
+屏幕高度
+
+#### OLED Graphics
+
+OLED Graphics
+OLED 屏幕
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+初始化 i2c _ 地址(hex) _ 重制引脚# _ 翻转 _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+初始化 spi _ d/c 引脚# _ 重制引脚# _ 翻转 _
+
+write _ at x _ y _ inverse _
+输入字符 _ 在 x _ y _ 反色 _
+
+show display buffer
+刷新显示缓存
+
+set contrast (1-4) _
+对比度 (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+绘制圆形在 x _ y _ 处，半径径为 _ 擦除 _
+
+draw image _ at x _ y _
+绘制 _ 图，在 x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+画线 从 x _ y _ 到 x _ y _ 擦除 _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+绘制矩形 x _ y _ 宽 _ 高 _ 擦除 _ 圆角(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+填充矩形 x _ y _ 宽 _ 高 _ 擦除 _
+
+_flip display top _
+反转显示 上 _
+
+make image _
+做 _ 图
+
+set pixel x _ y _ erase _
+绘制像素点 x _ y _ 擦除 _
+
+set video _
+图像设置 _
+
+Inverse
+反色
+
+Normal
+正常
+
+cursor location
+光标位置
+
+defer display updates
+推迟显示更新
+
 ##################
 # MicroBlocks UI #
 ##################
