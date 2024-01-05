@@ -3370,10 +3370,10 @@ OLED Graphics
 OLED 屏幕
 
 initialize i2c _ address(hex) _ reset pin# _ flip _
-初始化 i2c _ 地址(hex) _ 重制引脚# _ 翻转 _
+初始化 i2c _ 地址(hex) _ 重置引脚# _ 翻转 _
 
 initialize spi _ d/c pin# _ reset pin# _ flip _
-初始化 spi _ d/c 引脚# _ 重制引脚# _ 翻转 _
+初始化 spi _ d/c 引脚# _ 重置引脚# _ 翻转 _
 
 write _ at x _ y _ inverse _
 输入字符 _ 在 x _ y _ 反色 _
