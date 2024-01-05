@@ -90,11 +90,7 @@ int readI2CReg(int deviceID, int reg) {
 
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	#if defined(ARDUINO_ARCH_ESP32)
-		int error = Wire.endTransmission();
-	#else
-		int error = Wire.endTransmission((bool) false);
-	#endif
+	int error = Wire.endTransmission((bool) false);
 	if (error) return -error; // error; bad device ID?
 
 	#if defined(NRF51)
@@ -457,11 +453,7 @@ static int readInternalI2CReg(int deviceID, int reg) {
 	if (!internalWireStarted) startInternalWire();
 	Wire1.beginTransmission(deviceID);
 	Wire1.write(reg);
-	#if defined(ARDUINO_ARCH_ESP32)
-		int error = Wire1.endTransmission();
-	#else
-		int error = Wire1.endTransmission();
-	#endif
+	int error = Wire1.endTransmission((bool) false);
 	if (error) return -error; // error; bad device ID?
 
 	Wire1.requestFrom(deviceID, 1);
