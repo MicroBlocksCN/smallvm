@@ -3385,7 +3385,7 @@ set contrast (1-4) _
 对比度 (1-4) _
 
 draw circle at x _ y _ radius _ erase _
-绘制圆形在 x _ y _ 处，半径径为 _ 擦除 _
+绘制圆形在 x _ y _ 处，半径为 _ 擦除 _
 
 draw image _ at x _ y _
 绘制 _ 图，在 x _ y _
