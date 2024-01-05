@@ -94,6 +94,9 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (NO_WIFI()) return fail(noWiFi);
 
+	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	stopBLE();
+
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
 

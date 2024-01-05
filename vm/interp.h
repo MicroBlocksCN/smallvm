@@ -196,7 +196,7 @@ extern int extraByteDelay;
 #define cannotConvertToByteArray 47	// Cannot convert that to a byte array
 #define unknownDatatype			48	// Unknown datatype
 #define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
-#define cannotUseRadioWithBLE	50	// Cannot use radio blocks when board connected to IDE via Bluetooth
+#define cannotUseRadioWithBLE	50	// Cannot use radio blocks or WiFi when board connected to IDE via Bluetooth
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
