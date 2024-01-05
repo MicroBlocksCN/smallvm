@@ -364,6 +364,8 @@ OBJ primBLEReleaseAllKeys(int argCount, OBJ *args) {
 }
 
 static OBJ primStartBLEKeyboard(int argCount, OBJ *args) {
+	if (BLE_connected_to_IDE) return falseObj; // can't use BLE keyboard while connected over BLE
+
 	initBLEKeyboard();
 	return falseObj;
 }
