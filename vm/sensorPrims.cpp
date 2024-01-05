@@ -633,8 +633,7 @@ static int readAcceleration(int registerID) {
 	if (error) return 0; // error; return 0
 
 	Wire1.requestFrom(LIS3DH_ID, 1);
-	while (!Wire1.available());
-	int val = Wire1.read();
+	int val = if Wire1.available() ? Wire1.read() : 0;
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
@@ -756,8 +755,7 @@ static int readAccelReg(int regID) {
 	if (error) return 0;
 
 	Wire1.requestFrom(MPU6886_ID, 1);
-	while (!Wire1.available());
-	return (Wire1.read());
+	return Wire1.available() ? Wire1.read() : 0;
 }
 
 static void writeAccelReg(int regID, int value) {
@@ -962,8 +960,7 @@ static void mpu6050readData() {
 	Wire.requestFrom(MPU6050, count);
 
 	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) break; /* no more data */;
-		mpuData[i] = Wire.read();
+		mpuData[i] = Wire.available() ? Wire.read() : 0;
 	}
 }
 
@@ -990,8 +987,6 @@ static void setAccelRange(int range) {
 #define TMP75_TEMP_REG 0
 
 static int readTemperature() {
-	uint8_t msb, lsb;
-
 	if (!wireStarted) startWire();
 	if (!wireStarted) return 0;
 
@@ -1000,10 +995,8 @@ static int readTemperature() {
 	Wire.write(TMP75_TEMP_REG);
 	Wire.endTransmission();
 	Wire.requestFrom(TMP75_ADDR, 2);
-	while (Wire.available()) {
-		msb = Wire.read();
-		lsb = Wire.read();
-	}
+	uint8_t msb = Wire.available() ? Wire.read() : 0;
+	uint8_t lsb = Wire.available() ? Wire.read() : 0;
 	int fudgeFactor = 3;
 	return (fix16bitSign((msb << 8) | lsb) >> 8) - fudgeFactor; // temperture C
 }
@@ -1040,8 +1033,7 @@ static void mpu9250readData(int reg) {
 	int count = sizeof(mpu9250Data);
 	Wire.requestFrom(MPU9250, count);
 	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) break; /* no more data */;
-		mpu9250Data[i] = Wire.read();
+		mpu9250Data[i] = Wire.available() ? Wire.read() : 0;
 	}
 }
 
@@ -1112,8 +1104,7 @@ static int databotMageneticField() {
 	int count = sizeof(magData);
 	Wire.requestFrom(AK8963, count);
 	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) break; /* no more data */;
-		magData[i] = Wire.read();
+		magData[i] = Wire.available() ? Wire.read() : 0;
 	}
 
 	int magX = fix16bitSign((magData[1] << 8) + magData[0]);
@@ -1342,8 +1333,7 @@ void readMagMicrobitV1CalliopeClue(uint8 *sixByteBuffer) {
 
 	Wire.requestFrom(magnetometerAddr, 6);
 	for (int i = 0; i < 6; i++) {
-		if (!Wire.available()) return; /* no more data */;
-		sixByteBuffer[i] = Wire.read();
+		sixByteBuffer[i] = Wire.available() ? Wire.read() : 0;
 	}
 }
 
@@ -1368,8 +1358,7 @@ void readMagMicrobitV2(uint8 *sixByteBuffer) {
 	Wire1.endTransmission();
 	Wire1.requestFrom(magnetometerAddr, 6);
 	for (int i = 0; i < 6; i++) {
-		if (!Wire1.available()) return; /* no more data */;
-		sixByteBuffer[i] = Wire1.read();
+		sixByteBuffer[i] = Wire1.available() ? Wire1.read() : 0;
 	}
 }
 
