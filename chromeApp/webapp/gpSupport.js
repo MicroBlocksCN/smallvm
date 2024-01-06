@@ -1063,9 +1063,10 @@ async function GP_setSerialPortDTRandRTS(dtrFlag, rtsFlag) {
 
 // Support for Web Bluetooth
 
-const UART_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
-const UART_RX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e' // board receive characteristic
-const UART_TX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e' // board transmit characteristic
+// MicroBlocks UUIDs:
+const MICROBLOCKS_SERVICE_UUID = 'bb37a001-b922-4018-8e74-e14824b3a638'
+const MICROBLOCKS_RX_CHAR_UUID = 'bb37a002-b922-4018-8e74-e14824b3a638' // board receive characteristic
+const MICROBLOCKS_TX_CHAR_UUID = 'bb37a003-b922-4018-8e74-e14824b3a638' // board transmit characteristic
 
 const BLE_PACKET_LEN = 240; // Max BLE attribute length is 512 but 240 gives best performance
 
@@ -1094,13 +1095,13 @@ class NimBLESerial {
 	async connect() {
 		// Connect to a microBit
 		this.device = await navigator.bluetooth.requestDevice({
-			filters: [{ services: [UART_SERVICE_UUID] }]
+			filters: [{ services: [MICROBLOCKS_SERVICE_UUID] }]
 		})
 		this.device.addEventListener('gattserverdisconnected', this.handle_disconnected.bind(this));
 		const server = await this.device.gatt.connect();
-		this.service = await server.getPrimaryService(UART_SERVICE_UUID);
-		const tx_char = await this.service.getCharacteristic(UART_TX_CHAR_UUID);
-		this.rx_char = await this.service.getCharacteristic(UART_RX_CHAR_UUID);
+		this.service = await server.getPrimaryService(MICROBLOCKS_SERVICE_UUID);
+		const tx_char = await this.service.getCharacteristic(MICROBLOCKS_TX_CHAR_UUID);
+		this.rx_char = await this.service.getCharacteristic(MICROBLOCKS_RX_CHAR_UUID);
 		await tx_char.startNotifications();
 		// bind overrides the default this=tx_char to this=the NimBLESerial
 		tx_char.addEventListener("characteristicvaluechanged", this.handle_read.bind(this));

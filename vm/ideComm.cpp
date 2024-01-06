@@ -43,9 +43,10 @@ static uint8_t bleRecvBuf[RECV_BUF_MAX];
 static int bleBytesAvailable = 0;
 static int overRuns = 0;
 
-#define SERVICE_UUID			"6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // Nordic UART service
-#define CHARACTERISTIC_UUID_RX	"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX	"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+// MicroBlocks UUIDs:
+#define SERVICE_UUID			"bb37a001-b922-4018-8e74-e14824b3a638" // MicroBlocks IDE service
+#define CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
+#define CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
 
 // BLE Helper Functions
 
