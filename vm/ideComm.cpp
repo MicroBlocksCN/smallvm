@@ -103,6 +103,8 @@ static void show_BLE_ID() {
 			args[2] = int2obj(1);
 			primMBDrawShape(3, args);
 			displayFor(400);
+			primMBDisplayOff(0, args);
+			displayFor(100);
 		}
 		primMBDisplayOff(0, args);
 		displayFor(300);
