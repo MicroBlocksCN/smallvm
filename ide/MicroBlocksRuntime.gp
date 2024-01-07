@@ -814,11 +814,8 @@ method selectPort SmallRuntime {
 		if (and (isNil port) ('boardie' != portName)) {
 			if (browserHasWebSerial) {
 				addItem menu 'connect'
-				allowBLEConnect = true
-				if allowBLEConnect {
-				    addItem menu 'connect (BLE) (Experimental!)'
-				    addLine menu
-				}
+                addItem menu 'connect (BLE)'
+                addLine menu
 			}
 			addItem menu 'open Boardie'
 		} else {
@@ -3011,9 +3008,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if eraseFlashFlag {
 			// addItem menu 'Citilab ED1'
 			addItem menu 'M5Stack-Core'
-			// addItem menu 'M5StickC+'
-			// addItem menu 'M5StickC'
-			// addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 			addItem menu '未来科技盒'
@@ -3033,9 +3027,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			//addItem menu 'Metro M0'
 			//addLine menu
 			addItem menu 'M5Stack-Core'
-			// addItem menu 'M5StickC+'
-			// addItem menu 'M5StickC'
-			// addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 			// addItem menu 'Mbits'
