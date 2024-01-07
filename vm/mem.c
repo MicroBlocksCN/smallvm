@@ -47,6 +47,8 @@
   #define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 14000
+#elif defined(ARDUINO_M5STACK_FIRE)
+  #define OBJSTORE_BYTES 200000 // will be allocated from PSRAM
 #elif defined(HAS_CAMERA)
   #define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
 #elif defined(ESP32_S3) || defined(ESP32_C3)
