@@ -2008,6 +2008,8 @@ Connect
 
 connect
 
+connect (BLE)
+
 open Boardie
 
 disconnect
