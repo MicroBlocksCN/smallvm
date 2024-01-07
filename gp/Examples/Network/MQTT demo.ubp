@@ -4,27 +4,27 @@ version 1 0
 description ''
 variables event 
 
-script 120 50 {
+script 53 40 {
 whenStarted
 comment '1. connect wifi'
 wifiConnect 'Network_Name' ''
 waitMillis 1000
 comment '2. connect MQTT broker'
-'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
+'MQTT connect to' 'mqtt.aimaker.space' 128 '' 'guest' 'test'
 sendBroadcast 'loop'
 }
 
-script 50 279 {
+script 83 268 {
 comment 'subscribe topic'
 'MQTT sub' 'testTopic'
 }
 
-script 367 280 {
+script 300 270 {
 comment 'publish topic payload'
 'MQTT pub' 'testTopic' 'Hello!'
 }
 
-script 110 336 {
+script 73 355 {
 whenBroadcastReceived 'loop'
 comment 'receive mqtt message'
 forever {
@@ -36,7 +36,7 @@ forever {
   } else {
     sayIt 'try to connect ...'
     waitMillis 500
-    'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
+    'MQTT connect to' 'mqtt.aimaker.space' 128 '' 'guest' 'test'
   }
 }
 }
