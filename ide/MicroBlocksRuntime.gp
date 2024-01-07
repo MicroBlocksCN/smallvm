@@ -2705,7 +2705,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
-	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 4000 }
+	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 8000 }
 	disconnected = false
 }
 
