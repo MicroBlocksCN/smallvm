@@ -229,13 +229,13 @@ New variable name?
 新变量的名字是？
 
 set _ to _
-把 _ 设定为 _
+把 _ 设为 _
 
 change _ by _
 把 _ 增加 _
 
 initialize local _ to _
-将本地的 _ 初始化为 _
+将局部变量 _ 初始化为 _
 
 Data
 数据
@@ -2001,6 +2001,9 @@ Connect
 
 connect
 连接主板
+
+connect (BLE)
+无线连接 (BLE)
 
 open Boardie
 连接模拟器
