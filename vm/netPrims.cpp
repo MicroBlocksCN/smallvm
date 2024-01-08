@@ -52,6 +52,7 @@
 
 static char connecting = false;
 static char serverStarted = false;
+static char allowBLE_and_WiFi = false;
 
 int serverPort = 80;
 WiFiServer server(serverPort);
@@ -87,12 +88,23 @@ static OBJ primHasWiFi(int argCount, OBJ *args) {
 	return NO_WIFI() ? falseObj : trueObj;
 }
 
+static OBJ primAllowWiFiAndBLE(int argCount, OBJ *args) {
+	allowBLE_and_WiFi = (argCount > 0) && (trueObj == args[0]);
+	if (allowBLE_and_WiFi) startBLE();
+	return falseObj;
+}
+
 static OBJ primStartWiFi(int argCount, OBJ *args) {
 	// Start a WiFi connection attempt. The client should call wifiStatus until either
 	// the connection is established or the attempt fails.
 
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (NO_WIFI()) return fail(noWiFi);
+
+	if (!allowBLE_and_WiFi) {
+		if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+		stopBLE();
+	}
 
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
@@ -688,6 +700,7 @@ void getMACAddress(uint8 *sixBytes) {
 }
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
+static OBJ primAllowWiFiAndBLE(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -967,6 +980,7 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
 
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
+	{"allowWiFiAndBLE", primAllowWiFiAndBLE},
 	{"startWiFi", primStartWiFi},
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
