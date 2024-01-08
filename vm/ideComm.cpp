@@ -84,7 +84,6 @@ static void initName() {
 static void displayFor(int msecs) {
 	uint32 endMSecs = millisecs() + msecs;
 	while (millisecs() < endMSecs) {
-		processMessage();
 		updateMicrobitDisplay();
 		delay(1);
 	}
@@ -94,7 +93,7 @@ static void show_BLE_ID() {
 	OBJ args[5]; // used to call primitives
 
 	int nameLen = strlen(uniqueName);
-	for (int iters = 0; iters < 2; iters++) {
+	for (int iters = 0; iters < 1; iters++) {
 		for (int i = nameLen - 4; i < nameLen; i++) {
 			args[0] = newStringFromBytes(&uniqueName[i], 1);
 			OBJ letterShape = primMBShapeForLetter(1, args);
