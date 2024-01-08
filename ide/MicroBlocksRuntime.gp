@@ -2859,6 +2859,13 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 		(localized 'Select')
 		' ' driveName ' '
 		(localized 'as the destination drive, then click Save.'))
+	if (beginsWith boardName 'micro:bit') {
+	    msg = (join
+	        msg
+	        (newline)
+	        (newline)
+	        (localized 'If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.'))
+	}
 	response = (inform msg (localized 'Firmware Install'))
 	if (isNil response) { return }
 
