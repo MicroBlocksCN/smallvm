@@ -318,6 +318,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 	return Serial.write(&buf[start], end - start);
 }
 
+void startBLE() { } // stub
 void stopBLE() { } // stub
 
 #endif
