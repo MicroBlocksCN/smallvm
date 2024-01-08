@@ -6,6 +6,8 @@ pio run -e microbit
 cp .pio/build/microbit/firmware.hex precompiled/vm_microbitV1.hex
 pio run -e microbitV2
 cp .pio/build/microbitV2/firmware.hex precompiled/vm_microbitV2.hex
+pio run -e microbitV2-ble
+cp .pio/build/microbitV2/firmware.hex precompiled/vm_microbitV2-ble.hex
 pio run -e calliope
 cp .pio/build/calliope/firmware.hex precompiled/vm_calliope.hex
 pio run -e nodemcu
