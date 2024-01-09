@@ -1,19 +1,21 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 2 21 
+version 2 24 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
 choices motor_Menu '上（-30°-30°）' '中（-70°-90°）' '下（-85°-50°）' 
+choices transmove_Menu 'X(-25mm-25mm)' 'Y(-18mm-18mm)' 'Z(60mm-110mm)' 
 choices direction_Menu '逆时针' '顺时针' 
 choices speed_Menu '正常' '慢速' '快速' 
 choices translation_Menu X Y Z 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' 
 choices gait_Menu '对角' '行走' '高抬腿' '微调' 
 choices button_Menu A B 
 choices attitude_Menu R P Y 
 choices move_Menu '前平移（0mm~25mm）' '后平移（-25mm~0mm）' '左平移（0mm~18mm）' '右平移（-18mm~0mm）' 
 choices angle_Menu roll pitch yaw 
-choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' 
+choices transrotate_Menu 'X(-20°-20°)' 'Y(-20°-20°)' 'Z(-12°-12°)' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
 variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata '动作列表' _buttons 
@@ -34,12 +36,11 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '单个舵机运动' '设置 _  腿 _ 关节舵机转动至 _ °' 'menu.leg_Menu menu.motor_Menu num' '左前' '上（-30°-30°）' 40
   spec ' ' '机械臂运动' '设置机械臂 _ 关节舵机转动至 _ °' 'menu.arm_Menu num' '上（-65°-65°）' 40
   space
-  spec ' ' '执行动作组编号' '执行编号 _ 动作组' 'auto' 1
-  spec ' ' '执行命令' '执行命令 _' 'menu.actionMenu' '趴下'
+  spec ' ' '执行命令' '执行命令 _' 'menu.action_Menu' '趴下'
   spec ' ' '机器狗平移' '向 _ 步幅为 _ 毫米持续 _ 毫秒' 'menu.move_Menu num num' '前平移（0mm~25mm）' 15 3000
   spec ' ' '机器狗旋转' '向 _ 方向以速度 _ 度/秒旋转 _ 毫秒' 'menu.direction_Menu num num' '逆时针' 100 3000
-  spec ' ' '机器狗轴向平移' '沿 _ 轴平移 _ mm' 'menu.translation_Menu num' 'X' 5
-  spec ' ' '机器狗轴向旋转' '沿 _ 旋转 _ °' 'menu.translation_Menu num' 'X' 5
+  spec ' ' '机器狗轴向平移' '沿 _ 轴平移 _ mm' 'menu.transmove_Menu num' 'X(-25mm-25mm)' 5
+  spec ' ' '机器狗轴向旋转' '沿 _ 旋转 _ °' 'menu.transrotate_Menu num' 'X(-20°-20°)' 5
   spec ' ' '机器狗单腿运动' '设置 _ 腿足尖坐标位置为 X（-25-25） _ mm Y（-15-15） _ mm Z（60-110） _ mm' 'menu.leg_Menu num num num' '左前' 0 0 70
   space
   spec ' ' '机器狗机械臂' '设置机械臂末端坐标位置X（-80-155） _ mm Z（-95-155） _ mm' 'auto auto' 100 -60
@@ -52,6 +53,7 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '数字IO输出' '数字IO输出 _' 'bool' false
   spec 'r' '读取按键' '读取按键 _' 'menu.button_Menu' 'A'
   space
+  spec ' ' '_执行动作组编号' '执行编号 _ 动作组' 'auto' 1
   spec 'r' '_button double pressed' 'button _ double pressed' 'auto' 'A'
   spec 'r' '_button pressed' 'button _ pressed' 'auto' 5
   spec 'r' '_button long pressed' 'button _ long pressed' 'auto' 5
@@ -82,7 +84,7 @@ to '2P' mode {
 }
 
 to 'XGO复位' {
-  '执行动作组编号' 255
+  '_执行动作组编号' 255
   waitMillis 100
 }
 
@@ -259,12 +261,18 @@ to '_单个舵机运动' nums steps {
   } (nums == 12) {
     '_单个舵机' 91 steps -30 30
   } (nums == 13) {
-    '机器狗夹爪' steps
+    '_单个舵机' 113 steps -65 65
   } (nums == 14) {
     '_单个舵机' 93 steps -115 70
   } (nums == 15) {
     '_单个舵机' 94 steps -85 100
   }
+}
+
+to '_执行动作组编号' data {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 62 data))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (72 + data)) % 256))))
+  '_串口结束'
 }
 
 to '_机器狗单腿运动' leg X Y Z {
@@ -377,15 +385,18 @@ to '将当前朝向设置为0' {
   '_串口结束'
 }
 
-to '执行动作组编号' data {
-  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 62 data))
-  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (72 + data)) % 256))))
-  '_串口结束'
-}
-
 to '执行命令' foo {
-  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动Roll,转动Pitch,转动Yaw,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮' ',')}
-  '执行动作组编号' ('[data:find]' foo 动作列表)
+  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动ROLL,转动PITCH,转动YAW,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮,上抓,中抓,下抓' ',')}
+  local 'an' ('[data:find]' foo 动作列表)
+  if (an == 25) {
+    '_执行动作组编号' 128
+  } (an == 26) {
+    '_执行动作组编号' 129
+  } (an == 27) {
+    '_执行动作组编号' 130
+  } else {
+    '_执行动作组编号' an
+  }
 }
 
 to '数字IO输出' mode {
@@ -482,15 +493,15 @@ to '机器狗机械臂稳定模式' mode {
 }
 
 to '机器狗轴向平移' direction steps {
-  if (direction == 'X') {
+  if (direction == 'X(-25mm-25mm)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 51 ('_conver2u8' 25 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (61 + ('_conver2u8' 25 steps))) % 256))))
     '_串口结束'
-  } (direction == 'Y') {
+  } (direction == 'Y(-18mm-18mm)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 52 ('_conver2u8' 18 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (62 + ('_conver2u8' 18 steps))) % 256))))
     '_串口结束'
-  } (direction == 'Z') {
+  } (direction == 'Z(60mm-110mm)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 53 ('_conver2u8t' 60 110 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (63 + ('_conver2u8t' 60 110 steps))) % 256))))
     '_串口结束'
@@ -498,15 +509,15 @@ to '机器狗轴向平移' direction steps {
 }
 
 to '机器狗轴向旋转' direction steps {
-  if (direction == 'X') {
+  if (direction == 'X(-20°-20°)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 54 ('_conver2u8' 20 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (64 + ('_conver2u8' 20 steps))) % 256))))
     '_串口结束'
-  } (direction == 'Y') {
+  } (direction == 'Y(-20°-20°)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 55 ('_conver2u8' 20 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (65 + ('_conver2u8' 20 steps))) % 256))))
     '_串口结束'
-  } (direction == 'Z') {
+  } (direction == 'Z(-12°-12°)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 56 ('_conver2u8' 12 steps)))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (66 + ('_conver2u8' 12 steps))) % 256))))
     '_串口结束'
