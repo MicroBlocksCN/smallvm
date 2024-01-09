@@ -277,6 +277,128 @@ static OBJ primOctoScanning(int argCount, OBJ *args) {
 
 #endif // BLE_OCTO
 
+#if defined(BLE_OCTO2)
+
+#include <NimBLEDevice.h>
+#include <set>
+
+static const char* OCTO_UUID_Android	= "2540b6b0-0001-4538-bcd7-7ecfb51297c1";
+static const char* OCTO_UUID_iOS		= "2540b6b0-0002-4538-bcd7-7ecfb51297c1";
+
+static BLEScan* pOctoScanner = NULL;
+static BLEAdvertising* pAdvertising = NULL;
+
+static bool octoInitialized = false;
+static bool hasOctoMessage = false;
+static int shape_id = 0;
+
+// list of rececently receive datas used for duplicate suppression
+static std::set<std::string> receivedOctoDatas;
+static uint32 receivedOctoDatasMaxLength = 100;
+
+static void recordOctoData(std::string data) {
+	// Record the given string to suppress duplicates.
+	// This is needed since each adveristment is repeated several times.
+
+	receivedOctoDatas.insert(data);
+	if (receivedOctoDatas.size() > receivedOctoDatasMaxLength) {
+		receivedOctoDatas.erase(receivedOctoDatas.begin());
+	}
+}
+
+class OctoAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
+	void onResult(BLEAdvertisedDevice* advertisedDevice) {
+		if (advertisedDevice->haveServiceUUID()) {
+			// iOS
+			BLEUUID serviceUUID = advertisedDevice->getServiceUUID();
+			std::string UUID_string = serviceUUID.toString().c_str();
+			if (UUID_string == OCTO_UUID_iOS) {
+				std::string deviceName = advertisedDevice->getName();
+				if ((deviceName != "0000000000000000") && (receivedOctoDatas.find(deviceName) == receivedOctoDatas.end())) {
+					shape_id = deviceName.back() - '0';
+					recordOctoData(deviceName);
+					hasOctoMessage = true;
+				}
+			}
+		}
+
+		if (advertisedDevice->haveServiceData()) {
+			// Android
+			std::string serviceData = advertisedDevice->getServiceData();
+			BLEUUID serviceUUID = advertisedDevice->getServiceDataUUID();
+			std::string UUID_string = serviceUUID.toString().c_str();
+			if (UUID_string == OCTO_UUID_Android) {
+				if (receivedOctoDatas.find(serviceData) == receivedOctoDatas.end()) {
+					shape_id = serviceData[7];
+					recordOctoData(serviceData);
+					hasOctoMessage = true;
+				}
+			}
+		}
+	}
+};
+
+static void scanComplete(BLEScanResults scanResults) {
+	// Restart the scanner so that we scan continuously.
+
+	pOctoScanner->clearResults();
+	pOctoScanner->start(1, scanComplete, false);
+}
+
+static void initOcto() {
+	if (!octoInitialized) {
+outputString("initOcto");
+		pOctoScanner = BLEDevice::getScan();
+		pOctoScanner->setAdvertisedDeviceCallbacks(new OctoAdvertisedDeviceCallbacks());
+		pOctoScanner->setActiveScan(true); //active scan uses more power, but get results faster
+		pOctoScanner->setInterval(100);
+		pOctoScanner->setWindow(99); // less or equal setInterval value
+		pOctoScanner->start(1, scanComplete, false);
+
+		pAdvertising = BLEDevice::getAdvertising();
+		pAdvertising->addServiceUUID(OCTO_UUID_iOS);
+		pAdvertising->setScanResponse(true);
+		pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
+
+		receivedOctoDatas.clear();
+		octoInitialized = true;
+	}
+}
+
+static OBJ primOctoStartBeam(int argCount, OBJ *args) {
+	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
+
+	if (!octoInitialized) initOcto();
+
+	// Mimic iOS beam
+	char *s = obj2str(args[0]);
+outputString(s);
+reportNum("pAdvertising", (int) pAdvertising);
+	pAdvertising->setName(s);
+	pAdvertising->start();
+	return falseObj;
+}
+
+static OBJ primOctoStopBeam(int argCount, OBJ *args) {
+	if (!pAdvertising) return falseObj; // not initialized thus not beaming
+
+	pAdvertising->stop();
+	return falseObj;
+}
+
+static OBJ primOctoReceive(int argCount, OBJ *args) {
+	if (!octoInitialized) initOcto();
+
+	if (hasOctoMessage) {
+		hasOctoMessage = false;
+		return int2obj(shape_id);
+	} else {
+		return falseObj;
+	}
+}
+
+#endif // BLE_OCTO2
+
 #if defined(BLE_KEYBOARD)
 
 // BLE keyboard support
@@ -458,6 +580,12 @@ static PrimEntry entries[] = {
 
 		{"OctoSetDeviceName", primOctoSetDeviceName},
 		{"OctoGetOctoShapeId", primOctoGetOctoShapeId},
+	#endif
+
+	#if defined(BLE_OCTO2)
+		{"octoStartBeam", primOctoStartBeam},
+		{"octoStopBeam", primOctoStopBeam},
+		{"octoReceive", primOctoReceive},
 	#endif
 
 	#if defined(BLE_KEYBOARD)
