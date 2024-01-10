@@ -52,7 +52,7 @@
 
 static char connecting = false;
 static char serverStarted = false;
-static char allowBLE_and_WiFi = false;
+static char allowBLE_and_WiFi = true;
 
 int serverPort = 80;
 WiFiServer server(serverPort);
