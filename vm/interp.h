@@ -352,6 +352,8 @@ extern char BLE_ThreeLetterID[4];
 
 void startBLE();
 void stopBLE();
+void BLE_stopAdvertising();
+void BLE_resumeAdvertising();
 void getMACAddress(uint8 *sixBytes);
 
 // Primitive Sets

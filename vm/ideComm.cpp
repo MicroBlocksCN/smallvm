@@ -264,6 +264,26 @@ void stopBLE() {
 	bleRunning = false;
 }
 
+// Stop and resume advertising (for use by Octo primitives)
+
+void BLE_stopAdvertising() {
+	if (!pServer) return;
+	pServer->getAdvertising()->stop();
+	pServer->getAdvertising()->removeServiceUUID(NimBLEUUID(SERVICE_UUID));
+}
+
+void BLE_resumeAdvertising() {
+	if (!pServer) return;
+
+	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->reset();
+	pAdvertising->addServiceUUID(SERVICE_UUID);
+	pAdvertising->setName(uniqueName);
+	if (serviceOnline) pAdvertising->start();
+}
+
+// IDE receive and send
+
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead;
 
@@ -318,8 +338,11 @@ int sendBytes(uint8 *buf, int start, int end) {
 	return Serial.write(&buf[start], end - start);
 }
 
-void startBLE() { } // stub
-void stopBLE() { } // stub
+// stubs for non-BLE:
+void startBLE() { }
+void stopBLE() { }
+void BLE_stopAdvertising() { }
+void BLE_resumeAdvertising() { }
 
 #endif
 
