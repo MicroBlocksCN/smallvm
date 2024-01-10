@@ -288,9 +288,14 @@ static const char* OCTO_UUID_iOS		= "2540b6b0-0002-4538-bcd7-7ecfb51297c1";
 static BLEScan* pOctoScanner = NULL;
 static BLEAdvertising* pAdvertising = NULL;
 
-static bool octoInitialized = false;
+static bool bleScannerRunning = false;
 static bool hasOctoMessage = false;
 static int shape_id = 0;
+
+// record last scan payload
+#define MAX_SCAN_PAYLOAD 100
+static int lastScanPayloadLen = 0;
+static uint8 *lastScanPayload[MAX_SCAN_PAYLOAD];
 
 // list of rececently receive datas used for duplicate suppression
 static std::set<std::string> receivedOctoDatas;
@@ -298,7 +303,7 @@ static uint32 receivedOctoDatasMaxLength = 100;
 
 static void recordOctoData(std::string data) {
 	// Record the given string to suppress duplicates.
-	// This is needed since each adveristment is repeated several times.
+	// This is needed because each adveristment is repeated many times.
 
 	receivedOctoDatas.insert(data);
 	if (receivedOctoDatas.size() > receivedOctoDatasMaxLength) {
@@ -306,8 +311,13 @@ static void recordOctoData(std::string data) {
 	}
 }
 
-class OctoAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
+class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 	void onResult(BLEAdvertisedDevice* advertisedDevice) {
+		// capture scan payload
+		lastScanPayloadLen = advertisedDevice->getPayloadLength();
+		if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
+		memcpy(lastScanPayload, advertisedDevice->getPayload(), lastScanPayloadLen);
+
 		if (advertisedDevice->haveServiceUUID()) {
 			// iOS
 			BLEUUID serviceUUID = advertisedDevice->getServiceUUID();
@@ -339,42 +349,41 @@ class OctoAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 };
 
 static void scanComplete(BLEScanResults scanResults) {
-	// Restart the scanner so that we scan continuously.
+	// Restarts the scanner so that we scan continuously.
 
 	pOctoScanner->clearResults();
 	pOctoScanner->start(1, scanComplete, false);
 }
 
-static void initOcto() {
-	if (!octoInitialized) {
-outputString("initOcto");
+static void startBLEScanner() {
+	if (!bleScannerRunning) {
 		pOctoScanner = BLEDevice::getScan();
-		pOctoScanner->setAdvertisedDeviceCallbacks(new OctoAdvertisedDeviceCallbacks());
-		pOctoScanner->setActiveScan(true); //active scan uses more power, but get results faster
-		pOctoScanner->setInterval(100);
-		pOctoScanner->setWindow(99); // less or equal setInterval value
+		pOctoScanner->setAdvertisedDeviceCallbacks(new BLEScannerCallbacks());
+		pOctoScanner->setMaxResults(0); // don't save results; use callback only
+		pOctoScanner->setActiveScan(true); // required by Octo
+		// following setting do not seem to be necessary:
+		// pOctoScanner->setInterval(100);
+		// pOctoScanner->setWindow(100);
 		pOctoScanner->start(1, scanComplete, false);
 
-		pAdvertising = BLEDevice::getAdvertising();
-		pAdvertising->addServiceUUID(OCTO_UUID_iOS);
-		pAdvertising->setScanResponse(true);
-		pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
-
 		receivedOctoDatas.clear();
-		octoInitialized = true;
+		bleScannerRunning = true;
 	}
 }
 
 static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
 
-	if (!octoInitialized) initOcto();
+	// Mimics iOS beam
+	char *msg = obj2str(args[0]);
 
-	// Mimic iOS beam
-	char *s = obj2str(args[0]);
-outputString(s);
-reportNum("pAdvertising", (int) pAdvertising);
-	pAdvertising->setName(s);
+	BLE_stopAdvertising();
+	pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->reset();
+	pAdvertising->addServiceUUID(OCTO_UUID_iOS);
+	pAdvertising->setScanResponse(true); // xxx needed?
+	pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
+	pAdvertising->setName(msg);
 	pAdvertising->start();
 	return falseObj;
 }
@@ -382,12 +391,12 @@ reportNum("pAdvertising", (int) pAdvertising);
 static OBJ primOctoStopBeam(int argCount, OBJ *args) {
 	if (!pAdvertising) return falseObj; // not initialized thus not beaming
 
-	pAdvertising->stop();
+	BLE_resumeAdvertising();
 	return falseObj;
 }
 
 static OBJ primOctoReceive(int argCount, OBJ *args) {
-	if (!octoInitialized) initOcto();
+	if (!bleScannerRunning) startBLEScanner();
 
 	if (hasOctoMessage) {
 		hasOctoMessage = false;
@@ -395,6 +404,19 @@ static OBJ primOctoReceive(int argCount, OBJ *args) {
 	} else {
 		return falseObj;
 	}
+}
+
+static OBJ primScanReceive(int argCount, OBJ *args) {
+	if (!bleScannerRunning) startBLEScanner();
+	if (!lastScanPayloadLen) return falseObj; // no data
+
+	int wordCount = (lastScanPayloadLen + 3) / 4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (!result) return fail(insufficientMemoryError);
+	memcpy((uint8 *) &FIELD(result, 0), lastScanPayload, lastScanPayloadLen);
+	setByteCountAdjust(result, lastScanPayloadLen);
+
+	return result;
 }
 
 #endif // BLE_OCTO2
@@ -586,6 +608,7 @@ static PrimEntry entries[] = {
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
+		{"scanReceive", primScanReceive},
 	#endif
 
 	#if defined(BLE_KEYBOARD)
