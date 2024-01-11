@@ -277,7 +277,7 @@ static OBJ primOctoScanning(int argCount, OBJ *args) {
 
 #endif // BLE_OCTO
 
-#if defined(BLE_OCTO2)
+#if defined(BLE_IDE) // Include new Octo primtives in standard release
 
 #include <NimBLEDevice.h>
 #include <set>
@@ -374,15 +374,13 @@ static void startBLEScanner() {
 static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
 
-	// Mimics iOS beam
 	char *msg = obj2str(args[0]);
 
+	// Mimic iOS beam; data is encoded in name
 	BLE_stopAdvertising();
 	pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
 	pAdvertising->addServiceUUID(OCTO_UUID_iOS);
-	pAdvertising->setScanResponse(true); // xxx needed?
-	pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
 	pAdvertising->setName(msg);
 	pAdvertising->start();
 	return falseObj;
@@ -419,7 +417,7 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 	return result;
 }
 
-#endif // BLE_OCTO2
+#endif // new Octo primitives
 
 #if defined(BLE_KEYBOARD)
 
@@ -604,7 +602,7 @@ static PrimEntry entries[] = {
 		{"OctoGetOctoShapeId", primOctoGetOctoShapeId},
 	#endif
 
-	#if defined(BLE_OCTO2)
+	#if defined(BLE_IDE)
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
