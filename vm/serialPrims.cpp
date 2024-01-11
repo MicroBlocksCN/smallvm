@@ -17,13 +17,14 @@ static int isOpen = false;
 
 #if defined(NRF51) // not implemented (has only one UART)
 
+static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) { return fail(primitiveNotImplemented); }
 static void serialOpen(int baudRate) { fail(primitiveNotImplemented); }
 static void serialClose() { fail(primitiveNotImplemented); }
 static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2) || ARDUINO_CALLIOPE_MINI_V3 // use UART directly
+#elif defined(NRF52) // use UART directly
 
 // Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
 // not updated correctly. As a work around (hack!), we fill the receive buffer with
@@ -33,8 +34,9 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 // problem in most real applications since 255 bytes are rare in string data, and
 // this work around avoids using a hardware counter, interrupts, or PPI entries.
 
-#define PIN_RX 0
-#define PIN_TX 1
+// Pin numbers for nRF52 boards. May be changed before calling serialOpen().
+uint8 nrf52PinRx = 0;
+uint8 nrf52PinTx = 1;
 
 #define RX_BUF_SIZE 256
 uint8 rxBufA[RX_BUF_SIZE];
@@ -43,6 +45,12 @@ uint8 rxBufB[RX_BUF_SIZE];
 #define INACTIVE_RX_BUF() (((void *) NRF_UARTE1->RXD.PTR == rxBufB) ? rxBufA : rxBufB)
 
 uint8 txBuf[TX_BUF_SIZE];
+
+static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
+	nrf52PinRx = rxPin;
+	nrf52PinTx = txPin;
+	return trueObj;
+}
 
 static void serialClose() {
 	if (!NRF_UARTE1->ENABLE) return; // already stopped
@@ -57,8 +65,8 @@ static void serialOpen(int baudRate) {
 	if (isOpen) serialClose();
 
 	// set pins
-	NRF_UARTE1->PSEL.RXD = g_ADigitalPinMap[PIN_RX];
-	NRF_UARTE1->PSEL.TXD = g_ADigitalPinMap[PIN_TX];
+	NRF_UARTE1->PSEL.RXD = g_ADigitalPinMap[nrf52PinRx];
+	NRF_UARTE1->PSEL.TXD = g_ADigitalPinMap[nrf52PinTx];
 
 	// set baud rate
 	NRF_UARTE1->BAUDRATE = 268 * baudRate;
@@ -137,6 +145,10 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 #else
 	#define SERIAL_PORT Serial1
 #endif
+
+static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
+	return fail(primitiveNotImplemented);
+}
 
 static void serialClose() {
 	isOpen = false;
@@ -297,6 +309,13 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primSetPins(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerIndexError);
+
+	return setNRF52SerialPins(obj2int(args[0]), obj2int(args[1]));
+}
+
 static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	if (!isOpen) return fail(serialPortNotOpen);
 	if (argCount < 2) return fail(notEnoughArguments);
@@ -393,6 +412,7 @@ static PrimEntry entries[] = {
 	{"read", primSerialRead},
 	{"readInto", primSerialReadInto},
 	{"write", primSerialWrite},
+	{"setPins", primSetPins},
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
 	{"midiRecv", primMIDIRecv},
