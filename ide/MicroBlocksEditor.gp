@@ -699,8 +699,8 @@ method processBrowserFileSave MicroBlocksEditor {
 		if (endsWith lastSavedName '.hex') {
 			startFirmwareCountdown (smallRuntime) lastSavedName
 		} (endsWith lastSavedName '.ubp') {
-			// Update the title
-			fileName = (withoutExtension lastSavedName)
+			// Update the title (note: updateTitle will remove the extension)
+			fileName = lastSavedName
 			updateTitle this
 		}
 		if ('_no_file_selected_' == lastSavedName) {
