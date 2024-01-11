@@ -86,7 +86,7 @@ static void initializeRadio() {
 	// The radio configuration is interoperable with the micro:bit DAL radio commands.
 
 	if (radioInitialized) return;
-	stopBLE();
+	BLE_stop();
 	#if defined(USE_NIMBLE)
 		ble_npl_hw_set_isr(RADIO_IRQn, MB_RADIO_IRQHandler);
 	#endif

@@ -210,7 +210,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // Start/Stop BLE
 
-void startBLE() {
+void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
 	// Create BLE Device
@@ -244,7 +244,7 @@ void startBLE() {
 	show_BLE_ID();
 }
 
-void stopBLE() {
+void BLE_stop() {
 	if (!bleRunning) return; // BLE already stopped
 
 	if (connID != -1) { pServer->disconnect(connID); }
@@ -266,7 +266,7 @@ void stopBLE() {
 
 // Stop and resume advertising (for use by Octo primitives)
 
-void BLE_stopAdvertising() {
+void BLE_pauseAdvertising() {
 	if (!pServer) return;
 	pServer->getAdvertising()->stop();
 	pServer->getAdvertising()->removeServiceUUID(NimBLEUUID(SERVICE_UUID));
@@ -339,10 +339,12 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
-void startBLE() { }
-void stopBLE() { }
-void BLE_stopAdvertising() { }
+void BLE_start() { }
+void BLE_stop() { }
+void BLE_pauseAdvertising() { }
 void BLE_resumeAdvertising() { }
+void BLE_setEnabled(int enableFlag) { }
+int BLE_isEnabled() {return false; }
 
 #endif
 
