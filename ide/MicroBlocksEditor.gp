@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -426,10 +426,11 @@ method copyProjectURLToClipboard MicroBlocksEditor {
     projName = (text title)
     codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
   }
-  setClipboard (join
-    'https://microblocks.fun/run/microblocks.html#project='
-	(urlEncode codeString true)
-  )
+  urlPrefix = 'https://microblocks.fun/run/microblocks.html#project='
+  if (isPilot this) {
+    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html#project='
+  }
+  setClipboard (join urlPrefix (urlEncode codeString true))
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -845,9 +846,16 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 // version check
 
+method isPilot MicroBlocksEditor { return (true == isPilot) }
+
 method checkLatestVersion MicroBlocksEditor {
   latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
-  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
+  if ('Browser' == (platform)) {
+    // skip version check in browser/Chromebook but set isPilot based on URL
+    isPilot = (notNil (findSubstring 'run-pilot' (browserURL)))
+    return
+  }
+
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
 
   // sanity checks -- both versions should be lists/arrays of strings representing integers
@@ -858,8 +866,8 @@ method checkLatestVersion MicroBlocksEditor {
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
-	pilot = (current > latest)
-	if pilot {
+	isPilot = (current > latest)
+	if isPilot {
       // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber this)
       for n latestVersion { if (not (representsAnInteger n)) { return }} // sanity check
