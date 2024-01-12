@@ -1162,8 +1162,7 @@ method boardIsBLECapable SmallRuntime {
     if ('connected' != status) { return false }
 	if (isNil boardType) { getVersion this }
     if (isOneOf boardType
-        'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'Databot'
-         'micro:bit v2' 'Mbits') {
+        'Citilab ED1' 'Databot' 'M5Stack-Core' 'ESP32' 'Mbits' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix') {
         return true
     }
     return false
