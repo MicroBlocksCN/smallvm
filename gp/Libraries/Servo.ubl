@@ -82,7 +82,7 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (10 * speed))
+  local 'pulseWidth' (1500 - (5 * speed))
   if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }
