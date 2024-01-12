@@ -1091,6 +1091,9 @@ static void processShortMessage() {
 	case pingMsg:
 		sendMessage(pingMsg, chunkIndex, 0, NULL);
 		break;
+	case enableBLEMsg:
+		BLE_setEnabled(chunkIndex);
+		break;
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
 			processFileMessage(cmd, 0, NULL);

@@ -143,6 +143,7 @@ extern int extraByteDelay;
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define extendedMsg				30
+#define enableBLEMsg			31
 
 // Serial Protocol Messages: CRC Exchange
 
