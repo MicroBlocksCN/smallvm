@@ -417,6 +417,23 @@ method saveProjectToFile MicroBlocksEditor {
   saveProject this nil
 }
 
+method urlPrefix MicroBlocksEditor {
+  if ('Browser' == (platform)) {
+    url = (browserURL)
+    i = (findSubstring '.html' url)
+    if (notNil i) {
+      return (substring url 1 (i + 4))
+    }
+  }
+
+  // stand-alone app
+  urlPrefix = 'https://microblocks.fun/run/microblocks.html'
+  if (isPilot this) {
+    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html'
+  }
+  return urlPrefix
+}
+
 method copyProjectURLToClipboard MicroBlocksEditor {
   // Copy a URL encoding of this project to the clipboard.
 
@@ -426,11 +443,7 @@ method copyProjectURLToClipboard MicroBlocksEditor {
     projName = (text title)
     codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
   }
-  urlPrefix = 'https://microblocks.fun/run/microblocks.html#project='
-  if (isPilot this) {
-    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html#project='
-  }
-  setClipboard (join urlPrefix (urlEncode codeString true))
+  setClipboard (join (urlPrefix this) '#project='(urlEncode codeString true))
 }
 
 method saveProject MicroBlocksEditor fName {
