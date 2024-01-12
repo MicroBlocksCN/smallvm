@@ -1160,7 +1160,6 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
-  addLine menu
 
 if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
@@ -1170,6 +1169,11 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addLine menu
 }
 
+  if (boardIsBLECapable (smallRuntime)) {
+    addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+  }
+
+  addLine menu
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
@@ -1179,6 +1183,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 //	addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
 	addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 	addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
+
 	if ('Browser' != (platform)) {
 	  addLine menu
 	  if (not (isRunning httpServer)) {
