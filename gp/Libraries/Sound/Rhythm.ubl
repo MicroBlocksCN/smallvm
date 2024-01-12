@@ -1,9 +1,10 @@
 module Rhythm Control
 author MicroBlocks
-version 1 3 
+version 1 4 
 description 'Sends broadcasts according to a tempo and time signature. Useful to create musical patterns.
 
-Includes abstractions for note durations, bars and beats.'
+Includes abstractions for note durations, bars and beats.
+'
 variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick 
 
   spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
@@ -31,9 +32,16 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec 'r' 'dotted' '_ .' 'auto' ''
   spec 'r' 'triplet' '‿³ _' 'auto' ''
   space
+  spec ' ' 'wait until next' 'wait until next _' 'auto' ''
+  space
   spec ' ' '_rhythm loop' '_rhythm loop'
   spec 'r' '_rhy duration of note value' '_rhy duration of note value _' 'auto' 4
   spec 'r' '_rhy 2 ^' '_rhy 2 ^ _' 'auto' '10'
+  spec 'r' '_rhy between' '_rhy _ between _ and _' 'auto auto auto' '10' '10' '10'
+
+to '_rhy between' foo a b {
+  return (and (foo >= a) (foo <= b))
+}
 
 to '_rhy 2 ^' n {
   local 'result' 1
@@ -231,6 +239,10 @@ to 'stop playing' {
 
 to triplet duration {
   return ((duration * 2) / 3)
+}
+
+to 'wait until next' duration {
+  waitUntil ('_rhy between' ((timer) % duration) 0 3)
 }
 
 to 'whole duration' {

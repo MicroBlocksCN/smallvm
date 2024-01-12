@@ -1,6 +1,6 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 1 7 
+version 1 8 
 depends Rhythm 
 choices sound_dst 'MIDI channel' 'tone pin' 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
@@ -75,7 +75,7 @@ to arpeggiate 'note list' order duration volume destination channel/pin {
     } else {
       local 'dur' duration
     }
-    if ((at i order) == '0') {
+    if (('[data:convertType]' (at i order) 'number') == 0) {
       waitMillis (dur - ((millisOp) - start))
     } else {
       if (destination == 'MIDI channel') {
