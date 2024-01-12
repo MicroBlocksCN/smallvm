@@ -15,9 +15,9 @@ void setup() {
 	memInit();
 	primsInit();
 	hardwareInit();
-	if (BLE_isEnabled()) BLE_start();
 	outputString((char *) "Welcome to MicroBlocks!");
 	restoreScripts();
+	if (BLE_isEnabled()) BLE_start();
 	startAll();
 }
 

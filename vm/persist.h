@@ -52,6 +52,12 @@ void writeCodeFile(uint8 *code, int byteCount);
 void writeCodeFileWord(int word);
 void clearCodeFile(int cycleCount);
 
+// File operations for storing system state
+
+void createFile(const char *fileName);
+void deleteFile(const char *fileName);
+int fileExists(const char *fileName);
+
 #ifdef __cplusplus
 }
 #endif

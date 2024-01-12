@@ -11,6 +11,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 int BLE_connected_to_IDE = false;
 char BLE_ThreeLetterID[4];
@@ -139,7 +140,7 @@ static void updateConnectionMode() {
 			return;
 		}
 	} else {
-		if (!serviceOnline && !ideConnected()) {
+		if (!serviceOnline && !ideConnected() && pServer) {
 			// lost serial connection; restore service and advertising
 			pServer->addService(pService);
 			pServer->getAdvertising()->start();
@@ -320,6 +321,38 @@ int sendBytes(uint8 *buf, int start, int end) {
 
 	// use BLE connection
 	return bleSendData(&buf[start], end - start);
+}
+
+#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
+
+void BLE_setEnabled(int enableFlag) {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
+
+		if (enableFlag) {
+			deleteFile(BLE_DISABLED_FILE);
+		} else {
+			createFile(BLE_DISABLED_FILE);
+		}
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+	#endif
+
+	if (enableFlag) {
+		BLE_start();
+	} else {
+		BLE_stop();
+	}
+}
+
+int BLE_isEnabled() {
+	#if defined(ARDUINO_ARCH_ESP32)
+		return !fileExists(BLE_DISABLED_FILE);
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+		return true;
+	#endif
+	return false;
 }
 
 #else
