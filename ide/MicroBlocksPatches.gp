@@ -957,9 +957,11 @@ method copyScriptsToClipboardAsURL ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
   scriptsString = (allScriptsString (handler scripter))
-  setClipboard (join
-      'https://microblocks.fun/run/microblocks.html#scripts='
-	  (urlEncode scriptsString true))
+  urlPrefix = 'https://microblocks.fun/run/microblocks.html#scripts='
+  if (isPilot (findMicroBlocksEditor)) {
+    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html#scripts='
+  }
+  setClipboard (join urlPrefix (urlEncode scriptsString true))
 }
 
 // Color picker tweak

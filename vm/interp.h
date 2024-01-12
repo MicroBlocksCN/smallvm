@@ -143,6 +143,7 @@ extern int extraByteDelay;
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define extendedMsg				30
+#define enableBLEMsg			31
 
 // Serial Protocol Messages: CRC Exchange
 
@@ -350,10 +351,15 @@ void tftSetHugePixelBits(int bits);
 extern int BLE_connected_to_IDE;
 extern char BLE_ThreeLetterID[4];
 
-void startBLE();
-void stopBLE();
-void BLE_stopAdvertising();
+void BLE_start();
+void BLE_stop();
+
+void BLE_pauseAdvertising();
 void BLE_resumeAdvertising();
+
+void BLE_setEnabled(int enableFlag);
+int BLE_isEnabled();
+
 void getMACAddress(uint8 *sixBytes);
 
 // Primitive Sets

@@ -90,7 +90,7 @@ static OBJ primHasWiFi(int argCount, OBJ *args) {
 
 static OBJ primAllowWiFiAndBLE(int argCount, OBJ *args) {
 	allowBLE_and_WiFi = (argCount > 0) && (trueObj == args[0]);
-	if (allowBLE_and_WiFi) startBLE();
+	if (allowBLE_and_WiFi) BLE_start();
 	return falseObj;
 }
 
@@ -103,7 +103,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	if (!allowBLE_and_WiFi) {
 		if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
-		stopBLE();
+		BLE_stop();
 	}
 
 	char *networkName = obj2str(args[0]);

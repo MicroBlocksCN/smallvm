@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -426,10 +426,11 @@ method copyProjectURLToClipboard MicroBlocksEditor {
     projName = (text title)
     codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
   }
-  setClipboard (join
-    'https://microblocks.fun/run/microblocks.html#project='
-	(urlEncode codeString true)
-  )
+  urlPrefix = 'https://microblocks.fun/run/microblocks.html#project='
+  if (isPilot this) {
+    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html#project='
+  }
+  setClipboard (join urlPrefix (urlEncode codeString true))
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -699,8 +700,8 @@ method processBrowserFileSave MicroBlocksEditor {
 		if (endsWith lastSavedName '.hex') {
 			startFirmwareCountdown (smallRuntime) lastSavedName
 		} (endsWith lastSavedName '.ubp') {
-			// Update the title
-			fileName = (withoutExtension lastSavedName)
+			// Update the title (note: updateTitle will remove the extension)
+			fileName = lastSavedName
 			updateTitle this
 		}
 		if ('_no_file_selected_' == lastSavedName) {
@@ -845,9 +846,16 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 // version check
 
+method isPilot MicroBlocksEditor { return (true == isPilot) }
+
 method checkLatestVersion MicroBlocksEditor {
   latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
-  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
+  if ('Browser' == (platform)) {
+    // skip version check in browser/Chromebook but set isPilot based on URL
+    isPilot = (notNil (findSubstring 'run-pilot' (browserURL)))
+    return
+  }
+
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
 
   // sanity checks -- both versions should be lists/arrays of strings representing integers
@@ -858,8 +866,8 @@ method checkLatestVersion MicroBlocksEditor {
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
-	pilot = (current > latest)
-	if pilot {
+	isPilot = (current > latest)
+	if isPilot {
       // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber this)
       for n latestVersion { if (not (representsAnInteger n)) { return }} // sanity check
@@ -1152,7 +1160,6 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
-  addLine menu
 
 if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
@@ -1162,6 +1169,11 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addLine menu
 }
 
+  if (boardIsBLECapable (smallRuntime)) {
+    addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+  }
+
+  addLine menu
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
@@ -1171,6 +1183,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 //	addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
 	addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 	addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
+
 	if ('Browser' != (platform)) {
 	  addLine menu
 	  if (not (isRunning httpServer)) {

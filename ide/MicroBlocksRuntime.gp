@@ -1155,6 +1155,29 @@ method installBoardSpecificBlocks SmallRuntime {
 	}
 }
 
+// BLE Control
+
+method boardIsBLECapable SmallRuntime {
+    status = (updateConnection this)
+    if ('connected' != status) { return false }
+	if (isNil boardType) { getVersion this }
+    if (isOneOf boardType
+        'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'Databot'
+         'micro:bit v2' 'Mbits') {
+        return true
+    }
+    return false
+}
+
+method setBLEFlag SmallRuntime {
+    enableBLE = (confirm (global 'page') nil 'Allow the attached board to be connected via BLE?')
+    if enableBLE {
+        sendMsg this 'enableBLEMsg' 1
+    } else {
+        sendMsg this 'enableBLEMsg' 0
+    }
+}
+
 method clearBoardIfConnected SmallRuntime doReset {
 	if (notNil port) {
 		sendStopAll this
@@ -1769,6 +1792,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
+		atPut msgDict 'enableBLEMsg' 31
 		atPut msgDict 'getAllCRCsMsg' 38
 		atPut msgDict 'allCRCsMsg' 39
 		atPut msgDict 'deleteFile' 200

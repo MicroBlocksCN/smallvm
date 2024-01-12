@@ -1215,8 +1215,8 @@ function download(filename, text) {
 }
 
 async function GP_writeFile(data, fName, id) {
-	// Write the given data to the given file. fName should including an extension.
-	// id is hint for the operation type (e.g. 'project' for saving a project file.
+	// Write the given data to the given file. fName should include an extension.
+	// id is hint for the operation type (e.g. 'project' for saving a project file).
 	// The browser remembers the folder for the last save with that id.
 
 	function onFileSelected(entry) {

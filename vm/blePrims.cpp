@@ -377,7 +377,7 @@ static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	char *msg = obj2str(args[0]);
 
 	// Mimic iOS beam; data is encoded in name
-	BLE_stopAdvertising();
+	BLE_pauseAdvertising();
 	pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
 	pAdvertising->addServiceUUID(OCTO_UUID_iOS);

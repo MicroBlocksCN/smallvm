@@ -11,6 +11,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 int BLE_connected_to_IDE = false;
 char BLE_ThreeLetterID[4];
@@ -139,7 +140,7 @@ static void updateConnectionMode() {
 			return;
 		}
 	} else {
-		if (!serviceOnline && !ideConnected()) {
+		if (!serviceOnline && !ideConnected() && pServer) {
 			// lost serial connection; restore service and advertising
 			pServer->addService(pService);
 			pServer->getAdvertising()->start();
@@ -210,7 +211,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // Start/Stop BLE
 
-void startBLE() {
+void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
 	// Create BLE Device
@@ -244,7 +245,7 @@ void startBLE() {
 	show_BLE_ID();
 }
 
-void stopBLE() {
+void BLE_stop() {
 	if (!bleRunning) return; // BLE already stopped
 
 	if (connID != -1) { pServer->disconnect(connID); }
@@ -266,7 +267,7 @@ void stopBLE() {
 
 // Stop and resume advertising (for use by Octo primitives)
 
-void BLE_stopAdvertising() {
+void BLE_pauseAdvertising() {
 	if (!pServer) return;
 	pServer->getAdvertising()->stop();
 	pServer->getAdvertising()->removeServiceUUID(NimBLEUUID(SERVICE_UUID));
@@ -322,6 +323,38 @@ int sendBytes(uint8 *buf, int start, int end) {
 	return bleSendData(&buf[start], end - start);
 }
 
+#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
+
+void BLE_setEnabled(int enableFlag) {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
+
+		if (enableFlag) {
+			deleteFile(BLE_DISABLED_FILE);
+		} else {
+			createFile(BLE_DISABLED_FILE);
+		}
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+	#endif
+
+	if (enableFlag) {
+		BLE_start();
+	} else {
+		BLE_stop();
+	}
+}
+
+int BLE_isEnabled() {
+	#if defined(ARDUINO_ARCH_ESP32)
+		return !fileExists(BLE_DISABLED_FILE);
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+		return true;
+	#endif
+	return false;
+}
+
 #else
 
 // Serial Communications Only
@@ -339,10 +372,12 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
-void startBLE() { }
-void stopBLE() { }
-void BLE_stopAdvertising() { }
+void BLE_start() { }
+void BLE_stop() { }
+void BLE_pauseAdvertising() { }
 void BLE_resumeAdvertising() { }
+void BLE_setEnabled(int enableFlag) { }
+int BLE_isEnabled() {return false; }
 
 #endif
 
