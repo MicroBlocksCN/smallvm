@@ -1,6 +1,6 @@
 module Servo Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags servo motor angle rotation position 
 description 'Control both positional (angle) and rotational servo motors.'
 variables _servoPin _servoPulseWidth 
