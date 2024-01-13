@@ -2158,6 +2158,12 @@ virtual machine version
 update firmware on board
 升级主板固件
 
+enable or disable BLE
+打开或关闭 BLE
+
+Allow the attached board to be connected via BLE?
+允许通过 BLE 对板子进行无线编程?
+
 show data graph
 显示数据图表
 
