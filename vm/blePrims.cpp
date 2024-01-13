@@ -313,11 +313,6 @@ static void recordOctoData(std::string data) {
 
 class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 	void onResult(BLEAdvertisedDevice* advertisedDevice) {
-		// capture scan payload
-		lastScanPayloadLen = advertisedDevice->getPayloadLength();
-		if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
-		memcpy(lastScanPayload, advertisedDevice->getPayload(), lastScanPayloadLen);
-
 		if (advertisedDevice->haveServiceUUID()) {
 			// iOS
 			BLEUUID serviceUUID = advertisedDevice->getServiceUUID();
@@ -345,6 +340,11 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 				}
 			}
 		}
+
+		// capture scan payload
+		lastScanPayloadLen = advertisedDevice->getPayloadLength();
+		if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
+		memcpy(lastScanPayload, advertisedDevice->getPayload(), lastScanPayloadLen);
 	}
 };
 
