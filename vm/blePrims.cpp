@@ -408,11 +408,13 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 	if (!bleScannerRunning) startBLEScanner();
 	if (!lastScanPayloadLen) return falseObj; // no data
 
-	int wordCount = (lastScanPayloadLen + 3) / 4;
+	int byteCount = lastScanPayloadLen;
+	int wordCount = (byteCount + 3) / 4;
 	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
 	if (!result) return fail(insufficientMemoryError);
-	memcpy((uint8 *) &FIELD(result, 0), lastScanPayload, lastScanPayloadLen);
-	setByteCountAdjust(result, lastScanPayloadLen);
+	memcpy((uint8 *) &FIELD(result, 0), lastScanPayload, byteCount);
+	setByteCountAdjust(result, byteCount);
+	lastScanPayloadLen = 0;
 
 	return result;
 }
