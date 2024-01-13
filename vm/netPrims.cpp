@@ -103,11 +103,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	if (!allowBLE_and_WiFi) {
 		if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
-<<<<<<< HEAD
 		BLE_stop();
-=======
-		stopBLE();
->>>>>>> c06a417a (将 vm/netPrims.cpp 更新到官方最新版本)
 	}
 
 	char *networkName = obj2str(args[0]);
