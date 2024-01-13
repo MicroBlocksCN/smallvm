@@ -205,6 +205,7 @@ int initCodeFile(uint8 *flash, int flashByteCount) { return 0; }
 void writeCodeFile(uint8 *code, int byteCount) { }
 void writeCodeFileWord(int word) { }
 void clearCodeFile(int ignore) { }
+void BLE_setEnabled(int enableFlag) { }
 
 // Main loop
 
