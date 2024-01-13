@@ -2112,6 +2112,10 @@ virtual machine version
 
 update firmware on board
 
+enable or disable BLE
+
+Allow the attached board to be connected via BLE?
+
 show data graph
 
 set serial delay
