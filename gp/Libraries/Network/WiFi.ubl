@@ -1,6 +1,6 @@
 module WiFi Comm
 author MicroBlocks
-version 1 7 
+version 1 8 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
@@ -50,6 +50,10 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
   '[net:startWiFi]' ssid password true
   if ('Connected' != ('[net:wifiStatus]')) {
     sayIt 'Could not create hotspot'
