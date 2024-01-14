@@ -361,6 +361,7 @@ static void startBLEScanner() {
 		pOctoScanner->setAdvertisedDeviceCallbacks(new BLEScannerCallbacks());
 		pOctoScanner->setMaxResults(0); // don't save results; use callback only
 		pOctoScanner->setActiveScan(true); // required by Octo
+		pOctoScanner->setDuplicateFilter(false); // good ???
 		// following setting do not seem to be necessary:
 		// pOctoScanner->setInterval(100);
 		// pOctoScanner->setWindow(100);
@@ -382,6 +383,8 @@ static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	pAdvertising->reset();
 	pAdvertising->addServiceUUID(OCTO_UUID_iOS);
 	pAdvertising->setName(msg);
+	pAdvertising->setMinInterval(32);
+	pAdvertising->setMaxInterval(32);
 	pAdvertising->start();
 	return falseObj;
 }
@@ -389,6 +392,7 @@ static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 static OBJ primOctoStopBeam(int argCount, OBJ *args) {
 	if (!pAdvertising) return falseObj; // not initialized thus not beaming
 
+	BLEDevice::getAdvertising()->removeServiceUUID(NimBLEUUID(OCTO_UUID_iOS));
 	BLE_resumeAdvertising();
 	return falseObj;
 }
