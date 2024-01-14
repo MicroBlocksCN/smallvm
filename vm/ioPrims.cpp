@@ -750,6 +750,20 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+	
+#elif defined(HALOCODE)
+	#define BOARD_TYPE "Halocode"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 26
+	#define PIN_LED 0
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(FUTURE_LITE)
 	#define BOARD_TYPE "FUTURE-LITE"
@@ -1434,6 +1448,8 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
+		#elif defined(HALOCODE)
+			SET_MODE(PIN_BUTTON_A, INPUT);			
 		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_ARCH_ESP32) || \
 			  defined(ESP8266) || defined(M5STAMP)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
