@@ -319,10 +319,13 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 			std::string UUID_string = serviceUUID.toString().c_str();
 			if (UUID_string == OCTO_UUID_iOS) {
 				std::string deviceName = advertisedDevice->getName();
-				if ((deviceName != "0000000000000000") && (receivedOctoDatas.find(deviceName) == receivedOctoDatas.end())) {
-					shape_id = deviceName.back() - '0';
-					recordOctoData(deviceName);
-					hasOctoMessage = true;
+				if ((deviceName.length() == 16) &&
+					(deviceName != "0000000000000000") &&
+					(receivedOctoDatas.find(deviceName) == receivedOctoDatas.end())) {
+						recordOctoData(deviceName);
+						shape_id = deviceName.back() - '0';
+						if (shape_id < 0) shape_id = 255; // shouldn't happen
+						hasOctoMessage = true;
 				}
 			}
 		}
