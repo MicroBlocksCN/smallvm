@@ -1,6 +1,6 @@
 module databot
 author MicroBlocks
-version 1 4 
+version 1 5 
 depends 'Air Pressure (LPS22HB)' 'Gas (SGP30)' 'Temperature Humidity (SHTC3)' 'Light & Gesture (APDS9960)' 
 choices databot_tempUnits '°C' '°F' 
 description ''
@@ -26,7 +26,7 @@ variables _databot_pixels
   spec 'r' 'databot_temp_probe1' 'databot temp probe 1 _ (x10)' 'menu.databot_tempUnits' '°C'
   spec 'r' 'databot_temp_probe2' 'databot temp probe 2 _ (x10)' 'menu.databot_tempUnits' '°C'
   space
-  spec 'r' 'databot_magnetic_field' 'databot magenetic field'
+  spec 'r' 'databot_magnetic_field' 'databot magnetic field'
   space
   spec ' ' '_databot_initLEDs' '_databot_initLEDs'
   spec 'r' '_databot_DS18B20_address' '_databot_DS18B20_address pin _' 'num' 4
