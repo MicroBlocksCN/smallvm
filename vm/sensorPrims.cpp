@@ -35,6 +35,12 @@
 #elif defined(WUKONG2040)
 	#define PIN_WIRE_SCL 17
 	#define PIN_WIRE_SDA 16
+#elif defined(STICK_HAT)
+	#define PIN_WIRE_SCL 26
+	#define PIN_WIRE_SDA 0
+#elif defined(HALOCODE)
+	#define PIN_WIRE_SCL 18
+	#define PIN_WIRE_SDA 19
 #elif defined(ARDUINO_Mbits)
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
