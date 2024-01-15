@@ -899,6 +899,9 @@ display _
 clear display
 清除显示
 
+set display color _
+设置显示颜色 _
+
 plot x _ y _
 点亮 x _ y _
 
