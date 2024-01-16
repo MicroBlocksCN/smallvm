@@ -1,8 +1,7 @@
 module main
-author unknown
-version 1 0 
+author MicroBlocks
+version 1 0
 description ''
-variables lastName 
 
 script 43 43 {
 whenCondition (bleScan_scanReceived)
@@ -15,9 +14,9 @@ if (and (name != '') (name != '0000000000000000')) {
 
 module 'BLE Scanner' Input
 author MicroBlocks
-version 1 0 
+version 1 0
 description ''
-variables _bleScan_data 
+variables _bleScan_data
 
   spec 'r' 'bleScan_scanReceived' 'scan received'
   space
