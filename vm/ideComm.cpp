@@ -233,15 +233,10 @@ void BLE_start() {
 
 	// Start the service
 	pService->start();
-
-	// Add the service to the advertisment data
-	pServer->getAdvertising()->addServiceUUID(pService->getUUID());
-
-	// Start advertising
-	pServer->getAdvertising()->setName(uniqueName);
-	pServer->getAdvertising()->start();
 	serviceOnline = true;
 	bleRunning = true;
+
+	BLE_resumeAdvertising();
 	show_BLE_ID();
 }
 
@@ -280,6 +275,8 @@ void BLE_resumeAdvertising() {
 	pAdvertising->reset();
 	pAdvertising->addServiceUUID(SERVICE_UUID);
 	pAdvertising->setName(uniqueName);
+	pAdvertising->setMinInterval(100);
+	pAdvertising->setMaxInterval(200);
 	if (serviceOnline) pAdvertising->start();
 }
 
