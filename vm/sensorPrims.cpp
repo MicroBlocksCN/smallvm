@@ -1452,7 +1452,12 @@ static uint8_t dhtData[5];
   #define __not_in_flash_func(f) (f)
 #endif
 
-#if !defined(USE_NIMBLE)
+#if defined(USE_NIMBLE) && defined(NRF52)
+
+// for now, stub out readDHT() when using NimBLE because pulseIn() function gives linker error
+static int readDHTData(int pin) { return false; }
+
+#else
 
 static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
@@ -1478,11 +1483,6 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 	setPinMode(pin, INPUT);
 	return true;
 }
-
-#else
-
-// for now, stub out readDHT() when using NimBLE because pulseIn() function gives linker error
-static int readDHTData(int pin) { return false; }
 
 #endif
 
