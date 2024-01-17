@@ -1320,19 +1320,22 @@ static int currentTaskIndex = -1;
 
 #if !defined(EMSCRIPTEN)
 
-void interpretStep() {
-	// Run the interpreter for little while.
+void vmLoop() {
+	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
-	// do housekeeping tasks
-	processMessage();
-	checkButtons();
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-		defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-		defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
-			updateMicrobitDisplay();
-	#endif
-
-	for (int step = 0; step < 100; step++) { // run multiple task scheduler cycles before returning
+	int count = 0;
+	while (true) {
+		if (count-- < 0) {
+			// do background VM tasks once every N VM loop cycles
+			processMessage();
+			checkButtons();
+			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
+				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
+					updateMicrobitDisplay();
+			#endif
+			count = 100; // must be under 30 when building on mbed to avoid serial errors
+		}
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
@@ -1355,6 +1358,12 @@ void interpretStep() {
 				break;
 			}
 		}
+		if (taskSleepMSecs) {
+			// if any task called taskSleep(), do VM background tasks sooner
+			taskSleepMSecs = 0;
+			count = (count < 5) ? count : 5;
+		}
+
 #ifdef GNUBLOCKS
 		if (!runCount) { // no active tasks; consider taking a nap
 			if (!usecs) usecs = microsecs(); // get usecs
