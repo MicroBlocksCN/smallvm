@@ -1,7 +1,8 @@
 module MIDI Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
+choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
 choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
@@ -38,7 +39,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
   space
-  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _ : use USB MIDI _' 'auto bool' 8 false
+  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto._midiPin' 8
   space
   spec ' ' '_MIDI init' '_MIDI init'
   space
@@ -211,9 +212,9 @@ to 'send note' 'midi note' on/off channel volume {
   }
 }
 
-to 'set MIDI pin' pin USB {
+to 'set MIDI pin' pin {
   '[serial:close]'
-  if USB {
+  if ('USB' == pin) {
     _MIDI_pin = 'USB'
   } else {
     if (isType pin 'list') {
