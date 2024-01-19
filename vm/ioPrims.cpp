@@ -202,7 +202,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 41
 	#define ANALOG_PINS 8
 	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {0, 1, 2, 18, 4, 10, 29, 16}; // variant.h seems wrong
+	static const int analogPin[] = {0, 1, 2, 18, 4, 10, 16, 29}; // variant.h seems wrong
 	#define DEFAULT_TONE_PIN 27
 
 #elif defined(ARDUINO_SINOBIT)
@@ -914,8 +914,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if (0 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
 	#if defined(CALLIOPE_V3)
+	static const int analogPin[] = {0, 1, 2, 18, 4, 10, 16, 29}; // variant.h seems wrong
 		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
-		if (16 == pinNum) pinNum = 7; // map pin 16 to A7
+		if (16 == pinNum) pinNum = 6; // map pin 16 to A6
 		if (18 == pinNum) pinNum = 3; // map pin 18 to A3
 		if (29 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
