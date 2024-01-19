@@ -693,13 +693,21 @@ OBJ primFind(int argCount, OBJ *args) {
 		int targetSize = BYTES(arg1);
 		if (startOffset > targetSize) return int2obj(-1); // not found
 		uint8 *sought;
-		int soughtSize;
+		int soughtSize = 0;
 		if (IS_TYPE(arg0, ByteArrayType)) {
 			sought = (uint8 *) &FIELD(arg0, 0);
 			soughtSize = BYTES(arg0);
 		} else if (IS_TYPE(arg0, StringType)) {
 			sought = (uint8 *) obj2str(arg0);
 			soughtSize = stringSize(arg0);
+		} else if (isInt(arg0)) {
+			// search for a byte in a ByteArray
+			int soughtByte = obj2int(arg0);
+			if ((soughtByte < 0) || (soughtByte > 255)) return fail(byteOutOfRange);
+			for (int i = startOffset - 1; i <= targetSize; i++) {
+				if (target[i] == soughtByte) return int2obj(i + 1);
+			}
+			return int2obj(-1);
 		} else {
 			// a ByteArray can be searched for a String or ByteArray
 			return fail(nonComparableError);
