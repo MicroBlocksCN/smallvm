@@ -438,7 +438,7 @@ static int readTemperature() {
 	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 static int internalWireStarted = false;
 
@@ -523,6 +523,11 @@ static int readAcceleration(int registerID) {
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = sign * ((val * 200) / 127); // scale to range 0-200 and multiply by sign
+
+	#if defined(CALLIOPE_V3)
+		// flip y and z on Calliope V3
+		if ((3 == registerID) || (5 == registerID)) val = -val;
+	#endif
 	return val;
 }
 
@@ -1179,7 +1184,8 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 
 	if (!accelStarted) readAcceleration(1); // initialize the accelerometer
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || \
+		defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		if (accel_unknown == accelType) startAccelerometer();
 		switch (accelType) {
 		case accel_MMA8653:

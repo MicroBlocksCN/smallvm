@@ -35,8 +35,13 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 // this work around avoids using a hardware counter, interrupts, or PPI entries.
 
 // Pin numbers for nRF52 boards. May be changed before calling serialOpen().
-uint8 nrf52PinRx = 0;
-uint8 nrf52PinTx = 1;
+#if defined(CALLIOPE_V3)
+	uint8 nrf52PinRx = 16;
+	uint8 nrf52PinTx = 17;
+#else
+	uint8 nrf52PinRx = 0;
+	uint8 nrf52PinTx = 1;
+#endif
 
 #define RX_BUF_SIZE 256
 uint8 rxBufA[RX_BUF_SIZE];
