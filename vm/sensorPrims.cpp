@@ -1670,7 +1670,7 @@ static int readDigitalMicrophone() {
 	return micBuffer[micNextSample++];
 }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 int readAnalogMicrophone() {
 	const int micPin = SAADC_CH_PSELP_PSELP_AnalogInput3;
@@ -1711,8 +1711,13 @@ int readAnalogMicrophone() {
 
 	NRF_SAADC->ENABLE = 0;
 
+	#if defined(ARDUINO_BBC_MICROBIT_V2)
+		#define ZERO_OFFSET 556
+	#elif defined(CALLIOPE_V3)
+		#define ZERO_OFFSET 548
+	#endif
 	int result = value;
-	result = (result <= 0) ? 0 : result - 556; // if microphone is on, adjust so silence is zero
+	result = (result <= 0) ? 0 : result - ZERO_OFFSET; // if microphone is on, adjust so silence is zero
 	return result << 1; // double result to give a range similar to other boards
 }
 

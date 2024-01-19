@@ -883,7 +883,7 @@ int mapDigitalPinNum(int pinNum) {
 	return pinNum;
 }
 
-#if defined(ARDUINO_BBC_MICROBIT_V2)
+#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 static void setHighDrive(int pin) {
 	if ((pin < 0) || (pin >= PINS_COUNT)) return;
@@ -912,6 +912,12 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#endif
 	#if defined(ARDUINO_CALLIOPE_MINI)
 		if (0 == pinNum) return int2obj(readAnalogMicrophone());
+	#endif
+	#if defined(CALLIOPE_V3)
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+		if (16 == pinNum) pinNum = 7; // map pin 16 to A7
+		if (18 == pinNum) pinNum = 3; // map pin 18 to A3
+		if (29 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
 	#ifdef ARDUINO_CITILAB_ED1
 		if ((100 <= pinNum) && (pinNum <= 139)) {
@@ -1052,7 +1058,7 @@ void primAnalogWrite(OBJ *args) {
 		(void)(modeChanged); // reference var to suppress compiler warning
 
 		SET_MODE(pinNum, OUTPUT);
-		#if defined(ARDUINO_BBC_MICROBIT_V2)
+		#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 			if ((27 == pinNum) && modeChanged) setHighDrive(pinNum); // use high drive for speaker
 		#endif
 	#endif
@@ -1190,7 +1196,7 @@ void primDigitalSet(int pinNum, int flag) {
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		if (28 == pinNum) {
 			stopPWM();
 			setHighDrive(pinNum); // use high drive for microphone
