@@ -1,0 +1,232 @@
+module 'OLED 汉字' Output
+author 'Turgut Guneysu 与 梁财兵'
+version 0 2
+description '在 Turgut Guneysu 的1306 OLED 驱动上增加了汉字点阵库。'
+variables _chDecTBL _chTABLE _initChs
+
+  spec ' ' 'OLEDwriteChs' '显示汉字 _ 在 x _ y _ 反色 _' 'str auto auto bool' '你好世界' 0 0 false
+  spec ' ' 'OLEDdrawImageWH' '显示 图像 _ 在 x _ y _ : 宽 _ 高 _ ' 'auto num num num num' '0' 0 0 5 5
+  spec 'r' 'OLEDmakeDotImage' '点阵图 从字符串 _ ' 'str' '048850FF518A0401000007040201'
+  spec ' ' 'userChLibrary' '自定义字库(1-10) _ 从16进制字符串 _' 'str str' '汉字' '112200023EC20282621E0000040209080402010204080800
+0C0424242526A46424040C0001010109090F010101010100'
+  spec 'r' 'ChsLibrary' '当前汉字库'
+  spec ' ' '_chT1' '_chT1'
+  spec ' ' '_chT2' '_chT2'
+  spec ' ' '_chT3' '_chT3'
+  spec ' ' '_initChsChars' '_initChsChars'
+  spec ' ' '_initChsCheck' '_initChsCheck'
+  spec 'r' '_chBMP' '_chBMP _ invFlag _' 'str bool' '' false  
+  spec 'r' 'BLEname' '蓝牙名称'
+
+to ChsLibrary {
+  '_initChsCheck'
+  sayIt _chTABLE
+  return _chTABLE
+}
+
+to OLEDdrawImageWH image x y w h {
+  comment '_imgHeight has to be mod8 or 1-8'
+  if ((pushArgCount) > 3) {
+    _imgWidth = w
+    _imgHeight = h
+  }
+  for row# (maximum 1 (((minimum _imgHeight (64 - y)) + 7) / 8)) {
+    local 'GDidx' ((((y / 8) * 128) + x) + 1)
+    local 'imgDispl' ((row# - 1) * _imgWidth)
+    for byte# (minimum _imgWidth (128 - x)) {
+      comment 'If y is on page boundary, just copy'
+      if (0 == (y % 8)) {
+        atPut GDidx _GDBuffer (at (imgDispl + byte#) image)
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      } else {
+        comment 'Else, copy GDLowBits + shiftedByte + GDHiBits to GDBuffer and GDBuffer +128'
+        local 'shiftedByte' ('_dec2hex' ((at (imgDispl + byte#) image) << (y % 8)))
+        local 'temp' 0
+        local 'tempHI' ('[data:copyFromTo]' shiftedByte 1 2)
+        local 'tempLO' ('[data:copyFromTo]' shiftedByte 3 4)
+        local 'GDLowBits' ((1 << (y % 8)) - 1)
+        local 'GDHiBits' (255 - GDLowBits)
+        tempLO = ((hexToInt tempLO) | ((at GDidx _GDBuffer) & GDLowBits))
+        atPut GDidx _GDBuffer tempLO
+        if ((GDidx + 128) <= 1024) {
+          tempHI = ((hexToInt tempHI) | ((at (GDidx + 128) _GDBuffer) & GDHiBits))
+          atPut (GDidx + 128) _GDBuffer tempHI
+        }
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      }
+      waitMillis 0
+    }
+    y += 8
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDwriteChs string x y invFlag {
+  '_initCheck'
+  '_initChsCheck'
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
+  '_verifyXY' x y
+  local 'origX' x
+  if (not (isType string 'string')) {
+    string = ('[data:join]' '' string)
+  }
+  for char string {
+    comment 'If in table process it - LINE SET is not supported.'
+    if (('[data:find]' char _chTABLE) != -1) {
+      OLEDdrawImageWH ('_chBMP' char invFlag) x y 12 12
+      x += 12
+      if (x > 127) {
+        x = origX
+        y += 8
+        if (y > 63) {
+          y = 0
+        }
+      }
+    } (13 == ('[data:unicodeAt]' 1 char)) {
+      noop
+    } (10 == ('[data:unicodeAt]' 1 char)) {
+      x = origX
+      y += 8
+      if (y > 63) {
+        y = 0
+      }
+    } else {
+      comment 'bad char - STOP'
+      sayIt '无效字符' char 'uniCode:' ('[data:unicodeAt]' 1 char)
+      stopTask
+    }
+  }
+  _textX = x
+  _textY = y
+  _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDmakeDotImage s {
+  comment '取模方式为列行式低位在前，
+即从第一列开始向下取8个点作为一个字节，
+然后从第二列开始向下取8个点作为第二个字节……
+依此类推。如果最后不足8个点就补满8位。
+结果字符串为两位16进制表示。'
+  local 'list' ('[data:makeList]')
+  local 's#' ''
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    s# = ('[data:join]' s# line)
+  }
+  for i ('[data:range]' 1 (size s#) 2) {
+    '[data:addLast]' (hexToInt ('[data:join]' (at i s#) (at (i + 1) s#))) list
+  }
+  return list
+}
+
+to 'userChLibrary' string hexStr {
+  if ((size string) > 10) {
+    sayIt '自定义字库最多10个汉字!'
+    stopTask
+  }
+  '_initChsChars'
+  _chTABLE = ('[data:join]' _chTABLE string)
+  local '_chHex4' ''
+  for line ('[data:split]' hexStr ('[data:unicodeString]' 10)) {
+    _chHex4 = ('[data:join]' _chHex4 line)
+  }
+  if ((size _chHex4) != ((size string) * 48)) {
+    sayIt '16进制字符串的长度有误！'
+    stopTask
+  }
+  local 'idx' 1
+  for i (size _chHex4) {
+    atPut (720 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHex4 idx (idx + 1)))
+    idx += 2
+  }
+  _chHex4 = ''
+}
+
+to '_chT1' {
+  comment '你好世界蓝牙无线物联'
+  local '_chHEX1' '2010FC0310CF04F404548C0000000F000201080F0000030088780F88784242F24A464000080502050800080F000000001010FE1010FF1010FF10100000000F080809090909080800809F9555553F5555959F8000000804030000000F000000000272077A02221A1237521200080F09090F090F09090F080000322A2222A262FE22222000040402020108080F0000000020222222E23EE22222222000080402010000070808080E0098D4B388004848FF24A52600040402020808040305080E009C88FF4808C73C847C04FC0000000F00090402010808070002FE52FE42494AF84A4940000203020F0904030003040800'
+  local 'idx' 1
+  for i 240 {
+    atPut i _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX1 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX1 = ''
+}
+
+to '_chT2' {
+  comment '网络址天气温湿度℃晴'
+  local '_chHEX2' 'FF099161910991619109FF000F0100000001000008090F0098D4B38848C4AB92AAC6400004040202000F0404040F00001010FF1000F80000FF10100004040302080F08080F08080020222222A27EA2222222200008080402010001020408080008242B2A2A2A2A2AEA0A0200000000000000000003040E00224400C05FD555D55FC000000402090F080F080F080F08001122803E2AEA2AEA2A3E800004020809080F080F0809080000FE0A8ABEAAABAABE8A0A0008070008090A04040A090800020502F804020202040E8000000000000102020202010000FE22FE0022EAAABFAAEA220007020700000F02020A0F0000'
+  local 'idx' 1
+  for i 256 {
+    atPut (240 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX2 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX2 = ''
+}
+
+to '_chT3' {
+  comment '阴多云小中大雨掌控板'
+  local '_chHEX3' 'FF0119E700FF494949FF00000F02020904030008080F00009090485423924A6652C0400008080809050403020100000020202222A2622222222020000004060504040405060C000000C0300000FF00001060800001000008080F00000000010000F8888888FF888888F8000000010000000F00000001000010101010D03FD01010101000080804030000000304080800F909294909FF09294909F9000F000102000700010A080F000642435E56D7565E43020600040405050D0F05050504040088FF48004CA4958694A44C00080F00000808080F080808008868FF2840FE12F21291710000000F080403080502050800'
+  local 'idx' 1
+  for i 240 {
+    atPut (480 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX3 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX3 = ''
+}
+
+to '_chBMP' char invFlag {
+  local 'key' (('[data:find]' char _chTABLE) * 24)
+  local 'charList' ('[data:copyFromTo]' _chDecTBL (key - 23) key)
+  comment 'inverse'
+  if invFlag {
+    for item# (size charList) {
+      atPut item# charList ((at item# charList) ^ 255)
+    }
+  }
+  _imgWidth = 12
+  _imgHeight = 12
+  return charList
+}
+
+to '_initChsChars' {
+  _chTABLE = ('[data:join]' '你好世界' '蓝牙无线物联网络址天气温湿度℃晴阴多云小中大雨掌控板')
+  if (_initChs == 0) {
+    _chDecTBL = ('[data:newByteArray]' 960 255)
+  }
+}
+
+to '_initChsCheck' {
+  if (_initChs == 0) {
+    '_initChsChars'
+    '_chT1'
+    '_chT2'
+    '_chT3'
+    _initChs = 1
+  }
+}
+
+to BLEname {
+  local 'uniqueName' ''
+  local 'mac' ('[data:split]' ('[net:myMAC]') ':')
+  local 'machineNum' (((hexToInt (at 5 mac)) << 8) | (hexToInt (at 6 mac)))
+  repeat 3 {
+    uniqueName = ('[data:join]' ('[data:unicodeString]' (65 + (machineNum % 26))) uniqueName)
+    machineNum = (machineNum / 26)
+  }
+  uniqueName = ('[data:join]' 'MicroBlocks ' uniqueName)
+  return uniqueName
+}
