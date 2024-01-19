@@ -516,7 +516,7 @@ void hardwareInit() {
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
 	#if defined(ARDUINO_M5STACK_FIRE)
-		#define BOARD_TYPE "M5STACK-FIRE"	
+		#define BOARD_TYPE "M5Stack-Core"	
 	#else
 		#define BOARD_TYPE "M5Stack-Core"
 	#endif
