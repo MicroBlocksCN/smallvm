@@ -65,6 +65,20 @@ int mbDisplayColor = 0x00FF00; // Green by default
 #define COL4 6
 #define COL5 10
 
+#elif defined(CALLIOPE_V3)
+
+#define ROW1 21
+#define ROW2 22
+#define ROW3 23
+#define ROW4 24
+#define ROW5 25
+
+#define COL1 4
+#define COL2 7
+#define COL3 18
+#define COL4 6
+#define COL5 10
+
 #endif
 
 static int microBitDisplayBits = 0;
@@ -221,7 +235,7 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 static void setHighDrive(int pin) {
 	if ((pin < 0) || (pin >= PINS_COUNT)) return;

@@ -196,6 +196,15 @@ void hardwareInit() {
 	//	A3, A4, A5 - connector pins 4, 5, and 6
 	//	A6, A7 - connector pins 17, 18 and Grove connector 2
 
+#elif defined(CALLIOPE_V3)
+
+	#define BOARD_TYPE "Calliope v3"
+	#define DIGITAL_PINS 41
+	#define ANALOG_PINS 8
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {0, 1, 2, 18, 4, 10, 29, 16}; // variant.h seems wrong
+	#define DEFAULT_TONE_PIN 27
+
 #elif defined(ARDUINO_SINOBIT)
 
 	#define BOARD_TYPE "sino:bit"
