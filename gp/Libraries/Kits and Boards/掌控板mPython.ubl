@@ -1,8 +1,8 @@
 module '掌控板mPython'
 author '邵悦 
 Shao'
-version 1 1 
-depends Tone NeoPixel 
+version 1 2 
+depends Tone NeoPixel 'Kits and Boards/掌控板 OLED' 'Graphics and Displays/OLED汉字' 
 choices rgbMenu '1' '2' '3' 
 choices touchMenu P Y T H O N 
 description 'mPython 掌控板
@@ -10,7 +10,7 @@ Matrix:bit
 乾坤板
 
 '
-variables __mPyinitFlag _mPythonTouchPins 
+variables __mPyinitFlag _mPythonTouchPins _mPythonPins 
 
   spec ' ' '_mPyinit' '_mPyinit'
   spec 'r' 'mPinMap' 'mPinMap P _' 'num' 6
