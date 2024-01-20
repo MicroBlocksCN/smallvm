@@ -84,12 +84,12 @@ void hardwareInit() {
 	#ifdef USE_NRF5x_CLOCK
 		initClock_NRF5x();
 	#endif
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		// Use synthesized LF clock to free up pin the speaker pin (P0.00)
 		NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
 		NRF_CLOCK->TASKS_LFCLKSTART = 1;
 
-		// On micro:bit v2, disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
+		// Disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
 		// (this change does not take effect until the next hard reset)
 		if (NRF_UICR->NFCPINS & 1) {
 			NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
