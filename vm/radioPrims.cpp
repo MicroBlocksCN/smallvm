@@ -167,7 +167,7 @@ static void MB_RADIO_IRQHandler(void) {
 	// the MicroBlocks radio hander using ble_npl_hw_set_isr().
 	// In the non-Nimble configuration, this RADIO_IRQHandler always calls MB_RADIO_IRQHandler.
 
-	void RADIO_IRQHandler(void) { MB_RADIO_IRQHandler(); }
+	extern "C" void RADIO_IRQHandler(void) { MB_RADIO_IRQHandler(); }
 #endif
 
 // Radio Functions
