@@ -66,7 +66,8 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE)
+	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106)
 
 	#define BLACK 0
 	#define WHITE 65535
@@ -369,73 +370,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 				useTFT = true;
 			}
 		}
-
-		// M5 Core2 touchscreen support
-
-		#define HAS_TOUCH_SCREEN 1
-		#define CORE2_TOUCH_SCREEN_ADDR 0x38
-		#define CORE2_SCREEN_TOUCHED_PIN 39
-
-		static void setCore2TouchScreenReg(int regID, int value) {
-			Wire1.beginTransmission(CORE2_TOUCH_SCREEN_ADDR);
-			Wire1.write(regID);
-			Wire1.write(value);
-			Wire1.endTransmission();
-		}
-
-		static void touchInit() {
-			setCore2TouchScreenReg(0xA4, 0); // hold TOUCHED_PIN low while screen touched
-			pinMode(CORE2_SCREEN_TOUCHED_PIN, INPUT);
-			touchEnabled = true;
-		}
-
-		static uint32 lastTouchUpdate = 0;
-		static int touchScreenX = -1;
-		static int touchScreenY = -1;
-
-		static int screenTouched() {
-			if (!touchEnabled) touchInit();
-			return !digitalRead(CORE2_SCREEN_TOUCHED_PIN);
-		}
-
-		static void touchUpdate() {
-			if (!touchEnabled) touchInit();
-			uint32 now = millisecs();
-			if ((now - lastTouchUpdate) < 10) return;
-			if (screenTouched()) {
-				uint8 data[4];
-				Wire1.beginTransmission(CORE2_TOUCH_SCREEN_ADDR);
-				Wire1.write(3);
-				Wire1.endTransmission();
-				Wire1.requestFrom(CORE2_TOUCH_SCREEN_ADDR, sizeof(data));
-				for (int i = 0; i < sizeof(data); i++) {
-					data[i] = Wire1.read();
-				}
-				touchScreenX = ((data[0] & 0xF) << 8) | data[1];
-				touchScreenY = ((data[2] & 0xF) << 8) | data[3];
-			} else {
-				touchScreenX = -1;
-				touchScreenY = -1;
-			}
-			lastTouchUpdate = now;
-		}
-
-		static int screenTouchX() {
-			touchUpdate();
-			return touchScreenX;
-		}
-
-		static int screenTouchY() {
-			touchUpdate();
-			return touchScreenY;
-		}
-
-		static int screenTouchPressure() {
-			// pressure not supported; return a constant value if screen is touched, -1 if not
-			if (!touchEnabled) touchInit();
-			return screenTouched() ? 10 : -1;
-		}
-
+		
 	#elif defined(ARDUINO_NRF52840_CLUE)
 		#define TFT_CS		31
 		#define TFT_DC		32
@@ -494,50 +429,30 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			touchEnabled = true;
 		}
 
-		static int screenTouched() {
-			if (!touchEnabled) touchInit();
-			return ts.touched();
-		}
+	#elif defined(OLED_1106)
+		// #undef BLACK // defined in SSD1306 header
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SH110X.h"
 
-		static int screenTouchX() {
-			if (!touchEnabled) touchInit();
-			if (!ts.touched()) { return -1; }
-			uint16_t x, y;
-			uint8_t pressure;
-			ts.readData(&x, &y, &pressure);
-			x -= 460;
-			x = (320 * x) / 3150;
-			if (x < 0) x = 0;
-			if (x > 320) x = 320;
-			return x;
-		}
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 64
+		#define IS_MONOCHROME true
 
-		static int screenTouchY() {
-			if (!touchEnabled) touchInit();
-			if (!ts.touched()) { return -1; }
-			uint16_t x, y;
-			uint8_t pressure;
-			ts.readData(&x, &y, &pressure);
-			y -= 580;
-			y = 240 - ((240 * y) / 2900);
-			if (y < 0) y = 0;
-			if (y > 240) y = 240;
-			return y;
-		}
+		Adafruit_SH1106G tft = Adafruit_SH1106G(TFT_WIDTH, TFT_HEIGHT,&Wire, -1);
 
-		static int screenTouchPressure() {
-			if (!touchEnabled) touchInit();
-			if (!ts.touched()) { return -1; }
-			TS_Point p = ts.getPoint();
-			int pressure = (100 * (p.z - 1000)) / 2000; // pressure: 0-100
-			if (pressure < 0) pressure = 0;
-			if (pressure > 100) pressure = 100;
-			return pressure;
-		}
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
 
-	#elif defined(KIDS_BITS) || defined(FAB_SPARKLE) || defined(SCOUT_MAKES_AZUL)
-		#define OLED_ADDR 0x3C
-		#define TFT_RST GFX_NOT_DEFINED
+		void tftInit() {
+			tft.begin(0x3C,true);
+			useTFT = true;
+			tftClear();
+		}
+	#elif defined(SCOUT_MAKES_AZUL)
+		#undef BLACK // defined in SSD1306 header
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SSD1306.h"
+
 		#define TFT_WIDTH 128
 		#if defined(SCOUT_MAKES_AZUL)
 			#define TFT_HEIGHT 32
