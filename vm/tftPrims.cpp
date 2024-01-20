@@ -27,7 +27,8 @@ static int deferUpdates = false;
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE)
+	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106)
 
 	#define BLACK 0
 
@@ -386,7 +387,7 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
-
+		
 	#elif defined(ARDUINO_NRF52840_CLUE)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7789.h"
@@ -457,6 +458,25 @@ static int deferUpdates = false;
 			touchEnabled = true;
 		}
 
+	#elif defined(OLED_1106)
+		// #undef BLACK // defined in SSD1306 header
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SH110X.h"
+
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 64
+		#define IS_MONOCHROME true
+
+		Adafruit_SH1106G tft = Adafruit_SH1106G(TFT_WIDTH, TFT_HEIGHT,&Wire, -1);
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
+
+		void tftInit() {
+			tft.begin(0x3C,true);
+			useTFT = true;
+			tftClear();
+		}
 	#elif defined(SCOUT_MAKES_AZUL)
 		#undef BLACK // defined in SSD1306 header
 		#include "Adafruit_GFX.h"
