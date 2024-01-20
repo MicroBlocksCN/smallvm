@@ -1222,9 +1222,9 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_BBC_MICROBIT_V2) || \
-		defined(ARDUINO_Mbits)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+		defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
+		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
@@ -1251,7 +1251,6 @@ void primSetUserLED(OBJ *args) {
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
-
 	#endif
 }
 
