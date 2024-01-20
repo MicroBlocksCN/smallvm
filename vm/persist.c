@@ -764,7 +764,7 @@ static void compactFlash() {
 
 	updateChunkTable();
 
-	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		// Compaction messes up the serial port on the micro:bit v1 and v2 and Calliope
 		restartSerial();
 	#endif

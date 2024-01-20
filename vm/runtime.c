@@ -462,11 +462,12 @@ void softReset(int clearMemoryFlag) {
 		if (!useTFT) tftInit();
 	#endif
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_BBC_MICROBIT_V2)
-	OBJ enable = trueObj;
-	primMBEnableDisplay(1, &enable);
-	primMBDisplayOff(0, NULL);
-	updateMicrobitDisplay();
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+	defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3)
+		OBJ enable = trueObj;
+		primMBEnableDisplay(1, &enable);
+		primMBDisplayOff(0, NULL);
+		updateMicrobitDisplay();
 #endif
 
 	resetRadio();

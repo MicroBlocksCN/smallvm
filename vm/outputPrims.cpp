@@ -282,7 +282,7 @@ static int updateLightLevel() {
 	// NOTE: This code is sensitive to ordering and timing details. If you change it, please
 	// test it carefully in various lightings, with the LED display both on and off.
 
-	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3, 10
+	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3 (18 on CalliopeV3), 10
 
 	// How this works:
 	// The first step is to reverse-bias the LED's to charge up the stray capacitance
@@ -576,6 +576,8 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 8; // internal NeoPixel pin on Circuit Playground (Bluefruit)
 		#elif defined(ARDUINO_NRF52840_CLUE)
 			pinNum = 18; // internal NeoPixel pin on Clue
+		#elif defined(CALLIOPE_V3)
+			pinNum = 35; // internal NeoPixel pin on Calliope
 		#else
 			pinNum = 0; // use pin 0 on others
 		#endif
@@ -987,7 +989,7 @@ void turnOffInternalNeoPixels() {
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
-	#elif defined(DATABOT)
+	#elif defined(DATABOT) || defined(CALLIOPE_V3)
 		count = 3;
 	#elif defined(WUKONG2040)
 		count = 2;
