@@ -90,7 +90,12 @@ int readI2CReg(int deviceID, int reg) {
 
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	int error = Wire.endTransmission((bool) false);
+	#if defined(ARDUINO_ARCH_ESP32)
+		// This is needed to avoid error reports on ESP32.
+		int error = Wire.endTransmission();
+	#else
+		int error = Wire.endTransmission((bool) false);
+	#endif
 	if (error) return -error; // error; bad device ID?
 
 	#if defined(NRF51)
