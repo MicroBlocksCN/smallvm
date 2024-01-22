@@ -222,12 +222,16 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 // Variables
 
 method allVariableNames MicroBlocksProject {
+	// Return a sorted array of all global variables. Use case-insensitive sort.
+
 	result = (dictionary)
 	addAll result (variableNames main)
 	for lib (values libraries) {
 		addAll result (variableNames lib)
 	}
-	return (sorted (keys result))
+	return (sorted
+		(keys result)
+		(function s1 s2 { return ((toUpperCase s1) < (toUpperCase s2)) }))
 }
 
 method addVariable MicroBlocksProject newVar {
