@@ -2227,6 +2227,9 @@ Use board type
 connected to IDE
 已连接到 IDE?
 
+Firmware Install
+安装固件
+
 Firmware Installed
 完成固件安装
 
@@ -2237,13 +2240,16 @@ Connect USB cable while holding down the white BOOTSEL button before proceeding.
 按住白色 BOOTSEL 按钮的同时连接 USB 线。
 
 You will be asked to save the firmware file.
-你将被要求保存固件文件。
+请安装固件文件。
 
 Select
 选择
 
 as the destination drive, then click Save.
 作为目标驱动器，然后点击保存。
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+如果 micro:bit 显示一个悲伤的表情，请先将 firmware.hex 文件保存到电脑上，然后再将它拖放到 MICROBIT 驱动器上。
 
 Installing firmware...
 正在安装固件...
