@@ -1032,7 +1032,7 @@ method toggleShowHiddenBlocks MicroBlocksEditor flag {
 }
 
 method showHiddenBlocksEnabled MicroBlocksEditor {
-	return (showHiddenBlocks == true)
+	return (and (devMode) (showHiddenBlocks == true))
 }
 
 // developer mode
