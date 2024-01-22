@@ -1,6 +1,6 @@
 module SNR9816TTS Comm
 author 'maikemaker(计)'
-version 1 0 
+version 1 1 
 description 'init_uart:初始化
 pause：暂停
 continue：继续
@@ -20,7 +20,8 @@ SNR9816TTS
 '
 
   spec ' ' 'init_uart' 'init_uart'
-  spec ' ' 'speak_text' 'speak_text _ (GB2312)' 'str' 'b''\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3\xd3\xef\xd2\xf4\xba\xcf\xb3\xc9\xc0\xa9\xd5\xb9\xbf\xe2'''
+  spec ' ' 'speak_text' 'speak_text _ (GB2312 Chinese)' 'str' 'b''\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3\xd3\xef\xd2\xf4\xba\xcf\xb3\xc9\xc0\xa9\xd5\xb9\xbf\xe2'''
+  spec ' ' 'speak_English' 'speak_English _' 'str' 'Welcome to China'
   spec ' ' 'pauseTTS' 'pauseTTS'
   spec ' ' 'continueTTS' 'continueTTS'
   spec ' ' 'stopTTS' 'stopTTS'
@@ -176,6 +177,17 @@ to speakSpeed foo {
   }
 }
 
+to speak_English foo {
+  '[serial:write]' (hexToInt 'FD')
+  '[serial:write]' (((size foo) + 2) >> 8)
+  '[serial:write]' ((size foo) + 2)
+  '[serial:write]' (hexToInt '01')
+  '[serial:write]' (hexToInt '01')
+  for i ('[data:range]' 1 (size foo)) {
+    '[serial:write]' (at i foo)
+  }
+}
+
 to speak_text foo {
   foo = ('[data:copyFromTo]' foo 3 ((size foo) - 1))
   foo = ('[data:split]' foo '\x')
@@ -195,4 +207,3 @@ to stopTTS {
   '[serial:write]' (hexToInt '01')
   '[serial:write]' (hexToInt '02')
 }
-
