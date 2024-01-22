@@ -1,6 +1,6 @@
 module Touch Input
 author MicroBlocks
-version 1 9 
+version 1 10 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
 variables _touch_reg _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
@@ -66,7 +66,10 @@ to '_touch_setRegister' reg value {
 
 to '_touch_update' {
   '_touch_init'
-  _touch_state = (((i2cGet _touch_reg 1) << 8) | (i2cGet _touch_reg 0))
+  '[sensors:i2cWrite]' _touch_reg ('[data:makeList]' 0)
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' _touch_reg bytes
+  _touch_state = (((at 2 bytes) << 8) | (at 1 bytes))
   if (_touch_state < 0) {
     comment 'i2c read operation failed'
     _touch_state = 0

@@ -224,7 +224,7 @@ static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 			bytesToWrite -= written;
 		} else {
 			// do background VM tasks
-			#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(GNUBLOCKS)
+			#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3) || defined(GNUBLOCKS)
 				updateMicrobitDisplay(); // update display while sending to avoid flicker
 			#endif
 			checkButtons();

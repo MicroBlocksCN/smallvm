@@ -100,7 +100,12 @@ int readI2CReg(int deviceID, int reg) {
 
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	int error = Wire.endTransmission((bool) false);
+	#if defined(ARDUINO_ARCH_ESP32)
+		// This is needed to avoid error reports on ESP32.
+		int error = Wire.endTransmission();
+	#else
+		int error = Wire.endTransmission((bool) false);
+	#endif
 	if (error) return -error; // error; bad device ID?
 
 	#if defined(NRF51)
@@ -1585,7 +1590,7 @@ void readMagMicrobitV1CalliopeClue(uint8 *sixByteBuffer) {
 	}
 }
 
-#if defined(ARDUINO_BBC_MICROBIT_V2)
+#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 void readMagMicrobitV2(uint8 *sixByteBuffer) {
 	if (!internalWireStarted) startInternalWire();
@@ -1625,7 +1630,7 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
 		readMagMicrobitV1CalliopeClue(buf);
 		processMessage(); // process messages now
-	#elif defined(ARDUINO_BBC_MICROBIT_V2)
+	#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		readMagMicrobitV2(buf);
 		processMessage(); // process messages now
 	#else

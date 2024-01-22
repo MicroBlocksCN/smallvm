@@ -153,6 +153,9 @@ static int shape_id = 0;
 #define MAX_SCAN_PAYLOAD 100
 static int lastScanPayloadLen = 0;
 static uint8 *lastScanPayload[MAX_SCAN_PAYLOAD];
+static uint8 lastScanRSSI = 0;
+static uint8 lastScanAddressType = 0;
+static uint8 lastScanAddress[6];
 
 // octoIDHistory is an array of recently seen Octo ID's used for duplicate suppression.
 // Its size must be a power of 2. Searching for an ID starts at searchStartIndex.
@@ -221,10 +224,18 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 			}
 		}
 
+		if (lastScanPayloadLen != 0) return; // last capture has not been consumed
+
 		// capture scan payload
 		lastScanPayloadLen = advertisedDevice->getPayloadLength();
 		if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
 		memcpy(lastScanPayload, advertisedDevice->getPayload(), lastScanPayloadLen);
+
+		// capture RSSI and address
+		lastScanRSSI = -advertisedDevice->getRSSI(); // make it positive
+		NimBLEAddress addr = advertisedDevice->getAddress();
+		lastScanAddressType = addr.getType();
+		memcpy(lastScanAddress, addr.getNative(), 6);
 	}
 };
 
@@ -290,12 +301,23 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 	if (!bleScannerRunning) startBLEScanner();
 	if (!lastScanPayloadLen) return falseObj; // no data
 
-	int byteCount = lastScanPayloadLen;
+	int payloadLen = lastScanPayloadLen;
+	int byteCount = payloadLen + 8;
 	int wordCount = (byteCount + 3) / 4;
 	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
 	if (!result) return fail(insufficientMemoryError);
-	memcpy((uint8 *) &FIELD(result, 0), lastScanPayload, byteCount);
 	setByteCountAdjust(result, byteCount);
+
+	// Result format is:
+	//	absolute value of RSSI (one byte)
+	//	address type (one byte)
+	//	address (six bytes)
+	//	payload (remaining bytes)
+	uint8 *byteArray = (uint8 *) &FIELD(result, 0);
+	byteArray[0] = lastScanRSSI;
+	byteArray[1] = lastScanAddressType;
+	memcpy(byteArray + 2, lastScanAddress, 6);
+	memcpy(byteArray + 8, lastScanPayload, payloadLen);
 	lastScanPayloadLen = 0;
 
 	return result;

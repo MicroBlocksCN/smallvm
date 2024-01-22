@@ -84,12 +84,12 @@ void hardwareInit() {
 	#ifdef USE_NRF5x_CLOCK
 		initClock_NRF5x();
 	#endif
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		// Use synthesized LF clock to free up pin the speaker pin (P0.00)
 		NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
 		NRF_CLOCK->TASKS_LFCLKSTART = 1;
 
-		// On micro:bit v2, disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
+		// Disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
 		// (this change does not take effect until the next hard reset)
 		if (NRF_UICR->NFCPINS & 1) {
 			NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
@@ -199,10 +199,22 @@ void hardwareInit() {
 #elif defined(CALLIOPE_V3)
 
 	#define BOARD_TYPE "Calliope v3"
-	#define DIGITAL_PINS 41
+	#define DIGITAL_PINS 36
 	#define ANALOG_PINS 8
 	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {0, 1, 2, 18, 4, 10, 29, 16}; // variant.h seems wrong
+	#define USE_DIGITAL_PIN_MAP true
+	static const int analogPin[8] = {0, 1, 2, 18, 4, 10, 16, 29}; // variant.h pin 3 is wrong
+	static const char digitalPin[36] = {
+		 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+		10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+		35, 36, 37, 38, 39, 40};
+		// Pin 30 - RGB NeoPixels
+		// Pin 31 - MOTOR_MODE
+		// Pin 32 - M0_DIR
+		// Pin 33 - M0_SPEED
+		// Pin 34 - M1_DIR
+		// Pin 35 - M1_SPEED
 	#define DEFAULT_TONE_PIN 27
 
 #elif defined(ARDUINO_SINOBIT)
@@ -231,6 +243,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 16
 	#define ANALOG_PINS 11
 	#define TOTAL_PINS 27
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[11] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 		// A0-A7 Pads on board
 		// A8 - light sensor
@@ -256,6 +269,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 10
 	#define TOTAL_PINS 14
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[10] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
 		// A0-A7 Pads on board
 		// A8 - light sensor
@@ -280,6 +294,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 23
 	#define ANALOG_PINS 8
 	#define TOTAL_PINS 48
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
 	static const char digitalPin[23] = {
 		// Pins 0-20 Edge connector pins (except 17 & 18)
@@ -423,6 +438,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 9
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS 18 // A0 is pin 17
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {A0};
 	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
 	#define PIN_LED LED_BUILTIN
@@ -580,6 +596,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {};
 	static const char digitalPin[21] = {
 		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
@@ -803,6 +820,7 @@ void hardwareInit() {
 	#define DEFAULT_TONE_PIN 17 // maps to speaker pin
 	#define PIN_BUTTON_A 20
 	#define PIN_BUTTON_B 21
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {26, 27, 28, 29};
 	static char digitalPin[TOTAL_PINS] = {
 		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
@@ -948,10 +966,8 @@ void turnOffPins() {
 }
 
 int mapDigitalPinNum(int pinNum) {
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pinNum) && (pinNum <= 139)) {
@@ -987,18 +1003,17 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT)
 		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
-	#endif
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
-		if (6 == pinNum) return int2obj(readAnalogMicrophone());
-	#endif
-	#if defined(ARDUINO_CALLIOPE_MINI)
+	#elif defined(ARDUINO_BBC_MICROBIT_V2)
+		if (6 == pinNum) return int2obj(readAnalogMicrophone()); // A6
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+		if (29 == pinNum) return int2obj(readAnalogMicrophone());
+	#elif defined(ARDUINO_CALLIOPE_MINI)
 		if (0 == pinNum) return int2obj(readAnalogMicrophone());
-	#endif
-	#if defined(CALLIOPE_V3)
+	#elif defined(CALLIOPE_V3)
 		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
-		if (16 == pinNum) pinNum = 7; // map pin 16 to A7
+		if (16 == pinNum) pinNum = 6; // map pin 16 to A6
 		if (18 == pinNum) pinNum = 3; // map pin 18 to A3
 		if (29 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
@@ -1113,8 +1128,7 @@ void primAnalogWrite(OBJ *args) {
 		} else {
 			return;
 		}
-	#elif defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || \
-			defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1194,9 +1208,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1254,9 +1266,7 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1304,9 +1314,9 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_BBC_MICROBIT_V2) || \
-		defined(ARDUINO_Mbits)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+		defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
+		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
@@ -1333,7 +1343,6 @@ void primSetUserLED(OBJ *args) {
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
-
 	#endif
 }
 
@@ -1964,10 +1973,8 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = DEFAULT_TONE_PIN;
 	#endif
 
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			pin = digitalPin[pin];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		pin = digitalPin[pin];
 	#endif
 
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
@@ -2000,10 +2007,8 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			pin = digitalPin[pin];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139

@@ -2747,6 +2747,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit v2'
 	} ('Calliope' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope mini'
+	} ('Calliope v3' == boardType) {
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope v3'
 	} ('CircuitPlayground' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Express'
 	} ('CircuitPlayground Bluefruit' == boardType) {
@@ -2830,6 +2832,9 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Calliope mini' == boardName) {
 		vmFileName = 'vm_calliope.hex'
 		driveName = 'MINI'
+	} ('Calliope v3' == boardName) {
+		vmFileName = 'vm_calliopeV3.hex'
+		driveName = 'MINI'
 	} ('Circuit Playground Express' == boardName) {
 		vmFileName = 'vm_circuitplay.uf2'
 		driveName = 'CPLAYBOOT'
@@ -2894,6 +2899,13 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	        (newline)
 	        (newline)
 	        (localized 'If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.'))
+	}
+	if (beginsWith boardName 'Calliope') {
+	    msg = (join
+	        msg
+	        (newline)
+	        (newline)
+	        (localized 'If your Calliope mini shows a sad face, save the firmware.hex file to your disk then drop it onto the MINI drive.'))
 	}
 	response = (inform msg (localized 'Firmware Install'))
 	if (isNil response) { return }

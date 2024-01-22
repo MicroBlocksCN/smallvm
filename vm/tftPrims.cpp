@@ -806,9 +806,10 @@ void tftClear() {
 void tftSetHugePixel(int x, int y, int state) {
 	if (!useTFT) return;
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
-		// allow independent use TFT and micro:bit display
-		return;
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+		defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3)
+			// allow independent use of OLED and micro:bit display
+			return;
 	#endif
 
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
