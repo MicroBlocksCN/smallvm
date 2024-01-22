@@ -1,0 +1,198 @@
+module SNR9816TTS Comm
+author 'maikemaker(计)'
+version 1 0 
+description 'init_uart:初始化
+pause：暂停
+continue：继续
+stop：停止（不可继续）
+TTSspeaker：发音人
+TTSvol：音量
+speakSpeed：语速
+speakIntonation：语调
+ring：内置铃声
+massage：内置消息提示音
+alert：内置警示音
+
+新纳捷科技有限公司
+人声语音合成模块
+SNR9816TTS
+购买请淘宝搜索：SNR9816
+'
+
+  spec ' ' 'init_uart' 'init_uart'
+  spec ' ' 'speak_text' 'speak_text _ (GB2312)' 'str' 'b''\xbb\xb6\xd3\xad\xca\xb9\xd3\xc3\xd3\xef\xd2\xf4\xba\xcf\xb3\xc9\xc0\xa9\xd5\xb9\xbf\xe2'''
+  spec ' ' 'pauseTTS' 'pauseTTS'
+  spec ' ' 'continueTTS' 'continueTTS'
+  spec ' ' 'stopTTS' 'stopTTS'
+  spec ' ' 'TTSspeaker' 'TTSspeaker _ (0,1)' 'num' 0
+  spec ' ' 'TTSvol' 'TTSvol _ (0-9)' 'num' 5
+  spec ' ' 'speakSpeed' 'speakSpeed _ （0-9）' 'num' 4
+  spec ' ' 'speakIntonation' 'speakIntonation _ （0-9）' 'num' 5
+  spec ' ' 'ring' 'ring _ （1-5）' 'num' 1
+  spec ' ' 'massage' 'massage _ （1-5）' 'num' 1
+  spec ' ' 'alert' 'alert _ (1-5)' 'num' 1
+
+to TTSspeaker foo {
+  if (or (foo == 0) (foo == 0)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '06')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '5B')
+    '[serial:write]' (hexToInt '6D')
+    if (foo == 1) {
+      '[serial:write]' (hexToInt '31')
+    } else {
+      '[serial:write]' (hexToInt '30')
+    }
+    '[serial:write]' (hexToInt '5D')
+  } else {
+    return -1
+  }
+}
+
+to TTSvol foo {
+  if (and (foo >= 0) (foo <= 9)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '06')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '5B')
+    '[serial:write]' (hexToInt '76')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+    '[serial:write]' (hexToInt '5D')
+  } else {
+    return -1
+  }
+}
+
+to alert foo {
+  if (and (foo >= 1) (foo <= 5)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '09')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '61')
+    '[serial:write]' (hexToInt '6C')
+    '[serial:write]' (hexToInt '65')
+    '[serial:write]' (hexToInt '72')
+    '[serial:write]' (hexToInt '74')
+    '[serial:write]' (hexToInt '5F')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+  } else {
+    return -1
+  }
+}
+
+to continueTTS {
+  '[serial:write]' (hexToInt 'FD')
+  '[serial:write]' (hexToInt '00')
+  '[serial:write]' (hexToInt '01')
+  '[serial:write]' (hexToInt '04')
+}
+
+to init_uart {
+  '[serial:open]' 115200
+}
+
+to massage foo {
+  if (and (foo >= 1) (foo <= 5)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '0B')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '6D')
+    '[serial:write]' (hexToInt '65')
+    '[serial:write]' (hexToInt '73')
+    '[serial:write]' (hexToInt '73')
+    '[serial:write]' (hexToInt '61')
+    '[serial:write]' (hexToInt '67')
+    '[serial:write]' (hexToInt '65')
+    '[serial:write]' (hexToInt '5F')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+  } else {
+    return -1
+  }
+}
+
+to pauseTTS {
+  '[serial:write]' (hexToInt 'FD')
+  '[serial:write]' (hexToInt '00')
+  '[serial:write]' (hexToInt '01')
+  '[serial:write]' (hexToInt '03')
+}
+
+to ring foo {
+  if (and (foo >= 1) (foo <= 5)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '08')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '72')
+    '[serial:write]' (hexToInt '69')
+    '[serial:write]' (hexToInt '6E')
+    '[serial:write]' (hexToInt '67')
+    '[serial:write]' (hexToInt '5F')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+  } else {
+    return -1
+  }
+}
+
+to speakIntonation foo {
+  if (and (foo >= 0) (foo <= 9)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '06')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '5B')
+    '[serial:write]' (hexToInt '74')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+    '[serial:write]' (hexToInt '5D')
+  } else {
+    return -1
+  }
+}
+
+to speakSpeed foo {
+  if (and (foo >= 0) (foo <= 9)) {
+    '[serial:write]' (hexToInt 'FD')
+    '[serial:write]' (hexToInt '00')
+    '[serial:write]' (hexToInt '06')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '01')
+    '[serial:write]' (hexToInt '5B')
+    '[serial:write]' (hexToInt '73')
+    '[serial:write]' (hexToInt ('[data:convertType]' (foo + 30) 'string'))
+    '[serial:write]' (hexToInt '5D')
+  } else {
+    return -1
+  }
+}
+
+to speak_text foo {
+  foo = ('[data:copyFromTo]' foo 3 ((size foo) - 1))
+  foo = ('[data:split]' foo '\x')
+  '[serial:write]' (hexToInt 'FD')
+  '[serial:write]' (((size foo) + 1) >> 8)
+  '[serial:write]' ((size foo) + 1)
+  '[serial:write]' (hexToInt '01')
+  '[serial:write]' (hexToInt '01')
+  for i ('[data:range]' 2 (size foo)) {
+    '[serial:write]' (hexToInt (at i foo))
+  }
+}
+
+to stopTTS {
+  '[serial:write]' (hexToInt 'FD')
+  '[serial:write]' (hexToInt '00')
+  '[serial:write]' (hexToInt '01')
+  '[serial:write]' (hexToInt '02')
+}
+
