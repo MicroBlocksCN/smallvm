@@ -2156,6 +2156,8 @@ install ESP firmware from URL
 
 Use board type
 
+Firmware Install
+
 Firmware Installed
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
@@ -2167,6 +2169,8 @@ You will be asked to save the firmware file.
 Select
 
 as the destination drive, then click Save.
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
 
 Installing firmware...
 
