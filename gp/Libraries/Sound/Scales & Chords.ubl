@@ -140,6 +140,7 @@ to degrees degrees root 'optional steps' {
 }
 
 to improv scale 'bar count' 'possible durations' destination channel/pin {
+  if (_rhy_beat_duration == 0) {'set time signature to' 4 4}
   local 'next note' (at 'random' scale)
   local 'max jump' 4
   if (isType (v 'possible durations') 'number') {
