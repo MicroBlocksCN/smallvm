@@ -1,16 +1,20 @@
 module OctoStudio Comm
 author wwj718
-version 1 5 
+version 1 6 
 choices octo_shapes triangle circle square heart star 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _octoShapes _octoIsBeaming 
+variables _octoShapes _octoLastBeam _octoIsBeaming 
 
   spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
+  space
+  spec 'r' 'octoBeamReceived' 'Octo beam received?'
+  spec 'r' 'octoLastBeam' 'Octo last beam'
+  space
   spec 'r' 'octoReceiveBeam' 'Octo receive beam'
   space
   spec ' ' '_octoInit' '_octoInit'
+  spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
   spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
-  spec 'r' '_octoReceiveScan' '_last BLE advertisement'
 
 to '_octoInit' {
   if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
@@ -34,22 +38,38 @@ to '_octoMakeMessage' shape {
   return ('[data:joinStrings]' result)
 }
 
-to '_octoReceiveScan' {
-  comment 'Receive any BLE advertisement (not just Octo ones).
-Return byte array with the last advertisment or false if none received'
-  return ('[ble:scanReceive]')
+to '_octoShapeForID' id {
+  '_octoInit'
+  if (or (id < 0) (id >= (size _octoShapes))) {
+    return 'Unknown shape'
+  }
+  return (at (id + 1) _octoShapes)
+}
+
+to octoBeamReceived {
+  comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
+  local 'newBeam' ('[ble:octoReceive]')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  _octoLastBeam = ('_octoShapeForID' newBeam)
+  return (booleanConstant true)
+}
+
+to octoLastBeam {
+  comment 'Return the name of the last shape received.'
+  if (_octoLastBeam == 0) {
+    return 'None'
+  }
+  return _octoLastBeam
 }
 
 to octoReceiveBeam {
-  '_octoInit'
-  local 'shape_id' (callCustomReporter '[ble:octoReceive]')
-  if (shape_id == (booleanConstant false)) {
+  local 'newBeam' ('[ble:octoReceive]')
+  if (newBeam == (booleanConstant false)) {
     return (booleanConstant false)
   }
-  if (shape_id >= (size _octoShapes)) {
-    return 'Unknown shape'
-  }
-  return (at (shape_id + 1) _octoShapes)
+  return ('_octoShapeForID' newBeam)
 }
 
 to octoSendBeam shape optionalDuration {
@@ -63,9 +83,9 @@ to octoSendBeam shape optionalDuration {
     sayIt ''
   }
   _octoIsBeaming = 1
-  callCustomCommand '[ble:octoStartBeam]' ('[data:makeList]' ('_octoMakeMessage' shape))
+  '[ble:octoStartBeam]' ('[data:makeList]' ('_octoMakeMessage' shape))
   waitMillis duration
-  callCustomCommand '[ble:octoStopBeam]'
+  '[ble:octoStopBeam]'
   _octoIsBeaming = 0
 }
 
