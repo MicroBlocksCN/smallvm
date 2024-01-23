@@ -380,10 +380,11 @@ static int functionNameMatches(int chunkIndex, char *functionName) {
 static int chunkIndexForFunction(char *functionName) {
 	// Return the chunk index for the function with the given name or -1 if not found.
 
+	int nameLength = strlen(functionName);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int chunkType = chunks[i].chunkType;
 		if (functionHat == chunkType) {
-			if (broadcastMatches(i, functionName, strlen(functionName))) return i;
+			if (broadcastMatches(i, functionName, nameLength)) return i;
 			if (functionNameMatches(i, functionName)) return i;
 		}
 	}
@@ -393,12 +394,14 @@ static int chunkIndexForFunction(char *functionName) {
 PrimitiveFunction findPrimitive(char *namedPrimitive);
 
 static int findCallee(char *functionOrPrimitiveName) {
+	// Look for a primitive match first since that is fast
+	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
+	if (f) return (int) f;
+
+	// Look for a user-defined function match (slow if no match found!)
 	int result = chunkIndexForFunction(functionOrPrimitiveName);
 	if (result >= 0) return (0xFFFFFF00 | result); // set top 24 bits to show callee is a chunk
 	// assume: result < 256 (MAX_CHUNKS) so it fits in low 8 bits
-
-	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
-	if (f) return (int) f;
 
 	fail(primitiveNotImplemented);
 	return -1;
@@ -1262,6 +1265,7 @@ static void runTask(Task *task) {
 	callCustomCommand_op:
 	callCustomReporter_op:
 		if (arg > 0) {
+			taskSleep(-1); // do background VM tasks sooner
 			uint32 callee = -1;
 			OBJ params = *(sp - 1); // save the parameters array, if any
 			// look up the function or primitive name
