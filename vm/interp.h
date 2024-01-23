@@ -352,6 +352,7 @@ void tftSetHugePixelBits(int bits);
 extern int BLE_connected_to_IDE;
 extern char BLE_ThreeLetterID[4];
 
+void BLE_initThreeLetterID();
 void BLE_start();
 void BLE_stop();
 

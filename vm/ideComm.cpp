@@ -67,7 +67,7 @@ static void flashUserLED() {
 	updateMicrobitDisplay();
 }
 
-static void initName() {
+void BLE_initThreeLetterID() {
 	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
 	getMACAddress(mac);
 	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
@@ -215,7 +215,7 @@ void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
 	// Create BLE Device
-	initName();
+	BLE_initThreeLetterID();
 	BLEDevice::init(uniqueName);
 
 	// Create BLE Server
@@ -369,6 +369,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
+void BLE_initThreeLetterID() { }
 void BLE_start() { }
 void BLE_stop() { }
 void BLE_pauseAdvertising() { }

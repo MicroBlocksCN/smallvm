@@ -338,6 +338,7 @@ int bleKeyboardInitialized = false;
 void initBLEKeyboard () {
 	if (!bleKeyboardInitialized) {
 		char kbName[40];
+		BLE_initThreeLetterID();
 		sprintf(kbName, "MicroBlocks KB %s", BLE_ThreeLetterID);
 		bleKeyboard.setName(kbName);
 		bleKeyboard.begin();
