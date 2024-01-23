@@ -201,7 +201,7 @@ void hardwareInit() {
 	#define BOARD_TYPE "Calliope v3"
 	#define DIGITAL_PINS 36
 	#define ANALOG_PINS 8
-	#define TOTAL_PINS DIGITAL_PINS
+	#define TOTAL_PINS 41
 	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[8] = {0, 1, 2, 18, 4, 10, 16, 29}; // variant.h pin 3 is wrong
 	static const char digitalPin[36] = {
