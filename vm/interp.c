@@ -1324,8 +1324,6 @@ static int currentTaskIndex = -1;
 
 #if !defined(EMSCRIPTEN)
 
-void updateOLEDDisplay();
-
 void vmLoop() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
@@ -1335,13 +1333,8 @@ void vmLoop() {
 			// do background VM tasks once every N VM loop cycles
 			processMessage();
 			checkButtons();
-			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
-				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
-					updateMicrobitDisplay();
-			#endif
-			#if defined(OLED_128_64)
-				updateOLEDDisplay();
+			#if defined(HAS_LED_MATRIX)
+				updateMicrobitDisplay();
 			#endif
 			count = 100; // must be under 30 when building on mbed to avoid serial errors
 		}

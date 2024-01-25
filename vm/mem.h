@@ -31,6 +31,12 @@
   #define USE_NIMBLE 1
 #endif
 
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
+	defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
+	defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
+		#define HAS_LED_MATRIX 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
