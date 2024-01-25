@@ -488,9 +488,7 @@ static int deferUpdates = false;
 		#define IS_MONOCHROME true
 
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
-
-		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
+		static int incrementalDisplayNextPixel = -1;
 
 		void tftInit() {
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
@@ -503,6 +501,72 @@ static int deferUpdates = false;
 			writeI2CReg(TFT_ADDR, 0x80, 0xFF);
 			useTFT = true;
 			tftClear();
+		}
+
+		static void i2cWriteBytes(uint8 *bytes, int byteCount) {
+			Wire.beginTransmission(TFT_ADDR);
+			for (int i = 0; i < byteCount; i++) Wire.write(bytes[i]);
+			Wire.endTransmission(true);
+		}
+
+		static void oledUpdate() {
+			// Send the entire OLED buffer to the display via i2c. Takes about 30 msecs.
+			uint8 oneLine[33];
+			uint8 setupCmds[] = {
+				0x20, 0,		// Horizontal mode
+				0x22, 0, 7,		// Page start and end address
+				0x21, 0, 0x7F	// Column start and end address
+			};
+			i2cWriteBytes(setupCmds, sizeof(setupCmds));
+			oneLine[0] = 0x40;
+			uint8 *displayBuffer = tft.getBuffer();
+			uint8 *src = displayBuffer;
+			for (int i = 0; i < 1024; i++) {
+//				if ((i % 64) == 0) updateMicrobitDisplay();
+				int col = i % 32;
+				if ((col == 0) && (i != 0)) {
+					i2cWriteBytes(oneLine, sizeof(oneLine));
+				}
+				oneLine[col + 1] = *src++;
+			}
+		}
+
+		#undef UPDATE_DISPLAY
+// 		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(10); }}
+//		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
+#define UPDATE_DISPLAY() { if (!deferUpdates) { startIncrementalUpdate(); }}
+
+		static void startIncrementalUpdate() {
+			uint8 setupCmds[] = {
+				0x20, 0,		// Horizontal mode
+				0x22, 0, 7,		// Page start and end address
+				0x21, 0, 0x7F	// Column start and end address
+			};
+
+			if (incrementalDisplayNextPixel >= 0) return; // already in progress
+			i2cWriteBytes(setupCmds, sizeof(setupCmds));
+			incrementalDisplayNextPixel = 0; // start update
+		}
+
+		extern "C" void updateOLEDDisplay() {
+			uint8 oneLine[33];
+
+			if (deferUpdates || (incrementalDisplayNextPixel < 0)) return;
+
+uint32 startT = microsecs();
+
+			oneLine[0] = 0x40;
+			uint8 *src = tft.getBuffer() + incrementalDisplayNextPixel;
+			for (int count = 0; count < 1; count++) {
+				for (int i = 1; i <= 32; i++) {
+					oneLine[i] = *src++;
+				}
+				i2cWriteBytes(oneLine, sizeof(oneLine));
+			}
+			incrementalDisplayNextPixel += 32;
+			if (incrementalDisplayNextPixel >= 1024) incrementalDisplayNextPixel = -1; // done!
+
+reportNum("incremental usecs", microsecs() - startT);
 		}
 
 	#elif defined(TTGO_DISPLAY)

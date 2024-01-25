@@ -1324,6 +1324,8 @@ static int currentTaskIndex = -1;
 
 #if !defined(EMSCRIPTEN)
 
+void updateOLEDDisplay();
+
 void vmLoop() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
@@ -1337,6 +1339,9 @@ void vmLoop() {
 				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
 				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
 					updateMicrobitDisplay();
+			#endif
+			#if defined(OLED_128_64)
+				updateOLEDDisplay();
 			#endif
 			count = 100; // must be under 30 when building on mbed to avoid serial errors
 		}
