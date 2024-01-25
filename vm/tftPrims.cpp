@@ -490,6 +490,7 @@ static int deferUpdates = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
 
 		void tftInit() {
+			delay(5); // need 2 msecs minimum for micro:bit PicoBricks board power up I2C pullups
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
 			int response = readI2CReg(TFT_ADDR, 0); // test if OLED responds at TFT_ADDR
 			if (response < 0) return; // no OLED display detected
@@ -521,7 +522,7 @@ static int deferUpdates = false;
 			oneLine[0] = 0x40;
 			uint8 *displayBuffer = tft.getBuffer();
 			uint8 *src = displayBuffer;
-			for (int i = 0; i < 1024; i++) {
+			for (int i = 0; i <= 1024; i++) {
 				#ifdef HAS_LED_MATRIX
 					if ((i % 64) == 0) updateMicrobitDisplay();
 				#endif
