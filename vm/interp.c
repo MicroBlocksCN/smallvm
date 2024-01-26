@@ -1329,7 +1329,6 @@ void vmLoop() {
 
 	int count = 0;
 	while (true) {
-		captureIncomingBytes();
 		if (count-- < 0) {
 			// do background VM tasks once every N VM loop cycles
 			processMessage();
