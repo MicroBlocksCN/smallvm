@@ -180,7 +180,7 @@ to 'up button' {
 
 module TFT Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[display:mbDisplayOff]' 'clear display'
@@ -193,6 +193,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
   space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
   spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'makeGray' 'gray _ %' 'num' 50
   spec 'r' 'randomColor' 'random color'
@@ -236,5 +237,9 @@ to randomColor {
   } else {
     return ((n1 << 8) | n2)
   }
+}
+
+to tft_colorSwatch color {
+  return color
 }
 
