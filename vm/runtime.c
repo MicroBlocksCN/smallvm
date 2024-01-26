@@ -1155,6 +1155,11 @@ static void processLongMessage() {
 //	while ((microsecs() - start) < (uint32) usecs) /* wait */;
 // }
 
+void captureIncomingBytes() {
+	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	rcvByteCount += bytesRead;
+}
+
 void processMessage() {
 	// Process a message from the client.
 	sendData();
