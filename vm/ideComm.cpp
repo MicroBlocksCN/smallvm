@@ -85,6 +85,7 @@ void BLE_initThreeLetterID() {
 static void displayFor(int msecs) {
 	uint32 endMSecs = millisecs() + msecs;
 	while (millisecs() < endMSecs) {
+		captureIncomingBytes();
 		updateMicrobitDisplay();
 		delay(1);
 	}
