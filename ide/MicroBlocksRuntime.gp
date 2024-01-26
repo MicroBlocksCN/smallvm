@@ -1893,14 +1893,15 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
 		// Note: Maximum serial write in Chrome browser is only 64 bytes!
-		byteCount = (min 64 (byteCount dataToSend))
+		// Note: Receive buffer on micro:bit is only 63 bytes.
+		byteCount = (min 63 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
 		}
-		waitMSecs 2
+		waitMSecs (bytesSent / 5) // limit throughput to 5k bytes/sec
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
@@ -1911,9 +1912,9 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
-	if ('boardie' == portName) { return } // don't wait for a response
+	if ('boardie' == portName) { return true } // don't wait for a response
 
-	if (not (connectedToBoard this)) { return }
+	if (not (connectedToBoard this)) { return false }
 
 	ok = (waitForResponse this)
 	if (not ok) {
@@ -1939,7 +1940,8 @@ method waitForResponse SmallRuntime {
 	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
-	timeout = 10000 // enough time for a long Flash compaction
+	timeout = 5000 // enough time for a long Flash compaction
+	iter = 1
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
 		if (isNil port) { return false }
@@ -1948,7 +1950,8 @@ method waitForResponse SmallRuntime {
 			recvBuf = (join recvBuf s)
 			return true
 		}
-		sendMsg this 'pingMsg'
+		if ((iter % 10) == 0) { sendMsg this 'pingMsg' }
+		iter += 1
 		waitMSecs 5
 	}
 	return false
