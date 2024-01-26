@@ -152,6 +152,9 @@ last message
 arg _ default _
 argument _ amb valor per defecte _
 
+default
+defecte
+
 call _
 crida _
 
@@ -201,7 +204,7 @@ _ is a _
 _ és un _
 
 convert _ to _
-convertir _ a _
+_ convertit en _
 
 boolean
 booleà
@@ -412,14 +415,14 @@ llegeix port sèrie
 serial write _
 escriu _ al port sèrie
 
-anIntegerStringOrByteArray
-unaCadenaDEntersOLlistaDeBytes
+anIntegerStringListOrByteArray
+--MISSING--
 
 serial write _ starting at _
 escriu _ al port sèrie començant per _
 
 aStringListOrByteArray
-unaLlistaDeTextsOLlistaDeBytes
+--MISSING--
 
 soft serial write byte _ pin _ baud _
 escriu byte _ al port sèrie virtual al pin _ a _ bauds
@@ -2896,19 +2899,19 @@ Octopus OLED fill circle x _ y _ radius _
 # OctoStudio
 
 Octo start
---MISSING--
+inicia Octo
 
 Octo beam to phones _
---MISSING--
+envia _ a telèfons via Octo
 
 duration _ ms
---MISSING--
+durada _ ms
 
 Octo receive beam
---MISSING--
+rep de telèfons via Octo
 
 Octo stop
---MISSING--
+atura Octo
 
 ##################
 # MicroBlocks UI #
@@ -3102,13 +3105,13 @@ printable (200%)
 per a impressió (200%)
 
 duplicate selection
---MISSING--
+duplica selecció
 
 drag selection
---MISSING--
+arrossega selecció
 
 delete selection
---MISSING--
+elimina selecció
 
 about...
 sobre...

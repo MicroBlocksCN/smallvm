@@ -103,6 +103,8 @@ last message
 
 arg _ default _
 
+default
+
 call _
 
 function name
@@ -279,7 +281,7 @@ serial read
 
 serial write _
 
-anIntegerStringOrByteArray
+anIntegerStringListOrByteArray
 
 serial write _ starting at _
 
