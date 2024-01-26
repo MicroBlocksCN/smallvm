@@ -30,6 +30,26 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
 static void sendData();
 
+// debugging
+
+#ifdef DEBUG_BEEP
+
+static void debugBeep(int count) {
+	// Useful for audio debugging communication issues.
+
+	const int speakerPin = 27;
+	pinMode(speakerPin, 1); // output pin
+	for (int i = 0; i < 10; i++) {
+		digitalWrite(speakerPin, true);
+		delay(count);
+		digitalWrite(speakerPin, false);
+		delay(count);
+	}
+	delay(20);
+}
+
+#endif
+
 // Named Primitive Support
 
 typedef struct {
@@ -836,6 +856,7 @@ static void sendChunkCRC(int chunkID) {
 		uint32_t crc = crc32(chunkData, (4 * wordCount));
 		waitForOutbufBytes(9);
 		sendMessage(chunkCRCMsg, chunkID, 4, (char *) &crc);
+		sendData();
 	}
 }
 
@@ -1028,6 +1049,12 @@ int ideConnected() {
 
 #endif
 
+static void sendPingNow(int chunkIndex) {
+	// Used to acknowledge receipt of a command that may take time, such as sending all CRC's.
+	sendMessage(pingMsg, chunkIndex, 0, NULL); // send a ping to acknowledge receipt
+	sendData();
+}
+
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete
 		if (receiveTimeout()) {
@@ -1043,9 +1070,11 @@ static void processShortMessage() {
 		break;
 	case startChunkMsg:
 		startTaskForChunk(chunkIndex);
+		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case stopChunkMsg:
 		stopTaskForChunk(chunkIndex);
+		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case startAllMsg:
 		startAll();
@@ -1069,12 +1098,14 @@ static void processShortMessage() {
 		sendChunkCRC(chunkIndex);
 		break;
 	case getAllCRCsMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCRCs();
 		break;
 	case getVersionMsg:
 		sendVersionString();
 		break;
 	case getAllCodeMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCode();
 		break;
 	case deleteAllCodeMsg:
@@ -1090,7 +1121,7 @@ static void processShortMessage() {
 		softReset(true);
 		break;
 	case pingMsg:
-		sendMessage(pingMsg, chunkIndex, 0, NULL);
+		sendPingNow(chunkIndex);
 		break;
 	case enableBLEMsg:
 		BLE_setEnabled(chunkIndex);
@@ -1124,6 +1155,7 @@ static void processLongMessage() {
 	int bodyBytes = msgLength - 1; // subtract terminator byte
 	switch (cmd) {
 	case chunkCodeMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
 	case setVarMsg:
