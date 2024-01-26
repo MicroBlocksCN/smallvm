@@ -168,6 +168,7 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if (!wireStarted) startWire();
 	if (!wireStarted) return zeroObj;
 
+	taskSleep(-1); // do background tasks sooner
 	#if defined(NRF51)
 		noInterrupts();
 		Wire.requestFrom(deviceID, count);
@@ -196,6 +197,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	if (!wireStarted) startWire();
 	if (!wireStarted) return falseObj;
 
+	taskSleep(-1); // do background tasks sooner
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
 		int byteValue = obj2int(data);
