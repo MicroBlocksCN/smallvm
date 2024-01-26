@@ -523,6 +523,7 @@ static int deferUpdates = false;
 			uint8 *displayBuffer = tft.getBuffer();
 			uint8 *src = displayBuffer;
 			for (int i = 0; i <= 1024; i++) {
+				captureIncomingBytes();
 				#ifdef HAS_LED_MATRIX
 					if ((i % 64) == 0) updateMicrobitDisplay();
 				#endif
