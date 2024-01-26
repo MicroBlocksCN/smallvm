@@ -57,6 +57,7 @@
 			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
 			startAddr += pageSize;
+			captureIncomingBytes();
 			#if defined(BLE_IDE)
 				delay(30);
 			#endif
@@ -746,6 +747,7 @@ static void compactFlash() {
 
 	int *src = compactionStartRecord(NULL);
 	while (src) {
+		captureIncomingBytes();
 		int header = *src;
 		int type = (header >> 16) & 0xFF;
 		int id = (header >> 8) & 0xFF;
