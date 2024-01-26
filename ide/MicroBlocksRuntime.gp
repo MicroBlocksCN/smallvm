@@ -1413,6 +1413,17 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// record if chunk is running
 	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
 
+// Old code to store chunk on board; does not check crc:
+// 	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
+// 	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
+// 		sendMsg this 'chunkCodeMsg' chunkID data
+// 		sendMsg this 'pingMsg'
+// 	} else {
+// 		ok = (sendMsgSync this 'chunkCodeMsg' chunkID data)
+// 	}
+// 	processMessages this
+// 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
+
 	chunkCRC = (computeCRC this chunkBytes)
 	if (storeChunkOnBoard this chunkID data chunkCRC) {
 		atPut entry 2 chunkCRC // remember the CRC of the code we just saved
@@ -1440,8 +1451,9 @@ method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
 	sendMsg this 'getChunkCRCMsg' chunkID
 
 	// wait for CRC to be reported
+	timeout = 10000 // long enough for a slow code store compaction
 	startT = (msecsSinceStart)
-	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < 10000)) {
+	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < timeout)) {
 		processMessages this
 		waitMSecs 1
 	}
