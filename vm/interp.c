@@ -1329,6 +1329,7 @@ void vmLoop() {
 
 	int count = 0;
 	while (true) {
+		captureIncomingBytes();
 		if (count-- < 0) {
 			// do background VM tasks once every N VM loop cycles
 			processMessage();
@@ -1341,6 +1342,7 @@ void vmLoop() {
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
+			captureIncomingBytes();
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
 			Task *task = &tasks[currentTaskIndex];

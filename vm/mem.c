@@ -479,13 +479,18 @@ void compact() {
 
 void gc() {
 	// Perform a garbage collection to reclaim unused objects and compact memory.
+	// Call captureIncomingBytes() to avoid serial buffer overruns during garbage collection.
 
 	uint32 usecs = microsecs();
+	captureIncomingBytes();
+
 	// assume: forwarding pointers cleared at end of compaction so no need to clear them here
 	markRoots();
 	sweep();
 	applyForwarding();
 	compact();
+
+	captureIncomingBytes();
 	usecs = microsecs() - usecs;
 
 	char s[100];
