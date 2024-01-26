@@ -427,8 +427,10 @@ method waitForPing SmallRuntime {
 	endMSecs = ((msecsSinceStart) + 1000)
 	lastPingRecvMSecs = 0
 	while (0 == lastPingRecvMSecs) {
-		if ((msecsSinceStart) > endMSecs) { return } // no response within the timeout
+	    now = (msecsSinceStart)
+		if (now > endMSecs) { return } // no response within the timeout
 		sendMsg this 'pingMsg'
+		pingSentMSecs = now
 		processMessages this
 		waitMSecs 10
 	}
@@ -1289,7 +1291,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
 		}
-		if (not (connectedToBoard this)) { return } // connection closed
+		if (not (connectedToBoard this)) { setCursor 'default'; return } // connection closed
 		processedScripts += 1
 	}
 	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
@@ -1303,7 +1305,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 					showDownloadProgress editor 3 (processedScripts / totalScripts)
 				}
 			}
-			if (not (connectedToBoard this)) { return } // connection closed
+			if (not (connectedToBoard this)) { setCursor 'default'; return } // connection closed
 		}
 		processedScripts += 1
 	}
