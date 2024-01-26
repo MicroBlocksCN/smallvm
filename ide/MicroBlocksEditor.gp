@@ -1205,6 +1205,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 		addItem menu 'stop HTTP server' 'stopHTTPServer'
 	  }
 	}
+	addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 	addLine menu
 	if (boardLibAutoLoadDisabled this) {
 		addItem menu 'enable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this true)
