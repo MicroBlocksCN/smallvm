@@ -1,47 +1,34 @@
 module Rhythm Control
 author MicroBlocks
-version 1 4 
-description 'Sends broadcasts according to a tempo and time signature. Useful to create musical patterns.
+version 2 0 
+description 'Keeps time according to a tempo and time signature. Useful to create musical patterns.
 
 Includes abstractions for note durations, bars and beats.
 '
-variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick 
+variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures _rhy_tick 
 
-  spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
-  spec ' ' 'set time signature to' 'set time signature to _ / _' 'auto auto' 4 4
-  spec ' ' 'set up measures' 'set up _ bars pattern' 'auto' 16
+  spec ' ' 'rhy_set tempo' 'set tempo to _ bpm at _ / _ signature' 'auto auto auto' 250 4 4
   space
-  spec ' ' 'start playing' 'start playing'
-  spec ' ' 'stop playing' 'stop playing'
+  spec ' ' 'rhy_start counting' 'start counting _ bars' 'auto' 16
+  spec ' ' 'rhy_stop counting' 'stop counting'
+  spec ' ' 'rhy_wait until next' 'wait until next _' 'auto' ''
   space
-  spec ' ' 'rhy broadcast' 'add _ at bar _ beat _' 'auto auto auto' 'kick' 1 1
-  spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'str auto auto' 'text' 1 1
+  spec 'r' 'rhy_current beat' 'current beat'
+  spec 'r' 'rhy_current bar' 'current bar'
   space
-  spec ' ' 'mute' 'mute _ _' 'str bool' 'text' true
-  spec ' ' 'solo' 'solo _ _' 'str bool' 'text' true
+  spec 'r' 'rhy_whole duration' '¹⁄₁'
+  spec 'r' 'rhy_half duration' '½'
+  spec 'r' 'rhy_quarter duration' '¼'
+  spec 'r' 'rhy_eighth duration' '⅛'
+  spec 'r' 'rhy_sixteenth duration' '¹⁄₁₆'
   space
-  spec 'r' 'current tick for duration' 'current beat'
-  spec 'r' 'current bar' 'current bar'
+  spec 'r' 'rhy_dotted' '_ .' 'auto' ''
+  spec 'r' 'rhy_triplet' '‿³ _' 'auto' ''
   space
-  spec 'r' 'whole duration' '¹⁄₁'
-  spec 'r' 'half duration' '½'
-  spec 'r' 'quarter duration' '¼'
-  spec 'r' 'eighth duration' '⅛'
-  spec 'r' 'sixteenth duration' '¹⁄₁₆'
-  space
-  spec 'r' 'dotted' '_ .' 'auto' ''
-  spec 'r' 'triplet' '‿³ _' 'auto' ''
-  space
-  spec ' ' 'wait until next' 'wait until next _' 'auto' ''
-  space
-  spec ' ' '_rhythm loop' '_rhythm loop'
+  spec ' ' '_rhy loop' '_rhy loop'
   spec 'r' '_rhy duration of note value' '_rhy duration of note value _' 'auto' 4
   spec 'r' '_rhy 2 ^' '_rhy 2 ^ _' 'auto' '10'
   spec 'r' '_rhy between' '_rhy _ between _ and _' 'auto auto auto' '10' '10' '10'
-
-to '_rhy between' foo a b {
-  return (and (foo >= a) (foo <= b))
-}
 
 to '_rhy 2 ^' n {
   local 'result' 1
@@ -51,202 +38,91 @@ to '_rhy 2 ^' n {
   return result
 }
 
-to '_rhy duration of note value' 'note value' {
-  for i (v 'note value') {
-    if (('_rhy 2 ^' i) == (v 'note value')) {return (at i ('[data:makeList]' ('half duration') ('quarter duration') ('eighth duration') ('sixteenth duration')))}
-  }
-  return ('whole duration')
+to '_rhy between' foo a b {
+  return (and (foo >= a) (foo <= b))
 }
 
-to '_rhythm loop' {
+to '_rhy duration of note value' 'note value' {
+  for i (v 'note value') {
+    if (('_rhy 2 ^' i) == (v 'note value')) {return (at i ('[data:makeList]' ('rhy_half duration') ('rhy_quarter duration') ('rhy_eighth duration') ('rhy_sixteenth duration')))}
+  }
+  return ('rhy_whole duration')
+}
+
+to '_rhy loop' {
   repeatUntil (not _rhy_looping) {
     _rhy_tick = 0
-    for bar _rhy_pattern {
-      for beat bar {
-        local 'start' (millisOp)
-        if (not _rhy_looping) {
-          stopTask
-        }
-        for trigger beat {
-          if ((0 + trigger) > 30) {
-            'send note' (0 + trigger) true 10 80
-          } else {
-            sendBroadcast trigger
-            waitMicros 1000
-          }
-        }
-        waitMillis (_rhy_beat_duration - ((millisOp) - start))
+    for bar _rhy_bars {
+      for beat _rhy_measures {
+        if (not _rhy_looping) {stopTask}
+        'rhy_wait until next' _rhy_beat_duration
         _rhy_tick += 1
+        sayIt _rhy_tick
       }
     }
   }
 }
 
-to 'broadcast remove' message 'bar number' 'beat number' {
-  message = ('[data:join]' message '')
-  if ((v 'beat number') == '') {
-    for 'each beat' _rhy_measures {
-      'broadcast remove' message (v 'bar number') (v 'each beat')
-    }
-  } ((v 'bar number') == '') {
-    for 'each bar' (size _rhy_pattern) {
-      'broadcast remove' message (v 'each bar') (v 'beat number')
-    }
-  } (isType (v 'beat number') 'list') {
-    for 'each beat' (v 'beat number') {
-      'broadcast remove' message (v 'bar number') (v 'each beat')
-    }
-  } (isType (v 'bar number') 'list') {
-    for 'each bar' (v 'bar number') {
-      'broadcast remove' message (v 'each bar') (v 'beat number')
-    }
-  } else {
-    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
-    local 'index' ('[data:find]' message beat)
-    if (index > 0) {
-      '[data:delete]' index beat
-    }
-  }
-}
-
-to 'current bar' {
+to 'rhy_current bar' {
   return ((_rhy_tick / _rhy_measures) + 1)
 }
 
-to 'current tick for duration' {
+to 'rhy_current beat' {
   return ((_rhy_tick % _rhy_measures) + 1)
 }
 
-to dotted duration {
+to 'rhy_dotted' duration {
   return (duration + (duration / 2))
 }
 
-to 'eighth duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 200}
+to 'rhy_eighth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 240}
   return (30000 / _rhy_tempo)
 }
 
-to 'half duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 200}
+to 'rhy_half duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 240}
   return (120000 / _rhy_tempo)
 }
 
-to mute message on/off {
-  message = ('[data:join]' message '')
-  if (('[data:find]' '#M#' message) > 0) {
-    message = ('[data:copyFromTo]' message 4)
-  }
-  if (not on/off) {
-    message = ('[data:join]' '#M#' message)
-  }
-  for bar _rhy_pattern {
-    for beat bar {
-      for i (size beat) {
-        if ((at i beat) == message) {if on/off {
-          atPut i beat ('[data:join]' '#M#' (at i beat))
-        } else {
-          atPut i beat ('[data:copyFromTo]' (at i beat) 4)
-        }}
-      }
-    }
-  }
-}
-
-to 'quarter duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 200}
+to 'rhy_quarter duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 240}
   return (60000 / _rhy_tempo)
 }
 
-to 'rhy broadcast' message 'bar number' 'beat number' {
-  message = ('[data:join]' message '')
-  if ((v 'beat number') == '') {
-    for 'each beat' _rhy_measures {
-      'rhy broadcast' message (v 'bar number') (v 'each beat')
-    }
-  } ((v 'bar number') == '') {
-    for 'each bar' (size _rhy_pattern) {
-      'rhy broadcast' message (v 'each bar') (v 'beat number')
-    }
-  } (isType (v 'beat number') 'list') {
-    for 'each beat' (v 'beat number') {
-      'rhy broadcast' message (v 'bar number') (v 'each beat')
-    }
-  } (isType (v 'bar number') 'list') {
-    for 'each bar' (v 'bar number') {
-      'rhy broadcast' message (v 'each bar') (v 'beat number')
-    }
-  } else {
-    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
-    if (('[data:find]' message beat) < 0) {
-      '[data:addLast]' message beat
-    }
-  }
-}
-
-to 'set tempo to' tempo {
+to 'rhy_set tempo' tempo measures 'note value' {
   _rhy_tempo = tempo
-  if (_rhy_beat_note_value == 0) {
-    'set time signature to' 4 4
-  }
-}
-
-to 'set time signature to' measures 'note value' {
-  if (_rhy_tempo == 0) {'set tempo to' 200}
   _rhy_beat_duration = ('_rhy duration of note value' (v 'note value'))
   _rhy_beat_note_value = (v 'note value')
   _rhy_measures = measures
 }
 
-to 'set up measures' n {
-  _rhy_pattern = ('[data:makeList]')
-  for i n {
-    '[data:addLast]' ('[data:makeList]') _rhy_pattern
-    repeat _rhy_measures {
-      '[data:addLast]' ('[data:makeList]') (at i _rhy_pattern)
-    }
-  }
-}
-
-to 'sixteenth duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 200}
+to 'rhy_sixteenth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 240}
   return (15000 / _rhy_tempo)
 }
 
-to solo message on/off {
-  message = ('[data:join]' message '')
-  mute message false
-  for bar _rhy_pattern {
-    for beat bar {
-      for trigger beat {
-        if on/off {
-          if (trigger != message) {mute trigger true}
-        } else {
-          mute trigger false
-        }
-      }
-    }
-  }
-}
-
-to 'start playing' {
+to 'rhy_start counting' bars {
+  if (_rhy_measures == 0) {'rhy_set tempo' 240 4 4}
+  _rhy_bars = bars
   _rhy_looping = (booleanConstant true)
-  sendBroadcast '_rhythm loop'
+  sendBroadcast '_rhy loop'
 }
 
-to 'stop playing' {
+to 'rhy_stop counting' {
   _rhy_looping = (booleanConstant false)
 }
 
-to triplet duration {
+to 'rhy_triplet' duration {
   return ((duration * 2) / 3)
 }
 
-to 'wait until next' duration {
+to 'rhy_wait until next' duration {
   waitUntil ('_rhy between' ((timer) % duration) 0 3)
 }
 
-to 'whole duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 200}
+to 'rhy_whole duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 240}
   return (240000 / _rhy_tempo)
 }
 

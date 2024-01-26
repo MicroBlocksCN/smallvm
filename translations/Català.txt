@@ -41,6 +41,9 @@ mil·lisegons
 board type
 tipus de placa
 
+connected to IDE
+connectat a la IDE
+
 Pins
 Pins
 
@@ -122,6 +125,12 @@ comentari _
 How this works...
 Així funciona...
 
+range _ to _
+nombres de _ a _
+
+by _
+en increments de _
+
 for _ in _ _
 per cada _ en _ _
 
@@ -139,6 +148,12 @@ atura-ho tot
 
 last message
 últim missatge
+
+arg _ default _
+argument _ amb valor per defecte _
+
+default
+defecte
 
 call _
 crida _
@@ -189,7 +204,7 @@ _ is a _
 _ és un _
 
 convert _ to _
-convertir _ a _
+_ convertit en _
 
 boolean
 booleà
@@ -400,11 +415,14 @@ llegeix port sèrie
 serial write _
 escriu _ al port sèrie
 
+anIntegerStringListOrByteArray
+--MISSING--
+
 serial write _ starting at _
 escriu _ al port sèrie començant per _
 
-aByteStringOrByteArray
-cadenaDeTextOLlistaDeBytes
+aStringListOrByteArray
+--MISSING--
 
 soft serial write byte _ pin _ baud _
 escriu byte _ al port sèrie virtual al pin _ a _ bauds
@@ -830,7 +848,7 @@ IR transmit device _ command _
 envia al dispositiu IR _ la comanda _
 
 ####
-# Keyboard and Mouse
+# Keyboard and Mouse library
 
 Keyboard and Mouse
 Teclat i Ratolí
@@ -933,6 +951,70 @@ manté premut el botó _ del ratolí
 
 release mouse buttons
 deixa anar els botons del ratolí
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+Llistes
+
+list _ contains _
+la llista _ conté _
+
+circular item _ of _
+element circular _ de _
+
+aListOrString
+unaLlistaOText
+
+map _ over _
+aplica _ sobre _
+
+aFunction
+unaFunció
+
+filter _ with _
+filtra _ utilitzant _
+
+pick _ from _
+tria _ elements de _
+
+a few
+pocs
+
+some
+uns quants
+
+most
+molts
+
+reverse _
+inverteix _
+
+shuffle _
+barreja _
+
+sort _
+ordena _
+
+shuffled _
+_ barrejada
+
+reversed _
+_ invertida
+
+sorted _
+_ ordenada
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+Teclat BLE
+
+start BLE Keyboard
+inicia teclat BLE
 
 ####
 # Radio comm library
@@ -1273,38 +1355,23 @@ nom d'arxiu
 Rhythm
 Ritme
 
-set tempo to _ bpm
-fixa el tempo a _ BPMs
+set tempo to _ bpm at _ / _ signature
+fixa tempo a _ bmp i compàs a _ / _
 
-set time signature to _ / _
-fixa el compàs a _ / _
+start counting _ bars
+comença a comptar a _ compassos
 
-set up _ bars pattern
---MISSING--
+stop counting
+deixa de comptar
 
-start playing
---MISSING--
-
-stop playing
---MISSING--
-
-add _ at bar _ beat _
---MISSING--
-
-remove _ from bar _ beat _
---MISSING--
-
-mute _ _
---MISSING--
-
-solo _ _
---MISSING--
+wait until next _
+espera fins el proper _
 
 current beat
---MISSING--
+temps actual
 
 current bar
---MISSING--
+compàs actual
 
 ####
 # MIDI
@@ -1414,7 +1481,10 @@ High Agogo
 Low Agogo
 --MISSING--
 
-Cabasa Maracas 
+Cabasa
+--MISSING--
+
+Maracas 
 --MISSING--
 
 Short Whistle
@@ -1453,49 +1523,49 @@ Open Triangle
 # General MIDI instrument categories
 
 piano 
---MISSING--
+piano
 
 chromatic percussion
---MISSING--
+percussió cromàtica
 
 organ
---MISSING--
+orgue
 
 guitar
---MISSING--
+guitarra
 
 bass
---MISSING--
+baix
 
 strings
---MISSING--
+secció de cordes
 
 ensemble
---MISSING--
+secció de vents
 
 brass
---MISSING--
+vent metall
 
 reed
---MISSING--
+vent de canya
 
 pipe 
---MISSING--
+flauta
 
 synth lead
---MISSING--
+sintetitzador solista
 
 synth pad
---MISSING--
+sintetitzador ambient
 
 synth SFX
---MISSING--
+efecte de sintetitzador
 
 ethnic
---MISSING--
+ètnic
 
 percussive
---MISSING--
+percussiu
 
 SFX 
 --MISSING--
@@ -1603,139 +1673,148 @@ effect 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
---MISSING--
+toca nota MIDI _ durant _ ms al canal _ volum _
 
 set MIDI note _ to _ on channel _ volume _
---MISSING--
+posa la nota MIDI _ a _ al canal _ volum _
 
 note _ octave _ to MIDI key
---MISSING--
+nota _ octava _ a tecla MIDI
 
 select MIDI instrument _ for channel _
---MISSING--
+selecciona instrument MIDI _ per al canal _
 
 instrument _ number _
---MISSING--
+instrument _ número _
 
 select MIDI drum kit _
---MISSING--
+selecciona bateria MIDI _
 
 play MIDI drum _ for _ ms volume _
---MISSING--
+toca percussió MIDI _ durant _ ms volum _
 
 drum _
---MISSING--
+percussió _
 
 change MIDI control _ on channel _ to _
---MISSING--
+posa control MIDI _ del canal _ a _
 
 pitch bend MIDI channel _ to _ %
---MISSING--
+modula canal MIDI _ en un _ %
 
 send MIDI reset
---MISSING--
+reinicialitza MIDI
 
 send MIDI start playing
---MISSING--
+inicia seqüenciador MIDI
 
 send MIDI stop playing
---MISSING--
+pausa seqüenciador MIDI
 
 send MIDI continue playing
---MISSING--
+reprèn seqüenciador MIDI
 
-set MIDI signal to pin _ : use USB MIDI _
---MISSING--
+set MIDI signal to pin _
+configura MIDI al pin _
 
 ####
 # Scales & Chords
 # Abstractions for musical theory
 
 Scales & Chords
---MISSING--
+Escales i acords
 
 # scale names
 
 ionian
---MISSING--
+jònica
 
 dorian
---MISSING--
+dòrica
 
 phrygian
---MISSING--
+frígia
 
 lydian
---MISSING--
+lídia
 
 mixolydian
---MISSING--
+mixolídia
 
 aeolian
---MISSING--
+eòlica
 
-locrian 
---MISSING--
+locrian
+lòcria
 
 major
---MISSING--
+major
 
 minor 
---MISSING--
+menor
 
 # chord types
 
 major
---MISSING--
+major
 
 minor
---MISSING--
+menor
 
 diminished
---MISSING--
+disminuïda
 
 major 7th
---MISSING--
+7ª major
 
 minor 7th
---MISSING--
+7ª menor
 
 Maj7 
---MISSING--
+Maj7
 
 # sound destinations for arpeggiate block
 
 MIDI channel
---MISSING--
+canal MIDI
 
 tone pin 
---MISSING--
+pin de brunzidor
 
 # library blocks
 
-_ scale root _ : steps _
---MISSING--
+_ scale root _
+escala _ amb arrel _
 
-pentatonic _ scale root _ : steps _
---MISSING--
+steps _
+i _ graus
 
-_ chord root _ : steps _
---MISSING--
+pentatonic _ scale root _
+escala pentatònica _ amb arrel _
 
-_ chord for root _ : steps _
---MISSING--
+_ chord root _
+acord _ amb arrel _
+
+_ chord for root _
+acord _ per a arrel _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
---MISSING--
+arpegia _ amb ordre _ durada _ i volum _ al _ _
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+improvisa sobre _ durant _ compassos amb durades _ al _ _ volum _
 
 _ transposed _ semitones
---MISSING--
+_ transposat _ semitons
 
-chord progression _ with root _ : and _ steps per chord
---MISSING--
+chord progression _ with root _
+progressió d'acords _ amb arrel _
+
+and _ steps per chord
+i _ graus per acord
 
 rotation _ of circle of 5ths _ M _ m _ º
---MISSING--
+rotació _ del cercle de quintes _ M _ m _ º
 
 ####
 # Chiptune
@@ -2820,19 +2899,19 @@ Octopus OLED fill circle x _ y _ radius _
 # OctoStudio
 
 Octo start
---MISSING--
+inicia Octo
 
 Octo beam to phones _
---MISSING--
+envia _ a telèfons via Octo
 
 duration _ ms
---MISSING--
+durada _ ms
 
 Octo receive beam
---MISSING--
+rep de telèfons via Octo
 
 Octo stop
---MISSING--
+atura Octo
 
 ##################
 # MicroBlocks UI #
@@ -2881,6 +2960,9 @@ Connecta
 
 connect
 connecta
+
+connect (BLE)
+connecta (BLE)
 
 open Boardie
 connecta't al Boardie
@@ -3022,6 +3104,15 @@ gran (100%)
 printable (200%)
 per a impressió (200%)
 
+duplicate selection
+duplica selecció
+
+drag selection
+arrossega selecció
+
+delete selection
+elimina selecció
+
 about...
 sobre...
 
@@ -3033,6 +3124,12 @@ versió de la màquina virtual
 
 update firmware on board
 actualitza firmware a la placa
+
+enable or disable BLE
+activa o desactiva BLE
+
+Allow the attached board to be connected via BLE?
+Vols que la placa connectada es pugui programar via BLE?
 
 show data graph
 mostra la gràfica de dades
@@ -3094,6 +3191,9 @@ instal·lar firmware ESP des de l'URL
 Use board type
 La placa connectada és de tipus
 
+Firmware Install
+Instal·lació del firmware
+
 Firmware Installed
 Firmware instal·lat
 
@@ -3111,6 +3211,9 @@ Selecciona
 
 as the destination drive, then click Save.
 com a unitat de destinació i clica Desa.
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+Si la teva micro:bit mostra una cara trista, desa l'arxiu firmware.hex al teu ordinador, i després arrossega'l a la unitat MICROBIT que trobaràs a l'explorador d'arxius.
 
 Installing firmware...
 Instal·lant firmware...

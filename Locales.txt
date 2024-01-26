@@ -29,6 +29,8 @@ milliseconds
 
 board type
 
+connected to IDE
+
 Pins
 
 read digital pin _
@@ -83,6 +85,10 @@ comment _
 
 How this works...
 
+range _ to _
+
+by _
+
 for _ in _ _
 
 repeat until _ _
@@ -94,6 +100,10 @@ stop other tasks
 stop all
 
 last message
+
+arg _ default _
+
+default
 
 call _
 
@@ -271,9 +281,11 @@ serial read
 
 serial write _
 
+anIntegerStringListOrByteArray
+
 serial write _ starting at _
 
-aByteStringOrByteArray
+aStringListOrByteArray
 
 soft serial write byte _ pin _ baud _
 
@@ -568,7 +580,7 @@ attach IR receiver to pin _
 IR transmit device _ command _
 
 ####
-# Keyboard and Mouse
+# Keyboard and Mouse library
 
 Keyboard and Mouse
 
@@ -638,7 +650,46 @@ hold _ mouse button
 
 release mouse buttons
 
-#### BLE Keyboard
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+
+list _ contains _
+
+circular item _ of _
+
+aListOrString
+
+map _ over _
+
+aFunction
+
+filter _ with _
+
+pick _ from _
+
+a few
+
+some
+
+most
+
+reverse _
+
+shuffle _
+
+sort _
+
+shuffled _
+
+reversed _
+
+sorted _
+
+####
+# BLE Keyboard library
 
 BLE Keyboard
 
@@ -888,23 +939,13 @@ filename
 
 Rhythm
 
-set tempo to _ bpm
+set tempo to _ bpm at _ / _ signature
 
-set time signature to _ / _
+start counting _ bars
 
-set up _ bars pattern
+stop counting
 
-start playing
-
-stop playing
-
-add _ at bar _ beat _
-
-remove _ from bar _ beat _
-
-mute _ _
-
-solo _ _
+wait until next _
 
 current beat
 
@@ -984,7 +1025,9 @@ High Agogo
 
 Low Agogo
 
-Cabasa Maracas 
+Cabasa
+
+Maracas 
 
 Short Whistle
 
@@ -1140,7 +1183,7 @@ send MIDI stop playing
 
 send MIDI continue playing
 
-set MIDI signal to pin _ : use USB MIDI _
+set MIDI signal to pin _
 
 ####
 # Scales & Chords
@@ -1162,7 +1205,7 @@ mixolydian
 
 aeolian
 
-locrian 
+locrian
 
 major
 
@@ -1190,19 +1233,25 @@ tone pin
 
 # library blocks
 
-_ scale root _ : steps _
+_ scale root _
 
-pentatonic _ scale root _ : steps _
+steps _
 
-_ chord root _ : steps _
+pentatonic _ scale root _
 
-_ chord for root _ : steps _
+_ chord root _
+
+_ chord for root _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
 
+improvise over _ for _ bars with durations _ on _ _ volume _
+
 _ transposed _ semitones
 
-chord progression _ with root _ : and _ steps per chord
+chord progression _ with root _
+
+and _ steps per chord
 
 rotation _ of circle of 5ths _ M _ m _ º
 
@@ -2103,6 +2152,12 @@ normal (65%)
 large (100%)
 
 printable (200%)
+
+duplicate selection
+
+drag selection
+
+delete selection
 
 about...
 

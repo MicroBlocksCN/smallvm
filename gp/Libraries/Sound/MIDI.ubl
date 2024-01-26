@@ -1,6 +1,6 @@
 module MIDI Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
@@ -18,28 +18,28 @@ Alternatively, if you want to use the MIDI library to control a USB MIDI device 
 '
 variables _MIDI_initialized _MIDI_pin _MIDI_drums 
 
-  spec ' ' 'play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
-  spec ' ' 'send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
+  spec ' ' 'MIDI_play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
+  spec ' ' 'MIDI_send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
   space
-  spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
+  spec 'r' 'MIDI_note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   space
-  spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
-  spec 'r' 'instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
-  spec ' ' 'select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
+  spec ' ' 'MIDI_select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
+  spec 'r' 'MIDI_instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
+  spec ' ' 'MIDI_select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
   space
-  spec ' ' 'play MIDI drum' 'play MIDI drum _ for _ ms volume _' 'menu.druminst num num' 'Acoustic Snare' 100 80
-  spec 'r' 'drum note' 'drum _' 'menu.druminst' 'Ride Cymbal 2'
+  spec ' ' 'MIDI_play MIDI drum' 'play MIDI drum _ for _ ms volume _' 'menu.druminst num num' 'Acoustic Snare' 100 80
+  spec 'r' 'MIDI_drum note' 'drum _' 'menu.druminst' 'Ride Cymbal 2'
   space
-  spec ' ' 'change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
-  spec ' ' 'pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
+  spec ' ' 'MIDI_change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
+  spec ' ' 'MIDI_pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
   space
-  spec ' ' 'send MIDI reset' 'send MIDI reset'
+  spec ' ' 'MIDI_send MIDI reset' 'send MIDI reset'
   space
-  spec ' ' 'send MIDI start playing' 'send MIDI start playing'
-  spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
-  spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
+  spec ' ' 'MIDI_send MIDI start playing' 'send MIDI start playing'
+  spec ' ' 'MIDI_send MIDI stop playing' 'send MIDI stop playing'
+  spec ' ' 'MIDI_send MIDI continue playing' 'send MIDI continue playing'
   space
-  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto._midiPin' 8
+  spec ' ' 'MIDI_set MIDI pin' 'set MIDI signal to pin _' 'auto._midiPin' 8
   space
   spec ' ' '_MIDI init' '_MIDI init'
   space
@@ -121,86 +121,86 @@ or periods and all lowercase.'
   return ('[data:unicodeString]' result)
 }
 
-to 'change MIDI control' control channel value {
+to 'MIDI_change MIDI control' control channel value {
   local 'controlChangeCmd' 11
   local 'controller' (at ('[data:find]' control ('[data:makeList]' 'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2')) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93))
   '_MIDI command' controlChangeCmd channel controller value
 }
 
-to 'drum note' instrument {
+to 'MIDI_drum note' instrument {
   if (not (isType _MIDI_drums 'list')) {_MIDI_drums = ('[data:split]' 'Acoustic Bass Drum,Bass Drum 1,Side Stick,Acoustic Snare,Hand Clap,Electric Snare,Low Floor Tom,Closed Hi-Hat,High Floor Tom,Pedal Hi-Hat,Low Tom,Open Hi-Hat,Low-Mid Tom,Hi-Mid Tom,Crash Cymbal 1,High Tom,Ride Cymbal 1,Chinese Cymbal,Ride Bell,Tambourine,Splash Cymbal,Cowbell,Crash Cymbal 2,Vibraslap,Ride Cymbal 2,Hi Bongo,Low Bongo,Mute Hi Conga,Open Hi Conga,Low Conga,High Timbale,Low Timbale,High Agogo,Low Agogo,Cabasa,Maracas,Short Whistle,Long Whistle,Short Guiro,Long Guiro,Claves,Hi Wood Block,Low Wood Block,Mute Cuica,Open Cuica,Mute Triangle,Open Triangle' ',')}
   return (('[data:find]' instrument _MIDI_drums) + 34)
 }
 
-to instrument instrument number {
+to 'MIDI_instrument' instrument number {
   local 'categories' ('[data:split]' 'piano,chromatic percussion,organ,guitar,bass,strings,ensemble,brass,reed,pipe,synth lead,synth pad,synth SFX,ethnic,percussive,SFX' ',')
   return (((('[data:find]' instrument categories) - 1) * 8) + number)
 }
 
-to 'note to MIDI' note octave {
+to 'MIDI_note to MIDI' note octave {
   local 'noteNames' ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
   local 'midiKeys' ('[data:makeList]' 60 61 62 63 64 65 66 67 68 69 70 71 59 61 61 63 63 65 64 66 66 68 68 70 70 72)
   return ((at ('[data:find]' ('_trimmedLowercase' note) noteNames) midiKeys) + (octave * 12))
 }
 
-to 'pitch bend channel' channel percent {
+to 'MIDI_pitch bend channel' channel percent {
   local 'pitchBendCmd' 14
   local 'bendMSB' (maximum 0 (minimum (((64 * percent) / 100) + 64) 127))
   '_MIDI command' pitchBendCmd channel 0 bendMSB
 }
 
-to 'play MIDI drum' drumName duration volume {
+to 'MIDI_play MIDI drum' drumName duration volume {
   if (isType drumName 'number') {
-    'send note' drumName true 10 volume
+    'MIDI_send note' drumName true 10 volume
   } else {
-    'send note' ('drum note' drumName) true 10 volume
+    'MIDI_send note' ('MIDI_drum note' drumName) true 10 volume
   }
   waitMillis (duration - 3)
 }
 
-to 'play MIDI note' 'midi note' duration channel volume {
-  'send note' (v 'midi note') true channel volume
+to 'MIDI_play MIDI note' 'midi note' duration channel volume {
+  'MIDI_send note' (v 'midi note') true channel volume
   waitMillis (duration - 3)
-  'send note' (v 'midi note') false channel 0
+  'MIDI_send note' (v 'midi note') false channel 0
 }
 
-to 'select MIDI drum kit' drumkit {
+to 'MIDI_select MIDI drum kit' drumkit {
   local 'programChangeCmd' 12
   '_MIDI command' programChangeCmd 10 ((at ('[data:find]' drumkit ('[data:split]' 'standard,room,power,electronic,TR-808,jazz,brush,orchestra,SFX,CM-64/CM-32L' ',')) ('[data:split]' '1,9,17,25,26,33,41,49,57,128' ',')) - 1)
 }
 
-to 'select MIDI instrument' 'instrument number' channel {
+to 'MIDI_select MIDI instrument' 'instrument number' channel {
   local 'programChangeCmd' 12
   '_MIDI command' programChangeCmd channel ((v 'instrument number') - 1)
 }
 
-to 'send MIDI continue playing' {
+to 'MIDI_send MIDI continue playing' {
   '_MIDI send bytes' (hexToInt 'FB')
 }
 
-to 'send MIDI reset' {
+to 'MIDI_send MIDI reset' {
   '_MIDI send bytes' (hexToInt 'FF')
   '_MIDI send bytes' ('[data:makeList]' (hexToInt 'F0') (hexToInt '7E') (hexToInt '7F') (hexToInt '09') (hexToInt '01') (hexToInt 'F7'))
   comment 'Turn off all notes on all channels'
   for chan 16 {
     for key 128 {
-      'send note' (key - 1) false chan 0
+      'MIDI_send note' (key - 1) false chan 0
     }
   }
 }
 
-to 'send MIDI start playing' {
+to 'MIDI_send MIDI start playing' {
   '_MIDI send bytes' (hexToInt 'FA')
 }
 
-to 'send MIDI stop playing' {
+to 'MIDI_send MIDI stop playing' {
   '_MIDI send bytes' (hexToInt 'FC')
 }
 
-to 'send note' 'midi note' on/off channel volume {
+to 'MIDI_send note' 'midi note' on/off channel volume {
   if (isType (v 'midi note') 'list') {
     for note (v 'midi note') {
-      'send note' note on/off channel volume
+      'MIDI_send note' note on/off channel volume
     }
   } else {
     local 'noteOnMsg' 9
@@ -212,7 +212,7 @@ to 'send note' 'midi note' on/off channel volume {
   }
 }
 
-to 'set MIDI pin' pin {
+to 'MIDI_set MIDI pin' pin {
   '[serial:close]'
   if ('USB' == pin) {
     _MIDI_pin = 'USB'
