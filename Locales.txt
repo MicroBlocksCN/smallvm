@@ -888,23 +888,13 @@ filename
 
 Rhythm
 
-set tempo to _ bpm
+set tempo to _ bpm at _ / _ signature
 
-set time signature to _ / _
+start counting _ bars
 
-set up _ bars pattern
+stop counting
 
-start playing
-
-stop playing
-
-add _ at bar _ beat _
-
-remove _ from bar _ beat _
-
-mute _ _
-
-solo _ _
+wait until next _
 
 current beat
 
@@ -984,7 +974,9 @@ High Agogo
 
 Low Agogo
 
-Cabasa Maracas 
+Cabasa
+
+Maracas 
 
 Short Whistle
 
@@ -1140,7 +1132,7 @@ send MIDI stop playing
 
 send MIDI continue playing
 
-set MIDI signal to pin _ : use USB MIDI _
+set MIDI signal to pin _
 
 ####
 # Scales & Chords
@@ -1162,7 +1154,7 @@ mixolydian
 
 aeolian
 
-locrian 
+locrian
 
 major
 
@@ -1190,19 +1182,25 @@ tone pin
 
 # library blocks
 
-_ scale root _ : steps _
+_ scale root _
 
-pentatonic _ scale root _ : steps _
+steps _
 
-_ chord root _ : steps _
+pentatonic _ scale root _
 
-_ chord for root _ : steps _
+_ chord root _
+
+_ chord for root _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
 
+improvise over _ for _ bars with durations _ on _ _ volume _
+
 _ transposed _ semitones
 
-chord progression _ with root _ : and _ steps per chord
+chord progression _ with root _
+
+and _ steps per chord
 
 rotation _ of circle of 5ths _ M _ m _ º
 
