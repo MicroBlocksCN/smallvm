@@ -342,10 +342,12 @@ to 'up button' {
 
 module 'ED1 Stepper Motor' Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags '28byj-48' stepper motor fantastic ed1 
 choices directions clockwise 'counter-clockwise' 
 description 'Provides blocks to control 28BYJ-48 stepper motors, like the ones included in the Fantastic robot kit for the Citilab ED1 board.
+
+It also exposes the IO expander pins to be used as extra digital pins.
 '
 variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register 
 
@@ -353,8 +355,25 @@ variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_run
   spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
   spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
   spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'
-  spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
   spec ' ' 'stop steppers' 'stop steppers'
+  space
+  spec ' ' 'set motor pin' 'set motor pin _ for motor _ to _' 'auto auto bool' 2 1 true
+  space
+  spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
+  spec ' ' '_ED1 init motor pins' '_ED1 init motor pins'
+
+to '_ED1 init motor pins' {
+  if (_ED1_stepper_init == 0) {
+    if ((i2cGet (hexToInt '20') 1) == 0) {
+      _ED1_exp_register = (hexToInt 'A')
+    } else {
+      _ED1_exp_register = (hexToInt '14')
+    }
+    _ED1_stepper_init = true
+    i2cSet (hexToInt '20') 0 0
+    i2cSet (hexToInt '20') 6 255
+  }
+}
 
 to '_ED1_stepper_init' {
   if (_ED1_stepper_init == 0) {
@@ -450,6 +469,19 @@ to 'move motor ' 'direction 1' 'direction 2' steps {
     }
   }
   'stop steppers'
+}
+
+to 'set motor pin' pin motor value {
+  '_ED1 init motor pins'
+  local 'pins' (i2cGet (hexToInt '20') _ED1_exp_register)
+  waitMillis 1
+  if value {
+    pins = (pins | ((1 << (pin - 1)) << ((motor % 2) << 2)))
+  } else {
+    pins = (pins & ('~' ((1 << (pin - 1)) << ((motor % 2) << 2))))
+  }
+  i2cSet (hexToInt '20') _ED1_exp_register pins
+  waitMillis 20
 }
 
 to 'stop steppers' {
@@ -642,7 +674,7 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[display:mbDisplayOff]' 'clear display'
@@ -655,6 +687,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
   space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
   spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'makeGray' 'gray _ %' 'num' 50
   spec 'r' 'randomColor' 'random color'
@@ -698,6 +731,10 @@ to randomColor {
   } else {
     return ((n1 << 8) | n2)
   }
+}
+
+to tft_colorSwatch color {
+  return color
 }
 
 
@@ -913,15 +950,18 @@ to 'ws event type' event {
 
 module WiFi Comm
 author MicroBlocks
-version 1 6 
+version 1 8 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
 
 to getIPAddress {
   return ('[net:myIPAddress]')
@@ -960,6 +1000,10 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
   '[net:startWiFi]' ssid password true
   if ('Connected' != ('[net:wifiStatus]')) {
     sayIt 'Could not create hotspot'
