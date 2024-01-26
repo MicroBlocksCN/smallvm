@@ -308,10 +308,10 @@ to BunnyPIC {
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 13 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -1339,7 +1339,7 @@ to RobotPIC {
 
 module Servo Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags servo motor angle rotation position 
 description 'Control both positional (angle) and rotational servo motors.'
 variables _servoPin _servoPulseWidth 
@@ -1421,7 +1421,7 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (10 * speed))
+  local 'pulseWidth' (1500 - (5 * speed))
   if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }

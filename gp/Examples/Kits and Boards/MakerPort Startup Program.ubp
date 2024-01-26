@@ -744,10 +744,10 @@ to receiveIR {
 
 module 'Keyboard and Mouse' Comm
 author MicroBlocks
-version 1 5 
+version 1 6 
 choices keyModifiers Shift Control 'Alt / ⌥' 'Logo / ⌘' AltGr 
 choices mouseButtons left right middle both 
-choices specialKeys 'enter:10' 'return:13' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
+choices specialKeys 'enter:10' 'tab:9' 'backspace:8' 'ESC:177' 'insert:209' 'delete:212' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'PrintScreen:206' 
 description 'This library can send mouse and keyboard events to a computer over USB (i.e. it emulates a USB HID device) on boards with the necessary hardware. It currently works on RP2040 and SAMD21 boards such as the Adafruit Circuit Playground Express, Trinket M0, and Metro M0 Express. It also works on the MakerPort.
 
 It is based on the Arduino Mouse and Keyboard libraries. The list of special, non-ascii keys and modifiers is here:
@@ -1062,8 +1062,8 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 9 
-depends 'LCD Display' 'MP3 Player' Touch 'IR Remote' 
+version 1 10 
+depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 variables _makerport_microSDInserted _makerport_time_averages 
@@ -1192,7 +1192,7 @@ to makerport_typeString s {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -1280,7 +1280,7 @@ to '_NeoPixel_rotate' left {
 
 to '_NeoPixel_update' {
   '[display:neoPixelSend]' _np_pixels
-  waitMicros 100
+  waitMicros 300
 }
 
 to clearNeoPixels {
@@ -1380,7 +1380,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Servo Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags servo motor angle rotation position 
 description 'Control both positional (angle) and rotational servo motors.'
 variables _servoPin _servoPulseWidth 
@@ -1462,7 +1462,7 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (10 * speed))
+  local 'pulseWidth' (1500 - (5 * speed))
   if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }
@@ -1484,9 +1484,9 @@ to stopServo which {
 
 module Touch Input
 author MicroBlocks
-version 1 8 
+version 1 10 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
+variables _touch_reg _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
   spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
   space
@@ -1503,6 +1503,7 @@ variables _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
 
 to '_touch_init' {
+  if (_touch_reg == 0) {_touch_reg = 90}
   if (isType _touch_isTouched 'list') {
     comment 'Already initialized.'
     return 0
@@ -1544,12 +1545,15 @@ to '_touch_init' {
 to '_touch_setRegister' reg value {
   if (isType reg 'string') {reg = (hexToInt reg)}
   if (isType value 'string') {value = (hexToInt value)}
-  i2cSet 90 reg value
+  i2cSet _touch_reg reg value
 }
 
 to '_touch_update' {
   '_touch_init'
-  _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
+  '[sensors:i2cWrite]' _touch_reg ('[data:makeList]' 0)
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' _touch_reg bytes
+  _touch_state = (((at 2 bytes) << 8) | (at 1 bytes))
   if (_touch_state < 0) {
     comment 'i2c read operation failed'
     _touch_state = 0
