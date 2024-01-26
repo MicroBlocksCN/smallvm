@@ -105,7 +105,7 @@ to stopScrollingText {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -193,7 +193,7 @@ to '_NeoPixel_rotate' left {
 
 to '_NeoPixel_update' {
   '[display:neoPixelSend]' _np_pixels
-  waitMicros 100
+  waitMicros 300
 }
 
 to clearNeoPixels {
