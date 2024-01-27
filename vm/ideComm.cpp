@@ -95,22 +95,19 @@ static void show_BLE_ID() {
 	OBJ args[5]; // used to call primitives
 
 	int nameLen = strlen(uniqueName);
-	for (int iters = 0; iters < 1; iters++) {
-		for (int i = nameLen - 4; i < nameLen; i++) {
-			args[0] = newStringFromBytes(&uniqueName[i], 1);
-			OBJ letterShape = primMBShapeForLetter(1, args);
+	for (int i = nameLen - 4; i < nameLen; i++) {
+		args[0] = newStringFromBytes(&uniqueName[i], 1);
+		OBJ letterShape = primMBShapeForLetter(1, args);
 
-			args[0] = letterShape;
-			args[1] = int2obj(1);
-			args[2] = int2obj(1);
-			primMBDrawShape(3, args);
-			displayFor(400);
-			primMBDisplayOff(0, args);
-			displayFor(100);
-		}
-		primMBDisplayOff(0, args);
+		args[0] = letterShape;
+		args[1] = int2obj(1);
+		args[2] = int2obj(1);
+		primMBDrawShape(3, args);
 		displayFor(300);
+		primMBDisplayOff(0, args);
+		displayFor(100);
 	}
+	primMBDisplayOff(0, args);
 }
 
 static int gotSerialPing() {
