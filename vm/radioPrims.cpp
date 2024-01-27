@@ -258,7 +258,7 @@ static int receiveMakeCodeMessage() {
 	// clear old received values
 	receivedInteger = 0;
 	receivedString[0] = '\0';
-	char *src;
+	char *src = NULL;
 	int maxStringLen = 19;
 	int stringLength = 0;
 	double dbl;
