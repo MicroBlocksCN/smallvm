@@ -1337,7 +1337,7 @@ void vmLoop() {
 				updateMicrobitDisplay();
 			#endif
 			count = 95; // must be under 30 when building on mbed to avoid serial errors
-		} else if ((count & 0x1F) == 0) {
+		} else if ((count & 0xF) == 0) {
 			captureIncomingBytes();
 		}
 		int runCount = 0;

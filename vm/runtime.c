@@ -408,7 +408,6 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
-	sendChunkCRC(chunkIndex);
 }
 
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
@@ -1157,7 +1156,7 @@ static void processLongMessage() {
 	case chunkCodeMsg:
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
-		sendPingNow(chunkIndex); // send a ping in case there compaction required serial restart
+		sendChunkCRC(chunkIndex);
 		break;
 	case setVarMsg:
 		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
