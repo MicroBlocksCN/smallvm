@@ -1336,12 +1336,13 @@ void vmLoop() {
 			#if defined(HAS_LED_MATRIX)
 				updateMicrobitDisplay();
 			#endif
-			count = 100; // must be under 30 when building on mbed to avoid serial errors
+			count = 95; // must be under 30 when building on mbed to avoid serial errors
+		} else if ((count & 0x1F) == 0) {
+			captureIncomingBytes();
 		}
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
-			captureIncomingBytes();
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
 			Task *task = &tasks[currentTaskIndex];
