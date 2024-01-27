@@ -1924,14 +1924,14 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		// written in one call to writeSerialPort, so send smaller chunks
 		// Note: Maximum serial write in Chrome browser is only 64 bytes!
 		// Note: Receive buffer on micro:bit is only 63 bytes.
-		byteCount = (min 63 (byteCount dataToSend))
+		byteCount = (min 48 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
 		}
-		waitMSecs (bytesSent / 5) // limit throughput to 5k bytes/sec
+		waitMSecs 10 // limit throughput to to avoid overunning buffer when board is busy
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
