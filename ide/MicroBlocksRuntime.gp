@@ -426,13 +426,18 @@ method waitForPing SmallRuntime {
 
 	endMSecs = ((msecsSinceStart) + 1000)
 	lastPingRecvMSecs = 0
+	iter = 0
 	while (0 == lastPingRecvMSecs) {
 	    now = (msecsSinceStart)
 		if (now > endMSecs) { return } // no response within the timeout
-		sendMsg this 'pingMsg'
-		pingSentMSecs = now
+		if ((iter % 20) == 0) {
+		    // send a ping every 100 msecs
+		    sendMsg this 'pingMsg'
+		    pingSentMSecs = now
+		}
 		processMessages this
-		waitMSecs 10
+		iter += 1
+		waitMSecs 5
 	}
 }
 
@@ -943,9 +948,12 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			waitForPing this // wait up to 1 second for ping
-			pingSentMSecs = (msecsSinceStart)
-			justConnected this
+			lastPingRecvMSecs = 0
+			waitForPing this
+            if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
+                justConnected this
+                return 'connected'
+            }
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
@@ -964,8 +972,7 @@ method tryToConnect SmallRuntime {
 	lastScanMSecs = now
 
 	if (notNil connectionStartTime) {
-		sendMsg this 'pingMsg'
-		processMessages this
+		waitForPing this
 		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
 			justConnected this
 			return 'connected'
