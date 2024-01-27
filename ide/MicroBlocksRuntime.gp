@@ -1298,7 +1298,11 @@ method saveAllChunks SmallRuntime checkCRCs {
 				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
 		}
-		if (not (connectedToBoard this)) { setCursor 'default'; return } // connection closed
+		if (not (connectedToBoard this)) { // connection closed
+		    print 'Lost communication to the board in saveAllChunks'
+		    setCursor 'default'
+		    return
+		}
 		processedScripts += 1
 	}
 	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
@@ -1312,7 +1316,11 @@ method saveAllChunks SmallRuntime checkCRCs {
 					showDownloadProgress editor 3 (processedScripts / totalScripts)
 				}
 			}
-			if (not (connectedToBoard this)) { setCursor 'default'; return } // connection closed
+            if (not (connectedToBoard this)) { // connection closed
+                print 'Lost communication to the board in saveAllChunks'
+                setCursor 'default'
+                return
+            }
 		}
 		processedScripts += 1
 	}
@@ -1435,6 +1443,7 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	if (storeChunkOnBoard this chunkID data chunkCRC) {
 		atPut entry 2 chunkCRC // remember the CRC of the code we just saved
 	} else {
+        print 'Failed to save chunk:' chunkID
 		atPut entry 2 nil // save failed; clear CRC
 	}
 
@@ -1971,7 +1980,7 @@ method waitForResponse SmallRuntime {
 			recvBuf = (join recvBuf s)
 			return true
 		}
-		if ((iter % 10) == 0) { sendMsg this 'pingMsg' }
+		if ((iter % 20) == 0) { sendMsg this 'pingMsg' }
 		iter += 1
 		waitMSecs 5
 	}
