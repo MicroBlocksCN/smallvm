@@ -1157,6 +1157,7 @@ static void processLongMessage() {
 	case chunkCodeMsg:
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
+		sendPingNow(chunkIndex); // send a ping in case there compaction required serial restart
 		break;
 	case setVarMsg:
 		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
@@ -1169,6 +1170,7 @@ static void processLongMessage() {
 		break;
 	case varNameMsg:
 		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
+		sendPingNow(chunkIndex); // send a ping to acknowledge save
 		break;
 	case extendedMsg:
 		processExtendedMessage(chunkIndex, bodyBytes, &rcvBuf[5]);
