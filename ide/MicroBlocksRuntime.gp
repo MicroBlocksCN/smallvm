@@ -1458,7 +1458,7 @@ method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
 	sendMsg this 'getChunkCRCMsg' chunkID
 
 	// wait for CRC to be reported
-	timeout = 10000 // long enough for a slow code store compaction
+	timeout = 4000 // long enough for a code store compaction but less than ping timeout
 	startT = (msecsSinceStart)
 	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < timeout)) {
 		processMessages this
