@@ -1191,6 +1191,8 @@ static void processLongMessage() {
 void captureIncomingBytes() {
 	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 	rcvByteCount += bytesRead;
+	// uncomment to check for serial buffer overruns:
+	// if (bytesRead > 49) reportNum("bytesRead", bytesRead);
 }
 
 void processMessage() {
@@ -1198,6 +1200,8 @@ void processMessage() {
 	sendData();
 
 	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	// uncomment to check for serial buffer overruns:
+	// if (bytesRead > 49) reportNum("bytesRead", bytesRead);
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 
