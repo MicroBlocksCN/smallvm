@@ -1018,20 +1018,28 @@ static OBJ primText(int argCount, OBJ *args) {
 	int color16b = color24to16b(obj2int(args[3]));
 	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
 	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
+	int bgColor = (argCount > 6) ? color24to16b(obj2int(args[6])) : -1;
 	tft.setCursor(x, y);
 	tft.setTextColor(color16b);
 	tft.setTextSize(scale);
 	tft.setTextWrap(wrap);
 
+	int lineH = 8 * scale;
+	int letterW = 6 * scale;
 	if (IS_TYPE(value, StringType)) {
+		char *str = obj2str(value);
+		if (bgColor != -1) tft.fillRect(x, y, strlen(str) * letterW, lineH, bgColor);
 		tft.print(obj2str(value));
 	} else if (trueObj == value) {
+		if (bgColor != -1)  tft.fillRect(x, y, 4 * letterW, lineH, bgColor);
 		tft.print("true");
 	} else if (falseObj == value) {
+		if (bgColor != -1)  tft.fillRect(x, y, 5 * letterW, lineH, bgColor);
 		tft.print("false");
 	} else if (isInt(value)) {
 		char s[50];
 		sprintf(s, "%d", obj2int(value));
+		if (bgColor != -1) tft.fillRect(x, y, strlen(s) * letterW, lineH, bgColor);
 		tft.print(s);
 	}
 	UPDATE_DISPLAY();
