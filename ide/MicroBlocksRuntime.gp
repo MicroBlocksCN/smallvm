@@ -1885,6 +1885,8 @@ method errorString SmallRuntime errID {
 #define unknownDatatype			48	// Unknown datatype
 #define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
 #define cannotUseRadioWithBLE	50	// Cannot use radio blocks or WiFi when board connected to IDE via Bluetooth
+#define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
+#define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

@@ -1142,6 +1142,70 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primDrawBitmap(int argCount, OBJ *args) {
+	// Draw an 8-bit bitmap at a given position without scaling.
+
+	if (!useTFT) return falseObj;
+	uint32 palette[256];
+
+	if (argCount < 4) return fail(notEnoughArguments);
+	OBJ bitmapObj = args[0]; // bitmap: a two-item list of [width (int), pixels (byte array)]
+	OBJ paletteObj = args[1]; // palette: a list of RGB values
+	int dstX = obj2int(args[2]);
+	int dstY = obj2int(args[3]);
+
+	if ((dstX > TFT_WIDTH) || (dstY > TFT_HEIGHT)) return falseObj; // off screen
+
+	// process bitmap arg
+	if (!IS_TYPE(bitmapObj, ListType) ||
+	 	(obj2int(FIELD(bitmapObj, 0)) != 2) ||
+	 	!isInt(FIELD(bitmapObj, 1)) ||
+	 	!IS_TYPE(FIELD(bitmapObj, 2), ByteArrayType)) {
+	 		return fail(bad8BitBitmap);
+	}
+	int bitmapWidth = obj2int(FIELD(bitmapObj, 1));
+	OBJ bitmapBytesObj = FIELD(bitmapObj, 2);
+	int bitmapByteCount = BYTES(bitmapBytesObj);
+	if ((bitmapWidth <= 0) || ((bitmapByteCount % bitmapWidth) != 0)) return fail(bad8BitBitmap);
+	int bitmapHeight = bitmapByteCount / bitmapWidth;
+
+	// process palette arg
+	if (!IS_TYPE(paletteObj, ListType)) return fail(badColorPalette);
+	int colorCount = obj2int(FIELD(paletteObj, 0)); // list size
+	if (colorCount > 256) colorCount = 256;
+	memset(palette, 0, sizeof(palette)); // initialize to all black RGB values
+	for (int i = 0; i < colorCount; i++) {
+		int rgb = obj2int(FIELD(paletteObj, i + 1));
+		if (rgb < 0) rgb = 0;
+		if (rgb > 0xFFFFFF) rgb = 0xFFFFFF;
+		palette[i] = rgb;
+	}
+
+	int srcX = 0;
+	int srcW = bitmapWidth;
+	if (dstX < 0) { srcX = -dstX; dstX = 0; srcW -= srcX; }
+	if (srcW < 0) return falseObj; // off screen to left
+	if ((dstX + srcW) > TFT_WIDTH) srcW = TFT_WIDTH - dstX;
+
+	int srcY = 0;
+	int srcH = bitmapHeight;
+	if (dstY < 0) { srcY = -dstY; dstY = 0; srcH -= srcY; }
+	if (srcH < 0) return falseObj; // off screen above
+	if ((dstY + srcH) > TFT_HEIGHT) srcH = TFT_HEIGHT - dstY;
+
+	uint8 *bitmapBytes = (uint8 *) &FIELD(bitmapBytesObj, 0);
+	for (int i = 0; i < srcH; i++) {
+		uint8 *row = bitmapBytes + ((srcY + i) * bitmapWidth);
+		for (int j = 0; j < srcW; j++) {
+			uint8 pix = row[srcX + j]; // 8-bit color index
+			uint32 rgb = palette[pix]; // 24 bit RGB color
+			tft.drawPixel(dstX + j, dstY + i, color24to16b(rgb));
+		}
+	}
+	UPDATE_DISPLAY();
+	return falseObj;
+}
+
 // touchscreen ops
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
@@ -1234,6 +1298,7 @@ static PrimEntry entries[] = {
 
 	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},
+	{"drawBitmap", primDrawBitmap},
 
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
