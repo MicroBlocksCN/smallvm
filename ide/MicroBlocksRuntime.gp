@@ -1467,7 +1467,7 @@ method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
 	sendMsg this 'getChunkCRCMsg' chunkID
 
 	// wait for CRC to be reported
-	timeout = 4000 // long enough for a code store compaction but less than ping timeout
+	timeout = 3000 // must be less than ping timeout
 	startT = (msecsSinceStart)
 	while (and (lastCRC != chunkCRC) (((msecsSinceStart) - startT) < timeout)) {
 		processMessages this
@@ -1972,7 +1972,7 @@ method waitForResponse SmallRuntime {
 	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
-	timeout = 5000 // enough time for a long Flash compaction
+	timeout = 3000 // must be less than ping timeout
 	iter = 1
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
