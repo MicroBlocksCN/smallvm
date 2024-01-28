@@ -21,7 +21,7 @@ static int touchEnabled = false;
 static int deferUpdates = false;
 
 // Redefine this macro for displays that must explicitly push offscreen changes to the display
-#define UPDATE_DISPLAY() { taskSleep(0); } // yield after potentially slow TFT operations
+#define UPDATE_DISPLAY() { taskSleep(-1); } // yield after potentially slow TFT operations
 
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
@@ -469,7 +469,7 @@ static int deferUpdates = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(-1); }}
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -523,10 +523,11 @@ static int deferUpdates = false;
 			uint8 *displayBuffer = tft.getBuffer();
 			uint8 *src = displayBuffer;
 			for (int i = 0; i <= 1024; i++) {
-				captureIncomingBytes();
-				#ifdef HAS_LED_MATRIX
-					if ((i % 64) == 0) updateMicrobitDisplay();
-				#endif
+				if ((i % 64) == 0) {
+					// do time-sensitive background tasks
+					captureIncomingBytes();
+					updateMicrobitDisplay();
+				}
 				int col = i % 32;
 				if ((col == 0) && (i != 0)) {
 					i2cWriteBytes(oneLine, sizeof(oneLine));
@@ -536,7 +537,7 @@ static int deferUpdates = false;
 		}
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(10); }}
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(-1); }}
 
 	#elif defined(TTGO_DISPLAY)
 		#include "Adafruit_GFX.h"
@@ -860,7 +861,7 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int brightness = obj2int(args[0]);
-	(void) (brightness); //  // reference var to suppress compiler warning
+	(void) (brightness); // reference var to suppress compiler warning
 
 	#if defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);
