@@ -1281,6 +1281,7 @@ static OBJ primResumeUpdates(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
