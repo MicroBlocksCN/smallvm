@@ -273,7 +273,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[tft:roundedRect]'		'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
-		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 0 80 16777215 1 false 16777215)
+		(array ' ' '[tft:drawBitmap]'		'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10)
 		(array ' ' '[tft:deferUpdates]'		'defer TFT display updates')
 		(array ' ' '[tft:resumeUpdates]'	'resume TFT display updates')
 
