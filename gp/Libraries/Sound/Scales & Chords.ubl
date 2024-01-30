@@ -1,6 +1,6 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 2 0 
+version 2 1 
 depends Rhythm 
 choices sound_dst 'MIDI channel' 'tone pin' 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
@@ -18,8 +18,8 @@ variables _scales_degrees _scales_circle5ths
   spec 'r' 'scales_chord' '_ chord root _ : steps _' 'menu.chords num num' 'major' 60 4
   spec 'r' 'scales_chord with roman numeral' '_ chord for root _ : steps _' 'auto auto auto' 'IV' 60 4
   space
-  spec ' ' 'scales_arpeggiate' 'arpeggiate _ in order _ duration _ and volume _ on _ _' 'auto auto auto num menu.sound_dst auto' 'aListOfNotes' '1,3,4,2' '100,200' 100 'MIDI channel' 1
-  spec ' ' 'scales_improv' 'improvise over _ for _ bars with durations _ on _ _ volume _' 'auto auto auto menu.sound_dst auto auto' 'aListOfNotes' '10' 100 'MIDI channel' 1 100
+  spec ' ' 'scales_arpeggiate' 'arpeggiate _ in order _ duration _ and volume _ on _ _' 'auto str str num menu.sound_dst auto' 'aListOfNotes' '1,3,4,2' '4,8' 100 'MIDI channel' 1
+  spec ' ' 'scales_improv' 'improvise over _ for _ bars with durations _ on _ _ volume _' 'auto auto str menu.sound_dst auto auto' 'aListOfNotes' '10' '4,4,8' 'MIDI channel' 1 100
   space
   spec 'r' 'scales_transposed' '_ transposed _ semitones' 'auto auto' 60 12
   space
@@ -30,6 +30,7 @@ variables _scales_degrees _scales_circle5ths
   spec 'r' '_scales degrees' '_scales degrees'
   spec ' ' '_scales_init_circle' '_scales_init_circle'
   spec 'r' '_scales circular item' '_scales circular item _ of _' 'auto auto' '10' ''
+  spec 'r' '_scales parsed durations' '_scales parsed durations _' 'str' '4,4,8'
 
 to '_scales circular item' n list {
   if (n < 1) {
@@ -52,6 +53,14 @@ to '_scales intervals' intervals root steps {
   return notes
 }
 
+to '_scales parsed durations' 'duration string' {
+  local 'duration' ('[data:split]' (v 'duration string') ',')
+  for idx (size duration) {
+    if ((at idx duration) < 33) {atPut idx duration ('_rhy duration of note value' ('[data:convertType]' (at idx duration) 'number'))}
+  }
+  return duration
+}
+
 to '_scales_init_circle' {
   if (_scales_circle5ths == 0) {_scales_circle5ths = ('[data:makeList]' ('[data:makeList]' 'I' 'V' 'II' 'VI' 'III' 'VII' 'bV' 'bII' 'bVI' 'bIII' 'bVII' 'IV') ('[data:makeList]' 'vi' 'iii' 'vii' 'bv' 'bii' 'bvi' 'biii' 'bvii' 'iv' 'i' 'v' 'ii') ('[data:makeList]' 'VIIº' 'bVº' 'bIIº' 'bVIº' 'bIIIº' 'bVIIº' 'IVº' 'Iº' 'Vº' 'IIº' 'VIº' 'IIIº'))}
 }
@@ -63,10 +72,7 @@ to scales_arpeggiate 'note list' order duration volume destination channel/pin {
     order = ('[data:split]' order ',')
   }
   if (isType duration 'string') {
-    duration = ('[data:split]' duration ',')
-    for idx (size duration) {
-      if ((at idx duration) < 33) {atPut idx duration ('_rhy duration of note value' (at idx duration))}
-    }
+    duration = ('_scales parsed durations' duration)
   }
   for i (size order) {
     local 'start' (millisOp)
@@ -76,10 +82,10 @@ to scales_arpeggiate 'note list' order duration volume destination channel/pin {
       local 'dur' duration
     }
     if (('[data:convertType]' (at i order) 'number') == 0) {
-      waitMillis (dur - ((millisOp) - start))
+      waitMillis ((dur - ((millisOp) - start)) - 2)
     } else {
       if (destination == 'MIDI channel') {
-        'MIDI_play MIDI note' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin volume
+        'MIDI_play MIDI note' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 2) channel/pin volume
       } else {
         if (channel/pin != '') {_tonePin = channel/pin}
         playMIDIKey (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1)
@@ -124,27 +130,33 @@ to 'scales_chord with roman numeral' degree root 'optional steps' {
   return (scales_chord (v 'chord name') (at (((index - 1) % 7) + 1) ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11))) steps)
 }
 
-to scales_progression degrees root 'optional steps' {
-  degrees = ('[data:split]' degrees ',')
-  local 'steps' (argOrDefault 3 3)
-  local 'chords' ('[data:makeList]')
-  for i (size degrees) {
-    if (isType steps 'list') {
-      local 'chord steps' (at i steps)
-    } else {
-      local 'chord steps' steps
+to 'scales_circle rotation' n majors minors dims {
+  '_scales_init_circle'
+  local 'degrees' ('[data:makeList]')
+  if (majors != '') {
+    for index ('[data:split]' majors ',') {
+      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 1 _scales_circle5ths)) degrees
     }
-    '[data:addLast]' ('scales_chord with roman numeral' (at i degrees) root (v 'chord steps')) chords
   }
-  return chords
+  if (minors != '') {
+    for index ('[data:split]' minors ',') {
+      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 2 _scales_circle5ths)) degrees
+    }
+  }
+  if (dims != '') {
+    for index ('[data:split]' dims ',') {
+      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 3 _scales_circle5ths)) degrees
+    }
+  }
+  return ('[data:joinStrings]' degrees ',')
 }
 
 to scales_improv scale 'bar count' 'possible durations' destination channel/pin volume {
   if (_rhy_beat_duration == 0) {'rhy_set tempo' 250 4 4}
   local 'next note' (at 'random' scale)
   local 'max jump' 4
-  if (isType (v 'possible durations') 'number') {
-    'possible durations' = ('[data:makeList]' (v 'possible durations'))
+  if (isType (v 'possible durations') 'string') {
+    'possible durations' = ('_scales parsed durations' (v 'possible durations'))
   }
   local 'next duration' (at 'random' (v 'possible durations'))
   local 'total duration' ((v 'bar count') * (_rhy_beat_duration * _rhy_measures))
@@ -181,25 +193,19 @@ to 'scales_pentatonic scale' which root 'optional steps' {
   return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'major' 'minor')) ('[data:makeList]' ('[data:makeList]' 0 2 4 7 9) ('[data:makeList]' 0 3 5 7 10))) root steps)
 }
 
-to 'scales_circle rotation' n majors minors dims {
-  '_scales_init_circle'
-  local 'degrees' ('[data:makeList]')
-  if (majors != '') {
-    for index ('[data:split]' majors ',') {
-      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 1 _scales_circle5ths)) degrees
+to scales_progression degrees root 'optional steps' {
+  degrees = ('[data:split]' degrees ',')
+  local 'steps' (argOrDefault 3 3)
+  local 'chords' ('[data:makeList]')
+  for i (size degrees) {
+    if (isType steps 'list') {
+      local 'chord steps' (at i steps)
+    } else {
+      local 'chord steps' steps
     }
+    '[data:addLast]' ('scales_chord with roman numeral' (at i degrees) root (v 'chord steps')) chords
   }
-  if (minors != '') {
-    for index ('[data:split]' minors ',') {
-      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 2 _scales_circle5ths)) degrees
-    }
-  }
-  if (dims != '') {
-    for index ('[data:split]' dims ',') {
-      '[data:addLast]' ('_scales circular item' ((index + n) + 1) (at 3 _scales_circle5ths)) degrees
-    }
-  }
-  return ('[data:joinStrings]' degrees ',')
+  return chords
 }
 
 to scales_scale which root 'optional steps' {

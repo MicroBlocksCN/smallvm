@@ -93,7 +93,6 @@ to 'rhy_quarter duration' {
 to 'rhy_set tempo' tempo measures 'note value' {
   _rhy_tempo = tempo
   _rhy_beat_duration = ('_rhy duration of note value' (v 'note value'))
-  _rhy_beat_note_value = (v 'note value')
   _rhy_measures = measures
 }
 
