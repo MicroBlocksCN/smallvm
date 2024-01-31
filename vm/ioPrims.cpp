@@ -827,7 +827,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#elif defined(QIANKUN)
 		#define BOARD_TYPE "QIAN KUN"	
 	#else
-		#define BOARD_TYPE "Labplus mPython"
+		#define BOARD_TYPE "handpy"
 	#endif
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
