@@ -212,7 +212,7 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 			BLEUUID uuid = advertisedDevice->getServiceDataUUID();
 			if (ANDROID_OCTO_UUID.equals(uuid)) {
 				std::string serviceData = advertisedDevice->getServiceData();
-				if (serviceData.length() == 16) {
+				if (serviceData.length() == 13) {
 					octoMsgID id;
 					memcpy(&id, serviceData.c_str(), 8);
 					if (octoIDNotYetSeen(id)) {
