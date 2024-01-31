@@ -2188,6 +2188,9 @@ MicroBlocks HTTP 服务器正在监听端口 6473
 disable autoloading board libraries
 禁止自动加载和主板相关的积木库
 
+compact code store
+紧凑代码存储
+
 enable autoloading board libraries
 允许自动加载和主板相关的积木库
 
