@@ -2187,6 +2187,8 @@ MicroBlocks HTTP Server listening on port 6473
 
 disable autoloading board libraries
 
+compact code store
+
 enable autoloading board libraries
 
 enable PlugShare when project empty
