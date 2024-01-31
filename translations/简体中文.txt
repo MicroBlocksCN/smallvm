@@ -3262,3 +3262,7 @@ Report a byte array containing the UTF-8 bytes of the given string.
 Report the number of words of memory available. Stop button frees up memory.
 报告可用内存的字数。停止按钮释放内存
 
+#### board name cn
+
+handpy
+掌控板
