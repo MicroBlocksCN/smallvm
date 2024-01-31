@@ -1,6 +1,6 @@
 module OctoStudio Comm
 author wwj718
-version 1 6 
+version 1 7 
 choices octo_shapes triangle circle square heart star 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
 variables _octoShapes _octoLastBeam _octoIsBeaming 
@@ -15,6 +15,10 @@ variables _octoShapes _octoLastBeam _octoIsBeaming
   spec ' ' '_octoInit' '_octoInit'
   spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
   spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
+  space
+  spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
+  spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
+  spec ' ' '_octoStopBeam' '_octoStopBeam'
 
 to '_octoInit' {
   if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
@@ -38,6 +42,10 @@ to '_octoMakeMessage' shape {
   return ('[data:joinStrings]' result)
 }
 
+to '_octoReceiveBeam' {
+  return ('[ble:octoReceive]')
+}
+
 to '_octoShapeForID' id {
   '_octoInit'
   if (or (id < 0) (id >= (size _octoShapes))) {
@@ -46,9 +54,17 @@ to '_octoShapeForID' id {
   return (at (id + 1) _octoShapes)
 }
 
+to '_octoStartBeam' msg {
+  '[ble:octoStartBeam]' msg
+}
+
+to '_octoStopBeam' {
+  '[ble:octoStopBeam]'
+}
+
 to octoBeamReceived {
   comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
-  local 'newBeam' ('[ble:octoReceive]')
+  local 'newBeam' ('_octoReceiveBeam')
   if (newBeam == (booleanConstant false)) {
     return (booleanConstant false)
   }
@@ -65,7 +81,7 @@ to octoLastBeam {
 }
 
 to octoReceiveBeam {
-  local 'newBeam' ('[ble:octoReceive]')
+  local 'newBeam' ('_octoReceiveBeam')
   if (newBeam == (booleanConstant false)) {
     return (booleanConstant false)
   }
@@ -83,9 +99,9 @@ to octoSendBeam shape optionalDuration {
     sayIt ''
   }
   _octoIsBeaming = 1
-  '[ble:octoStartBeam]' ('[data:makeList]' ('_octoMakeMessage' shape))
+  '_octoStartBeam' ('_octoMakeMessage' shape)
   waitMillis duration
-  '[ble:octoStopBeam]'
+  '_octoStopBeam'
   _octoIsBeaming = 0
 }
 
