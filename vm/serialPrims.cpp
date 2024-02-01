@@ -402,10 +402,14 @@ static OBJ primMIDIRecv(int argCount, OBJ *args) {
 	return result;
 }
 
+// unneeded for desktop versions
+static OBJ primMIDIConnect(int argCount, OBJ *args) { return trueObj; }
+
 #else // no USB_MIDI
 
 static OBJ primMIDISend(int argCount, OBJ *args) { return falseObj; }
 static OBJ primMIDIRecv(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMIDIConnect(int argCount, OBJ *args) { return falseObj; }
 
 #endif // USB_MIDI
 
@@ -421,6 +425,7 @@ static PrimEntry entries[] = {
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
 	{"midiRecv", primMIDIRecv},
+	{"midiConnect", primMIDIConnect},
 };
 
 void addSerialPrims() {
