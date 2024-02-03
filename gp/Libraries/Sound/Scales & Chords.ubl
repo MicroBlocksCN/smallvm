@@ -1,6 +1,6 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 2 1 
+version 2 2
 depends Rhythm 
 choices sound_dst 'MIDI channel' 'tone pin' 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
@@ -96,7 +96,7 @@ to scales_arpeggiate 'note list' order duration volume destination channel/pin {
 
 to scales_chord which root 'optional steps' {
   local 'steps' (argOrDefault 3 4)
-  return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'major' 'minor' 'diminished' 'major 7th' 'minor 7th' 'Maj7')) ('[data:makeList]' ('[data:makeList]' 0 4 7) ('[data:makeList]' 0 3 7) ('[data:makeList]' 0 3 6) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 4 7 11))) root steps)
+  return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'major' 'minor' 'diminished' 'major 7th' 'minor 7th' 'Maj7')) ('[data:makeList]' ('[data:makeList]' 0 4 7) ('[data:makeList]' 0 3 7) ('[data:makeList]' 0 3 6) ('[data:makeList]' 0 4 7 10) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 4 7 11))) root steps)
 }
 
 to 'scales_chord with roman numeral' degree root 'optional steps' {
