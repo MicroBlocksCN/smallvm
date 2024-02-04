@@ -3155,6 +3155,9 @@ El servidor HTTP de MicroBlocks està actiu al port 6473
 disable autoloading board libraries
 no carreguis llibreries de placa automàticament
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 carrega llibreries de placa automàticament
 

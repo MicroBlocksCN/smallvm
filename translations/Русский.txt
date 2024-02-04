@@ -41,6 +41,9 @@ milliseconds
 board type
 тип платы
 
+connected to IDE
+--MISSING--
+
 Pins
 Контакты
 
@@ -122,6 +125,12 @@ comment _
 How this works...
 Как это работает...
 
+range _ to _
+--MISSING--
+
+by _
+--MISSING--
+
 for _ in _ _
 для _ в _ _
 
@@ -139,6 +148,12 @@ stop all
 
 last message
 последнее сообщение
+
+arg _ default _
+--MISSING--
+
+default
+--MISSING--
 
 call _
 вызвать _
@@ -187,6 +202,9 @@ or _
 
 _ is a _
 _ это _
+
+convert _ to _
+--MISSING--
 
 boolean
 булево
@@ -397,10 +415,13 @@ serial read
 serial write _
 --MISSING--
 
+anIntegerStringListOrByteArray
+--MISSING--
+
 serial write _ starting at _
 --MISSING--
 
-aByteStringOrByteArray
+aStringListOrByteArray
 --MISSING--
 
 soft serial write byte _ pin _ baud _
@@ -827,7 +848,7 @@ IR transmit device _ command _
 --MISSING--
 
 ####
-# Keyboard and Mouse
+# Keyboard and Mouse library
 
 Keyboard and Mouse
 Клавиатура и мышь
@@ -844,7 +865,79 @@ release key _
 release all keys
 --MISSING--
 
+Shift
+--MISSING--
+
+Control
+Контроль
+
+Alt / ⌥
+--MISSING--
+
+Logo / ⌘
+--MISSING--
+
+AltGr 
+--MISSING--
+
+enter
+--MISSING--
+
+return
+--MISSING--
+
+tab
+--MISSING--
+
+backspace
+--MISSING--
+
+delete
+удалить
+
+insert
+--MISSING--
+
+home
+домашняя страница
+
+end
+--MISSING--
+
+PgUp
+--MISSING--
+
+PgDown
+--MISSING--
+
+CapsLock
+--MISSING--
+
+NumLock
+--MISSING--
+
+ScrollLock
+--MISSING--
+
+PrintScreen
+--MISSING--
+
+ESC
+--MISSING--
+
 _ mouse click
+--MISSING--
+
+left
+--MISSING--
+
+right
+--MISSING--
+
+middle
+--MISSING--
+
+both
 --MISSING--
 
 move mouse pointer by _ , _
@@ -857,6 +950,70 @@ hold _ mouse button
 --MISSING--
 
 release mouse buttons
+--MISSING--
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+--MISSING--
+
+list _ contains _
+--MISSING--
+
+circular item _ of _
+--MISSING--
+
+aListOrString
+--MISSING--
+
+map _ over _
+--MISSING--
+
+aFunction
+--MISSING--
+
+filter _ with _
+--MISSING--
+
+pick _ from _
+--MISSING--
+
+a few
+--MISSING--
+
+some
+--MISSING--
+
+most
+--MISSING--
+
+reverse _
+--MISSING--
+
+shuffle _
+--MISSING--
+
+sort _
+--MISSING--
+
+shuffled _
+--MISSING--
+
+reversed _
+--MISSING--
+
+sorted _
+--MISSING--
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+--MISSING--
+
+start BLE Keyboard
 --MISSING--
 
 ####
@@ -1188,6 +1345,513 @@ play WAV file _
 --MISSING--
 
 filename
+--MISSING--
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+--MISSING--
+
+set tempo to _ bpm at _ / _ signature
+--MISSING--
+
+start counting _ bars
+--MISSING--
+
+stop counting
+--MISSING--
+
+wait until next _
+--MISSING--
+
+current beat
+--MISSING--
+
+current bar
+--MISSING--
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+--MISSING--
+
+Bass Drum 1
+--MISSING--
+
+Side Stick
+--MISSING--
+
+Acoustic Snare
+--MISSING--
+
+Hand Clap
+--MISSING--
+
+Electric Snare
+--MISSING--
+
+Low Floor Tom
+--MISSING--
+
+Closed Hi-Hat
+--MISSING--
+
+High Floor Tom
+--MISSING--
+
+Pedal Hi-Hat
+--MISSING--
+
+Low Tom
+--MISSING--
+
+Open Hi-Hat
+--MISSING--
+
+Low-Mid Tom
+--MISSING--
+
+Hi-Mid Tom
+--MISSING--
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+--MISSING--
+
+Ride Cymbal 1
+--MISSING--
+
+Chinese Cymbal
+--MISSING--
+
+Ride Bell
+--MISSING--
+
+Tambourine 
+--MISSING--
+
+Splash Cymbal
+--MISSING--
+
+Cowbell 
+--MISSING--
+
+Crash Cymbal 2
+--MISSING--
+
+Vibraslap 
+--MISSING--
+
+Ride Cymbal 2
+--MISSING--
+
+Hi Bongo
+--MISSING--
+
+Low Bongo
+--MISSING--
+
+Mute Hi Conga
+--MISSING--
+
+Open Hi Conga
+--MISSING--
+
+Low Conga
+--MISSING--
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+--MISSING--
+
+effect 2
+--MISSING--
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
 --MISSING--
 
 ####
@@ -1667,6 +2331,15 @@ events JSON
 события JSON
 
 ####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
 # MiKe Robot library
 
 MiKe front obstacle (cm)
@@ -1980,6 +2653,30 @@ UDP remote port
 --MISSING--
 
 ####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
+
+####
 # Cutebot
 
 Cutebot
@@ -2198,6 +2895,24 @@ Octopus OLED fill circle x _ y _ radius _
 --MISSING--
 
 
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -2246,6 +2961,9 @@ Connect
 connect
 --MISSING--
 
+connect (BLE)
+--MISSING--
+
 open Boardie
 --MISSING--
 
@@ -2254,6 +2972,9 @@ disconnect
 
 Serial port:
 Серийный порт:
+
+Connect board and try again
+--MISSING--
 
 other...
 другие...
@@ -2383,6 +3104,15 @@ large (100%)
 printable (200%)
 --MISSING--
 
+duplicate selection
+--MISSING--
+
+drag selection
+--MISSING--
+
+delete selection
+--MISSING--
+
 about...
 о...
 
@@ -2394,6 +3124,12 @@ virtual machine version
 
 update firmware on board
 обновить прошивку платы
+
+enable or disable BLE
+--MISSING--
+
+Allow the attached board to be connected via BLE?
+--MISSING--
 
 show data graph
 показать график данных
@@ -2419,6 +3155,9 @@ HTTP-сервер MicroBlocks прослушивает порт 6473
 disable autoloading board libraries
 отключить автозагрузку библиотек платы
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 включить автозагрузку библиотек платы
 
@@ -2427,6 +3166,18 @@ enable PlugShare when project empty
 
 disable PlugShare when project empty
 Выключить PlugShare когда проект пуст
+
+hide implementation blocks
+--MISSING--
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
+
+show implementation blocks
+--MISSING--
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 --MISSING--
@@ -2437,8 +3188,14 @@ when plugging a board, automatically read its contents into the IDE if the curre
 erase flash and update firmware on ESP board
 стереть и переделить esp
 
+install ESP firmware from URL
+--MISSING--
+
 Use board type
 Использовать тип платы
+
+Firmware Install
+--MISSING--
 
 Firmware Installed
 --MISSING--
@@ -2458,11 +3215,17 @@ Select
 as the destination drive, then click Save.
 --MISSING--
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+--MISSING--
+
 Installing firmware...
 --MISSING--
 
 Plug in the board.
 Подключить плату
+
+Board not connected
+--MISSING--
 
 Wiping board...
 Старание платы...
