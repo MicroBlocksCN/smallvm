@@ -32,6 +32,7 @@ if test -n "$help"; then
     echo "                              locale file will be created for it. If it does, a"
     echo "                              backup copy of the current locale file will be"
     echo "                              created in your OS temporary files directory."
+    echo "                              Run with \"=all\" to update all existing locales."
     echo "--dev                         Build for the current system, and launch in dev mode"
     echo "                              with a REPL console. Press Control+C on the console"
     echo "                              to pause the Morphic loop and gain access to the"
@@ -62,6 +63,13 @@ if test -n "$locale"; then
         echo
         for lang in `ls translations`; do
             echo $lang | cut -f1 -d.
+        done
+        echo
+    elif [ $locale == 'all' ]; then
+        echo "Updating all available locales:"
+        echo
+        for lang in `ls translations`; do
+            ./build.sh --locale=`echo $lang | cut -f1 -d.`
         done
         echo
     else
