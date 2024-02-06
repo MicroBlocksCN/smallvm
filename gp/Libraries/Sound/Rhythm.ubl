@@ -57,7 +57,6 @@ to '_rhy loop' {
         if (not _rhy_looping) {stopTask}
         'rhy_wait until next' _rhy_beat_duration
         _rhy_tick += 1
-        sayIt _rhy_tick
       }
     }
   }
