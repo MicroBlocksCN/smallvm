@@ -3423,6 +3423,267 @@ cursor location
 defer display updates
 推迟显示更新
 
+#### XGO-nano
+
+Left Front
+左前
+
+Right Front
+右前
+
+Right Rear
+右后
+
+Left Rear
+左后
+
+Upper(-65°~65°)
+上(-65°~65°)
+
+Middle(-115°~70°)
+中(-115°~70°)
+
+Lower(-90°~105°)
+下(-90°~105°)
+
+Upper(-30°~30°)
+上(-30°~30°)
+
+Middle(-70°~90°)
+中(-70°~90°)
+
+Lower(-85°~50°)
+下(-85°~50°)
+
+Fast
+快速
+
+Slow
+慢速
+
+Trot
+对角
+
+Walk
+行走
+
+High Walk
+高抬腿
+
+Micro Trot
+微调
+
+Forward(0mm~25mm)
+前平移(0mm~25mm)
+
+Backward(-25mm~0mm)
+后平移(-25mm~0mm)
+
+Left Shift(0mm~18mm)
+左平移(0mm~18mm)
+
+Right Shift(-18mm~0mm)
+右平移(-18mm~0mm)
+
+roll
+翻滚
+
+pitch 
+俯仰
+
+yaw
+偏航
+
+Lie Down
+趴下
+
+Stand Up
+站起
+
+Crawl
+匍匐前进
+
+Turn Around
+转圈
+
+Mark Time
+踏步
+
+Squat
+蹲起
+
+Turn Roll
+翻滚转角
+
+Turn Pich
+俯仰转角
+
+Turn Yaw
+偏航转角
+
+3-axis Rotation
+三轴转动
+
+Pee
+撒尿
+
+Sit Down
+坐下
+
+Wave Hand
+招手
+
+Stretch Oneself
+伸懒腰
+
+Wave Body
+波浪
+
+Stagger
+摇摆
+
+Begging
+乞讨
+
+Hunt for food
+找食物
+
+Handshake
+握手
+
+Pigeon Head
+鸡头
+
+Push-up
+俯卧撑
+
+Look Around
+张望
+
+Dance
+跳舞
+
+Naughty
+调皮
+
+Grab Up
+上抓
+
+Grab Middle
+中抓
+
+Grab Down
+下抓
+
+XGO init
+XGO初始化
+
+XGO reset
+XGO恢复初始状态
+
+get battery level
+读取当前电量
+
+get all servos angle
+读取全部舵机角度
+
+say leg _ servos angle
+读取第 _ 腿舵机值
+
+get gyro angle _
+读取整数姿态角度 _
+
+set towards 0
+设置当前朝向为0
+
+rotation to _
+设置转动到角度 _
+
+set stride frequency _
+设置迈步频率为 _
+
+set gait _
+设置运动步态为 _
+
+set _ leg _ joint servos to _ °
+设置 _  腿 _ 关节舵机转动至 _ °
+
+
+set arm _ joint servos to _ °
+设置机械臂 _ 关节舵机转动至 _ °
+
+execute action _
+执行命令 _
+
+move _ with stride _ mm for _ ms
+向 _ 步幅为 _ 毫米持续 _ 毫秒
+
+Rotate _ at speed _ degrees/second for _ ms
+向 _ 方向以速度 _ 度/秒旋转 _ 毫秒
+
+Translation along _ _ mm
+沿 _ 轴平移 _ mm
+
+Rotate _ _ °
+沿 _ 旋转 _ °
+
+set _ foot position to X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+设置 _ 腿足尖坐标位置为 X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+
+set arm position X(-80~155) _ mm Z(-95~155) _ mm
+设置机械臂末端坐标位置X(-80~155) _ mm Z(-95~155) _ mm
+
+claw _
+机械爪开合 _
+
+gyros _
+陀螺仪 _
+
+performance mode _
+表演模式 _
+
+unload all servo _
+卸载所有舵机 _
+
+2Pin 5V output _
+2Pin接口 5V输出 _
+
+digtial IO output _
+数字IO输出 _
+
+readbutton _
+读取按键 _
+
+perform action _
+执行编号 _ 动作组
+
+XGO turn towards _
+XGO转向 _
+
+XGO-nano move _ step _
+XGO-nano 移动方向 _ 步数 _
+
+set _ foot position X _ Y _ Z _
+设置 _ 腿足尖坐标位置 X _ Y _ Z _
+
+oneservo _ _ _ _
+单个舵机 _ _ _ _
+
+set gait _
+运动步态 _
+
+servo _  angle _ °
+舵机编号 _  角度 _ °
+
+_close serial
+_串口结束
+
+_modified remainder _ _
+_修正后的余数 _ _
+
+Communication Failure!!!
+通信失败!!!
+
 ##################
 # MicroBlocks UI #
 ##################
