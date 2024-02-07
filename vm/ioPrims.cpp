@@ -1385,8 +1385,8 @@ void stopPWM() {
 
 static int servoIndex = 0;
 static char servoPinHigh = false;
-static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED};
-static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500};
+static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED};
+static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};
 
 // NRF5 Tone State
 
