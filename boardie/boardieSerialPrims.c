@@ -27,33 +27,33 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) { return falseObj; }
 
 // WebMIDI
 
-static OBJ primMIDIConnect(int argCount, OBJ *args) {
-	EM_ASM_({
-			navigator.requestMIDIAccess().then(
-				function (midiAccess) {
-					window.midiOutput =
-						Array.from(midiAccess.outputs)[0][1];
-				}
-			);
-	});
-	return trueObj;
-}
-
 static OBJ primMIDISend(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	EM_ASM_({
+			if (typeof window.midiOutput === 'undefined') {
+				// try to open output
+				if (typeof navigator.requestMIDIAccess !== 'undefined') {
+					navigator.requestMIDIAccess().then(
+						function (midiAccess) {
+							window.midiOutput = Array.from(midiAccess.outputs)[0][1];
+						}
+					);
+				}
+			}
+			if (typeof window.midiOutput === 'undefined') return; // no midi output
+
 			// Yes, really. If someone knows of a *fast* and *elegant*
 			// way to get emscripten params by their index, I'll gladly
 			// turn this ugly switch statement into a for loop...
 			switch ($0) {
 				case 1:
-					window.midiOutput.send([$1]);	
+					window.midiOutput.send([$1]);
 					break;
 				case 2:
 					window.midiOutput.send([$1, $2]);
 					break;
 				case 3:
-					window.midiOutput.send([$1, $2, $3]);	
+					window.midiOutput.send([$1, $2, $3]);
 					break;
 			}
 		},
@@ -66,6 +66,7 @@ static OBJ primMIDISend(int argCount, OBJ *args) {
 }
 
 static OBJ primMIDIRecv(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMIDIConnect(int argCount, OBJ *args) { return falseObj; } // deprecated; will be removed
 
 // Primitives
 
@@ -79,7 +80,7 @@ static PrimEntry entries[] = {
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
 	{"midiRecv", primMIDIRecv},
-	{"midiConnect", primMIDIConnect},
+	{"midiConnect", primMIDIConnect}, // deprecated; will be removed
 };
 
 void addSerialPrims() {
