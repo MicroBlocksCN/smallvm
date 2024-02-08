@@ -42,19 +42,23 @@ static OBJ primMIDISend(int argCount, OBJ *args) {
 			}
 			if (typeof window.midiOutput === 'undefined') return; // no midi output
 
-			// Yes, really. If someone knows of a *fast* and *elegant*
-			// way to get emscripten params by their index, I'll gladly
-			// turn this ugly switch statement into a for loop...
-			switch ($0) {
-				case 1:
-					window.midiOutput.send([$1]);
-					break;
-				case 2:
-					window.midiOutput.send([$1, $2]);
-					break;
-				case 3:
-					window.midiOutput.send([$1, $2, $3]);
-					break;
+			try {
+				// Yes, really. If someone knows of a *fast* and *elegant*
+				// way to get emscripten params by their index, I'll gladly
+				// turn this ugly switch statement into a for loop...
+				switch ($0) {
+					case 1:
+						window.midiOutput.send([$1]);
+						break;
+					case 2:
+						window.midiOutput.send([$1, $2]);
+						break;
+					case 3:
+						window.midiOutput.send([$1, $2, $3]);
+						break;
+				}
+			} catch(e) {
+				console.log(e);
 			}
 		},
 		argCount, // byteCount
