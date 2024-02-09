@@ -267,7 +267,6 @@ int ideConnected();
 int recvBytes(uint8 *buf, int count);
 int sendBytes(uint8 *buf, int start, int end);
 void captureIncomingBytes();
-void restartSerial();
 
 const char *boardType();
 void hardwareInit(void);

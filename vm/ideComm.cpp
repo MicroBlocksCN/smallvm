@@ -376,10 +376,3 @@ void BLE_setEnabled(int enableFlag) { }
 int BLE_isEnabled() {return false; }
 
 #endif
-
-void restartSerial() {
-	// Needed to work around a micro:bit issue that Serial can lock up during Flash compaction.
-
-	Serial.end();
-	Serial.begin(115200);
-}
