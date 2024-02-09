@@ -523,14 +523,17 @@ static int deferUpdates = false;
 			uint8 *displayBuffer = tft.getBuffer();
 			uint8 *src = displayBuffer;
 			for (int i = 0; i <= 1024; i++) {
+				if ((i % 16) == 0) {
+					captureIncomingBytes();
+				}
 				if ((i % 64) == 0) {
 					// do time-sensitive background tasks
-					captureIncomingBytes();
 					updateMicrobitDisplay();
 				}
 				int col = i % 32;
 				if ((col == 0) && (i != 0)) {
 					i2cWriteBytes(oneLine, sizeof(oneLine));
+					captureIncomingBytes();
 				}
 				oneLine[col + 1] = *src++;
 			}
