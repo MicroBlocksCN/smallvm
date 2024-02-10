@@ -48,4 +48,5 @@ cd precompiled
 npm install
 node buildUniversalHex.js
 rm vm_microbitV1.hex vm_microbitV2.hex
+rm vm_calliope.hex vm_calliopeV3.hex
 
