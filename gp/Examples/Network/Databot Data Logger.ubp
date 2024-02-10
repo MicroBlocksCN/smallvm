@@ -740,7 +740,7 @@ to 'request method' request {
 
 module 'Temperature Humidity (SHTC3)' Input
 author MicroBlocks
-version 1 3 
+version 1 4 
 description 'Support for the SHTC3 temperature and relative humidity sensor.'
 
   spec 'r' 'shtc3_temperature' 'SHTC3 temperature (°C)'
@@ -773,8 +773,9 @@ to '_shtc3_read' {
   local 'SHTC addr' (hexToInt '70')
   comment 'Wakeup'
   '_shtc3_send_cmd' (hexToInt '3517')
-  comment 'Read data, temperature first (with clock stretching)'
-  '_shtc3_send_cmd' (hexToInt '7CA2')
+  comment 'Read data, temperature first. Do not use clock stretching; it blocks the CPU for ~12 msecs!'
+  '_shtc3_send_cmd' (hexToInt '7866')
+  waitMillis 13
   local 'sixBytes' (newList 6)
   '[sensors:i2cRead]' (v 'SHTC addr') sixBytes
   comment 'Do not send sleep command; that results in i2c error on next call'
