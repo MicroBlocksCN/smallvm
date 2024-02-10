@@ -10,6 +10,10 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Unify Arduino IDE and PlatformIO
 #if defined(NRF52_SERIES) && !defined(NRF52)
   #define NRF52 1
@@ -35,10 +39,6 @@
 	defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
 	defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
 		#define HAS_LED_MATRIX 1
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 // Unsigned integer types
