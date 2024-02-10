@@ -1934,7 +1934,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 			return
 		}
 		waitMSecs 3 // limit throughput to avoid overunning buffer when board is busy
-		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
+		if (bytesSent < byteCount) { waitMSecs 25 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
 }
