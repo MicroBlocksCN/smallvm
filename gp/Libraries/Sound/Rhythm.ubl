@@ -1,6 +1,6 @@
 module Rhythm Control
 author MicroBlocks
-version 2 0 
+version 2 1 
 description 'Keeps time according to a tempo and time signature. Useful to create musical patterns.
 
 Includes abstractions for note durations, bars and beats.
@@ -70,7 +70,7 @@ to 'rhy_current beat' {
   return ((_rhy_tick % _rhy_measures) + 1)
 }
 
-to 'rhy_dotted' duration {
+to rhy_dotted duration {
   return (duration + (duration / 2))
 }
 
@@ -111,12 +111,13 @@ to 'rhy_stop counting' {
   _rhy_looping = (booleanConstant false)
 }
 
-to 'rhy_triplet' duration {
+to rhy_triplet duration {
   return ((duration * 2) / 3)
 }
 
 to 'rhy_wait until next' duration {
-  waitUntil ('_rhy between' ((timer) % duration) 0 3)
+  local 'wakeTime' (duration * (((millisOp) / duration) + 1))
+  waitMillis (wakeTime - (millisOp))
 }
 
 to 'rhy_whole duration' {
