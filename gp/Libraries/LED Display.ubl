@@ -1,9 +1,9 @@
 module 'LED Display' Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
-variables _stop_scrolling_text _led_names _led_values 
+variables _stop_scrolling_text 
 
   spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
   spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
@@ -19,18 +19,28 @@ variables _stop_scrolling_text _led_names _led_values
   spec ' ' '_set display color' 'set display color _' 'color'
   space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
-  spec ' ' '_led_initImageNames' '_initImageNames'
+  spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
+  spec 'r' '_led_imageData' '_led_imageData'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
   return twentyFiveBitInt
 }
 
-to '_led_initImageNames' {
-  if (_led_names == 0) {
-    _led_names = ('[data:split]' 'heart,small heart,yes,no,happy,sad,confused,angry,asleep,surprised,silly,fabulous,meh,t-shirt,roller skate,duck,house,tortoise,butterfly,stick figure,ghost,sword,giraffe,skull,umbrella,snake,rabbit,cow,quarter note,eight note,pitchfork,target,triangle,left triangle,chess board,diamond,small diamond,square,small square,scissors' ',')
-    _led_values = ('[data:split]' '4685802,145728,2269696,18157905,15237440,18284864,22348096,23036241,459616,4526090,25984017,15008639,2236443,15154043,11534104,489702,10976708,359872,29332475,18158564,23068334,4657284,10946627,15171246,6460398,469859,16104613,4685361,7573636,7590276,4357813,4681156,1026176,32805985,11184810,4539716,141440,33080895,469440,20287859' ',')
+to '_led_imageData' {
+  return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
+}
+
+to '_led_namedImage' name {
+  local 'data' ('_led_imageData')
+  local 'i' ('[data:find]' name data)
+  if (i == -1) {
+    comment 'Name not found'
+    return 0
   }
+  local 'start' (('[data:find]' ':' data i) + 1)
+  local 'end' (('[data:find]' ',' data i) - 1)
+  return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
 }
 
 to '_set display color' color {
@@ -46,18 +56,8 @@ to displayCharacter s {
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 
-to led_displayImage image optionalX optionalY {
-  '_led_initImageNames'
-  '[display:mbDisplayOff]'
-  if (isType image 'string') {
-    local 'i' ('[data:find]' image _led_names)
-    if (i == -1) {
-      return 0
-    } else {
-      image = (at i _led_values)
-    }
-  }
-  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+to led_displayImage imageName optionalX optionalY {
+  '[display:mbDrawShape]' ('_led_namedImage' imageName) (argOrDefault 2 1) (argOrDefault 3 1)
 }
 
 to scroll_text text optionalDelay {
