@@ -2698,7 +2698,7 @@ method getBoardDriveName SmallRuntime path {
 		if ('MICROBIT.HTM' == fn) {
 			contents = (readFile (join path fn))
 			return 'MICROBIT' }
-		if (or ('MINI.HTM' == fn) ('Calliope.html' == fn)) { return 'MINI' }
+		if (isOneOf fn 'MINI.HTM' 'CALLIOPE.HTM' 'Calliope.html') { return 'MINI' }
 		if ('INFO_UF2.TXT' == fn) {
 			contents = (readFile (join path fn))
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
@@ -2739,7 +2739,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	if ('MICROBIT' == driveName) {
 		vmFileName = 'vm_microbit-universal.hex'
 	} ('MINI' == driveName) {
-		vmFileName = 'vm_calliope.hex'
+		vmFileName = 'vm_calliope-universal.hex'
 	} ('CPLAYBOOT' == driveName) {
 		vmFileName = 'vm_circuitplay.uf2'
 	} ('CPLAYBTBOOT' == driveName) {
@@ -2774,10 +2774,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit'
 	} ('micro:bit v2' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit v2'
-	} ('Calliope' == boardType) {
+	} (isOneOf boardType 'Calliope' 'Calliope v3') {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope mini'
-	} ('Calliope v3' == boardType) {
-		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope v3'
 	} ('CircuitPlayground' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Express'
 	} ('CircuitPlayground Bluefruit' == boardType) {
@@ -2805,7 +2803,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		} else {
 			addItem menu 'micro:bit'
 			addItem menu 'Calliope mini'
-			addItem menu 'Calliope v3'
 			addLine menu
 			addItem menu 'Citilab ED1'
 			addItem menu 'Databot'
@@ -2860,10 +2857,10 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 		vmFileName = 'vm_microbit-universal.hex'
 		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
-		vmFileName = 'vm_calliope.hex'
+		vmFileName = 'vm_calliope-universal.hex'
 		driveName = 'MINI'
 	} ('Calliope v3' == boardName) {
-		vmFileName = 'vm_calliopeV3.hex'
+		vmFileName = 'vm_calliope-universal.hex'
 		driveName = 'MINI'
 	} ('Circuit Playground Express' == boardName) {
 		vmFileName = 'vm_circuitplay.uf2'
