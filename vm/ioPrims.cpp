@@ -896,6 +896,7 @@ int mapDigitalPinNum(int pinNum) {
 	#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_ESP32) ||  defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return -1;
 	#endif
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return -1; // out of range
 	return pinNum;
 }
 
