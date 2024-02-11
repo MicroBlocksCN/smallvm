@@ -216,7 +216,6 @@ to 'MIDI_set MIDI pin' pin {
   '[serial:close]'
   if ('USB' == pin) {
     _MIDI_pin = 'USB'
-	'[serial:midiConnect]'
   } else {
     if (isType pin 'list') {
       _MIDI_pin = pin
