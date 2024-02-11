@@ -1,12 +1,12 @@
 module 'LED Display' Output
 author MicroBlocks
-version 1 5 
-tags pixel matrix led tft 
+version 1 6 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
-variables _stop_scrolling_text 
+variables _stop_scrolling_text _led_names _led_values 
 
   spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-  spec ' ' '_set display color' 'set display color _' 'color'
+  spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
   spec ' ' '[display:mbDisplayOff]' 'clear display'
   space
   spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
@@ -15,6 +15,27 @@ variables _stop_scrolling_text
   spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
+  space
+  spec ' ' '_set display color' 'set display color _' 'color'
+  space
+  spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
+  spec ' ' '_led_initImageNames' '_initImageNames'
+
+to '_led_image' twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
+}
+
+to '_led_initImageNames' {
+  if (_led_names == 0) {
+    _led_names = ('[data:split]' 'heart,small heart,yes,no,happy,sad,confused,angry,asleep,surprised,silly,fabulous,meh,t-shirt,roller skate,duck,house,tortoise,butterfly,stick figure,ghost,sword,giraffe,skull,umbrella,snake,rabbit,cow,quarter note,eight note,pitchfork,target,triangle,left triangle,chess board,diamond,small diamond,square,small square,scissors' ',')
+    _led_values = ('[data:split]' '4685802,145728,2269696,18157905,15237440,18284864,22348096,23036241,459616,4526090,25984017,15008639,2236443,15154043,11534104,489702,10976708,359872,29332475,18158564,23068334,4657284,10946627,15171246,6460398,469859,16104613,4685361,7573636,7590276,4357813,4681156,1026176,32805985,11184810,4539716,141440,33080895,469440,20287859' ',')
+  }
+}
+
+to '_set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+}
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -23,6 +44,20 @@ to displayCharacter s {
     return 0
   }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+to led_displayImage image optionalX optionalY {
+  '_led_initImageNames'
+  '[display:mbDisplayOff]'
+  if (isType image 'string') {
+    local 'i' ('[data:find]' image _led_names)
+    if (i == -1) {
+      return 0
+    } else {
+      image = (at i _led_values)
+    }
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
 }
 
 to scroll_text text optionalDelay {
@@ -56,6 +91,3 @@ to stopScrollingText {
   '[display:mbDisplayOff]'
 }
 
-to '_set display color' color {
-  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
-}
