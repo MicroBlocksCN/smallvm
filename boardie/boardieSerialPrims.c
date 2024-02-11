@@ -70,7 +70,6 @@ static OBJ primMIDISend(int argCount, OBJ *args) {
 }
 
 static OBJ primMIDIRecv(int argCount, OBJ *args) { return falseObj; }
-static OBJ primMIDIConnect(int argCount, OBJ *args) { return falseObj; } // deprecated; will be removed
 
 // Primitives
 
@@ -84,7 +83,6 @@ static PrimEntry entries[] = {
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
 	{"midiRecv", primMIDIRecv},
-	{"midiConnect", primMIDIConnect}, // deprecated; will be removed
 };
 
 void addSerialPrims() {
