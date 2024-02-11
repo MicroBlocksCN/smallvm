@@ -1793,6 +1793,61 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+// Signal Capture
+
+#define MAX_PULSE_TIMES 128
+int16_t pulseTimes[MAX_PULSE_TIMES];
+
+int pulsePin = -1;
+int pulseIndex = 0;
+uint32 lastEdgeTime = 0;
+
+void pinChangeInterrupt() {
+	if (pulseIndex < MAX_PULSE_TIMES) {
+		uint32 now = microsecs();
+		int usecs = now - lastEdgeTime;
+		if (digitalRead(pulsePin) == LOW) usecs = -usecs;
+		pulseTimes[pulseIndex++] = usecs;
+		lastEdgeTime = now;
+	}
+}
+
+OBJ captureStartPrim(int argCount, OBJ *args) {
+	if (pulsePin >= 0) detachInterrupt(pulsePin); // stop pin change interrupts, if any
+	pulsePin = -1;
+
+	int pin = mapDigitalPinNum(obj2int(args[0]));
+	if (pin < 0) return falseObj; // invalid pin number
+
+	pulsePin = pin;
+	setPinMode(pulsePin, INPUT);
+	attachInterrupt(pulsePin, pinChangeInterrupt, CHANGE);
+	pulseIndex = 0;
+	lastEdgeTime = microsecs();
+	return trueObj;
+}
+
+OBJ primCaptureCount(int argCount, OBJ *args) {
+	return int2obj(pulseIndex);
+}
+
+OBJ primCaptureEnd(int argCount, OBJ *args) {
+	detachInterrupt(pulsePin); // stop pin change interrupts, if any
+	pulsePin = -1;
+
+	int count = pulseIndex;
+	pulseIndex = 0; // clear capture
+
+	OBJ result = newObj(ListType, count + 1, falseObj);
+	if (!result) return falseObj; // allocation failed
+
+	FIELD(result, 0) = int2obj(count);
+	for (int i = 0; i < count; i++) {
+		FIELD(result, i + 1) = int2obj(pulseTimes[i]);
+	}
+	return result;
+}
+
 static PrimEntry entries[] = {
 	{"acceleration", primAcceleration},
 	{"temperature", primMBTemp},
@@ -1809,6 +1864,9 @@ static PrimEntry entries[] = {
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
+	{"captureStart", captureStartPrim},
+	{"captureCount", primCaptureCount},
+	{"captureEnd", primCaptureEnd},
 };
 
 void addSensorPrims() {
