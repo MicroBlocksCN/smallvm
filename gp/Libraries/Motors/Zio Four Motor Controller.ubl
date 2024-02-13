@@ -1,17 +1,23 @@
 module 'Zio Four Motor Controller' Output
 author MicroBlocks
-version 1 0
-choices _zio4motor_motorMenu A B C D
+version 1 0 
+choices _zio4motor_motorMenu A B C D 
 description 'Support for Zio four DC motor (or 2 stepper motor) controller.
+
   https://www.smart-prototyping.com/Zio-4-DC-Motor-Controller.html
+
+To control multiple Zio Four Motor boards, do the following:
+  1. Set a different I2C address for each board by soldering the appropriate address jumpers.
+  2. Connect all boards with Quiic cables (either daisy-chain or star topology).
+  3. Use the "zio4motor init i2c addr" block to initialize all boards.
+  4. To control the motors on a particular board, set the _zio4motor_addr variable to the i2c address of the desired board.
+  5. Issue commands to control motors A-D on that board. Other boards are not effected.
 '
-variables _zio4motor_addr
+variables _zio4motor_addr 
 
   spec ' ' 'zio4motor_init' 'zio4motor init i2c addr _' 'num' 64
   spec ' ' 'zio4motor_setMotor' 'zio4motor motor _ power _ (-100 to 100)' 'menu._zio4motor_motorMenu auto' 'A' '10'
   spec ' ' 'zio4motor_stopAllMotors' 'zio4motor stop all motors'
-  space
-  spec ' ' 'zio4motor_brakeMotor' 'zio4motor brake motor _' 'menu._zio4motor_motorMenu' 'A'
   space
   spec ' ' '_zio4motor_setDigital' '_zio4motor set pin _ to _' 'num bool' 0 true
   spec ' ' '_zio4motor_setPWM' '_zio4motor set PWM pin _ to _ (0-4095)' 'num num' 0 2000
@@ -42,26 +48,6 @@ to '_zio4motor_setPWM' pin value {
   }
   local 'reg' ((4 * pin) + 6)
   '[sensors:i2cWrite]' _zio4motor_addr ('[data:makeList]' reg (on & 255) (on >> 8) (off & 255) (off >> 8))
-}
-
-to 'zio4motor_brakeMotor' motor {
-  if ('A' == motor) {
-    '_zio4motor_setPWM' 0 0
-    '_zio4motor_setDigital' 1 true
-    '_zio4motor_setDigital' 2 true
-  } ('B' == motor) {
-    '_zio4motor_setPWM' 6 0
-    '_zio4motor_setDigital' 4 true
-    '_zio4motor_setDigital' 5 true
-  } ('C' == motor) {
-    '_zio4motor_setPWM' 7 0
-    '_zio4motor_setDigital' 8 true
-    '_zio4motor_setDigital' 9 true
-  } ('D' == motor) {
-    '_zio4motor_setPWM' 13 0
-    '_zio4motor_setDigital' 11 true
-    '_zio4motor_setDigital' 12 true
-  }
 }
 
 to 'zio4motor_init' addr {
