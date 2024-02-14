@@ -1537,8 +1537,8 @@ static void initPDM() {
 	digitalWrite(PIN_PDM_CLK, LOW);
 	pinMode(PIN_PDM_DIN, INPUT);
 
-	nrf_pdm->PSEL.CLK = digitalPinToPinName(PIN_PDM_CLK);
-	nrf_pdm->PSEL.DIN = digitalPinToPinName(PIN_PDM_DIN);
+	nrf_pdm->PSEL.CLK = g_ADigitalPinMap[PIN_PDM_CLK];
+	nrf_pdm->PSEL.DIN = g_ADigitalPinMap[PIN_PDM_DIN];
 
 	// Use the fastest possible sampling rate since we block waiting for the next sample
 	// Sampling rate = 1.333 MHz / 64 = 20828 samples/sec (~48 usec/sample)
