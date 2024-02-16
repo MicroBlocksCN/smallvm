@@ -29,6 +29,8 @@ milliseconds
 
 board type
 
+connected to IDE
+
 Pins
 
 read digital pin _
@@ -83,6 +85,10 @@ comment _
 
 How this works...
 
+range _ to _
+
+by _
+
 for _ in _ _
 
 repeat until _ _
@@ -94,6 +100,10 @@ stop other tasks
 stop all
 
 last message
+
+arg _ default _
+
+default
 
 call _
 
@@ -126,6 +136,8 @@ _ or _
 or _
 
 _ is a _
+
+convert _ to _
 
 boolean
 
@@ -269,9 +281,11 @@ serial read
 
 serial write _
 
+anIntegerStringListOrByteArray
+
 serial write _ starting at _
 
-aByteStringOrByteArray
+aStringListOrByteArray
 
 soft serial write byte _ pin _ baud _
 
@@ -376,6 +390,10 @@ set all NeoPixels color _
 
 rotate NeoPixels by _
 
+brighten NeoPixel _ by _
+
+brighten all NeoPixels by _
+
 color r _ g _ b _ (0-255)
 
 random color
@@ -387,6 +405,24 @@ has white _
 PIR
 
 PIR at pin _ detected movement
+
+#### NeoPanel library
+
+NeoPanel
+
+attach NeoPixel panel width _ height _ at pin _
+
+NeoPanel set x _ y _ color _
+
+NeoPanel fill column _ color _
+
+NeoPanel fill row _ color _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+
+NeoPanel draw text _ at x _ y _ color _
+
+NeoPanel draw BMP file _ at x _ y _
 
 ####
 # Microphone library
@@ -544,6 +580,122 @@ attach IR receiver to pin _
 IR transmit device _ command _
 
 ####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+
+press key _ : while holding _
+
+hold key _
+
+release key _
+
+release all keys
+
+Shift
+
+Control
+
+Alt / ⌥
+
+Logo / ⌘
+
+AltGr 
+
+enter
+
+return
+
+tab
+
+backspace
+
+delete
+
+insert
+
+home
+
+end
+
+PgUp
+
+PgDown
+
+CapsLock
+
+NumLock
+
+ScrollLock
+
+PrintScreen
+
+ESC
+
+_ mouse click
+
+left
+
+right
+
+middle
+
+both
+
+move mouse pointer by _ , _
+
+scroll mouse by _
+
+hold _ mouse button
+
+release mouse buttons
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+
+list _ contains _
+
+circular item _ of _
+
+aListOrString
+
+map _ over _
+
+aFunction
+
+filter _ with _
+
+pick _ from _
+
+a few
+
+some
+
+most
+
+reverse _
+
+shuffle _
+
+sort _
+
+shuffled _
+
+reversed _
+
+sorted _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+
+start BLE Keyboard
+
+####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
 # All of its blocks are primitive (see "Primitives" section)
@@ -595,6 +747,43 @@ plot x _ y _
 unplot x _ y _
 
 display character _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+
+write _ at x _ y _ inverse _
+
+show display buffer
+
+clear
+
+set contrast (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+
+draw image _ at x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+
+_flip display top _
+
+make image _
+
+set pixel x _ y _ erase _
+
+set video _
+
+cursor location
+
+defer display updates
 
 ####
 # TFT display library
@@ -742,6 +931,357 @@ set pluck pin _
 play WAV file _
 
 filename
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+
+set tempo to _ bpm at _ / _ signature
+
+start counting _ bars
+
+stop counting
+
+wait until next _
+
+current beat
+
+current bar
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+
+Bass Drum 1
+
+Side Stick
+
+Acoustic Snare
+
+Hand Clap
+
+Electric Snare
+
+Low Floor Tom
+
+Closed Hi-Hat
+
+High Floor Tom
+
+Pedal Hi-Hat
+
+Low Tom
+
+Open Hi-Hat
+
+Low-Mid Tom
+
+Hi-Mid Tom
+
+Crash Cymbal 1
+
+High Tom
+
+Ride Cymbal 1
+
+Chinese Cymbal
+
+Ride Bell
+
+Tambourine 
+
+Splash Cymbal
+
+Cowbell 
+
+Crash Cymbal 2
+
+Vibraslap 
+
+Ride Cymbal 2
+
+Hi Bongo
+
+Low Bongo
+
+Mute Hi Conga
+
+Open Hi Conga
+
+Low Conga
+
+High Timbale
+
+Low Timbale
+
+High Agogo
+
+Low Agogo
+
+Cabasa
+
+Maracas 
+
+Short Whistle
+
+Long Whistle
+
+Short Guiro
+
+Long Guiro
+
+Claves 
+
+Hi Wood Block
+
+Low Wood Block
+
+Mute Cuica
+
+Open Cuica
+
+Mute Triangle
+
+Open Triangle
+
+# General MIDI instrument categories
+
+piano 
+
+chromatic percussion
+
+organ
+
+guitar
+
+bass
+
+strings
+
+ensemble
+
+brass
+
+reed
+
+pipe 
+
+synth lead
+
+synth pad
+
+synth SFX
+
+ethnic
+
+percussive
+
+SFX 
+
+# General MIDI drum sets
+
+standard
+
+room
+
+power
+
+electronic 
+
+TR-808
+
+jazz
+
+brush
+
+orchestra
+
+SFX 
+
+CM-64/CM-32L
+
+# General MIDI control changes
+
+bank select 1
+
+bank select 2
+
+modulation 
+
+portamento time
+
+volume
+
+pan
+
+expression
+
+hold
+
+portamento
+
+sostenuto
+
+soft
+
+resonance 
+
+release time
+
+attack time
+
+cutoff 
+
+decay time
+
+vibrato rate
+
+vibrato depth
+
+vibrato delay
+
+portamento control
+
+effect 1
+
+effect 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+
+set MIDI note _ to _ on channel _ volume _
+
+note _ octave _ to MIDI key
+
+select MIDI instrument _ for channel _
+
+instrument _ number _
+
+select MIDI drum kit _
+
+play MIDI drum _ for _ ms volume _
+
+drum _
+
+change MIDI control _ on channel _ to _
+
+pitch bend MIDI channel _ to _ %
+
+send MIDI reset
+
+send MIDI start playing
+
+send MIDI stop playing
+
+send MIDI continue playing
+
+set MIDI signal to pin _
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+
+# scale names
+
+ionian
+
+dorian
+
+phrygian
+
+lydian
+
+mixolydian
+
+aeolian
+
+locrian
+
+major
+
+minor 
+
+# chord types
+
+major
+
+minor
+
+diminished
+
+major 7th
+
+minor 7th
+
+Maj7 
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+
+tone pin 
+
+# library blocks
+
+_ scale root _
+
+steps _
+
+pentatonic _ scale root _
+
+_ chord root _
+
+_ chord for root _
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+
+_ transposed _ semitones
+
+chord progression _ with root _
+
+and _ steps per chord
+
+rotation _ of circle of 5ths _ M _ m _ º
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+
+tom for _ ms pitch shifted by _ on pin _
+
+laser for _ ms with frequency _ speed _ on pin _
+
+noise for _ ms pitch shifted by _ on pin _
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+
+snare for _ ms on DAC pin _
+
+hihat for _ ms on DAC pin _
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+
+play chord _ for _ ms
+
+set digital chord pins _ _ _
 
 ####
 # Turtle geometry library
@@ -941,6 +1481,12 @@ bmx280 pressure
 
 bme280 humidity
 
+bmx280 set base altitude _ meters
+
+bmx280 altitude (cm)
+
+bmx280 altitude (feet)
+
 ####
 # TCS34725 color sensor
 
@@ -988,7 +1534,7 @@ TFT touch pressure
 
 HTTP client
 
-_ data _ to http܃// _ 
+_ data _ to http܃// _
 
 MicroBlocks is fun
 
@@ -1074,6 +1620,13 @@ event definitions JSON
 events JSON
 
 ####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+
+move fantàstic _ mm
+
+####
 # MiKe Robot library
 
 MiKe front obstacle (cm)
@@ -1137,6 +1690,99 @@ plotter stop
 set plotter speed to _ %
 
 ####
+# Innova Didactic libraries
+
+red
+
+yellow
+
+green
+
+forward
+
+backward
+
+turn right
+
+turn left
+
+stop
+
+right sensor
+
+left sensor
+
+both sensors
+
+TdR test buzzer
+
+TdR set blue LED _
+
+TdR set red LED _
+
+TdR set RGB LED _
+
+TdR clear RGB LED
+
+TdR LM35 temperature ºC
+
+TdR DHT11 temperature ºC
+
+TdR DHT11 humidity
+
+TdR rotation
+
+TdR light level
+
+TdR button 1
+
+TdR button 2
+
+TdR receive IR code
+
+Imagina set _ led to _
+
+Imagina play _ octave _ for _ ms
+
+Imagina temperature (°C)
+
+Imagina light
+
+Imagina distance (cm)
+
+Imagina button (D2) pressed?
+
+Imagina digital reading _
+
+Imagina analog reading A1
+
+Imagina set digital pin _ to _
+
+Imagina stop servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+
+Imagina set _ speed to _ %
+
+Imagina set _ to _
+
+Imagina IR reading
+
+Imagina IR transmit device _ command _
+
+_ steps
+
+at _ % speed
+
+3dBot set speed at _ %
+
+3dBot obstacle < _ cm?
+
+3dBot line on _ ?
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -1169,7 +1815,7 @@ topic for MQTT event _
 
 payload for MQTT event _
 
-MQTT set will topic _ payload _ retain _ QoS _
+MQTT set will topic _ payload _
 
 testWill
 
@@ -1193,6 +1839,23 @@ binary data _
 UDP remote IP address
 
 UDP remote port
+
+####
+# WiFi Radio
+
+wifi send number _
+
+wifi send string _
+
+wifi send pair _ = _
+
+wifi message received?
+
+wifi last number
+
+wifi last string
+
+wifi set group _ (0-255)
 
 ####
 # Cutebot
@@ -1284,6 +1947,82 @@ NeZha set _ servo _ angle to _
 
 NeZha set continuous rotation servo _ speed to _ %
 
+####
+# WuKong2040
+
+WuKong2040
+
+WuKong2040 rainbowLED _ color to _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+
+WuKong2040 motor _ speed to _ (-100~100)
+
+WuKong2040 stop motor _
+
+WuKong2040 stop all motors
+
+WuKong2040 buzzer beep _ ms
+
+####
+# Octopus
+
+Octopus
+
+Octopus LED pin _ toggle to _
+
+Octopus LED pin _ brightness _ %
+
+Octopus motor fan pin _ speed to _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+
+Octopus value of light intensity (Lux) at pin _
+
+Octopus value of DHT11 temperature (°C) at pin _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+
+Octopus value of water level (0~40mm) at pin _
+
+Octopus value of trimpot (0~1023) at pin _
+
+Octopus value of noise (dB) at pin _
+
+Octopus OLED show _ at x _ y _
+
+Octopus OLED clear
+
+Octopus OLED draw pixel x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+
+Octopus OLED fill circle x _ y _ radius _
+
+
+####
+# OctoStudio
+
+Octo start
+
+Octo beam to phones _
+
+duration _ ms
+
+Octo receive beam
+
+Octo stop
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1308,7 +2047,7 @@ Reading project from board...
 
 Loading project...
 
-Found a newer version of 
+Found a newer version of
 
 Do you want me to update the one in the project?
 
@@ -1318,11 +2057,15 @@ Connect
 
 connect
 
+connect (BLE)
+
 open Boardie
 
 disconnect
 
 Serial port:
+
+Connect board and try again
 
 other...
 
@@ -1410,6 +2153,12 @@ large (100%)
 
 printable (200%)
 
+duplicate selection
+
+drag selection
+
+delete selection
+
 about...
 
 About MicroBlocks
@@ -1417,6 +2166,10 @@ About MicroBlocks
 virtual machine version
 
 update firmware on board
+
+enable or disable BLE
+
+Allow the attached board to be connected via BLE?
 
 show data graph
 
@@ -1434,11 +2187,21 @@ MicroBlocks HTTP Server listening on port 6473
 
 disable autoloading board libraries
 
+compact code store
+
 enable autoloading board libraries
 
 enable PlugShare when project empty
 
 disable PlugShare when project empty
+
+hide implementation blocks
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+
+show implementation blocks
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 
@@ -1446,7 +2209,11 @@ when plugging a board, automatically read its contents into the IDE if the curre
 
 erase flash and update firmware on ESP board
 
+install ESP firmware from URL
+
 Use board type
+
+Firmware Install
 
 Firmware Installed
 
@@ -1460,9 +2227,13 @@ Select
 
 as the destination drive, then click Save.
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+
 Installing firmware...
 
 Plug in the board.
+
+Board not connected
 
 Wiping board...
 

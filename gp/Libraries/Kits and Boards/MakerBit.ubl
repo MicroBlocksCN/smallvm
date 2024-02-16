@@ -1,14 +1,17 @@
 module MakerBit Output
 author MicroBlocks
-version 1 6
-depends 'Touch (MPR121)'
-choices makerbit_motor A B
+version 1 8 
+depends Touch 
+choices makerbit_motor A B 
 description 'Support for MakerBit (https://makerbit.com)'
 
   spec 'r' 'makerbit_pinTouched' 'is MakerBit pin _ touched?' 'menu.range:5-16' 5
   space
   spec 'r' 'makerbit_touchEvent' 'pin touch event'
   spec 'r' 'makerbit_last_touched_pin' 'last touched pin'
+  space
+  spec 'r' 'makerbit_releaseEvent' 'pin release event'
+  spec 'r' 'makerbit_last_released_pin' 'last released pin'
   space
   spec ' ' 'makerbit_setAllPins' 'set all MakerBit LEDs _' 'bool' false
   spec 'r' 'makerbit_allPins' 'MakerBit pins'
@@ -22,16 +25,31 @@ to makerbit_allPins {
   return ('[data:range]' 5 16)
 }
 
-to makerbit_last_touched_pin {
-  result = (touch_last_touched_pin)
-  if (result < 0) {
-    return result
+to makerbit_last_released_pin {
+  local 'pin' (touch_last_released_pin)
+  if (pin < 0) {
+    return -1
   }
-  return ((touch_last_touched_pin) + 5)
+  comment 'Convert to MakerBit pin numbering'
+  return (17 - pin)
+}
+
+to makerbit_last_touched_pin {
+  local 'pin' (touch_last_touched_pin)
+  if (pin < 0) {
+    return -1
+  }
+  comment 'Convert to MakerBit pin numbering'
+  return (17 - pin)
 }
 
 to makerbit_pinTouched pin {
-  return (touch_isTouched (pin - 5))
+  comment 'Convert from MakerBit pin numbering'
+  return (touch_isTouched (17 - pin))
+}
+
+to makerbit_releaseEvent {
+  return (touch_release_event)
 }
 
 to makerbit_setAllPins bool {

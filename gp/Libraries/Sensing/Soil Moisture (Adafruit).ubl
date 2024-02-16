@@ -1,0 +1,23 @@
+module 'Soil Moisture (Adafruit)'
+author unknown
+version 1 0 
+description 'Support for the Adafruit I2C Capacitive Soil Moisture sensor.
+https://www.adafruit.com/product/4026
+
+The results vary from 0 (dry and hanging free) to close to 700 (sensor held in the hand). The value range in an actual potted plant depends on the soil type and, of course, how wet the soil is. You will have to experiment to find the range for a specific potted plant.
+
+Note: The Arduino code for this is part of the large Adafruit Seesaw library, but it is actually quite simple to use. You send a two-byte read address and it returns a two-byte result value (MSB). The I2C address is 54 (0x36).
+'
+
+  spec 'r' 'adafruit_soil_moisture' 'soil moisture'
+
+to adafruit_soil_moisture {
+  '[sensors:i2cWrite]' 54 ('[data:makeList]' (hexToInt '0F') (hexToInt '10'))
+  waitMillis 5
+  local 'data' (newList 2)
+  '[sensors:i2cRead]' 54 data
+  local 'result' (((at 1 data) << 8) | (at 2 data))
+  result = (maximum 0 (result - 323))
+  return result
+}
+

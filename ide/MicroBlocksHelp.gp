@@ -42,7 +42,7 @@ method initialize MicroBlocksHelp {
 		(array '[sensors:i2cWrite]' 'comm#i2c-device-write' 'Send multiple bytes to an I2C device.')
 		(array 'spiSend' 'comm#spi-send' 'Send a byte (0-255) to an SPI device.')
 		(array 'spiRecv' 'comm#spi-receive' 'Read a byte from an SPI device while sending a zero byte. Report the byte received.')
-		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed and mode.')
+		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed, mode, channel (Raspberry Pi only), and bit order.')
 		(array '[sensors:spiExchange]' 'comm#xxx' 'Send a byte array via SPI, replacing its contents with the bytes received.')
 		(array '[serial:open]' 'comm#serial-open' 'Open the serial port at the given baud rate.')
 		(array '[serial:close]' 'comm#serial-close' 'Close the serial port.')
@@ -234,20 +234,29 @@ method initialize MicroBlocksHelp {
 		(array 'Maqueen sees line on left' '/extension_libraries/maqueen/#maqueen-sees-line-on-left' 'Return (-o) if the given line sensor sees a black line.')
 
 		// HUSKYLENS
-		(array 'HL init & set I2Caddr' '/extension_libraries/huskylens#hl-init-set-i2caddr' 'Initialize HuskyLens with the given I2C address.')
+		(array 'HL set Comms' '/extension_libraries/huskylens#hl-set-comms' 'Sets communication mode of the camera')
 		(array 'HL change algorithm' '/extension_libraries/huskylens#hl-change-algorithm' 'Change recognition algorithm.')
 		(array 'HL do' '/extension_libraries/huskylens#hl-do' 'Perform maintenance operation.')
 		(array 'HL request' '/extension_libraries/huskylens#hl-request' 'Request recognized objects from HuskyLens.')
 		(array 'HL request by ID' '/extension_libraries/huskylens#hl-request-by-id' 'Request only one object by id from HuskyLens.')
 		(array 'HL get info' '/extension_libraries/huskylens#hl-get-info' 'Get Info details from HuskyData.')
 		(array 'HL get block' '/extension_libraries/huskylens#hl-get-block' 'Get Block details from HuskyData.')
-		(array 'HL get arrow'  '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
-		(array 'HL learn current object with ID' '/extension_libraries/huskylens#hl-learn-by-id' 'Learn recognized object by ID.')
-		(array 'HL learn object with ID' '/extension_libraries/huskylens#hl-learn-id-and-name' 'Learn recognized object by ID and assign it a name.')
+		(array 'HL get arrow' '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
+		(array 'HL learn current object as ID' '/extension_libraries/huskylens#hl-learn-as-id' 'Learn recognized object as ID#.')
+		(array 'HL learn object as ID' '/extension_libraries/huskylens#hl-learn-as-id-and-name' 'Learn recognized object as ID# and assigns name')
 		(array 'HL set CustomName' '/extension_libraries/huskylens#hl-set-custom-name' 'Set custom name for a learned object.')
-		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Display text on the HuskyLens screen @ x,y [0,0 is top left].')
-		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load a file to/from SDcard.')
- 	)
+		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Write text to HuskyLens screen @ x,y [0,0 is top left].')
+		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load file to/from SDcard.')
+
+		// WEBSOCKET SERVER
+		(array 'start WebSocket server' '/network_libraries/websocket-server#start-websocket-server' 'Start running the WebSocket server.')
+		(array '[net:webSocketLastEvent]' '/network_libraries/websocket-server#last-websocket-event' 'Return the last protocol message received.')
+		(array 'ws client id' '/network_libraries/websocket-server#client-id-for-websocket-event' 'Return the WebSocket client ID (0-4).')
+		(array 'ws event payload' '/network_libraries/websocket-server#payload-for-websocket-event' 'Return the content of the message received.')
+		(array 'ws event type' '/network_libraries/websocket-server#type-of-websocket-event' 'Return the WebSocket event type.')
+		(array '[net:webSocketSendToClient]' '/network_libraries/websocket-server#send-to-websocket-client'	'Send a message to any client using its client id.')
+
+	)
 
 	opDict = (dictionary)
 	for e opEntries {

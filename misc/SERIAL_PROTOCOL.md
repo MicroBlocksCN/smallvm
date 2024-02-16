@@ -226,7 +226,13 @@ The ID specifies the extended message type. The format depends on the message ty
 
   * 1: set the per-byte delay for 'say' and 'graph' blocks. Body is one-byte value in the range 1-50.
 
-### *Reserved* (OpCodes 0x1F-0x25)
+### Enable BLE (OpCode: 0x1F)
+
+Sent from IDE to board to enable or disable the ability to connect to the board via BLE.
+If the third byte of this message is 0, BLE connections are disabled. If non-zero, they are enabled.
+Ignored by boards that do not support BLE.
+
+### *Reserved* (OpCodes 0x20-0x25)
 
 Reserved for additional Bidirectional messages.
 

@@ -1,7 +1,7 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 4 
-depends 'Touch (MPR121)' 
+version 1 6 
+depends Touch 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
 
@@ -9,6 +9,9 @@ description 'Support for HyperDuino (https://hyperduino.com).'
   space
   spec 'r' 'hyperduino_touchEvent' 'pin touch event'
   spec 'r' 'hyperduino_last_touched_pin' 'last touched pin'
+  space
+  spec 'r' 'hyperduino_releaseEvent' 'pin release event'
+  spec 'r' 'hyperduino_last_released_pin' 'last released pin'
   space
   spec ' ' 'hyperduino_setAllPins' 'set all HyperDuino LEDs _' 'bool' false
   spec 'r' 'hyperduino_allPins' 'HyperDuino pins'
@@ -20,16 +23,28 @@ to hyperduino_allPins {
   return ('[data:range]' 2 13)
 }
 
-to hyperduino_last_touched_pin {
-  result = (touch_last_touched_pin)
-  if (result < 0) {
-    return result
+to hyperduino_last_released_pin {
+  local 'pin' (touch_last_released_pin)
+  if (pin < 0) {
+    return -1
   }
-  return (result + 2)
+  return (14 - pin)
+}
+
+to hyperduino_last_touched_pin {
+  local 'pin' (touch_last_touched_pin)
+  if (pin < 0) {
+    return -1
+  }
+  return (14 - pin)
 }
 
 to hyperduino_pinTouched pin {
-  return (touch_isTouched (pin - 2))
+  return (touch_isTouched (14 - pin))
+}
+
+to hyperduino_releaseEvent {
+  return (touch_release_event)
 }
 
 to hyperduino_setAllPins bool {

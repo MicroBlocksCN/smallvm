@@ -156,7 +156,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 			$2++;
 			// yield from time to time when dealing with big files
 			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
-				_yield();
+				_taskSleep(1);
 			}
 		}
 
@@ -195,13 +195,40 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 			$1++;
 			// yield from time to time when dealing with big files
 			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
-				_yield();
+				_taskSleep(1);
 			}
 		}
-		window.fileCharPositions[fileName] = endIndex + 1;
+		window.fileCharPositions[fileName] = endIndex;
 		return endIndex - startIndex;
 
 	}, fileName, (uint8 *) &FIELD(buf, 0), BYTES(buf)));
+}
+
+// Read positioning
+
+static OBJ primReadPosition(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = obj2str(args[0]);
+	return int2obj(EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		if (!(fileName in window.fileCharPositions)) return 0;
+		return window.fileCharPositions[fileName];
+	}, fileName));
+}
+
+static OBJ primSetReadPosition(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	int newPosition = evalInt(args[0]);
+	char *fileName = obj2str(args[1]);
+
+	EM_ASM_({
+		var fileName = UTF8ToString($0);
+		var newPosition = $1;
+		if (!(fileName in window.fileCharPositions)) return;
+		window.fileCharPositions[fileName] = newPosition;
+	}, fileName, newPosition);
+
+	return falseObj;
 }
 
 // Writing
@@ -341,6 +368,8 @@ static PrimEntry entries[] = {
 	{"readLine", primReadLine},
 	{"readBytes", primReadBytes},
 	{"readInto", primReadInto},
+	{"readPosition", primReadPosition},
+	{"setReadPosition", primSetReadPosition},
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
 	{"fileSize", primFileSize},

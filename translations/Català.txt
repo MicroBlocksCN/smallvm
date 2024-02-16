@@ -41,6 +41,9 @@ mil·lisegons
 board type
 tipus de placa
 
+connected to IDE
+connectat a la IDE
+
 Pins
 Pins
 
@@ -122,6 +125,12 @@ comentari _
 How this works...
 Així funciona...
 
+range _ to _
+nombres de _ a _
+
+by _
+en increments de _
+
 for _ in _ _
 per cada _ en _ _
 
@@ -139,6 +148,12 @@ atura-ho tot
 
 last message
 últim missatge
+
+arg _ default _
+argument _ amb valor per defecte _
+
+default
+defecte
 
 call _
 crida _
@@ -187,6 +202,9 @@ o _
 
 _ is a _
 _ és un _
+
+convert _ to _
+_ convertit en _
 
 boolean
 booleà
@@ -397,11 +415,14 @@ llegeix port sèrie
 serial write _
 escriu _ al port sèrie
 
+anIntegerStringListOrByteArray
+--MISSING--
+
 serial write _ starting at _
 escriu _ al port sèrie començant per _
 
-aByteStringOrByteArray
-cadenaDeTextOLlistaDeBytes
+aStringListOrByteArray
+--MISSING--
 
 soft serial write byte _ pin _ baud _
 escriu byte _ al port sèrie virtual al pin _ a _ bauds
@@ -551,6 +572,12 @@ posa tots els NeoPíxels de color _
 rotate NeoPixels by _
 rota NeoPíxels en _
 
+brighten NeoPixel _ by _
+il·luminar NeoPíxel _ en _ 
+
+brighten all NeoPixels by _
+il·luminar tots els NeoPíxels en _
+
 color r _ g _ b _ (0-255)
 color vermell _ verd _ blau _ (0-255)
 
@@ -568,6 +595,32 @@ Sensor de presència
 
 PIR at pin _ detected movement
 Moviment detectat pel PIR al pin _
+
+#### NeoPanel library
+
+NeoPanel
+NeoPanell
+
+attach NeoPixel panel width _ height _ at pin _
+inicialitza panell de NeoPíxels amplada _ alçada _ al pin _
+
+NeoPanel set x _ y _ color _
+pinta píxel x _ y _ de color _ al NeoPanell
+
+NeoPanel fill column _ color _
+pinta columna _ color _ al NeoPanell
+
+NeoPanel fill row _ color _
+pinta fila _ color _ al NeoPanell
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+pinta rectangle a x _ y _ amplada _ alçada _ color _ al NeoPanell
+
+NeoPanel draw text _ at x _ y _ color _
+escriu _ a x _ y _ color _ al NeoPanell
+
+NeoPanel draw BMP file _ at x _ y _
+mostra imagen BMP _ x _ y _ al NeoPanell
 
 ####
 # Microphone library
@@ -795,6 +848,175 @@ IR transmit device _ command _
 envia al dispositiu IR _ la comanda _
 
 ####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+Teclat i Ratolí
+
+press key _ : while holding _
+prem la tecla _ : mantenint _ premut
+
+hold key _
+mantingues la tecla _ premuda
+
+release key _
+deixa anar la tecla _
+
+release all keys
+deixa anar totes les tecles
+
+Shift
+Majúscules
+
+Control
+Control
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+intro
+
+return
+retorn
+
+tab
+tab
+
+backspace
+retrocés
+
+delete
+elimina
+
+insert
+inserir
+
+home
+torna a casa
+
+end
+fi
+
+PgUp
+RePg
+
+PgDown
+AvPg
+
+CapsLock
+Bloqueig de majúscules
+
+NumLock
+Bloqueig numèric
+
+ScrollLock
+Bloqueig de desplaçament
+
+PrintScreen
+ImprPant
+
+ESC
+ESC
+
+_ mouse click
+clic _ del ratolí
+
+left
+esquerre
+
+right
+dret
+
+middle
+mig
+
+both
+ambdós
+
+move mouse pointer by _ , _
+mou cursor del ratolí _ , _
+
+scroll mouse by _
+desplaça el ratolí en _
+
+hold _ mouse button
+manté premut el botó _ del ratolí
+
+release mouse buttons
+deixa anar els botons del ratolí
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+Llistes
+
+list _ contains _
+la llista _ conté _
+
+circular item _ of _
+element circular _ de _
+
+aListOrString
+unaLlistaOText
+
+map _ over _
+aplica _ sobre _
+
+aFunction
+unaFunció
+
+filter _ with _
+filtra _ utilitzant _
+
+pick _ from _
+tria _ elements de _
+
+a few
+pocs
+
+some
+uns quants
+
+most
+molts
+
+reverse _
+inverteix _
+
+shuffle _
+barreja _
+
+sort _
+ordena _
+
+shuffled _
+_ barrejada
+
+reversed _
+_ invertida
+
+sorted _
+_ ordenada
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+Teclat BLE
+
+start BLE Keyboard
+inicia teclat BLE
+
+####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
 # All of its blocks are primitive (see "Primitives" section)
@@ -864,6 +1086,60 @@ apaga x _ y _
 
 display character _
 mostra caràcter _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+--MISSING--
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+--MISSING--
+
+write _ at x _ y _ inverse _
+--MISSING--
+
+show display buffer
+--MISSING--
+
+clear
+--MISSING--
+
+set contrast (1-4) _
+--MISSING--
+
+draw circle at x _ y _ radius _ erase _
+--MISSING--
+
+draw image _ at x _ y _
+--MISSING--
+
+draw line from x _ y _ to x _ y _ erase _
+--MISSING--
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+--MISSING--
+
+fill rectangle x _ y _ w _ h _ erase _
+--MISSING--
+
+_flip display top _
+--MISSING--
+
+make image _
+--MISSING--
+
+set pixel x _ y _ erase _
+--MISSING--
+
+set video _
+--MISSING--
+
+cursor location
+--MISSING--
+
+defer display updates
+--MISSING--
 
 ####
 # TFT display library
@@ -1070,6 +1346,513 @@ reprodueix arxiu WAV _
 
 filename
 nom d'arxiu
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+Ritme
+
+set tempo to _ bpm at _ / _ signature
+fixa tempo a _ bmp i compàs a _ / _
+
+start counting _ bars
+comença a comptar a _ compassos
+
+stop counting
+deixa de comptar
+
+wait until next _
+espera fins el proper _
+
+current beat
+temps actual
+
+current bar
+compàs actual
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+--MISSING--
+
+Bass Drum 1
+--MISSING--
+
+Side Stick
+--MISSING--
+
+Acoustic Snare
+--MISSING--
+
+Hand Clap
+--MISSING--
+
+Electric Snare
+--MISSING--
+
+Low Floor Tom
+--MISSING--
+
+Closed Hi-Hat
+--MISSING--
+
+High Floor Tom
+--MISSING--
+
+Pedal Hi-Hat
+--MISSING--
+
+Low Tom
+--MISSING--
+
+Open Hi-Hat
+--MISSING--
+
+Low-Mid Tom
+--MISSING--
+
+Hi-Mid Tom
+--MISSING--
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+--MISSING--
+
+Ride Cymbal 1
+--MISSING--
+
+Chinese Cymbal
+--MISSING--
+
+Ride Bell
+--MISSING--
+
+Tambourine 
+--MISSING--
+
+Splash Cymbal
+--MISSING--
+
+Cowbell 
+--MISSING--
+
+Crash Cymbal 2
+--MISSING--
+
+Vibraslap 
+--MISSING--
+
+Ride Cymbal 2
+--MISSING--
+
+Hi Bongo
+--MISSING--
+
+Low Bongo
+--MISSING--
+
+Mute Hi Conga
+--MISSING--
+
+Open Hi Conga
+--MISSING--
+
+Low Conga
+--MISSING--
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+piano
+
+chromatic percussion
+percussió cromàtica
+
+organ
+orgue
+
+guitar
+guitarra
+
+bass
+baix
+
+strings
+secció de cordes
+
+ensemble
+secció de vents
+
+brass
+vent metall
+
+reed
+vent de canya
+
+pipe 
+flauta
+
+synth lead
+sintetitzador solista
+
+synth pad
+sintetitzador ambient
+
+synth SFX
+efecte de sintetitzador
+
+ethnic
+ètnic
+
+percussive
+percussiu
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+--MISSING--
+
+effect 2
+--MISSING--
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+toca nota MIDI _ durant _ ms al canal _ volum _
+
+set MIDI note _ to _ on channel _ volume _
+posa la nota MIDI _ a _ al canal _ volum _
+
+note _ octave _ to MIDI key
+nota _ octava _ a tecla MIDI
+
+select MIDI instrument _ for channel _
+selecciona instrument MIDI _ per al canal _
+
+instrument _ number _
+instrument _ número _
+
+select MIDI drum kit _
+selecciona bateria MIDI _
+
+play MIDI drum _ for _ ms volume _
+toca percussió MIDI _ durant _ ms volum _
+
+drum _
+percussió _
+
+change MIDI control _ on channel _ to _
+posa control MIDI _ del canal _ a _
+
+pitch bend MIDI channel _ to _ %
+modula canal MIDI _ en un _ %
+
+send MIDI reset
+reinicialitza MIDI
+
+send MIDI start playing
+inicia seqüenciador MIDI
+
+send MIDI stop playing
+pausa seqüenciador MIDI
+
+send MIDI continue playing
+reprèn seqüenciador MIDI
+
+set MIDI signal to pin _
+configura MIDI al pin _
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+Escales i acords
+
+# scale names
+
+ionian
+jònica
+
+dorian
+dòrica
+
+phrygian
+frígia
+
+lydian
+lídia
+
+mixolydian
+mixolídia
+
+aeolian
+eòlica
+
+locrian
+lòcria
+
+major
+major
+
+minor 
+menor
+
+# chord types
+
+major
+major
+
+minor
+menor
+
+diminished
+disminuïda
+
+major 7th
+7ª major
+
+minor 7th
+7ª menor
+
+Maj7 
+Maj7
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+canal MIDI
+
+tone pin 
+pin de brunzidor
+
+# library blocks
+
+_ scale root _
+escala _ amb arrel _
+
+steps _
+i _ graus
+
+pentatonic _ scale root _
+escala pentatònica _ amb arrel _
+
+_ chord root _
+acord _ amb arrel _
+
+_ chord for root _
+acord _ per a arrel _
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+arpegia _ amb ordre _ durada _ i volum _ al _ _
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+improvisa sobre _ durant _ compassos amb durades _ al _ _ volum _
+
+_ transposed _ semitones
+_ transposat _ semitons
+
+chord progression _ with root _
+progressió d'acords _ amb arrel _
+
+and _ steps per chord
+i _ graus per acord
+
+rotation _ of circle of 5ths _ M _ m _ º
+rotació _ del cercle de quintes _ M _ m _ º
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
+--MISSING--
 
 ####
 # Turtle geometry library
@@ -1352,6 +2135,15 @@ pressió del bmx280
 bme280 humidity
 humitat del bme280
 
+bmx280 set base altitude _ meters
+--MISSING--
+
+bmx280 altitude (cm)
+--MISSING--
+
+bmx280 altitude (feet)
+--MISSING--
+
 ####
 # TCS34725 color sensor
 
@@ -1415,8 +2207,8 @@ pressió del toc a la TFT
 HTTP client
 Client HTTP
 
-_ data _ to http܃// _ 
-petició _ amb contingut _ a http܃// _ 
+_ data _ to http܃// _
+petició _ amb dades _ a http܃// _
 
 MicroBlocks is fun
 MicroBlocks és divertit
@@ -1443,7 +2235,7 @@ with body _
 amb contingut _
 
 Welcome to the MicroBlocks HTTP server
-Benvinguts al servidor HTTP de MicroBlocks
+El servidor HTTP de MicroBlocks us dona la benvinguda
 
 and headers _
 i capçaleres _
@@ -1539,6 +2331,15 @@ events JSON
 JSON dels esdeveniments
 
 ####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+gira el fantàstic _ graus
+
+move fantàstic _ mm
+mou el fantàstic _ mm
+
+####
 # MiKe Robot library
 
 MiKe front obstacle (cm)
@@ -1630,6 +2431,144 @@ set plotter speed to _ %
 fixa velocitat del plotter a _ %
 
 ####
+# Innova Didactic libraries
+
+red
+vermell
+
+yellow
+groc
+
+green
+verd
+
+forward
+endavant
+
+backward
+enrera
+
+turn right
+gira a la dreta
+
+turn left
+gira a l'esquerra
+
+stop
+atura
+
+right sensor
+sensor dret
+
+left sensor
+sensor esquerra
+
+both sensors
+amdós sensors
+
+TdR test buzzer
+TdR prova el brunzidor
+
+TdR set blue LED _
+TdR posa el led blau a _
+
+TdR set red LED _
+TdR posa el led vermell a _
+
+TdR set RGB LED _
+TdR posa el led RGB a _
+
+TdR clear RGB LED
+TdR apaga el led RGB
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+TdR DHT11 humitat
+
+TdR rotation
+TdR rotació
+
+TdR light level
+TdR nivell de llum
+
+TdR button 1
+TdR botó 1
+
+TdR button 2
+TdR botó 2
+
+TdR receive IR code
+TdR codi IR rebut
+
+Imagina set _ led to _
+Imagina posa el led _ a _
+
+Imagina play _ octave _ for _ ms
+Imagina toca la nota _ a l'octava _ durant _ ms
+
+Imagina temperature (°C)
+Imagina temperatura (°C)
+
+Imagina light
+Imagina llum
+
+Imagina distance (cm)
+Imagina distància (cm)
+
+Imagina button (D2) pressed?
+Imagina botó (D2) premut?
+
+Imagina digital reading _
+Imagina lectura digital _
+
+Imagina analog reading A1
+Imagina lectura analògica d'A1
+
+Imagina set digital pin _ to _
+Imagina posa el pin digital _ a _
+
+Imagina stop servo _
+Imagina atura el servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+Imagina posa el servo _ a _ graus (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+Imagina posa el servo _ a la velocitat _ (-100 to 100)
+
+Imagina set _ speed to _ %
+Imagina posa la velocitat del _ al _ %
+
+Imagina set _ to _
+Imagina moviment del _ : _
+
+Imagina IR reading
+Imagina lectura IR
+
+Imagina IR transmit device _ command _
+Imagina IR envia al dispositiu _ la comanda _
+
+_ steps
+_ passes
+
+at _ % speed
+al _ % de la velocitat
+
+3dBot set speed at _ %
+3dBot fixa la velocitat a _ %
+
+3dBot obstacle < _ cm?
+3dBot obstacle < _ cm?
+
+3dBot line on _ ?
+3dBot _ en la línia?
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -1659,6 +2598,9 @@ abandona el tema d'MQTT _
 MQTT pub topic _ payload _
 publica al tema d'MQTT _ el contingut _
 
+Hello!
+Hola!
+
 retain _ QoS _
 amb retenció _ i qualitat del servei _
 
@@ -1674,7 +2616,7 @@ tema de l'esdeveniment MQTT _
 payload for MQTT event _
 contingut de l'esdeveniment MQTT _
 
-MQTT set will topic _ payload _ retain _ QoS _
+MQTT set will topic _ payload _
 --MISSING--
 
 testWill
@@ -1709,6 +2651,30 @@ adreça IP remota UDP
 
 UDP remote port
 port remot UDP
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
 
 ####
 # Cutebot
@@ -1838,6 +2804,115 @@ posa el motor de _ graus número _ a angle _
 NeZha set continuous rotation servo _ speed to _ %
 posa el servo de rotació contínua _ a velocitat _ %
 
+####
+# WuKong2040
+
+WuKong2040
+--MISSING--
+
+WuKong2040 rainbowLED _ color to _
+--MISSING--
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+--MISSING--
+
+WuKong2040 clear all rainbowLED
+--MISSING--
+
+WuKong2040 motor _ speed to _ (-100~100)
+--MISSING--
+
+WuKong2040 stop motor _
+--MISSING--
+
+WuKong2040 stop all motors
+--MISSING--
+
+WuKong2040 buzzer beep _ ms
+--MISSING--
+
+####
+# Octopus
+
+Octopus
+--MISSING--
+
+Octopus LED pin _ toggle to _
+--MISSING--
+
+Octopus LED pin _ brightness _ %
+--MISSING--
+
+Octopus motor fan pin _ speed to _ %
+--MISSING--
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+--MISSING--
+
+Octopus sonar trig _ echo _ distance (cm)
+--MISSING--
+
+Octopus value of light intensity (Lux) at pin _
+--MISSING--
+
+Octopus value of DHT11 temperature (°C) at pin _
+--MISSING--
+
+Octopus value of DHT11 humidity (0~100) at pin _
+--MISSING--
+
+Octopus value of water level (0~40mm) at pin _
+--MISSING--
+
+Octopus value of trimpot (0~1023) at pin _
+--MISSING--
+
+Octopus value of noise (dB) at pin _
+--MISSING--
+
+Octopus OLED show _ at x _ y _
+--MISSING--
+
+Octopus OLED clear
+--MISSING--
+
+Octopus OLED draw pixel x _ y _
+--MISSING--
+
+Octopus OLED draw line from x _ y _ to x _ y _
+--MISSING--
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+--MISSING--
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+--MISSING--
+
+Octopus OLED draw circle x _ y _ radius _
+--MISSING--
+
+Octopus OLED fill circle x _ y _ radius _
+--MISSING--
+
+
+####
+# OctoStudio
+
+Octo start
+inicia Octo
+
+Octo beam to phones _
+envia _ a telèfons via Octo
+
+duration _ ms
+durada _ ms
+
+Octo receive beam
+rep de telèfons via Octo
+
+Octo stop
+atura Octo
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1871,8 +2946,8 @@ Llegint projecte de la placa...
 Loading project...
 Carregant projecte...
 
-Found a newer version of 
-He trobat una versió més nova de 
+Found a newer version of
+S'ha trobat una nova versió de 
 
 Do you want me to update the one in the project?
 Vols actualitzar el projecte amb aquesta nova versió?
@@ -1886,6 +2961,9 @@ Connecta
 connect
 connecta
 
+connect (BLE)
+connecta (BLE)
+
 open Boardie
 connecta't al Boardie
 
@@ -1894,6 +2972,9 @@ desconnecta
 
 Serial port:
 Port sèrie:
+
+Connect board and try again
+Connecta la placa i prova de nou
 
 other...
 un altre...
@@ -2023,6 +3104,15 @@ gran (100%)
 printable (200%)
 per a impressió (200%)
 
+duplicate selection
+duplica selecció
+
+drag selection
+arrossega selecció
+
+delete selection
+elimina selecció
+
 about...
 sobre...
 
@@ -2034,6 +3124,12 @@ versió de la màquina virtual
 
 update firmware on board
 actualitza firmware a la placa
+
+enable or disable BLE
+activa o desactiva BLE
+
+Allow the attached board to be connected via BLE?
+Vols que la placa connectada es pugui programar via BLE?
 
 show data graph
 mostra la gràfica de dades
@@ -2059,6 +3155,9 @@ El servidor HTTP de MicroBlocks està actiu al port 6473
 disable autoloading board libraries
 no carreguis llibreries de placa automàticament
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 carrega llibreries de placa automàticament
 
@@ -2067,6 +3166,18 @@ activa PlugShare en projectes en blanc
 
 disable PlugShare when project empty
 desactiva PlugShare en projectes en blanc
+
+hide implementation blocks
+amaga els blocs d'implementació
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+no mostris blocs i variables que siguin interns a les llibreries (aquells que el seu nom comença amb guió baix)
+
+show implementation blocks
+mostra els blocs d'implementació
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+mostra els blocs i variables que siguin interns a les llibreries (aquells que el nom comença amb guió baix)
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 en connectar una placa, no en llegeixis els continguts automàticament encara que el projecte actual estigui en blanc
@@ -2077,8 +3188,14 @@ en connectar una placa, llegeix-ne els continguts automàticament si el projecte
 erase flash and update firmware on ESP board
 esborra i reparticiona el firmware en placa ESP
 
+install ESP firmware from URL
+instal·lar firmware ESP des de l'URL 
+
 Use board type
 La placa connectada és de tipus
+
+Firmware Install
+Instal·lació del firmware
 
 Firmware Installed
 Firmware instal·lat
@@ -2098,11 +3215,17 @@ Selecciona
 as the destination drive, then click Save.
 com a unitat de destinació i clica Desa.
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+Si la teva micro:bit mostra una cara trista, desa l'arxiu firmware.hex al teu ordinador, i després arrossega'l a la unitat MICROBIT que trobaràs a l'explorador d'arxius.
+
 Installing firmware...
 Instal·lant firmware...
 
 Plug in the board.
 Connecta la placa.
+
+Board not connected
+Placa no connectada
 
 Wiping board...
 Esborrant placa...
@@ -2687,7 +3810,7 @@ Send a byte array to the serial port.
 Envia una llista de bytes pel port sèrie.
 
 Run when the board powers up or when the IDE start button is clicked.
-Executa quan la placa s'engegui o en clicar al botó d'inici de l'editor. 
+Executa quan la placa s'engegui o en clicar al botó d'inici de l'editor.
 
 Run when buttons A, B, or A+B are pressed.
 Executa quan es premin els botons A, B, o tots dos alhora.

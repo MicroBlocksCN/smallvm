@@ -1,0 +1,187 @@
+module Imagina
+author 'Josep Ferràndiz'
+version 1 0 
+depends 'IR Remote' 'Distance (HC-SR04)' Servo Tone 
+choices nunchuck joyX joyY butC butZ accX accY accZ 
+choices motorRotation stop forward backward 
+choices servo A B 
+choices motor 'Motor A' 'Motor B' 
+choices notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
+choices led red yellow green 
+choices sensor 'SL (D5)' 'SR (D6)' 
+choices state on off 
+description 'Provides blocks for INNOVA DIDACTIC Imagina shield when used with ESP32 STEAMakers board.
+
+Imagina shield: https://shop.innovadidactic.com/es/imagina-steam-y-makers/1466-placa-imagina-3dbot-arduino-12-funciones-incluye-sensores-actuadores-y-driver-para-dos-motores.html
+ESP32 STEAMakers board:
+https://shop.innovadidactic.com/es/standard-placas-shields-y-kits/1567-placa-esp32-steamakers.html'
+
+  spec ' ' 'imagina_set_led' 'Imagina set _ led to _' 'menu.led bool' 'red' true
+  spec ' ' 'imagina_play' 'Imagina play _ octave _ for _ ms' 'menu.notes num num' 'c' 0 500
+  space
+  spec 'r' 'imagina_temperature' 'Imagina temperature (°C)'
+  spec 'r' 'imagina_light' 'Imagina light'
+  spec 'r' 'imagina_distance' 'Imagina distance (cm)'
+  spec 'r' 'imagina_button' 'Imagina button (D2) pressed?'
+  spec 'r' 'imagina_read_digital' 'Imagina digital reading _' 'menu.sensor' 'SL (D5)'
+  spec 'r' 'imagina_read_A1' 'Imagina analog reading A1'
+  space
+  spec ' ' 'imagina_set_digital' 'Imagina set digital pin _ to _' 'menu.sensor bool' 'SL (D5)' true
+  space
+  spec ' ' 'imagina_stop_servo' 'Imagina stop servo _' 'menu.servo' 'A'
+  spec ' ' 'imagina_set_servo_degrees' 'Imagina set servo _ to _ degrees (-90 to 90)' 'menu.servo num' 'A' 90
+  spec ' ' 'imagina_set_servo_speed' 'Imagina set servo _ to speed _ (-100 to 100)' 'menu.servo num' 'A' 100
+  space
+  spec ' ' 'imagina_set_motor_speed' 'Imagina set _ speed to _ %' 'menu.motor auto' 'Motor A' 100
+  spec ' ' 'imagina_set_motor_rotation' 'Imagina set _ to _' 'menu.motor menu.motorRotation' 'Motor A' 'stop'
+  space
+  spec 'r' 'imagina_nunchuck' 'Imagina Nunchuck _' 'menu.nunchuck' 'joyX'
+  space
+  spec 'r' 'imagina_receive_IR' 'Imagina IR reading'
+  spec ' ' 'imagina_transmit_IR' 'Imagina IR transmit device _ command _' 'num num' 48896 0
+
+to imagina_button {
+  return (digitalReadOp 26)
+}
+
+to imagina_distance {
+  return ('distance (cm)' 17 26)
+}
+
+to imagina_light {
+  return (analogReadOp 35)
+}
+
+to imagina_nunchuck which {
+  local 'value' 0
+  local 'data' (newList 6)
+  '[sensors:i2cRead]' (hexToInt '52') data
+  if (which == 'joyX') {
+    value = (at 1 data)
+  }
+  if (which == 'joyY') {
+    value = (at 2 data)
+  }
+  if (which == 'accX') {
+    value = (((at 3 data) << 2) | (((at 6 data) >> 2) & 3))
+  }
+  if (which == 'accY') {
+    value = (((at 4 data) << 2) | (((at 6 data) >> 4) & 3))
+  }
+  if (which == 'accZ') {
+    value = (((at 5 data) << 2) | (((at 6 data) >> 6) & 3))
+  }
+  if (which == 'butC') {
+    value = ((((at 6 data) >> 1) & 1) == 0)
+  }
+  if (which == 'butZ') {
+    value = ((((at 6 data) >> 0) & 1) == 0)
+  }
+  return value
+}
+
+to imagina_play note octave ms {
+  'attach buzzer to pin' 2
+  'play tone' note octave ms
+}
+
+to imagina_read_A1 {
+  return (analogReadOp 4)
+}
+
+to imagina_read_digital sensor {
+  if (sensor == 'SL (D5)') {local 'pin' 16}
+  if (sensor == 'SR (D6)') {local 'pin' 27}
+  return (digitalReadOp pin)
+}
+
+to imagina_receive_IR {
+  attachIR 23
+  return (receiveIR)
+}
+
+to imagina_set_digital sensor state {
+  if (sensor == 'SL (D5)') {local 'pin' 16}
+  if (sensor == 'SR (D6)') {local 'pin' 27}
+  digitalWriteOp pin state
+}
+
+to imagina_set_led led state {
+  comment 'For yellow and red leds, only works if nothing is connected
+to D5 or D6 pins respectively (SL, servo B/ SR, servo A)'
+  if (state == 'on') {
+    state = true
+  } else {
+    state = false
+  }
+  if (led == 'red') {
+    digitalWriteOp 27 state
+  } (led == 'yellow') {
+    digitalWriteOp 16 state
+  } else {
+    digitalWriteOp 25 state
+  }
+}
+
+to imagina_set_motor_rotation motor state {
+  if (motor == 'Motor A') {
+    local 'pin1' 12
+    local 'pin2' 14
+  } else {
+    local 'pin1' 18
+    local 'pin2' 19
+  }
+  if (state == 'stop') {
+    digitalWriteOp pin1 false
+    digitalWriteOp pin2 false
+  }
+  if (state == 'forward') {
+    digitalWriteOp pin1 true
+    digitalWriteOp pin2 false
+  }
+  if (state == 'backward') {
+    digitalWriteOp pin1 false
+    digitalWriteOp pin2 true
+  }
+}
+
+to imagina_set_motor_speed motor speed {
+  if (motor == 'Motor A') {
+    local 'pin' 13
+  } else {
+    local 'pin' 5
+  }
+  if (speed > 100) {
+    speed = 100
+  }
+  if (speed > 0) {
+    analogWriteOp pin ('[misc:rescale]' speed 0 100 400 1024)
+  } else {
+    analogWriteOp pin 0
+  }
+}
+
+to imagina_set_servo_degrees servo degrees {
+  if (servo == 'A') {setServoAngle 27 degrees}
+  if (servo == 'B') {setServoAngle 16 degrees}
+}
+
+to imagina_set_servo_speed servo speed {
+  if (servo == 'A') {setServoSpeed 27 speed}
+  if (servo == 'B') {setServoSpeed 16 speed}
+}
+
+to imagina_stop_servo servo {
+  if (servo == 'A') {stopServo 27}
+  if (servo == 'B') {stopServo 16}
+}
+
+to imagina_temperature {
+  return ((analogReadOp 34) / 18)
+}
+
+to imagina_transmit_IR device value {
+  _ir_transmit_pin = 25
+  IR_Transmit device value
+}
+

@@ -8,6 +8,7 @@
 // John Maloney, May 2019
 
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -54,9 +55,22 @@ static OBJ primSqrt(int argCount, OBJ *args) {
 	return int2obj((int) round(1000 * sqrt(evalInt(args[0]))));
 }
 
+static OBJ primArctan(int argCount, OBJ *args) {
+	// Returns angle (in hundredths of a degree) of vector dx, dy.
+
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+
+	double x = obj2int(args[0]);
+	double y = obj2int(args[1]);
+	double degreeHundredths = (18000.0 * atan2(y, x)) / 3.141592653589793238463;
+
+	return int2obj((int) round(degreeHundredths));
+}
+
 static OBJ primPressureToAltitude(int argCount, OBJ *args) {
 	// Computes the altitude difference (in millimeters) for a given pressure difference.
-	//  dH = 44330 * [ 1 - ( p / p0 ) ^ ( 1 / 5.255) ]
+	// dH = 44330 * [ 1 - ( p / p0 ) ^ ( 1 / 5.255) ]
 
 	if (argCount < 2) return fail(notEnoughArguments);
 	int p0 = obj2int(args[0]);
@@ -91,7 +105,7 @@ static OBJ jsonValue(char *item) {
 }
 
 static OBJ primConnectedToIDE(int argCount, OBJ *args) {
-	return serialConnected() ? trueObj : falseObj;
+	return ideConnected() ? trueObj : falseObj;
 }
 
 static OBJ primJSONGet(int argCount, OBJ *args) {
@@ -168,6 +182,39 @@ static OBJ primJSONKeyAt(int argCount, OBJ *args) {
 	return newStringFromBytes(key, strlen(key));
 }
 
+static OBJ primBMP680GasResistance(int argCount, OBJ *args) {
+	if (argCount < 3) return fail(notEnoughArguments);
+	int gas_res_adc = evalInt(args[0]);
+	int gas_range = evalInt(args[1]);
+	int range_sw_err = evalInt(args[2]);
+
+	// ensure that gas_range is [0..15]
+	if (gas_range < 0) gas_range = 0;
+	if (gas_range > 15) gas_range = 15;
+
+	/* Look up table 1 for the possible gas range values */
+	uint32_t lookupTable1[16] = {
+		UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2147483647),
+		UINT32_C(2147483647), UINT32_C(2126008810), UINT32_C(2147483647), UINT32_C(2130303777),
+		UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2143188679), UINT32_C(2136746228),
+		UINT32_C(2147483647), UINT32_C(2126008810), UINT32_C(2147483647), UINT32_C(2147483647) };
+
+	/* Look up table 2 for the possible gas range values */
+	uint32_t lookupTable2[16] = {
+		UINT32_C(4096000000), UINT32_C(2048000000), UINT32_C(1024000000), UINT32_C(512000000),
+		UINT32_C(255744255), UINT32_C(127110228), UINT32_C(64000000), UINT32_C(32258064), UINT32_C(16016016),
+		UINT32_C(8000000), UINT32_C(4000000), UINT32_C(2000000), UINT32_C(1000000), UINT32_C(500000),
+		UINT32_C(250000), UINT32_C(125000) };
+
+	int64_t var1 = (int64_t) ((1340 + (5 * (int64_t) range_sw_err)) *
+		((int64_t) lookupTable1[gas_range])) >> 16;
+	uint64_t var2 = (((int64_t) ((int64_t) gas_res_adc << 15) - (int64_t) (16777216)) + var1);
+	int64_t var3 = (((int64_t) lookupTable2[gas_range] * (int64_t) var1) >> 9);
+	uint32_t calc_gas_res = (uint32_t) ((var3 + ((int64_t) var2 >> 1)) / (int64_t) var2);
+
+	return int2obj(calc_gas_res);
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -175,7 +222,9 @@ static PrimEntry entries[] = {
 	{"rescale", primRescale},
 	{"sin", primSine},
 	{"sqrt", primSqrt},
+	{"atan2", primArctan},
 	{"pressureToAltitude", primPressureToAltitude},
+	{"bme680GasResistance", primBMP680GasResistance},
 	{"connectedToIDE", primConnectedToIDE},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},

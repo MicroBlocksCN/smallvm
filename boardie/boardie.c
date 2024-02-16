@@ -188,18 +188,23 @@ void readScriptsFromURL() {
 
 // Stubs for functions not used by Boardie
 
-void addSerialPrims() {}
+void addBLEPrims() {}
+void addCameraPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
+void addRadioPrims() {}
+
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
+void resetRadio() {}
 
 // Stubs for code file (persistence) not yet used by Boardie
 
-void initCodeFile(uint8 *flash, int flashByteCount) {}
+int initCodeFile(uint8 *flash, int flashByteCount) { return 0; }
 void writeCodeFile(uint8 *code, int byteCount) { }
 void writeCodeFileWord(int word) { }
 void clearCodeFile(int ignore) { }
+void BLE_setEnabled(int enableFlag) { }
 
 // Main loop
 

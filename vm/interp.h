@@ -143,6 +143,7 @@ extern int extraByteDelay;
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define extendedMsg				30
+#define enableBLEMsg			31
 
 // Serial Protocol Messages: CRC Exchange
 
@@ -189,6 +190,17 @@ extern int extraByteDelay;
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
+#define wifiNotConnected		43	// Not connected to a WiFi network
+#define cannotConvertToInteger	44	// Cannot convert that to an integer
+#define cannotConvertToBoolean	45	// Cannot convert that to a boolean
+#define cannotConvertToList		46	// Cannot convert that to a list
+#define cannotConvertToByteArray 47	// Cannot convert that to a byte array
+#define unknownDatatype			48	// Unknown datatype
+#define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
+#define cannotUseRadioWithBLE	50	// Cannot use radio blocks or WiFi when board connected to IDE via Bluetooth
+#define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
+#define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
+#define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
 
@@ -210,7 +222,7 @@ int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void interpretStep();
-void yield();
+void taskSleep(int msecs);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
@@ -251,9 +263,10 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
-int serialConnected();
+int ideConnected();
 int recvBytes(uint8 *buf, int count);
-int sendByte(char aByte);
+int sendBytes(uint8 *buf, int start, int end);
+void captureIncomingBytes();
 void restartSerial();
 
 const char *boardType();
@@ -270,6 +283,7 @@ int pinCount();
 int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
+int hasI2CPullups();
 void updateMicrobitDisplay();
 void checkButtons();
 void resetRadio();
@@ -336,6 +350,23 @@ void tftClear();
 void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
 
+// BLE Support
+
+extern int BLE_connected_to_IDE;
+extern char BLE_ThreeLetterID[4];
+
+void BLE_initThreeLetterID();
+void BLE_start();
+void BLE_stop();
+
+void BLE_pauseAdvertising();
+void BLE_resumeAdvertising();
+
+void BLE_setEnabled(int enableFlag);
+int BLE_isEnabled();
+
+void getMACAddress(uint8 *sixBytes);
+
 // Primitive Sets
 
 void addDataPrims();
@@ -344,6 +375,7 @@ void addFilePrims();
 void addIOPrims();
 void addMiscPrims();
 void addNetPrims();
+void addBLEPrims();
 void addRadioPrims();
 void addSensorPrims();
 void addSerialPrims();
@@ -351,6 +383,7 @@ void addTFTPrims();
 void addVarPrims();
 void addHIDPrims();
 void addOneWirePrims();
+void addCameraPrims();
 
 // Named Primitive Support
 

@@ -1,0 +1,150 @@
+module 'Pulse (MAX30105)' Input
+author MicroBlocks
+version 1 1 
+description ''
+variables _max30105_addr _max30105_threshold _max30105_BPM _max30105_lastBeatTime _max30105_state _max30105_min _max30105_max _max30105_recentSamples 
+
+  spec ' ' 'max30105_initialize' 'MAX30105 initialize threshold _' 'num' 130
+  spec 'r' 'max30105_BMP' 'MAX30105 pulse (beats/minute)'
+  space
+  spec ' ' '_max30105_loop' '_max30105_loop'
+  spec ' ' '_max30105_readAndProcessData' '_max30105_readAndProcessData'
+  spec ' ' '_max30105_detectPeaks' '_max30105_detectPeaks _' 'num' 0
+  spec ' ' '_max30105_computeBPM' '_max30105_computeBPM'
+  space
+  spec ' ' '_max30105_click' '_max30105_click'
+  spec 'r' '_max30105_recentAverage' '_max30105_recentAverage _' 'auto' '10'
+  spec ' ' '_max30105_bitMask' '_max30105_bitMask _ _ _' 'auto auto auto' 0 0 0
+
+to '_max30105_bitMask' reg mask thing {
+  local 'var' (i2cGet _max30105_addr reg)
+  var = (var & mask)
+  i2cSet _max30105_addr reg (var | thing)
+}
+
+to '_max30105_click' {
+  comment 'Databot: pin 32'
+  digitalWriteOp 32 true
+  waitMillis 1
+  digitalWriteOp 32 false
+}
+
+to '_max30105_computeBPM' {
+  local 'now' (millisOp)
+  local 'beatMSecs' (now - _max30105_lastBeatTime)
+  _max30105_lastBeatTime = now
+  if (beatMSecs > 200) {
+    _max30105_BPM = (60000 / beatMSecs)
+  }
+}
+
+to '_max30105_detectPeaks' sample {
+  local 'peakGraph' 0
+  if (0 == _max30105_state) {
+    _max30105_state = 'find max'
+  }
+  local 'smoothedSample' ('_max30105_recentAverage' sample)
+  if ('find max' == _max30105_state) {
+    if (sample > _max30105_max) {
+      _max30105_max = smoothedSample
+    } (sample < (_max30105_max - _max30105_threshold)) {
+      _max30105_state = 'find min'
+      _max30105_min = smoothedSample
+      '_max30105_computeBPM'
+      '_max30105_click'
+      peakGraph = 2000
+    }
+  } ('find min' == _max30105_state) {
+    if (sample < _max30105_min) {
+      _max30105_min = smoothedSample
+    } (sample > (_max30105_min + _max30105_threshold)) {
+      _max30105_state = 'find max'
+      _max30105_max = smoothedSample
+    }
+  }
+  if (((millisOp) - _max30105_lastBeatTime) > 3000) {
+    comment 'Set BPM to zero if no beats detected in the past few seconds'
+    _max30105_BPM = 0
+  }
+  comment 'Make this true to graph for debugging...'
+  if false {
+    printIt peakGraph (smoothedSample - _max30105_min)
+  }
+}
+
+to '_max30105_loop' {
+  forever {
+    '_max30105_readAndProcessData'
+    waitMillis 20
+  }
+}
+
+to '_max30105_readAndProcessData' {
+  local 'writePtr' (i2cGet _max30105_addr 4)
+  local 'readPtr' (i2cGet _max30105_addr 6)
+  local 'count' (writePtr - readPtr)
+  if (count == 0) {
+    return 0
+  } (count < 0) {
+    count += 32
+  }
+  local 'data' (newList ((minimum count 10) * 3))
+  '[sensors:i2cWrite]' _max30105_addr 7
+  '[sensors:i2cRead]' _max30105_addr data
+  local 'i' 1
+  repeatUntil (i > (size data)) {
+    local 'ir value' ((((at i data) & 3) << 16) | (((at (i + 1) data) << 8) | (at (i + 2) data)))
+    '_max30105_detectPeaks' (v 'ir value')
+    i += 3
+  }
+}
+
+to '_max30105_recentAverage' newSample {
+  if (_max30105_recentSamples == 0) {_max30105_recentSamples = (newList 5)}
+  '[data:delete]' 1 _max30105_recentSamples
+  '[data:addLast]' newSample _max30105_recentSamples
+  local 'sum' 0
+  for s _max30105_recentSamples {
+    sum += s
+  }
+  return (sum / (size _max30105_recentSamples))
+}
+
+to max30105_BMP {
+  if (_max30105_addr == 0) {max30105_initialize 130}
+  return _max30105_BPM
+}
+
+to max30105_initialize threshold {
+  _max30105_addr = (hexToInt '57')
+  local 'id' (i2cGet _max30105_addr (hexToInt 'FF'))
+  if (id != (hexToInt '15')) {
+    sayIt 'MAX30105 is not connected'
+    return 0
+  }
+  _max30105_threshold = threshold
+  comment 'soft reset'
+  '_max30105_bitMask' (hexToInt '09') (hexToInt 'BF') (hexToInt '40')
+  waitMillis 150
+  comment 'average of 4 selected'
+  '_max30105_bitMask' (hexToInt '08') (hexToInt '1F') (hexToInt '40')
+  comment 'enableFIFORollover'
+  '_max30105_bitMask' (hexToInt '08') (hexToInt 'EF') (hexToInt '10')
+  comment 'ledMode 2 - heart only'
+  '_max30105_bitMask' (hexToInt '09') (hexToInt 'F8') (hexToInt '2')
+  comment 'ADC range 4096'
+  '_max30105_bitMask' (hexToInt '0A') (hexToInt '9F') (hexToInt '20')
+  comment 'Sample rate 400'
+  '_max30105_bitMask' (hexToInt '0A') (hexToInt 'E3') (hexToInt '0C')
+  comment 'Pulse width 411'
+  '_max30105_bitMask' (hexToInt '0A') (hexToInt 'FC') (hexToInt '03')
+  comment 'LED pulse amplitudes'
+  i2cSet _max30105_addr (hexToInt '0C') (hexToInt '1F')
+  i2cSet _max30105_addr (hexToInt '0D') (hexToInt '1F')
+  '_max30105_bitMask' (hexToInt '11') (hexToInt 'F8') (hexToInt '01')
+  '_max30105_bitMask' (hexToInt '11') (hexToInt '8F') ((hexToInt '02') << 4)
+  i2cSet _max30105_addr (hexToInt '04') 0
+  i2cSet _max30105_addr (hexToInt '05') 0
+  sendBroadcast '_max30105_loop'
+}
+

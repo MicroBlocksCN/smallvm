@@ -1,13 +1,15 @@
-module 'Air Pressure (LPS22HB)' Output
+module 'Air Pressure (LPS22HB)' Input
 author MicroBlocks
-version 1 2 
+version 1 4 
 description 'Sense air pressure and altitude with the LPS22HB air pressure sensor.
 The altimeter can either report changes relative to the starting altitude. If calibrated to a known starting altitude, it can report absolute altitude.'
 variables _lps22hb_basePressure _lps22hb_baseAltitude 
 
   spec 'r' 'lps22hb_airPressureMbar' 'air pressure (mBar)'
+  spec 'r' 'lps22hb_airPressurePSI' 'air pressure (PSI x10)'
   space
-  spec ' ' 'lps22hb_setBaseAltitude' 'set base altitude _ meters' 'num' 0
+  spec ' ' 'lps22hb_setBaseAltitude' 'set current altitude _ meters' 'num' 0
+  spec ' ' 'lps22hb_setBasePressure' 'set base pressure (mBar x10) _ at _ meters' 'num num' 1013 0
   spec 'r' 'lps22hb_altitudeCentimeters' 'altitude (cm)'
   spec 'r' 'lps22hb_altitudeFeet' 'altitude (feet)'
   space
@@ -19,11 +21,11 @@ variables _lps22hb_basePressure _lps22hb_baseAltitude
 
 to '_lps22hb_altitudeMillimeters' {
   if (_lps22hb_basePressure == 0) {
-    comment 'if base altitude not set, use zero (useful for relative measurments)' ,
+    comment 'if base altitude not set, use zero (useful for relative measurments)'
     lps22hb_setBaseAltitude 0
   }
   mmChange = ('[misc:pressureToAltitude]' _lps22hb_basePressure ('_lps22hb_rawPressure'))
-  return ((1000 * baseMeters) + mmChange)
+  return ((1000 * _lps22hb_baseAltitude) + mmChange)
 }
 
 to '_lps22hb_rawPressure' {
@@ -53,6 +55,10 @@ to lps22hb_airPressureMbar {
   return (('_lps22hb_rawPressure') / 4096)
 }
 
+to lps22hb_airPressurePSI {
+  return (('_lps22hb_rawPressure') / 28241)
+}
+
 to lps22hb_altitudeCentimeters {
   return (('_lps22hb_altitudeMillimeters') / 10)
 }
@@ -75,6 +81,11 @@ to lps22hb_setBaseAltitude baseMeters {
   _lps22hb_baseAltitude = baseMeters
 }
 
+to lps22hb_setBasePressure basePressureMBar baseMeters {
+  _lps22hb_basePressure = ((basePressureMBar * 4096) / 10)
+  _lps22hb_baseAltitude = baseMeters
+}
+
 to lps22hb_temperature {
   local 'LPS22HB' (hexToInt '5C')
   i2cSet LPS22HB (hexToInt '11') 1
@@ -83,6 +94,10 @@ to lps22hb_temperature {
   result = (((i2cGet LPS22HB (hexToInt '2C')) << 8) | result)
   if (result >= 32768) {
     result = (result - 65536)
+  }
+  if ('Databot' == (boardType)) {
+    comment 'Adjust for extra heat from PC board'
+    result += -1230
   }
   return (result / 100)
 }

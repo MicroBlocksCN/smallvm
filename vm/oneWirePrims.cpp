@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(DATABOT) // only Databot for now
+#if defined(ARDUINO_ARCH_ESP32)
 
 #include <OneWire.h>
 

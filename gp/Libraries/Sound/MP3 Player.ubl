@@ -1,20 +1,29 @@
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 4 
-choices mp3PlayerType 'MakerBit/HyperDuino' DFRobot Octopus 
-description 'Support for Octopus (FN-M16P chip) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300 chip).
-Uses software serial via any digital pin on any board.
-Connect the player to TX pin of the board.'
-variables _mp3UseChecksum _mp3Pin 
+version 1 10 
+choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
+description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit/MakerPort) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
-  spec ' ' 'mp3_initialize' 'mp3 initialize _ pin _' 'menu.mp3PlayerType num' 'MakerBit/HyperDuino' 14
+Sends commands to MP3 player using software serial via any digital pin on any board.
+
+To use the "mp3 play ... until done" block, connect TX of MP3 player to a second pin and set that pin as the optional "rx pin" in the "mp3 initialize" block .
+'
+variables _mp3UseChecksum _mp3Pin _mp3RxPin 
+
+  spec ' ' 'mp3_initialize' 'mp3 initialize _ pin _ : rx pin _' 'menu.mp3PlayerType num num' 'MakerPort' 20 21
   spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
+  space
   spec ' ' 'mp3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
-  spec ' ' 'mp3_nextTrack' 'mp3 play next track in folder'
+  spec ' ' 'mp3_playTrackUntilDone' 'mp3 play track _ in folder _ until done' 'num num' 1 1
+  space
+  spec ' ' 'mp3_nextTrack' 'mp3 play next track'
   spec ' ' 'mp3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
+  space
   spec ' ' 'mp3_pause' 'mp3 pause'
   spec ' ' 'mp3_resume' 'mp3 resume'
+  space
   spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
+  spec ' ' '_mp3_waitForResponse' '_mp3_waitForResponse'
 
 to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
   if (_mp3UseChecksum == 0) {
@@ -22,10 +31,7 @@ to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
     return 0
   }
   if _mp3UseChecksum {
-    comment 'YX5300 chip (DFRobot,HyperDuino,MakerBit); no checksum'
-    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 (hexToInt 'EF'))
-  } else {
-    comment 'FN-M16P chip (Octopus MP3Player); compute checksum'
+    comment 'Include checksum (10 bytes total)'
     local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 0 0 (hexToInt 'EF'))
     local 'sum' 0
     for i 6 {
@@ -34,28 +40,55 @@ to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
     sum = (65536 - sum)
     atPut 8 msg ((sum >> 8) & 255)
     atPut 9 msg (sum & 255)
+  } else {
+    comment 'No checksum (8 bytes total)'
+    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 (hexToInt 'EF'))
   }
   comment 'Send the command'
   for byte msg {
     '[io:softWriteByte]' byte _mp3Pin 9600
   }
-  waitMillis 20
+  waitMillis 100
 }
 
-to mp3_initialize type pin {
-  _mp3UseChecksum = ('Octopus' == type)
+to '_mp3_waitForResponse' {
+  comment 'Wait for a response on _mp3RxPin.
+Note: a low value on _mp3RxPin is the start of a response message.
+We do not read the actual message but wait 20 bytes worth of time.'
+  if (_mp3RxPin >= 0) {
+    local 'endTime' ((millisOp) + 3000)
+    repeatUntil (not (digitalReadOp _mp3RxPin)) {
+      if ((millisOp) > endTime) {return 0}
+    }
+    waitMillis 21
+  } else {
+    comment 'RX pin not set so just wait a few seconds.'
+    waitMillis 3000
+  }
+}
+
+to mp3_initialize type pin optionalRxPin {
+  _mp3UseChecksum = ('Octopus' != type)
   _mp3Pin = pin
+  _mp3RxPin = -1
+  if ((pushArgCount) > 2) {
+    _mp3RxPin = optionalRxPin
+  }
   comment 'Reset'
   '_mp3_sendMP3Cmd' '0x0C' 0 0
-  waitMillis 1000
-  comment 'Set initial volume.'
-  mp3_setVolume 20
+  if (_mp3RxPin >= 0) {
+    '_mp3_waitForResponse'
+  } else {
+    waitMillis 1000
+  }
 }
 
 to mp3_nextTrack {
   comment 'Skip to the next track in the current folder, wrapping back to the first track.'
-  '_mp3_sendMP3Cmd' '0x01' 0 0
-  waitMillis 100
+  mp3_pause
+  comment 'Disable folder repeat'
+  '_mp3_sendMP3Cmd' '0x08' 0 0
+  waitMillis 50
   '_mp3_sendMP3Cmd' '0x01' 0 0
 }
 
@@ -76,6 +109,19 @@ This sets the folder for the "play next track in folder" command.'
   } else {
     comment 'Play track in folder'
     '_mp3_sendMP3Cmd' '0x0F' folderNum trackNum
+    comment 'Hack: Send command twice to increase reliability on MakerPort v1.00'
+    '_mp3_sendMP3Cmd' '0x0F' folderNum trackNum
+  }
+}
+
+to mp3_playTrackUntilDone trackNum folderNum {
+  if (_mp3RxPin < 0) {sayIt 'To use this feature, set the RX pin in "mp3 initialize".'}
+  mp3_playTrack trackNum folderNum
+  if (_mp3RxPin >= 0) {
+    waitUntil (not (digitalReadOp _mp3RxPin))
+  } else {
+    comment 'RX pin not set so just wait a few seconds.'
+    waitMillis 5000
   }
 }
 

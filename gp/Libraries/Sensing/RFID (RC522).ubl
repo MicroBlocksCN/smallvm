@@ -1,6 +1,6 @@
 module 'RFID (RC522)' Input
 author MicroBlocks
-version 1 3 
+version 1 4 
 description 'Support for RC522 RFID card with I2C and SPI interfaces.
 Based on José Garcia RC522 MicroBlocks library which itself was based on:
         https://github.com/m5stack/UIFlow-Code/blob/master/units/_rfid.py
@@ -17,9 +17,12 @@ variables _rc522_mode _rc522_i2cAddr _rc522_initialized _rc522_nssPin
   spec ' ' 'rc522_initialize_I2C' 'RC522 initialize I2C addr _' 'num' 40
   spec ' ' 'rc522_initialize_SPI' 'RC522 initialize SPI ssPin _' 'num' 17
   spec 'r' 'rc522_connected' 'RC522 is connected'
+  space
   spec 'r' 'rc522_card_present' 'RC522 is card present'
   spec 'r' 'rc522_read_uid' 'RC522 card UID'
+  space
   spec 'r' 'rc522_equal_ids' 'RC522 _ = _' 'auto auto' 'uid1' 'uid2'
+  space
   spec ' ' '_rc522_antenna_on' '_rc522_antenna_on'
   spec 'r' '_rc522_request' '_rc522_request'
   spec 'r' '_rc522_send_to_card' '_rc522_send_to_card _ _' 'auto auto' 0 'list'
@@ -111,7 +114,15 @@ to rc522_card_present {
 
 to rc522_connected {
   local 'version' ('_rc522_read_reg' (hexToInt '37'))
-  return (('[data:find]' version ('[data:makeList]' 21 136 144 145 146)) > 0)
+  if (('[data:find]' version ('[data:makeList]' 21 136 144 145 146 178)) > 0) {
+    return true
+  } (version > 0) {
+    sayIt 'Unknown RC522 Version:' version
+    waitMillis 1000
+    return true
+  } else {
+    return false
+  }
 }
 
 to rc522_equal_ids id1 id2 {

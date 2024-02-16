@@ -230,6 +230,7 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 			addPart (morph scriptsPane) (morph block)
 		}
 	}
+	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method addGlobalsFor MicroBlocksExchange script parameterNames {

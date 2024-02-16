@@ -2,7 +2,7 @@ RTL
 true
 
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -29,6 +29,12 @@ button A
 button B
 زر ب
 
+timer
+--MISSING--
+
+reset timer
+--MISSING--
+
 microseconds
 ميكروثانية
 
@@ -38,6 +44,9 @@ milliseconds
 board type
 نوع اللوحة
 
+connected to IDE
+--MISSING--
+
 Pins
 المنافذ
 
@@ -46,6 +55,9 @@ read digital pin _
 
 read analog pin _
 قراءة المنفذ التناظري _
+
+pullup _
+--MISSING--
 
 set digital pin _ to _
 جعل المنفذ الرقمي _ يساوي _
@@ -80,11 +92,11 @@ wait _ millisecs
 if _ _
 إذا _ _
 
-else if _ _
-آخر إذا _ _
-
 if _ _ else _
 إذا _ _ آخر _
+
+else if _ _
+آخر إذا _ _
 
 else
 آخر
@@ -104,11 +116,23 @@ return _
 when _ received
 عند تلقي _
 
+go!
+--MISSING--
+
 broadcast _
 نشر _
 
 comment _
 تعليق _
+
+How this works...
+--MISSING--
+
+range _ to _
+--MISSING--
+
+by _
+--MISSING--
 
 for _ in _ _
 ل _ في _ _
@@ -128,6 +152,24 @@ stop all
 last message
 --MISSING--
 
+arg _ default _
+--MISSING--
+
+default
+--MISSING--
+
+call _
+--MISSING--
+
+function name
+--MISSING--
+
+parameter list
+--MISSING--
+
+with _
+--MISSING--
+
 Operators
 --MISSING--
 
@@ -136,6 +178,12 @@ _ mod _
 
 abs _
 قيمه مطلقه _
+
+min _ _
+--MISSING--
+
+max _ _
+--MISSING--
 
 random _ to _
 رقم عشوائي من _ إلى _
@@ -158,6 +206,9 @@ or _
 _ is a _
 --MISSING--
 
+convert _ to _
+--MISSING--
+
 boolean
 --MISSING--
 
@@ -170,7 +221,13 @@ string
 list
 --MISSING--
 
+byte array
+--MISSING--
+
 Advanced:
+--MISSING--
+
+rescale _ from ( _ , _ ) to ( _ , _ )
 --MISSING--
 
 hex _
@@ -207,6 +264,18 @@ Data
 list
 --MISSING--
 
+cat
+--MISSING--
+
+dog
+--MISSING--
+
+bird
+--MISSING--
+
+fish
+--MISSING--
+
 length of _
 طول _
 
@@ -226,6 +295,9 @@ join _ _
 --MISSING--
 
 copy _ from _
+--MISSING--
+
+smiles
 --MISSING--
 
 to _
@@ -255,10 +327,34 @@ new list length _
 new byte array _
 --MISSING--
 
+as byte array _
+--MISSING--
+
+aByteListOrString
+--MISSING--
+
+with all _
+--MISSING--
+
 free memory
 --MISSING--
 
+all
+--MISSING--
+
+last
+--MISSING--
+
+random
+--MISSING--
+
+split _ by _
+--MISSING--
+
 My Blocks
+--MISSING--
+
+Generic
 --MISSING--
 
 # Buttons on top of "My Blocks" category
@@ -294,6 +390,45 @@ spi بعث _
 
 spi receive
 spi إستلم
+
+spi setup speed _
+--MISSING--
+
+mode _
+--MISSING--
+
+rpi channel _
+--MISSING--
+
+spi exchange bytes _
+--MISSING--
+
+aByteArray
+--MISSING--
+
+serial open _ baud
+--MISSING--
+
+serial close
+--MISSING--
+
+serial read
+--MISSING--
+
+serial write _
+--MISSING--
+
+anIntegerStringListOrByteArray
+--MISSING--
+
+serial write _ starting at _
+--MISSING--
+
+aStringListOrByteArray
+--MISSING--
+
+soft serial write byte _ pin _ baud _
+--MISSING--
 
 print _
 طبع _
@@ -346,8 +481,14 @@ radio send number _
 radio send string _
 أرسل عبر الراديو سلسلة _
 
+Hello!
+--MISSING--
+
 radio send pair _ = _
 أرسل عبر الراديو زوج _ = _
+
+light
+--MISSING--
 
 radio message received?
 وصلت الرسالة عبر الراديو؟
@@ -361,8 +502,8 @@ radio last string
 radio last message type
 راديو نوع الرسالة الماضية
 
-radio set group _
-راديو ضبط مجموعة _
+radio set group _ (0-255)
+--MISSING--
 
 radio set channel (0-83) _
 راديو ضبط قناة (0-83) _
@@ -407,6 +548,12 @@ light level
 temperature (°C)
 درجة الحرارة (درجة مئوية)
 
+magnetic field
+--MISSING--
+
+set acceleration range _ g = 100
+--MISSING--
+
 ####
 # NeoPixel library
 
@@ -428,6 +575,12 @@ set all NeoPixels color _
 rotate NeoPixels by _
 rotate NeoPixels by _
 
+brighten NeoPixel _ by _
+--MISSING--
+
+brighten all NeoPixels by _
+--MISSING--
+
 color r _ g _ b _ (0-255)
 اللون أحمر _ أخضر _ أزرق _
 
@@ -444,6 +597,56 @@ PIR
 --MISSING--
 
 PIR at pin _ detected movement
+--MISSING--
+
+#### NeoPanel library
+
+NeoPanel
+--MISSING--
+
+attach NeoPixel panel width _ height _ at pin _
+--MISSING--
+
+NeoPanel set x _ y _ color _
+--MISSING--
+
+NeoPanel fill column _ color _
+--MISSING--
+
+NeoPanel fill row _ color _
+--MISSING--
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+--MISSING--
+
+NeoPanel draw text _ at x _ y _ color _
+--MISSING--
+
+NeoPanel draw BMP file _ at x _ y _
+--MISSING--
+
+####
+# Microphone library
+
+Microphone
+--MISSING--
+
+microphone
+--MISSING--
+
+turn on microphone
+--MISSING--
+
+loudness
+--MISSING--
+
+clap count
+--MISSING--
+
+set clap threshold _
+--MISSING--
+
+estimate clap threshold
 --MISSING--
 
 ####
@@ -644,6 +847,178 @@ test IR
 attach IR receiver to pin _
 --MISSING--
 
+IR transmit device _ command _
+--MISSING--
+
+####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+--MISSING--
+
+press key _ : while holding _
+--MISSING--
+
+hold key _
+--MISSING--
+
+release key _
+--MISSING--
+
+release all keys
+--MISSING--
+
+Shift
+--MISSING--
+
+Control
+مراقبة
+
+Alt / ⌥
+--MISSING--
+
+Logo / ⌘
+--MISSING--
+
+AltGr 
+--MISSING--
+
+enter
+--MISSING--
+
+return
+--MISSING--
+
+tab
+--MISSING--
+
+backspace
+--MISSING--
+
+delete
+حذف
+
+insert
+--MISSING--
+
+home
+--MISSING--
+
+end
+--MISSING--
+
+PgUp
+--MISSING--
+
+PgDown
+--MISSING--
+
+CapsLock
+--MISSING--
+
+NumLock
+--MISSING--
+
+ScrollLock
+--MISSING--
+
+PrintScreen
+--MISSING--
+
+ESC
+--MISSING--
+
+_ mouse click
+--MISSING--
+
+left
+--MISSING--
+
+right
+--MISSING--
+
+middle
+--MISSING--
+
+both
+--MISSING--
+
+move mouse pointer by _ , _
+--MISSING--
+
+scroll mouse by _
+--MISSING--
+
+hold _ mouse button
+--MISSING--
+
+release mouse buttons
+--MISSING--
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+--MISSING--
+
+list _ contains _
+--MISSING--
+
+circular item _ of _
+--MISSING--
+
+aListOrString
+--MISSING--
+
+map _ over _
+--MISSING--
+
+aFunction
+--MISSING--
+
+filter _ with _
+--MISSING--
+
+pick _ from _
+--MISSING--
+
+a few
+--MISSING--
+
+some
+--MISSING--
+
+most
+--MISSING--
+
+reverse _
+--MISSING--
+
+shuffle _
+--MISSING--
+
+sort _
+--MISSING--
+
+shuffled _
+--MISSING--
+
+reversed _
+--MISSING--
+
+sorted _
+--MISSING--
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+--MISSING--
+
+start BLE Keyboard
+--MISSING--
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
@@ -660,6 +1035,9 @@ Scrolling
 --MISSING--
 
 scroll text _
+--MISSING--
+
+HELLO ROSA!
 --MISSING--
 
 scroll number _
@@ -700,6 +1078,9 @@ display _
 clear display
 مسح الشاشة
 
+set display color _
+--MISSING--
+
 plot x _ y _
 رسم س _ ص _
 
@@ -707,6 +1088,60 @@ unplot x _ y _
  محو رسم س _ ص _
 
 display character _
+--MISSING--
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+--MISSING--
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+--MISSING--
+
+write _ at x _ y _ inverse _
+--MISSING--
+
+show display buffer
+--MISSING--
+
+clear
+--MISSING--
+
+set contrast (1-4) _
+--MISSING--
+
+draw circle at x _ y _ radius _ erase _
+--MISSING--
+
+draw image _ at x _ y _
+--MISSING--
+
+draw line from x _ y _ to x _ y _ erase _
+--MISSING--
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+--MISSING--
+
+fill rectangle x _ y _ w _ h _ erase _
+--MISSING--
+
+_flip display top _
+--MISSING--
+
+make image _
+--MISSING--
+
+set pixel x _ y _ erase _
+--MISSING--
+
+set video _
+--MISSING--
+
+cursor location
+--MISSING--
+
+defer display updates
 --MISSING--
 
 ####
@@ -745,7 +1180,74 @@ filled _
 write _ on TFT at x _ y _ color _
 --MISSING--
 
+Hello World!
+--MISSING--
+
 scale _ wrap _
+--MISSING--
+
+####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _ at x _ y _
+--MISSING--
+
+image.bmp
+--MISSING--
+
+####
+# HSV color library
+
+HSV Colors
+--MISSING--
+
+RGB of hue _ saturation _ brightness _ (0-100)
+--MISSING--
+
+####
+# Fractions library
+
+Fractions
+--MISSING--
+
+fract _ / _
+--MISSING--
+
+fract _ + _
+--MISSING--
+
+fract _ - _
+--MISSING--
+
+fract _ × _
+--MISSING--
+
+fract _ = _
+--MISSING--
+
+fract _ < _
+--MISSING--
+
+fract _ > _
+--MISSING--
+
+simplify fraction _
+--MISSING--
+
+integer part of fraction _
+--MISSING--
+
+numerator of fraction _
+--MISSING--
+
+denominator of fraction _
+--MISSING--
+
+gcd _ _
+--MISSING--
+
+lcm _ _
 --MISSING--
 
 ####
@@ -765,6 +1267,594 @@ play frequency _ for _ ms
 --MISSING--
 
 play midi key _ for _ ms
+--MISSING--
+
+start tone _ Hz
+--MISSING--
+
+stop tone
+--MISSING--
+
+c
+--MISSING--
+
+c#
+--MISSING--
+
+d
+--MISSING--
+
+d#
+--MISSING--
+
+e
+--MISSING--
+
+f
+--MISSING--
+
+f#
+--MISSING--
+
+g
+--MISSING--
+
+g#
+--MISSING--
+
+a
+--MISSING--
+
+a#
+--MISSING--
+
+b
+--MISSING--
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+--MISSING--
+
+play ringtone _
+--MISSING--
+
+current song name
+--MISSING--
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+--MISSING--
+
+pluck note _ octave _ for _ ms
+--MISSING--
+
+pluck MIDI key _ for _ msecs
+--MISSING--
+
+set pluck pin _
+--MISSING--
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+--MISSING--
+
+filename
+--MISSING--
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+--MISSING--
+
+set tempo to _ bpm at _ / _ signature
+--MISSING--
+
+start counting _ bars
+--MISSING--
+
+stop counting
+--MISSING--
+
+wait until next _
+--MISSING--
+
+current beat
+--MISSING--
+
+current bar
+--MISSING--
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+--MISSING--
+
+Bass Drum 1
+--MISSING--
+
+Side Stick
+--MISSING--
+
+Acoustic Snare
+--MISSING--
+
+Hand Clap
+--MISSING--
+
+Electric Snare
+--MISSING--
+
+Low Floor Tom
+--MISSING--
+
+Closed Hi-Hat
+--MISSING--
+
+High Floor Tom
+--MISSING--
+
+Pedal Hi-Hat
+--MISSING--
+
+Low Tom
+--MISSING--
+
+Open Hi-Hat
+--MISSING--
+
+Low-Mid Tom
+--MISSING--
+
+Hi-Mid Tom
+--MISSING--
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+--MISSING--
+
+Ride Cymbal 1
+--MISSING--
+
+Chinese Cymbal
+--MISSING--
+
+Ride Bell
+--MISSING--
+
+Tambourine 
+--MISSING--
+
+Splash Cymbal
+--MISSING--
+
+Cowbell 
+--MISSING--
+
+Crash Cymbal 2
+--MISSING--
+
+Vibraslap 
+--MISSING--
+
+Ride Cymbal 2
+--MISSING--
+
+Hi Bongo
+--MISSING--
+
+Low Bongo
+--MISSING--
+
+Mute Hi Conga
+--MISSING--
+
+Open Hi Conga
+--MISSING--
+
+Low Conga
+--MISSING--
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+--MISSING--
+
+effect 2
+--MISSING--
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
 --MISSING--
 
 ####
@@ -836,10 +1926,19 @@ next line of file _
 next _ bytes of file _
 --MISSING--
 
+read into _ from file _
+--MISSING--
+
+a ByteArray
+--MISSING--
+
 starting at _
 --MISSING--
 
 file names
+--MISSING--
+
+in directory _
 --MISSING--
 
 size of file _
@@ -849,18 +1948,103 @@ file system info
 --MISSING--
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+--MISSING--
+
+_ is a digit
+--MISSING--
+
+_ is lowercase
+--MISSING--
+
+_ is uppercase
+--MISSING--
+
+_ begins with _
+--MISSING--
+
+prefix
+--MISSING--
+
+pre
+--MISSING--
+
+_ ends with _
+--MISSING--
+
+suffix
+--MISSING--
+
+fix
+--MISSING--
+
+_ contains _
+--MISSING--
+
+lowercase _
+--MISSING--
+
+THIS is a String! :)
+--MISSING--
+
+uppercase _
+--MISSING--
+
+Hello, world!
+--MISSING--
+
+_ without white space
+--MISSING--
+
+join string list _ separator _
+--MISSING--
+
+unicodes _
+--MISSING--
+
+aString
+--MISSING--
+
+string from unicodes _
+--MISSING--
+
+aList
+--MISSING--
+
+num2str _
+--MISSING--
+
+str2num _
+--MISSING--
+
+####
 # WiFi library
 
 WiFi
 --MISSING--
 
-wifi connect to _ password _ try _ times
+wifi connect to _ password _
+--MISSING--
+
+Network_Name
+--MISSING--
+
+IP _ gateway _ subnet _
 --MISSING--
 
 wifi create hotspot _ password _
 --MISSING--
 
+Network_Password
+--MISSING--
+
 IP address
+--MISSING--
+
+MAC address
 --MISSING--
 
 ####
@@ -954,6 +2138,15 @@ bmx280 pressure
 bme280 humidity
 --MISSING--
 
+bmx280 set base altitude _ meters
+--MISSING--
+
+bmx280 altitude (cm)
+--MISSING--
+
+bmx280 altitude (feet)
+--MISSING--
+
 ####
 # TCS34725 color sensor
 
@@ -994,13 +2187,40 @@ get PN532 firmware version
 --MISSING--
 
 ####
-# HTTP libraries
+# Touch Screen
+
+Touch Screen
+--MISSING--
+
+TFT touched
+--MISSING--
+
+TFT touch X position
+--MISSING--
+
+TFT touch Y position
+--MISSING--
+
+TFT touch pressure
+--MISSING--
+
+####
+# HTTP Client
 
 HTTP client
 --MISSING--
 
 _ data _ to http܃// _
 --MISSING--
+
+MicroBlocks is fun
+--MISSING--
+
+port _
+--MISSING--
+
+####
+# HTTP Server
 
 HTTP server
 --MISSING--
@@ -1017,6 +2237,9 @@ respond _ to HTTP request
 with body _
 --MISSING--
 
+Welcome to the MicroBlocks HTTP server
+--MISSING--
+
 and headers _
 --MISSING--
 
@@ -1026,7 +2249,40 @@ body of request _
 path of request _
 --MISSING--
 
+headers of request _
+--MISSING--
+
 method of request _
+--MISSING--
+
+content length of request _
+--MISSING--
+
+####
+# WebSocket server
+
+WebSocket server
+--MISSING--
+
+start WebSocket server
+--MISSING--
+
+last WebSocket event
+--MISSING--
+
+client ID for WebSocket event _
+--MISSING--
+
+payload for WebSocket event _
+--MISSING--
+
+type of WebSocket event _
+--MISSING--
+
+send _ to WebSocket client _
+--MISSING--
+
+Hello, Client!
 --MISSING--
 
 ####
@@ -1077,6 +2333,589 @@ event definitions JSON
 events JSON
 --MISSING--
 
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+--MISSING--
+
+MiKe _ obstacle ?
+--MISSING--
+
+MiKe black line on _ ?
+--MISSING--
+
+MiKe back light
+--MISSING--
+
+MiKe IR
+--MISSING--
+
+MiKe digital D8 sensor
+--MISSING--
+
+MiKe stop motors
+--MISSING--
+
+MiKe Robot go _ at _ %
+--MISSING--
+
+MiKe Robot speed _ %
+--MISSING--
+
+MiKe Robot direction _
+--MISSING--
+
+MiKe turn _ motor _
+--MISSING--
+
+MiKe speed _ motor at _ %
+--MISSING--
+
+MiKe front lights off
+--MISSING--
+
+MiKe front lights to _
+--MISSING--
+
+MiKe circle lights off
+--MISSING--
+
+MiKe circle ligths to _
+--MISSING--
+
+MiKe circle light _ (1-18) to _
+--MISSING--
+
+MiKe rotate lights by _
+--MISSING--
+
+MiKe digital D8 to _
+--MISSING--
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+--MISSING--
+
+plotter move _ steps
+--MISSING--
+
+plotter turn _ degrees
+--MISSING--
+
+plotter turn _ / _ of circle
+--MISSING--
+
+plotter point in direction _
+--MISSING--
+
+plotter pen down
+--MISSING--
+
+plotter pen up
+--MISSING--
+
+plotter stop
+--MISSING--
+
+set plotter speed to _ %
+--MISSING--
+
+####
+# Innova Didactic libraries
+
+red
+--MISSING--
+
+yellow
+--MISSING--
+
+green
+--MISSING--
+
+forward
+--MISSING--
+
+backward
+--MISSING--
+
+turn right
+--MISSING--
+
+turn left
+--MISSING--
+
+stop
+--MISSING--
+
+right sensor
+--MISSING--
+
+left sensor
+--MISSING--
+
+both sensors
+--MISSING--
+
+TdR test buzzer
+--MISSING--
+
+TdR set blue LED _
+--MISSING--
+
+TdR set red LED _
+--MISSING--
+
+TdR set RGB LED _
+--MISSING--
+
+TdR clear RGB LED
+--MISSING--
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+--MISSING--
+
+TdR rotation
+--MISSING--
+
+TdR light level
+--MISSING--
+
+TdR button 1
+--MISSING--
+
+TdR button 2
+--MISSING--
+
+TdR receive IR code
+--MISSING--
+
+Imagina set _ led to _
+--MISSING--
+
+Imagina play _ octave _ for _ ms
+--MISSING--
+
+Imagina temperature (°C)
+--MISSING--
+
+Imagina light
+--MISSING--
+
+Imagina distance (cm)
+--MISSING--
+
+Imagina button (D2) pressed?
+--MISSING--
+
+Imagina digital reading _
+--MISSING--
+
+Imagina analog reading A1
+--MISSING--
+
+Imagina set digital pin _ to _
+--MISSING--
+
+Imagina stop servo _
+--MISSING--
+
+Imagina set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Imagina set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Imagina set _ speed to _ %
+--MISSING--
+
+Imagina set _ to _
+--MISSING--
+
+Imagina IR reading
+--MISSING--
+
+Imagina IR transmit device _ command _
+--MISSING--
+
+_ steps
+--MISSING--
+
+at _ % speed
+--MISSING--
+
+3dBot set speed at _ %
+--MISSING--
+
+3dBot obstacle < _ cm?
+--MISSING--
+
+3dBot line on _ ?
+--MISSING--
+
+####
+# MQTT
+
+MQTT connect to broker _
+--MISSING--
+
+buffer sizes _ client id _
+--MISSING--
+
+username _ password _
+--MISSING--
+
+MQTT connected
+--MISSING--
+
+MQTT disconnect
+--MISSING--
+
+MQTT sub _
+--MISSING--
+
+testTopic
+--MISSING--
+
+MQTT unsub _
+--MISSING--
+
+MQTT pub topic _ payload _
+--MISSING--
+
+Hello!
+--MISSING--
+
+retain _ QoS _
+--MISSING--
+
+MQTT event
+--MISSING--
+
+binary _
+--MISSING--
+
+topic for MQTT event _
+--MISSING--
+
+payload for MQTT event _
+--MISSING--
+
+MQTT set will topic _ payload _
+--MISSING--
+
+testWill
+--MISSING--
+
+Last will!
+--MISSING--
+
+buffer sizes _
+--MISSING--
+
+####
+# UDP
+
+UDP start port _
+--MISSING--
+
+UDP stop
+--MISSING--
+
+UDP send packet _ to ip _ port _
+--MISSING--
+
+UDP receive packet
+--MISSING--
+
+binary data _
+--MISSING--
+
+UDP remote IP address
+--MISSING--
+
+UDP remote port
+--MISSING--
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
+
+####
+# Cutebot
+
+Cutebot
+--MISSING--
+
+Cutebot set wheel left _ right _ (-100 to 100)
+--MISSING--
+
+Cutebot stop wheels
+--MISSING--
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Cutebot set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Cutebot set headlight _ to _
+--MISSING--
+
+Cutebot set NeoPixel _ to _
+--MISSING--
+
+Cutebot _ line sensor
+--MISSING--
+
+Cutebot sees line on left _ right _
+--MISSING--
+
+Cutebot distance (cm)
+--MISSING--
+
+left
+--MISSING--
+
+right
+--MISSING--
+
+both
+--MISSING--
+
+# Wukong
+
+Wukong
+--MISSING--
+
+Wukong set motor _ to _ (-100 to 100)
+--MISSING--
+
+Wukong stop motor _
+--MISSING--
+
+Wukong stop all
+--MISSING--
+
+Wukong set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Wukong set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Wukong set NeoPixels _ _ _ _
+--MISSING--
+
+Wukong set LED brightness to _
+--MISSING--
+
+####
+# Sphero-RVR
+
+wake
+--MISSING--
+
+sleep
+--MISSING--
+
+reset the yaw
+--MISSING--
+
+drive with speed _ and heading _
+--MISSING--
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+--MISSING--
+
+stop with heading _
+--MISSING--
+
+set RGB LED _ to red _ green _ blue _
+--MISSING--
+
+set all LEDs to red _ green _ blue _
+--MISSING--
+
+####
+# Joystick:bit
+
+button _ is pressed
+--MISSING--
+
+rocker value of _
+--MISSING--
+
+motor vibrate for _ ms
+--MISSING--
+
+####
+# NeZha
+
+NeZha
+--MISSING--
+
+NeZha set motor _ speed to _ %
+--MISSING--
+
+NeZha stop motor _
+--MISSING--
+
+NeZha stop all motors
+--MISSING--
+
+NeZha set _ servo _ angle to _
+--MISSING--
+
+NeZha set continuous rotation servo _ speed to _ %
+--MISSING--
+
+####
+# WuKong2040
+
+WuKong2040
+--MISSING--
+
+WuKong2040 rainbowLED _ color to _
+--MISSING--
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+--MISSING--
+
+WuKong2040 clear all rainbowLED
+--MISSING--
+
+WuKong2040 motor _ speed to _ (-100~100)
+--MISSING--
+
+WuKong2040 stop motor _
+--MISSING--
+
+WuKong2040 stop all motors
+--MISSING--
+
+WuKong2040 buzzer beep _ ms
+--MISSING--
+
+####
+# Octopus
+
+Octopus
+--MISSING--
+
+Octopus LED pin _ toggle to _
+--MISSING--
+
+Octopus LED pin _ brightness _ %
+--MISSING--
+
+Octopus motor fan pin _ speed to _ %
+--MISSING--
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+--MISSING--
+
+Octopus sonar trig _ echo _ distance (cm)
+--MISSING--
+
+Octopus value of light intensity (Lux) at pin _
+--MISSING--
+
+Octopus value of DHT11 temperature (°C) at pin _
+--MISSING--
+
+Octopus value of DHT11 humidity (0~100) at pin _
+--MISSING--
+
+Octopus value of water level (0~40mm) at pin _
+--MISSING--
+
+Octopus value of trimpot (0~1023) at pin _
+--MISSING--
+
+Octopus value of noise (dB) at pin _
+--MISSING--
+
+Octopus OLED show _ at x _ y _
+--MISSING--
+
+Octopus OLED clear
+--MISSING--
+
+Octopus OLED draw pixel x _ y _
+--MISSING--
+
+Octopus OLED draw line from x _ y _ to x _ y _
+--MISSING--
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+--MISSING--
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+--MISSING--
+
+Octopus OLED draw circle x _ y _ radius _
+--MISSING--
+
+Octopus OLED fill circle x _ y _ radius _
+--MISSING--
+
+
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1092,10 +2931,16 @@ Open
 Open from board
 --MISSING--
 
+Copy project URL to clipboard
+--MISSING--
+
 Information
 --MISSING--
 
 Plug in the board.
+--MISSING--
+
+Plug in the board and click the USB icon to connect.
 --MISSING--
 
 Reading project from board...
@@ -1116,11 +2961,23 @@ Save
 Connect
 وصل
 
+connect
+--MISSING--
+
+connect (BLE)
+--MISSING--
+
+open Boardie
+--MISSING--
+
 disconnect
 قطع الاتصال
 
 Serial port:
 منفذ تسلسلي:
+
+Connect board and try again
+--MISSING--
 
 other...
 غير...
@@ -1167,6 +3024,9 @@ No boards found; is your board plugged in?
 For AdaFruit boards, double-click reset button and try again.
 --MISSING--
 
+Only recent Chrome and Edge browsers support WebSerial.
+--MISSING--
+
 The board is not responding.
 اللوحة لا تستجيب.
 
@@ -1177,6 +3037,9 @@ The MicroBlocks in your board is not current
 --MISSING--
 
 Try to update MicroBlocks on the board?
+--MISSING--
+
+MicroBlocks
 --MISSING--
 
 Stop
@@ -1191,6 +3054,14 @@ Quit MicroBlocks?
 Discard current project?
 تجاهل المشروع الحالي؟
 
+# Scripting area right-click context menu
+
+set block size...
+--MISSING--
+
+make blocks bigger or smaller
+--MISSING--
+
 clean up
 تنظيف
 
@@ -1200,7 +3071,13 @@ arrange scripts
 undrop (ctrl-Z)
 --MISSING--
 
+undo the last block drop
+--MISSING--
+
 copy all scripts to clipboard
+--MISSING--
+
+copy all scripts to clipboard as URL
 --MISSING--
 
 paste all scripts
@@ -1209,16 +3086,52 @@ paste all scripts
 paste script
 لصق البرنامج النصي
 
-save a picture of all scripts
+paste script from clipboard
+--MISSING--
+
+save a picture of all visible scripts
+--MISSING--
+
+set exported script scale
+--MISSING--
+
+small (50%)
+--MISSING--
+
+normal (65%)
+--MISSING--
+
+large (100%)
+--MISSING--
+
+printable (200%)
+--MISSING--
+
+duplicate selection
+--MISSING--
+
+drag selection
+--MISSING--
+
+delete selection
 --MISSING--
 
 about...
 حول...
 
+About MicroBlocks
+--MISSING--
+
 virtual machine version
 نسخة الجهاز الظاهري
 
 update firmware on board
+--MISSING--
+
+enable or disable BLE
+--MISSING--
+
+Allow the attached board to be connected via BLE?
 --MISSING--
 
 show data graph
@@ -1245,6 +3158,9 @@ MicroBlocks HTTP Server listening on port 6473
 disable autoloading board libraries
 --MISSING--
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 --MISSING--
 
@@ -1254,10 +3170,64 @@ enable PlugShare when project empty
 disable PlugShare when project empty
 --MISSING--
 
+hide implementation blocks
+--MISSING--
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
+
+show implementation blocks
+--MISSING--
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+--MISSING--
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+--MISSING--
+
 erase flash and update firmware on ESP board
 --MISSING--
 
+install ESP firmware from URL
+--MISSING--
+
 Use board type
+--MISSING--
+
+Firmware Install
+--MISSING--
+
+Firmware Installed
+--MISSING--
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+--MISSING--
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+--MISSING--
+
+You will be asked to save the firmware file.
+--MISSING--
+
+Select
+--MISSING--
+
+as the destination drive, then click Save.
+--MISSING--
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+--MISSING--
+
+Installing firmware...
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Board not connected
 --MISSING--
 
 Wiping board...
@@ -1296,8 +3266,41 @@ export functions as library
 hide advanced blocks
 إخفاء الكتل المتقدمة
 
+put file on board
+--MISSING--
+
+get file from board
+--MISSING--
+
+uploaded
+--MISSING--
+
+downloaded
+--MISSING--
+
 Data Graph
 الرسم البياني
+
+Graph
+--MISSING--
+
+clear graph
+--MISSING--
+
+zero at bottom
+--MISSING--
+
+zero in middle
+--MISSING--
+
+export data to CSV file
+--MISSING--
+
+import data from CSV file
+--MISSING--
+
+copy graph data to clipboard
+--MISSING--
 
 show instructions
 عرض التعليمات
@@ -1314,6 +3317,24 @@ collapse
 rename...
 إعادة تسمية ...
 
+find variable accessors
+--MISSING--
+
+find scripts or block definitions where this variable is being read
+--MISSING--
+
+find variable modifiers
+--MISSING--
+
+find scripts or block definitions where this variable is being set or changed
+--MISSING--
+
+find uses of this block
+--MISSING--
+
+find scripts or block definitions using this block
+--MISSING--
+
 show block definition...
 --MISSING--
 
@@ -1329,6 +3350,9 @@ delete the definition of this block
 duplicate
 كرر
 
+help
+--MISSING--
+
 duplicate this block
 --MISSING--
 
@@ -1342,6 +3366,12 @@ just this one block
 فقط هذه الكتلة
 
 copy to clipboard
+--MISSING--
+
+copy to clipboard as URL
+--MISSING--
+
+copy these blocks to the clipboard as a URL
 --MISSING--
 
 copy these blocks to the clipboard
@@ -1359,13 +3389,22 @@ extract block
 pull out this block
 --MISSING--
 
+show help for this block in a browser
+--MISSING--
+
 save picture of script
 حفظ صورة للبرنامج النصي
+
+save picture of script with result
+--MISSING--
 
 save a picture of this block definition as a PNG file
 --MISSING--
 
 save a picture of these blocks as a PNG file
+--MISSING--
+
+save a picture of these blocks and their result as a PNG file
 --MISSING--
 
 copy script
@@ -1384,6 +3423,27 @@ string or number
 --MISSING--
 
 number only
+--MISSING--
+
+stop editing
+--MISSING--
+
+cut
+--MISSING--
+
+copy
+--MISSING--
+
+paste
+--MISSING--
+
+accept
+--MISSING--
+
+revert
+--MISSING--
+
+select all
 --MISSING--
 
 define
@@ -1437,10 +3497,54 @@ Okay
 Confirm
 أكد
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
 المكتبات
+
+AI
+--MISSING--
+
+Graphics and Displays
+--MISSING--
+
+Kits and Boards
+--MISSING--
+
+Network
+--MISSING--
+
+Other
+--MISSING--
+
+Robots
+--MISSING--
+
+Sensing
+--MISSING--
+
+Sound
+--MISSING--
+
+System
+--MISSING--
+
+# File picker and library dialogs
+
+New library name?
+--MISSING--
+
+show all block definitions
+--MISSING--
+
+hide all block definitions
+--MISSING--
+
+export this library
+--MISSING--
+
+delete library
+--MISSING--
 
 Examples
 --MISSING--
@@ -1505,6 +3609,408 @@ built-in library
 Dependency path, name or URL?
 --MISSING--
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+--MISSING--
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+--MISSING--
+
+If the library is hosted online, please input its full URL.
+--MISSING--
+
 Tag name?
 --MISSING--
+
+user library
+--MISSING--
+
+Add Library
+--MISSING--
+
+seconds remaining
+--MISSING--
+
+Decrease block size
+--MISSING--
+
+Restore block size to 100%
+--MISSING--
+
+Increase block size
+--MISSING--
+
+############
+# Tips Bar #
+############
+
+Button
+--MISSING--
+
+Boolean Input
+--MISSING--
+
+[l] toggle value, or drop a reporter into it.
+--MISSING--
+
+Color Input
+--MISSING--
+
+[l] change the color, or drop a reporter into it.
+--MISSING--
+
+Input
+المدخلات
+
+[l] edit its value, or drop a reporter into it.
+--MISSING--
+
+Block Extension
+--MISSING--
+
+[l] right arrow to show optional inputs, left arrow to hide.
+--MISSING--
+
+Command Block
+--MISSING--
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Hat Block
+--MISSING--
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Reporter Block
+--MISSING--
+
+[l] to see value, or drop into an input slot. [r] menu.
+--MISSING--
+
+Script
+--MISSING--
+
+[l] to run. [r] menu.
+--MISSING--
+
+Pane Divider
+--MISSING--
+
+Drag to change pane width.
+--MISSING--
+
+Library
+--MISSING--
+
+[l] to show the blocks in this library. [r] menu.
+--MISSING--
+
+Block Category
+--MISSING--
+
+[l] to show the blocks in this category.
+--MISSING--
+
+Palette
+--MISSING--
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+--MISSING--
+
+Scripts Pane
+--MISSING--
+
+Drag blocks here to build scripts. [r] menu.
+--MISSING--
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+--MISSING--
+
+Display a bubble showing the value.
+--MISSING--
+
+Graph the value.
+--MISSING--
+
+Report the state of button A ( (-o) or (o-) ).
+--MISSING--
+
+Report the state of button B ( (-o) or (o-) ).
+--MISSING--
+
+Report the milliseconds since the timer was last reset.
+--MISSING--
+
+Reset the timer.
+--MISSING--
+
+Report the milliseconds since power up.
+--MISSING--
+
+Report the microseconds since power up.
+--MISSING--
+
+Report the board type.
+--MISSING--
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+--MISSING--
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+--MISSING--
+
+Turn a pin on or off ( (-o) or (o-) ).
+--MISSING--
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+--MISSING--
+
+Report number of analog pins on this device.
+--MISSING--
+
+Report number of digital pins on this device.
+--MISSING--
+
+Report the value of a register (0-255) of an I2C device (0-127).
+--MISSING--
+
+Set an I2C device and register to given value (0-255).
+--MISSING--
+
+Receive multiple bytes from an I2C device.
+--MISSING--
+
+Send multiple bytes to an I2C device.
+--MISSING--
+
+Send a byte (0-255) to an SPI device.
+--MISSING--
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+--MISSING--
+
+Set the SPI clock speed and mode.
+--MISSING--
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+--MISSING--
+
+Open the serial port at the given baud rate.
+--MISSING--
+
+Close the serial port.
+--MISSING--
+
+Report data received from the serial port (a byte array).
+--MISSING--
+
+Send a byte array to the serial port.
+--MISSING--
+
+Run when the board powers up or when the IDE start button is clicked.
+--MISSING--
+
+Run when buttons A, B, or A+B are pressed.
+--MISSING--
+
+Repeat the enclosed blocks indefinitely.
+--MISSING--
+
+Repeat the enclosed blocks the given number of times.
+--MISSING--
+
+Wait the given number of milliseconds.
+--MISSING--
+
+Run the first set of blocks whose test condition is (-o) .
+--MISSING--
+
+Run when the condition becomes (-o) .
+--MISSING--
+
+Wait until the condition becomes (-o) .
+--MISSING--
+
+Return (report) the given value from a function or script.
+--MISSING--
+
+Run when the given message is broadcast.
+--MISSING--
+
+Broadcast the given message.
+--MISSING--
+
+Do nothing. Used to add notes and documentation.
+--MISSING--
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+--MISSING--
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+--MISSING--
+
+Stop this task.
+--MISSING--
+
+Stop all tasks except this one.
+--MISSING--
+
+Wait the given number of microseconds.
+--MISSING--
+
+Report the last broadcast message received.
+--MISSING--
+
+Call the function with the given name and optional parameter list.
+--MISSING--
+
+Call the function with the given name and optional parameter list and report its return value.
+--MISSING--
+
+Report the sum of the given numbers.
+--MISSING--
+
+Report the first number minus the second.
+--MISSING--
+
+Report the product of the given numbers.
+--MISSING--
+
+Report the first number divided by the second.
+--MISSING--
+
+Report the remainder of dividing the first number by the second.
+--MISSING--
+
+Report the absolute value of the given number (always >= 0).
+--MISSING--
+
+Report the minimum of the values.
+--MISSING--
+
+Report the maximum of the values.
+--MISSING--
+
+Report a randomly chosen number in the given range.
+--MISSING--
+
+Report (-o) if the first value is less than the second one.
+--MISSING--
+
+Report (-o) if the first value is less than or equal to the second one.
+--MISSING--
+
+Report (-o) if the two values are equal.
+--MISSING--
+
+Report (-o) if the two values are not equal.
+--MISSING--
+
+Report (-o) if the first value is greater than or equal to the second one.
+--MISSING--
+
+Report (-o) if the first value is greater than the second one.
+--MISSING--
+
+Boolean constant ( (-o) or (o-) ).
+--MISSING--
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+--MISSING--
+
+Report (-o) if both values are (-o)
+--MISSING--
+
+Report (-o) if either value is (-o)
+--MISSING--
+
+Report (-o) if first input is a value of the given data type.
+--MISSING--
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+--MISSING--
+
+Report bitwise AND of two numbers.
+--MISSING--
+
+Report bitwise OR of two numbers.
+--MISSING--
+
+Report bitwise XOR (exclusive OR) of two numbers.
+--MISSING--
+
+Report bitwise inverse of the given number.
+--MISSING--
+
+Report the given number shifted left by the given number of bits.
+--MISSING--
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+--MISSING--
+
+Set a variable to the given value.
+--MISSING--
+
+Change a variable by the given amount.
+--MISSING--
+
+Create a variable local to the containing script with the given initial value.
+--MISSING--
+
+Report the Nth item of a list, string, or byte array.
+--MISSING--
+
+Report the number of items in a list, string, or byte array.
+--MISSING--
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+--MISSING--
+
+Create and report a short list containing the given items. Length limited by available stack space.
+--MISSING--
+
+Add an item to the end of a list.
+--MISSING--
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+--MISSING--
+
+Delete the Nth item (or all items) of a list.
+--MISSING--
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+--MISSING--
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+--MISSING--
+
+Split the given string with the given delimiter and report the result (a list of strings).
+--MISSING--
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+--MISSING--
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+--MISSING--
+
+Report a string containing the given Unicode value ("code point") or list of values.
+--MISSING--
+
+Report a new list of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a new byte array of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a byte array containing the UTF-8 bytes of the given string.
+--MISSING--
+
+Report the number of words of memory available. Stop button frees up memory.
+--MISSING--
+
 

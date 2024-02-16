@@ -1,6 +1,6 @@
 module Cutebot Output
 author wwj718
-version 1 5 
+version 1 6 
 depends 'Distance (HC-SR04)' NeoPixel 
 choices cutebot_side left right 
 choices cutebot_light left right both 
@@ -26,9 +26,14 @@ https://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html'
   spec 'r' 'cutebot_lineSensor' 'Cutebot _ line sensor' 'menu.cutebot_side' 'left'
   spec 'r' 'cutebot_seesLine' 'Cutebot sees line on left _ right _' 'bool bool' true true
   spec 'r' 'cutebot_distance' 'Cutebot distance (cm)'
+  space
+  spec ' ' '_cutebot_sendCmd' '_cutebot_sendCmd _' 'str' 'aList'
 
-to '_cutebot_ADDR' {
-  return 16
+to '_cutebot_sendCmd' aList {
+  local 'cutebotAddr' 16
+  '[sensors:i2cSetClockSpeed]' 100000
+  '[sensors:i2cWrite]' cutebotAddr aList
+  '[sensors:i2cSetClockSpeed]' 400000
 }
 
 to cutebot_distance {
@@ -59,12 +64,12 @@ to cutebot_setHeadlightColor which color {
   local 'left_LED' 4
   local 'right_LED' 8
   if (which == 'left') {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' left_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
   } (which == 'right') {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' right_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' right_LED r g b)
   } else {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' left_LED r g b)
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' right_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' right_LED r g b)
   }
 }
 
@@ -86,7 +91,7 @@ to cutebot_setServo servo value {
 value range of -90 to 90 maps to the full range of the servo'
   servo = (maximum 1 (minimum servo 2))
   value = (maximum -90 (minimum value 90))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 90 -90 0 180) 0 0)
+  '_cutebot_sendCmd' ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 90 -90 0 180) 0 0)
 }
 
 to cutebot_setServoSpeed servo value {
@@ -94,7 +99,7 @@ to cutebot_setServoSpeed servo value {
 value range of -100 to 100 maps to the full range of the servo'
   servo = (maximum 1 (minimum servo 2))
   value = (maximum -100 (minimum value 100))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 100 -100 0 180) 0 0)
+  '_cutebot_sendCmd' ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 100 -100 0 180) 0 0)
 }
 
 to cutebot_setWheelSpeed left_wheel_speed right_wheel_speed {
@@ -112,8 +117,8 @@ direction: 1 = backward, 2 = forward'
   }
   left_wheel_speed = (minimum left_wheel_speed 100)
   right_wheel_speed = (minimum right_wheel_speed 100)
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 1 left_direction left_wheel_speed 0)
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 2 right_direction right_wheel_speed 0)
+  '_cutebot_sendCmd' ('[data:makeList]' 1 left_direction left_wheel_speed 0)
+  '_cutebot_sendCmd' ('[data:makeList]' 2 right_direction right_wheel_speed 0)
 }
 
 to cutebot_stopWheels {

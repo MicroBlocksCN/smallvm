@@ -1,0 +1,156 @@
+module NeoPanel Output
+author 'José García Yeste & Víctor Casado'
+version 1 1 
+depends NeoPixel BMP 
+description 'Draw lines, rectangles, text, and images on a NeoPixel panels (e.g. 8x8, 16x16 or 32x8) in either horizontal or vertical orientation. Panels can be daisy-chained to create larger displays if there is sufficient power to drive them.
+See: https://www.btf-lighting.com/collections/led-matrix-display/products/ws2812b-panel-screen-8-8-16-16-8-32-pixel-256-pixels-digital-flexible-led-programmed-individually-addressable-full-color-dc5v#
+'
+variables _neoPanel_width _neoPanel_height _neoPanel_isHorizontal 
+
+  spec ' ' 'neoPanel_attach' 'attach NeoPixel panel width _ height _ at pin _' 'num num num' 8 8 1
+  space
+  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1
+  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1
+  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1
+  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4
+  space
+  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1
+  spec ' ' 'neoPanel_drawBMP' 'NeoPanel draw BMP file _ at x _ y _' 'str num num' '' 1 1
+  space
+  spec 'r' '_neoPanel_indexForXY' '_neoPanel_index for x _ y _' 'num num' 1 1
+
+to '_neoPanel_indexForXY' x y {
+  if (or (x < 1) (y < 1)) {return 0}
+  if (or (x > _neoPanel_width) (y > _neoPanel_height)) {return 0}
+  if _neoPanel_isHorizontal {
+    if ((x & 1) == 0) {
+      return (((x - 1) * _neoPanel_height) + ((_neoPanel_height - y) + 1))
+    } else {
+      return (((x - 1) * _neoPanel_height) + y)
+    }
+  } else {
+    if ((y & 1) == 0) {
+      return (((y - 1) * _neoPanel_width) + x)
+    } else {
+      return (((y - 1) * _neoPanel_width) + ((_neoPanel_width - x) + 1))
+    }
+  }
+}
+
+to neoPanel_attach width height pin {
+  _neoPanel_width = width
+  _neoPanel_height = height
+  _neoPanel_isHorizontal = (width >= height)
+  neoPixelAttach (_neoPanel_width * _neoPanel_height) pin
+}
+
+to neoPanel_drawBMP filename originX originY {
+  if (not ('_bmp_readHeader' filename)) {return}
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    for x (size line) {
+      local 'pixel' ('_neoPanel_indexForXY' (originX + (x - 1)) y)
+      if (pixel > 0) {
+        atPut pixel _np_pixels (at x line)
+      }
+    }
+    y += yIncrement
+  }
+  '[file:close]' filename
+  '_NeoPixel_update'
+}
+
+to neoPanel_drawHorizontalLine y color {
+  if (and (y > 0) (y <= _neoPanel_width)) {
+    if _neoPanel_isHorizontal {
+      local 'index' (((y - 1) * _neoPanel_height) + 1)
+      repeat _neoPanel_height {
+        atPut index _np_pixels color
+        index += 1
+      }
+    } else {
+      local 'index' ((_neoPanel_width - y) + 1)
+      repeat (_neoPanel_height / 2) {
+        atPut index _np_pixels color
+        index += (((y - 1) * 2) + 1)
+        atPut index _np_pixels color
+        index += ((((_neoPanel_width - y) + 1) * 2) - 1)
+      }
+    }
+    '_NeoPixel_update'
+  }
+}
+
+to neoPanel_drawPixel x y color {
+  setNeoPixelColor ('_neoPanel_indexForXY' x y) color
+}
+
+to neoPanel_drawText text x0 y0 color {
+  for letter text {
+    local 'shape' ('[display:mbShapeForLetter]' letter)
+    local 'mask' 1
+    local 'x' (x0 - 1)
+    local 'y' (y0 - 1)
+    for c 5 {
+      for f 5 {
+        if ((shape & mask) != 0) {
+          local 'i' ('_neoPanel_indexForXY' (x + f) (y + c))
+          if (i > 0) {
+            atPut i _np_pixels color
+          }
+        }
+        mask = (mask << 1)
+      }
+    }
+    if _neoPanel_isHorizontal {
+      x0 += 5
+    } else {
+      y0 += 6
+    }
+  }
+  '_NeoPixel_update'
+}
+
+to neoPanel_drawVerticalLine x color {
+  if (and (x > 0) (x <= _neoPanel_height)) {
+    if _neoPanel_isHorizontal {
+      local 'index' x
+      repeat (_neoPanel_width / 2) {
+        atPut index _np_pixels color
+        index += (((_neoPanel_height - x) * 2) + 1)
+        atPut index _np_pixels color
+        index += ((x * 2) - 1)
+      }
+    } else {
+      local 'index' (((x - 1) * _neoPanel_width) + 1)
+      atPut index _np_pixels color
+      repeat _neoPanel_width {
+        atPut index _np_pixels color
+        index += 1
+      }
+    }
+    '_NeoPixel_update'
+  }
+}
+
+to neoPanel_fillRectangle x y width height color {
+  local 'column' y
+  repeat height {
+    local 'row' x
+    repeat width {
+      atPut ('_neoPanel_indexForXY' row column) _np_pixels color
+      row += 1
+    }
+    column += 1
+  }
+  '_NeoPixel_update'
+}
+

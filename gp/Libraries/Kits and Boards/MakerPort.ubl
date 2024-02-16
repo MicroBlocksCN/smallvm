@@ -1,0 +1,129 @@
+module MakerPort Output
+author MicroBlocks
+version 1 10 
+depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
+choices makerport_audioSource MP3 Tone 
+description 'Support for MakerPort (https://makerport.fun)'
+variables _makerport_microSDInserted _makerport_time_averages 
+
+  spec ' ' 'makerport_initialize' 'MakerPort initialize'
+  space
+  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs : volume _ (0-10)' 'num num num' 440 100 10
+  spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
+  space
+  spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
+  space
+  spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
+  space
+  spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
+  space
+  spec 'r' 'makerport_loudness' 'loudness'
+  space
+  spec 'r' 'makerport_timeAveragedLevel' 'input level from _ with time sample _ ms' 'num num' 13 64
+  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'num num num' 13 64 0
+
+to '_makerport_compute_time_average' pin timeSample timeAverage {
+  local 'samples' 0
+  local 'average' 0
+  local 'endTime' ((millisOp) + timeSample)
+  repeatUntil ((millisOp) >= endTime) {
+    samples += 1
+    average += (absoluteValue ((analogReadOp pin) - timeAverage))
+  }
+  return (average / (maximum samples 1))
+}
+
+to makerport_beep freq msecs optionalVolume {
+  if (freq < 1) {return 0}
+  local 'halfCycleTime' (500000 / freq)
+  local 'cycles' ((500 * msecs) / halfCycleTime)
+  local 'amplitude' (50 * (argOrDefault 3 10))
+  amplitude = (maximum 0 (minimum amplitude 1023))
+  digitalWriteOp 19 true
+  repeat cycles {
+    analogWriteOp 0 amplitude
+    waitMicros halfCycleTime
+    analogWriteOp 0 0
+    waitMicros halfCycleTime
+  }
+}
+
+to makerport_initialize {
+  makerport_setAllLEDs false
+  attachIR 18
+  mp3_initialize 'MakerPort' 20 21
+  if (makerport_mp3_hasCard) {
+    makerport_setAudioSource 'MP3'
+  } else {
+    makerport_setAudioSource 'Tone'
+  }
+}
+
+to makerport_loudness {
+  local 'low' 10000
+  local 'high' -10000
+  for i 40 {
+    comment 'Sample microphone connected to analog port for ~20 msecs at ~2000 samples/sec.'
+    local 'sample' (analogReadOp 13)
+    low = (minimum low sample)
+    high = (maximum high sample)
+    waitMicros 500
+  }
+  return (high - low)
+}
+
+to makerport_mp3_hasCard {
+  comment 'Note: This command works only if MP3 player is
+connected to the hardware serial pins.'
+  if (isType _makerport_microSDInserted 'boolean') {
+    comment 'return previously determined value'
+    return _makerport_microSDInserted
+  }
+  '[serial:open]' 9600
+  comment 'Send MP3 player initialization command'
+  '[serial:write]' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt '0C') 0 0 0 254 239 (hexToInt 'EF'))
+  local 'bytesRead' ('[data:newByteArray]' 0)
+  repeat 60 {
+    comment 'Loop for up to 3 seconds while waiting for a response'
+    bytesRead = ('[data:join]' bytesRead ('[serial:read]'))
+    if ((size bytesRead) >= 10) {
+      comment 'Got a response message. Item 7 is 2 if
+a Flash card is inserted in the player.'
+      '[serial:close]'
+      _makerport_microSDInserted = ((at 7 bytesRead) == 2)
+      return _makerport_microSDInserted
+    }
+    waitMillis 50
+  }
+  '[serial:close]'
+  _makerport_microSDInserted = (booleanConstant false)
+  return _makerport_microSDInserted
+}
+
+to makerport_setAllLEDs bool {
+  for pin 12 {
+    digitalWriteOp pin bool
+  }
+}
+
+to makerport_setAudioSource src {
+  digitalWriteOp 19 (src != 'MP3')
+}
+
+to makerport_timeAveragedLevel pin timeSample {
+  if (_makerport_time_averages == 0) {_makerport_time_averages = (newList 32 0)}
+  pin = (maximum 1 (minimum pin 32))
+  local 'average' ('_makerport_compute_time_average' pin timeSample (at pin _makerport_time_averages))
+  if ((at pin _makerport_time_averages) == 0) {
+    atPut pin _makerport_time_averages average
+    average = 0
+  }
+  return average
+}
+
+to makerport_typeString s {
+  for ch s {
+    '[hid:pressKey]' ch -1
+  }
+}
+

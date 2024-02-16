@@ -31,7 +31,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	pageM = (morph (global 'page'))
 	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 
-	setFPS morph 30
+	setFPS morph 4
 	fixLayout this
 	return this
 }
@@ -62,6 +62,13 @@ method drawOn MicroBlocksSpinner ctx {
 	stroke pen (gray 230) 25
 }
 
+method spinnerChanged MicroBlocksSpinner {
+	bnds = (bounds morph)
+	left = ((hCenter bnds) - 60)
+	top = ((vCenter bnds) - 60)
+	reportDamage (owner morph) (rect left top 120 120)
+}
+
 method task MicroBlocksSpinner { return task }
 method setTask MicroBlocksSpinner aTask { task = aTask }
 
@@ -86,8 +93,8 @@ method step MicroBlocksSpinner {
 	}
 
 	setCursor 'wait'
-	changed morph
-	rotation = ((rotation + 15) % 360)
+	rotation = ((rotation + 30) % 360)
+	spinnerChanged this
 	setText label (localized (call labelGetter))
-	fixLayout this
+	setXCenter (morph label) (hCenter (bounds morph))
 }

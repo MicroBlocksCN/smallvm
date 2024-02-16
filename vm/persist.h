@@ -24,21 +24,12 @@ extern "C" {
 
 typedef enum {
 	chunkCode = 10,
-	chunkAttribute = 11,
+	chunkAttribute = 11, // deprecated
 	chunkDeleted = 19,
 	varName = 21,
 	varsClearAll = 29,
 	deleteAll = 218, // 218 in hex is 0xDA, short for "delete all"
 } RecordType_t;
-
-// Chunk Attributes
-
-typedef enum {
-	sourcePosition = 0,
-	snapSourceString = 1,
-	gpSourceString = 2,
-	CHUNK_ATTRIBUTE_COUNT,
-} ChunkAttributeType_t;
 
 // Persistent Memory Operations
 
@@ -56,10 +47,16 @@ int ramSize();
 
 // File-Based Persistent Memory Operations
 
-void initCodeFile(uint8 *flash, int flashByteCount);
+int initCodeFile(uint8 *flash, int flashByteCount);
 void writeCodeFile(uint8 *code, int byteCount);
 void writeCodeFileWord(int word);
 void clearCodeFile(int cycleCount);
+
+// File operations for storing system state
+
+void createFile(const char *fileName);
+void deleteFile(const char *fileName);
+int fileExists(const char *fileName);
 
 #ifdef __cplusplus
 }

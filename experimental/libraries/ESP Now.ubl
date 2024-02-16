@@ -1,17 +1,17 @@
 module 'ESP Now'
 author wwj718
-version 1 0 
+version 1 1 
 description ''
 
-	spec ' ' 'esp now broadcast' 'esp now broadcast _' 'auto' 'hello'
-	spec 'r' 'esp now last message' 'esp now last message'
+  spec ' ' 'esp now broadcast' 'esp now broadcast _' 'auto' 'hello'
+  spec 'r' 'esp now last message' 'esp now last message'
 
 to 'esp now broadcast' message {
-  callCustomCommand '[net:EspNowBroadcast]' ('[data:makeList]' message)
+  callCustomCommand '[ble:EspNowBroadcast]' ('[data:makeList]' message)
 }
 
 to 'esp now last message' {
-  local 'event' (callCustomReporter '[net:EspNowLastEvent]')
+  local 'event' (callCustomReporter '[ble:EspNowLastEvent]')
   if (event != (booleanConstant false)) {
     return (at 1 event)
   } else {

@@ -24,11 +24,13 @@ typedef enum {IN_PROGRESS, DONE, FAILED} FetchStatus;
 typedef struct {
 	int id;
 	FetchStatus status;
+	int bytesReceived;
+	int bytesExpected;
 	int byteCount;
 	char *data;
 } FetchRequest;
 
-#define MAX_REQUESTS 1000
+#define MAX_REQUESTS 100
 FetchRequest httpRequests[MAX_REQUESTS];
 
 static int nextFetchID = 100;
@@ -41,7 +43,13 @@ static int isInBrowser() {
 	}, NULL);
 }
 
-static void fetchDoneCallback(void *arg, void *buf, int bufSize) {
+static void fetchProgressCallback(unsigned reqHandle, void *arg, int bytesReceived, int bytesExpected) {
+	FetchRequest *req = arg;
+	req->bytesReceived = bytesReceived;
+	req->bytesExpected = bytesExpected;
+}
+
+static void fetchDoneCallback(unsigned reqHandle, void *arg, void *buf, unsigned bufSize) {
 	FetchRequest *req = arg;
 	req->data = malloc(bufSize);
 	if (req->data) memmove(req->data, buf, bufSize);
@@ -49,9 +57,9 @@ static void fetchDoneCallback(void *arg, void *buf, int bufSize) {
 	req->status = DONE;
 }
 
-static void fetchErrorCallback(void *arg) {
+static void fetchErrorCallback(unsigned reqHandle, void *arg, int httpStatus, const char* errorString) {
 	FetchRequest *req = arg;
-	printf("Fetch error, id = %d\n", req->id);
+	printf("Fetch error, id = %d, status = %d\n", req->id, httpStatus);
 	req->status = FAILED;
 }
 
@@ -92,6 +100,8 @@ static OBJ primStartFetch(int nargs, OBJ args[]) {
 		if (!httpRequests[i].id) {
 			httpRequests[i].id = nextFetchID++;
 			httpRequests[i].status = IN_PROGRESS;
+			httpRequests[i].bytesReceived = 0;
+			httpRequests[i].bytesExpected = 0;
 			httpRequests[i].data = NULL;
 			httpRequests[i].byteCount = 0;
 			break;
@@ -99,8 +109,42 @@ static OBJ primStartFetch(int nargs, OBJ args[]) {
 	}
 	if (i >= MAX_REQUESTS) return nilObj; // no free request slots (unlikely)
 
-	emscripten_async_wget_data(obj2str(url), &httpRequests[i], fetchDoneCallback, fetchErrorCallback);
+	emscripten_async_wget2_data(
+		obj2str(url), "GET", "", &httpRequests[i], true,
+		fetchDoneCallback, fetchErrorCallback, fetchProgressCallback);
 	return int2obj(httpRequests[i].id);
+}
+
+static OBJ primFetchBytesReceived(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return primFailed("Expected integer");
+	int id = obj2int(args[0]);
+
+	// find the fetch request with the given id
+	int i;
+	for (i = 0; i < MAX_REQUESTS; i++) {
+		if (httpRequests[i].id == id) break;
+	}
+
+	int result = 0;
+	if (i < MAX_REQUESTS) result = httpRequests[i].bytesReceived;
+	return int2obj(result);
+}
+
+static OBJ primFetchBytesExpected(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return primFailed("Expected integer");
+	int id = obj2int(args[0]);
+
+	// find the fetch request with the given id
+	int i;
+	for (i = 0; i < MAX_REQUESTS; i++) {
+		if (httpRequests[i].id == id) break;
+	}
+
+	int result = 0;
+	if (i < MAX_REQUESTS) result = httpRequests[i].bytesExpected;
+	return int2obj(result);
 }
 
 static OBJ primFetchResult(int nargs, OBJ args[]) {
@@ -339,6 +383,20 @@ static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	return isMobile ? trueObj : falseObj;
 }
 
+static OBJ primBrowserHasLanguage(int nargs, OBJ args[]) {
+	if (nargs < 1) return falseObj;
+	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
+
+	int result = EM_ASM_INT({
+		var langCode = UTF8ToString($0);
+		for (var i = 0; i < navigator.languages.length; i++) {
+			if (navigator.languages[i].indexOf(langCode) > -1) return true;
+		}
+		return false;
+	}, obj2str(args[0]));
+	return result ? trueObj : falseObj;
+}
+
 static OBJ primBrowserIsChromeOS(int nargs, OBJ args[]) {
 	int isChromeOS = EM_ASM_INT({
 		return (/(CrOS)/.test(navigator.userAgent));
@@ -348,7 +406,7 @@ static OBJ primBrowserIsChromeOS(int nargs, OBJ args[]) {
 
 static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
 	int hasWebSerial = EM_ASM_INT({
-		return hasWebSerial();
+		return hasWebSerial() || hasWebBluetooth();
 	}, NULL);
 	return hasWebSerial ? trueObj : falseObj;
 }
@@ -1401,6 +1459,8 @@ static PrimEntry browserPrimList[] = {
 	{"-----", NULL, "Browser Support"},
 	{"browserURL",				primBrowserURL,			"Return the full URL of the current browser page."},
 	{"startFetch",				primStartFetch,			"Start downloading the contents of a URL. Return an id that can be used to get the result. Argument: urlString"},
+	{"fetchBytesReceived",		primFetchBytesReceived,	"Return the number number of bytes received by the fetch request so far. Argument: id"},
+	{"fetchBytesExpected",		primFetchBytesExpected,	"Return the number bytes expected by the fetch request or zero if not yet known.  Argument: id"},
 	{"fetchResult",				primFetchResult,		"Return the result of the fetch operation with the given id: a BinaryData object (success), false (failure), or nil if in progress. Argument: id"},
 	{"browserSize",				primBrowserSize,		"Return the inner width and height of the browser window."},
 	{"browserScreenSize",		primBrowserScreenSize,	"Return the width and height of the entire screen containing the browser."},
@@ -1411,6 +1471,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
 	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
+	{"browserHasLanguage",		primBrowserHasLanguage,		"Return true the given language code is in navigator.languages. Argument: language code string (e.g. 'en')."},
 	{"browserIsChromeOS",		primBrowserIsChromeOS,		"Return true if running as a Chromebook app."},
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},

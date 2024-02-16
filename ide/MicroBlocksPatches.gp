@@ -19,11 +19,12 @@ method allVarsMenu InputSlot {
 
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
   if (notNil scripter) {
 	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
-          if (or ((at varName 1) != '_') (devMode)) {
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
             addItemNonlocalized menu varName (action 'setContents' this varName)
           }
 	}
@@ -206,6 +207,29 @@ to gpFolder {
   return path
 }
 
+// Broadcast menu
+
+method broadcastMenu InputSlot {
+  menu = (menu)
+
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripter) {
+    saveScripts (handler scripter)
+    msgList = (allBroadcasts (project (handler scripter)))
+
+    // special case for default broadcast string
+    defaultBroadcast = 'go!'
+    remove msgList defaultBroadcast
+    addItemNonlocalized menu (localized defaultBroadcast) (action 'setContents' this defaultBroadcast)
+    addLine menu
+
+	for s msgList {
+      addItemNonlocalized menu s (action 'setContents' this s)
+	}
+  }
+  return menu
+}
+
 // Block additions
 
 method clicked Block hand {
@@ -312,22 +336,27 @@ method justDropped Block hand {
 }
 
 method alternateOperators Block {
-  opGroups = (array
-	(array 'analogReadOp' 'digitalReadOp')
-	(array 'analogWriteOp' 'digitalWriteOp')
-	(array 'analogPins' 'digitalPins')
-	(array 'and' 'or')
-	(array '+' '-' '*' '/' '%')
-	(array 'buttonA' 'buttonB')
-	(array '<' '<=' '==' '!=' '>=' '>')
-	(array 'maximum' 'minimum')
-	(array 'millisOp' 'microsOp')
-	(array '=' '+=')
-	(array '&' '|' '^' '<<' '>>')
-  )
-  op = (primName expression)
-  for group opGroups {
-	if (contains group op) { return group }
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	// if it's a variable, return a group with all existing variables
+	return (array '')
+  } else {
+	opGroups = (array
+		(array 'analogReadOp' 'digitalReadOp')
+		(array 'analogWriteOp' 'digitalWriteOp')
+		(array 'analogPins' 'digitalPins')
+		(array 'and' 'or')
+		(array '+' '-' '*' '/' '%')
+		(array 'buttonA' 'buttonB')
+		(array '<' '<=' '==' '!=' '>=' '>')
+		(array 'maximum' 'minimum')
+		(array 'millisOp' 'microsOp')
+		(array '=' '+=')
+		(array '&' '|' '^' '<<' '>>')
+	)
+	op = (primName expression)
+	for group opGroups {
+		if (contains group op) { return group }
+	}
   }
   return nil
 }
@@ -335,18 +364,35 @@ method alternateOperators Block {
 method changeOperator Block newOp {
   cancelSelection
   setField expression 'primName' newOp
-  // update the block (inefficient, but works):
   scripter = (scripter (findProjectEditor))
-  saveScripts scripter
-  restoreScripts scripter
-  scriptChanged scripter
+  updateScriptAfterOperatorChange scripter this
+}
+
+method changeVar Block varName {
+  cancelSelection
+  newVarReporter = (newReporter 'v' varName)
+  blockOwner = (handler (owner morph))
+  if (isClass blockOwner 'Block') {
+    owningExpr = (expression blockOwner)
+    args = (argList owningExpr)
+    for i (count args) {
+      if ((at args i) == (expression this)) {
+        setArg owningExpr i newVarReporter
+      }
+    }
+  } else { // top level var reporter
+    expression = newVarReporter
+  }
+  scripter = (scripter (findProjectEditor))
+  updateScriptAfterOperatorChange scripter this
 }
 
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   pe = (findProjectEditor)
-  selection = (selection (scripter pe))
+  scripter = (scripter pe)
+  selection = (selection scripter)
   if (and (notNil selection) (notEmpty selection)) {
   	return (contextMenu selection)
   }
@@ -392,6 +438,7 @@ method contextMenu Block {
 	}
   }
   addLine menu
+
   if (contains (array 'v' '=' '+=') (primName expression)) {
 	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
 	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
@@ -404,19 +451,35 @@ method contextMenu Block {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
   }
-  alternativeOps = (alternateOperators this)
-  if (and (not isInPalette) (notNil alternativeOps)) {
-	addLine menu
-	myOp = (primName expression)
-	for op alternativeOps {
-	  // create and display block morph (with translated spec)
-	  spec = (specForOp (authoringSpecs) op)
-	  if (and (notNil spec) (op != myOp)) {
-		b = (blockForSpec spec)
-		fixLayout b
-		addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
-	  }
+  if ((primName expression) == 'v') {
+	varNames = (allVariableNames (project scripter))
+	if (and (not isInPalette) ((count varNames) > 1)) {
+		for varName varNames {
+			if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
+				b = (toBlock (newReporter 'v' varName))
+				fixLayout b
+				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
+			}
+		}
+	}
+  } else {
+	alternativeOps = (alternateOperators this)
+	if (and (not isInPalette) (notNil alternativeOps)) {
+		addLine menu
+		myOp = (primName expression)
+		for op alternativeOps {
+		  // create and display block morph (with translated spec)
+		  spec = (specForOp (authoringSpecs) op)
+		  if (and (notNil spec) (op != myOp)) {
+			b = (blockForSpec spec)
+			fixLayout b
+			addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
+		  }
+		}
 	}
   }
   if (not isInPalette) {
@@ -533,13 +596,56 @@ method showDefinition Block {
   showDefinition (scripter pe) (primName expression)
 }
 
-method deleteBlockDefinition Block {
-  if (not (confirm (global 'page') nil
-  	'Are you sure you want to remove this block definition?')) {
-		return
-  }
+method deleteObsolete Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    if (not
+      (confirm
+	    (global 'page')
+	    nil
+        (join
+          'This block is still being used in '
+          (count (allEntries finder))
+          ' scripts or functions.'
+          (newline)
+          (newline)
+          'Are you sure you want to remove this obsolete block definition?'
+        )
+	  )
+	) { return }
+  }
+
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
+}
+
+method deleteBlockDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  confirmation = 'Are you sure you want to remove this block definition?'
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    confirmation = (join
+      'This block is still being used in '
+      (count (allEntries finder))
+      ' scripts or functions.'
+	  (newline)
+	  (newline)
+	  confirmation
+	)
+  }
+
+  if (not (confirm (global 'page') nil confirmation)) { return }
+
   deleteFunction (scripter pe) (primName expression)
 }
 
@@ -566,7 +672,7 @@ method wantsDropOf BlocksPalette aHandler {
 }
 
 method justReceivedDrop BlocksPalette aHandler {
-  // Hide a block definitions when it is is dropped on the palette.
+  // Hide a block definition when it is is dropped on the palette.
   pe = (findProjectEditor)
   if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
@@ -579,8 +685,9 @@ method justReceivedDrop BlocksPalette aHandler {
   }
   if (and (isClass aHandler 'Block') (notNil pe)) {
 	recordDrop (scriptEditor (scripter pe)) aHandler
+	deleteChunkFor (smallRuntime) aHandler
   }
-  if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
+  if (isClass aHandler 'MicroBlocksSelectionContents') {
 	for part (parts (morph aHandler)) {
 		justReceivedDrop this (handler part)
 	}
@@ -630,15 +737,22 @@ method justReceivedDrop CategorySelector aHandler {
 			library = mainModule
 		}
 		if (not (contains (functions library) function)) {
+			globalsUsed = (globalVarsUsed function)
 			if (contains (functions mainModule) function) {
 				// Block is in My Blocks, let's remove it from there first
 				removeFunction mainModule function
 				remove (blockList mainModule) (functionName function)
 				remove (blockSpecs mainModule) (blockSpecFor function)
+				for var globalsUsed {
+					deleteVariable mainModule var
+				}
 			}
 			addFunction library function
 			add (blockList library) (functionName function)
 			add (blockSpecs library) (blockSpecFor function)
+			for var globalsUsed {
+				addVariable library var
+			}
 		}
 		select this (categoryUnderHand this)
 	}
@@ -843,9 +957,8 @@ method copyScriptsToClipboardAsURL ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
   scriptsString = (allScriptsString (handler scripter))
-  setClipboard (join
-      'https://microblocks.fun/run/microblocks.html#scripts='
-	  (urlEncode scriptsString true))
+  urlPrefix = (urlPrefix (findMicroBlocksEditor))
+  setClipboard (join urlPrefix '#scripts=' (urlEncode scriptsString true))
 }
 
 // Color picker tweak

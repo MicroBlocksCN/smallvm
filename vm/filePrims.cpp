@@ -213,6 +213,37 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 	return int2obj(bytesRead);
 }
 
+// Read positioning
+
+static OBJ primReadPosition(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+	char *fileName = extractFilename(args[0]);
+
+	int result = 0;
+	int i = entryFor(fileName);
+	if (i >= 0) {
+		result = fileEntry[i].file.position();
+	}
+	return int2obj(result);
+}
+
+static OBJ primSetReadPosition(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+	char *fileName = extractFilename(args[1]);
+	int newPosition = evalInt(args[0]);
+	if (newPosition < 0) newPosition = 0;
+
+	int i = entryFor(fileName);
+	if (i >= 0) {
+		int fileSize = fileEntry[i].file.size();
+		if (newPosition > fileSize) newPosition = fileSize;
+		fileEntry[i].file.seek(newPosition, SeekSet);
+	}
+	return falseObj;
+}
+
 // Writing
 
 static OBJ primAppendLine(int argCount, OBJ *args) {
@@ -292,12 +323,11 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 static OBJ primFileSize(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
-	if (!fileName[0]) return int2obj(0);
+	if (!fileName[0]) return int2obj(-1);
 
 	File file = myFS.open(fileName, "r");
-	if (!file) return int2obj(0);
-	file.seek(0, SeekEnd); // seek to end
-	int size = file.position();
+	if (!file) return int2obj(-1);
+	int size = file.size();
 	file.close();
 	return int2obj(size);
 }
@@ -367,6 +397,8 @@ static OBJ primEndOfFile(int argCount, OBJ *args) { return trueObj; }
 static OBJ primReadLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadInto(int argCount, OBJ *args) { return falseObj; }
+static OBJ primReadPosition(int argCount, OBJ *args) { return zeroObj; }
+static OBJ primSetReadPosition(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
 static OBJ primFileSize(int argCount, OBJ *args) { return zeroObj; };
@@ -386,6 +418,8 @@ static PrimEntry entries[] = {
 	{"readLine", primReadLine},
 	{"readBytes", primReadBytes},
 	{"readInto", primReadInto},
+	{"readPosition", primReadPosition},
+	{"setReadPosition", primSetReadPosition},
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
 	{"fileSize", primFileSize},

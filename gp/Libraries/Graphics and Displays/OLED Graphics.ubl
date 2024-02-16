@@ -1,6 +1,6 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 12 
+version 1 13 
 choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
@@ -80,6 +80,9 @@ flip setting controls display hardware write direction:
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'i2c'
   OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  if (_displayType != 0) { 
+    return
+  }
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin
@@ -114,6 +117,9 @@ flip setting controls display hardware write direction:
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'spi'
   _dcPin = dcPin
+  if (_displayType != 0) { 
+    return
+  }
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin

@@ -8,7 +8,7 @@
 // See https://github.com/espressif/esptool/wiki/Serial-Protocol#reading-flash
 // John Maloney, September, 2019
 
-defineClass ESPTool port recvBuf closeWhenDone status success
+defineClass ESPTool port recvBuf closeWhenDone status success allInOneBinary
 
 to newESPTool { return (initialize (new 'ESPTool')) }
 
@@ -18,11 +18,14 @@ method initialize ESPTool {
 	recvBuf = (newBinaryData)
 	closeWhenDone = true
 	success = false
+	allInOneBinary = false
 	return this
 }
 
 method status ESPTool { return status } // return a status/progress string
 method success ESPTool { return success } // return true if upload was successful
+
+method setAllInOneBinary ESPTool aBoolean { allInOneBinary = aBoolean }
 
 // Serial Port
 
@@ -347,7 +350,7 @@ method bytesAsHex ESPTool bytes {
 
 // Installing Firmware
 
-method installFirmware ESPTool boardName eraseFlag downloadFlag {
+method installFirmware ESPTool boardName eraseFlag downloadFlag vmData {
 	// Install the firmware for the current board, erasing Flash if optional eraseFlag is true.
 	// If optional downloadFlag is true, download the latest version from the server.
 	// Assume the board is connected.
@@ -355,10 +358,13 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	if (isNil eraseFlag) { eraseFlag = false }
 	if (isNil downloadFlag) { downloadFlag = false }
 
-	vmData = (readVMData this boardName downloadFlag)
+	if (isNil vmData) { vmData = (readVMData this boardName downloadFlag) }
 	if (isNil vmData) { return }
 
-	if (isOneOf boardName 'ESP8266' 'D1-Mini') {
+	if (or (isOneOf boardName 'ESP8266' 'D1-Mini')
+		(notNil (findSubstring 'nodemcu' boardName))
+		(notNil (findSubstring '8266' boardName))
+	) {
 		ok = (uploadESP8266VM this vmData eraseFlag)
 	} else {
 		ok = (uploadESP32VM this vmData eraseFlag)
@@ -447,13 +453,22 @@ method uploadESP32VM ESPTool vmData eraseFlag {
 
 	if eraseFlag { eraseFlash this }
 
+	if allInOneBinary {
+		uploadCompressed this 0 vmData // binary includes all subparts and loads at address 0
+		return true
+	}
+
 	data = (readEmbeddedFile (join 'esp32/bootloader_dio_40m.bin') true)
 	uploadCompressed this (hex '1000') data
 
 	data = (readEmbeddedFile (join 'esp32/boot_app0.bin') true)
 	uploadCompressed this (hex 'e000') data
 
-	data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	if ((byteCount vmData) > 1000000) {
+		data = (readEmbeddedFile (join 'esp32/partitions2MB.bin') true)
+	} else {
+		data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	}
 	uploadCompressed this (hex '8000') data
 
 	uploadCompressed this (hex '10000') vmData

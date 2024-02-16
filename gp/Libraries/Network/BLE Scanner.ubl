@@ -1,0 +1,92 @@
+module 'BLE Scanner' Input
+author MicroBlocks
+version 1 0 
+description ''
+variables _bleScan_data 
+
+  spec 'r' 'bleScan_scanReceived' 'scan received'
+  space
+  spec 'r' 'bleScan_RSSI' 'RSSI'
+  spec 'r' 'bleScan_address' 'address'
+  spec 'r' 'bleScan_addressType' 'address type'
+  spec 'r' 'bleScan_deviceName' 'device name'
+  spec 'r' 'bleScan_hasType' 'hasType _' 'auto' 9
+  space
+  spec 'r' '_bleScan_hexDigit' '_bleScan_hexDigit _' 'auto' 10
+  spec 'r' '_bleScan_extractString' '_bleScan_extractString _' 'auto' 9
+  spec 'r' '_bleScan_typesInScan' '_bleScan_typesInScan'
+
+to '_bleScan_extractString' type {
+  local 'i' 9
+  repeatUntil (i >= (size _bleScan_data)) {
+    if ((at (i + 1) _bleScan_data) == type) {
+      local 'length' ((at i _bleScan_data) - 1)
+      return ('[data:convertType]' ('[data:copyFromTo]' _bleScan_data (i + 2) (i + (at i _bleScan_data))) 'string')
+    }
+    i += ((at i _bleScan_data) + 1)
+  }
+  return ''
+}
+
+to '_bleScan_hexDigit' n {
+  return (at (n + 1) '0123456789abcdef')
+}
+
+to '_bleScan_typesInScan' {
+  local 'i' 9
+  local 'result' ('[data:makeList]')
+  if (isType _bleScan_data 'byte array') {
+    repeatUntil (i >= (size _bleScan_data)) {
+      '[data:addLast]' (at (i + 1) _bleScan_data) result
+      i += ((at i _bleScan_data) + 1)
+    }
+  }
+  return result
+}
+
+to bleScan_RSSI {
+  if (isType _bleScan_data 'byte array') {
+    return (0 - (at 1 _bleScan_data))
+  } else {
+    return -999
+  }
+}
+
+to bleScan_address {
+  if (not (isType _bleScan_data 'byte array')) {return 'no scan data'}
+  local 'result' ('[data:makeList]')
+  for i 6 {
+    local 'n' (at (9 - i) _bleScan_data)
+    '[data:addLast]' ('_bleScan_hexDigit' (n >> 4)) result
+    '[data:addLast]' ('_bleScan_hexDigit' (n & 15)) result
+    '[data:addLast]' ':' result
+  }
+  '[data:delete]' 'last' result
+  return ('[data:joinStrings]' result)
+}
+
+to bleScan_addressType {
+  if (isType _bleScan_data 'byte array') {return (at 2 _bleScan_data)}
+  return -1
+}
+
+to bleScan_deviceName {
+  if (bleScan_hasType 9) {return ('_bleScan_extractString' 9)}
+  if (bleScan_hasType 8) {return ('_bleScan_extractString' 8)}
+  return ''
+}
+
+to bleScan_hasType type {
+  local 'i' 9
+  repeatUntil (i >= (size _bleScan_data)) {
+    if ((at (i + 1) _bleScan_data) == type) {return (booleanConstant true)}
+    i += ((at i _bleScan_data) + 1)
+  }
+  return (booleanConstant false)
+}
+
+to bleScan_scanReceived {
+  _bleScan_data = (callCustomReporter '[ble:scanReceive]')
+  return (isType _bleScan_data 'byte array')
+}
+
