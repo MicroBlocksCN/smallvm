@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 2 31 
+version 2 32 
 choices leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
 choices arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
 choices move_direction_Menu X Y 
@@ -31,8 +31,8 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' 'set_towards_0' 'set towards 0'
   spec ' ' 'set_rotation_to' 'rotation to _' 'auto' '10'
   space
-  spec ' ' 'set_stride_frequency ' 'set frequency _' 'menu.speed_Menu num' 'Normal'
-  spec ' ' 'set_gait' 'set gait _' 'menu.gait_Menu num' 'Trot'
+  spec ' ' 'set_stride_frequency' 'set frequency _' 'menu.speed_Menu' 'Normal'
+  spec ' ' 'set_gait' 'set gait _' 'menu.gait_Menu' 'Trot'
   spec ' ' 'set_leg' 'set _ leg _ joint servos to _ °' 'menu.leg_Menu menu.motor_Menu num' 'Left Front' 'Upper(-30°~30°)' 40
   spec ' ' 'set_arm' 'set arm _ joint servos to _ °' 'menu.arm_Menu num' 'Upper(-65°~65°)' 40
   space
