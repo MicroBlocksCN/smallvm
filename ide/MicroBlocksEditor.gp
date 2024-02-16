@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -77,6 +77,7 @@ method initialize MicroBlocksEditor {
   addZoomButtons this
   clearProject this
   fixLayout this
+  nextIndicatorUpdateMSecs = 0
   setFPS morph 200
   newerVersion = 'unknown'
   putNextDroppedFileOnBoard = false
@@ -337,7 +338,6 @@ method clearProject MicroBlocksEditor {
   setText title ''
   fileName = ''
   createEmptyProject scripter
-  clearBoardIfConnected (smallRuntime) true
   if (isRunning httpServer) {
 	clearVars httpServer
   }
@@ -384,7 +384,6 @@ method openProjectFromFile MicroBlocksEditor location {
 
 method openProject MicroBlocksEditor projectData projectName updateLibraries {
   if (downloadInProgress this) { return }
-  clearProject this
   fileName = projectName
   updateTitle this
   if (endsWith projectName '.gpp') {
@@ -418,6 +417,23 @@ method saveProjectToFile MicroBlocksEditor {
   saveProject this nil
 }
 
+method urlPrefix MicroBlocksEditor {
+  if ('Browser' == (platform)) {
+    url = (browserURL)
+    i = (findSubstring '.html' url)
+    if (notNil i) {
+      return (substring url 1 (i + 4))
+    }
+  }
+
+  // stand-alone app
+  urlPrefix = 'https://microblocks.fun/run/microblocks.html'
+  if (isPilot this) {
+    urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html'
+  }
+  return urlPrefix
+}
+
 method copyProjectURLToClipboard MicroBlocksEditor {
   // Copy a URL encoding of this project to the clipboard.
 
@@ -427,10 +443,7 @@ method copyProjectURLToClipboard MicroBlocksEditor {
     projName = (text title)
     codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
   }
-  setClipboard (join
-    'https://microblocks.fun/run/microblocks.html#project='
-	(urlEncode codeString true)
-  )
+  setClipboard (join (urlPrefix this) '#project='(urlEncode codeString true))
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -529,7 +542,12 @@ method step MicroBlocksEditor {
 	processBrowserFileSave this
   }
   processDroppedFiles this
-  updateIndicator this
+
+  if (((msecsSinceStart) > nextIndicatorUpdateMSecs)) {
+    updateIndicator this
+    nextIndicatorUpdateMSecs = ((msecsSinceStart) + 200)
+  }
+
   if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
   if (isRunning httpServer) {
 	step httpServer
@@ -695,8 +713,8 @@ method processBrowserFileSave MicroBlocksEditor {
 		if (endsWith lastSavedName '.hex') {
 			startFirmwareCountdown (smallRuntime) lastSavedName
 		} (endsWith lastSavedName '.ubp') {
-			// Update the title
-			fileName = (withoutExtension lastSavedName)
+			// Update the title (note: updateTitle will remove the extension)
+			fileName = lastSavedName
 			updateTitle this
 		}
 		if ('_no_file_selected_' == lastSavedName) {
@@ -766,6 +784,7 @@ method processDroppedText MicroBlocksEditor text {
       openProject this (httpBody (httpGet host path)) fileName
     } (endsWith url '.ubl') {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
+      saveAllChunksAfterLoad (smallRuntime)
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
@@ -840,9 +859,16 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 // version check
 
+method isPilot MicroBlocksEditor { return (true == isPilot) }
+
 method checkLatestVersion MicroBlocksEditor {
   latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
-  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
+  if ('Browser' == (platform)) {
+    // skip version check in browser/Chromebook but set isPilot based on URL
+    isPilot = (notNil (findSubstring 'run-pilot' (browserURL)))
+    return
+  }
+
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
 
   // sanity checks -- both versions should be lists/arrays of strings representing integers
@@ -853,8 +879,8 @@ method checkLatestVersion MicroBlocksEditor {
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
-	pilot = (current > latest)
-	if pilot {
+	isPilot = (current > latest)
+	if isPilot {
       // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber this)
       for n latestVersion { if (not (representsAnInteger n)) { return }} // sanity check
@@ -936,6 +962,7 @@ method isChineseWebapp MicroBlocksEditor {
 	return (or
 		((containsSubString url 'microblocksfun.cn') > 0)
 		((containsSubString url 'blocks.aimaker.space') > 0)
+		(browserHasLanguage 'zh')
 	)
 }
 
@@ -959,6 +986,9 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'devMode')) {
 		setDevMode (global 'page') (at prefs 'devMode')
 		developerModeChanged this
+	}
+	if (notNil (at prefs 'showImplementationBlocks')) {
+		showHiddenBlocks = (at prefs 'showImplementationBlocks')
 	}
 }
 
@@ -993,6 +1023,16 @@ method toggleAutoDecompile MicroBlocksEditor flag {
 
 method autoDecompileEnabled MicroBlocksEditor {
 	return (autoDecompile == true)
+}
+
+method toggleShowHiddenBlocks MicroBlocksEditor flag {
+	showHiddenBlocks = flag
+	saveToUserPreferences this 'showImplementationBlocks' showHiddenBlocks
+	developerModeChanged this // updates the palette
+}
+
+method showHiddenBlocksEnabled MicroBlocksEditor {
+	return (and (devMode) (showHiddenBlocks == true))
 }
 
 // developer mode
@@ -1133,7 +1173,6 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
-  addLine menu
 
 if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
@@ -1143,6 +1182,11 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addLine menu
 }
 
+  if (boardIsBLECapable (smallRuntime)) {
+    addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+  }
+
+  addLine menu
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
@@ -1151,6 +1195,8 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // Commented out for now since all precompiled VM's are already included in IDE
 //	addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
 	addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
+	addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
+
 	if ('Browser' != (platform)) {
 	  addLine menu
 	  if (not (isRunning httpServer)) {
@@ -1159,6 +1205,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 		addItem menu 'stop HTTP server' 'stopHTTPServer'
 	  }
 	}
+	addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 	addLine menu
 	if (boardLibAutoLoadDisabled this) {
 		addItem menu 'enable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this true)
@@ -1180,8 +1227,20 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
+	if (showHiddenBlocksEnabled this) {
+		addItem menu 'hide implementation blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+	} else {
+		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+	}
   }
   return menu
+}
+
+method downloadTest MicroBlocksEditor {
+  fileName = (trim (freshPrompt (global 'page') 'URL?' 'vm_esp32.bin'))
+  t = (newTimer)
+  data = (httpGetBinary 'microblocks.fun' (join '/downloads/pilot/vm/' fileName))
+  print 'got' (byteCount data) 'bytes in' (msecs t) 'msecs'
 }
 
 method hasHelpEntryFor MicroBlocksEditor aBlock {
@@ -1473,10 +1532,8 @@ method fixPNGScriptImage MicroBlocksEditor pngFile {
   if (1 == scriptCount) {
     block = (handler (first (parts (morph scriptEditor))))
     exportAsImageScaled block nil false pngFile
-print (filePart pngFile)
   } else {
     saveScriptsImage scriptEditor pngFile true
-print scriptCount 'scripts:' (filePart pngFile)
   }
 }
 

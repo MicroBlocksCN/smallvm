@@ -1,7 +1,7 @@
 module Octopus
 author ELECFREAKS
-version 1 1 
-depends 'OLED Graphics' 'Temperature Humidity (DHT11, DHT22)' 
+version 1 3 
+depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'ELECFREAKS Octopus Component Library
 
 Octopus components help you build projects quickly and enjoy the fun of creation.
@@ -38,8 +38,8 @@ http://wiki.elecfreaks.com/en/microbit/sensor/octopus-sensors/
   spec ' ' 'Octopus clear OLED' 'Octopus OLED clear'
   spec ' ' 'Octopus draw pixel' 'Octopus OLED draw pixel x _ y _' 'num num' 63 31
   spec ' ' 'Octopus draw line' 'Octopus OLED draw line from x _ y _ to x _ y _' 'num num num num' 0 0 127 63
-  spec ' ' 'Octopus draw rectangle' 'Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)' 'num num num num num' 0 0 60 30 0
-  spec ' ' 'Octopus fill rectangle' 'Octopus OLED fill rectangle x _ y _ w _ h _' 'num num num num' 0 0 60 30
+  spec ' ' 'Octopus draw rectangle' 'Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (0~15)' 'num num num num num' 0 0 60 30 0
+  spec ' ' 'Octopus fill rectangle' 'Octopus OLED fill rectangle x _ y _ w _ h _ rounding _ (0~15)' 'num num num num auto' 0 0 60 30 0
   spec ' ' 'Octupus draw circle' 'Octopus OLED draw circle x _ y _ radius _' 'num num num' 10 10 10
   spec ' ' 'Octopus fill circle' 'Octopus OLED fill circle x _ y _ radius _' 'num num num' 10 10 10
 
@@ -48,42 +48,31 @@ to 'Octopus LED pin' pin bool {
 }
 
 to 'Octopus clear OLED' {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDclear
+  '[display:mbDisplayOff]'
 }
 
 to 'Octopus draw line' x y x1 y1 {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDdrawLine x y x1 y1 false
+  '[tft:line]' x y x1 y1 (colorSwatch 35 190 30 255)
 }
 
 to 'Octopus draw pixel' x y {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDpixel x y false
-  OLEDshowGDBuffer
+  '[tft:setPixel]' x y (colorSwatch 35 190 30 255)
 }
 
 to 'Octopus draw rectangle' x y w h rounding {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDdrawRect x y w h false rounding
+  '[tft:roundedRect]' x y w h rounding (colorSwatch 35 190 30 255) false
 }
 
-to 'Octopus draw string' hello x y {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDwrite hello x y false
+to 'Octopus draw string' text x y {
+  '[tft:text]' text x y (colorSwatch 35 190 30 255) 1 true
 }
 
 to 'Octopus fill circle' x y r {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  repeat r {
-    OLEDdrawCircle x y r false
-    r += -1
-  }
+  '[tft:circle]' x y r (colorSwatch 35 190 30 255) true
 }
 
-to 'Octopus fill rectangle' x y w f {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDfillRect x y w f false
+to 'Octopus fill rectangle' x y w h rounding {
+  '[tft:roundedRect]' x y w h rounding (colorSwatch 35 190 30 255) true
 }
 
 to 'Octopus get distance' trig echo {
@@ -148,23 +137,11 @@ to 'Octopus set led brightness' pin brightness {
 }
 
 to 'Octopus set servo angle' which degrees {
-  local 'reversed' false
-  if ((pushArgCount) > 2) {
-    reversed = optionalReverse
-  }
-  if reversed {
-    degrees = (0 - (degrees - 90))
-  }
   local 'pulseWidth' (1500 - (10 * (degrees - 90)))
-  if ('[io:hasServo]') {
-    '[io:setServo]' which pulseWidth
-  } else {
-    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
-  }
+  '[io:setServo]' which pulseWidth
 }
 
 to 'Octupus draw circle' x y r {
-  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
-  OLEDdrawCircle x y r false
+  '[tft:circle]' x y r (colorSwatch 35 190 30 255) false
 }
 

@@ -1,0 +1,139 @@
+module main
+author wwj
+version 1 0 
+description ''
+variables count _OctoAdvertising shape 
+
+script 306 50 {
+comment 'OctoStudio on Android phones is not very stable. 
+After running for some time, 
+the beam and wait for blocks might not work. 
+If you''re not receiving messages, 
+try restarting the OctoStudio  APP.'
+}
+
+script 56 69 {
+whenStarted
+count = 0
+forever {
+  shape = (octoReceiveBeam)
+  if (shape != (booleanConstant false)) {
+    count += 1
+    sayIt shape count
+  }
+  waitMillis 100
+}
+}
+
+script 292 220 {
+octoSendBeam 'heart'
+}
+
+
+module OctoStudio Comm
+author wwj718
+version 1 7 
+choices octo_shapes triangle circle square heart star 
+description 'Communicate with OctoStudio (https://octostudio.org/)'
+variables _octoShapes _octoLastBeam _octoIsBeaming 
+
+  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
+  space
+  spec 'r' 'octoBeamReceived' 'Octo beam received?'
+  spec 'r' 'octoLastBeam' 'Octo last beam'
+  space
+  spec 'r' 'octoReceiveBeam' 'Octo receive beam'
+  space
+  spec ' ' '_octoInit' '_octoInit'
+  spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
+  spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
+  space
+  spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
+  spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
+  spec ' ' '_octoStopBeam' '_octoStopBeam'
+
+to '_octoInit' {
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
+}
+
+to '_octoMakeMessage' shape {
+  comment 'Mimic iOS, eg: ECA7059C00000001'
+  '_octoInit'
+  local 'result' ('[data:makeList]')
+  repeat 8 {
+    '[data:addLast]' (at 'random' '0123456789ABCDEF') result
+  }
+  repeat 7 {
+    '[data:addLast]' 0 result
+  }
+  local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
+  if (shapeNum < 0) {
+    return 'Unknown shape'
+  }
+  '[data:addLast]' shapeNum result
+  return ('[data:joinStrings]' result)
+}
+
+to '_octoReceiveBeam' {
+  return ('[ble:octoReceive]')
+}
+
+to '_octoShapeForID' id {
+  '_octoInit'
+  if (or (id < 0) (id >= (size _octoShapes))) {
+    return 'Unknown shape'
+  }
+  return (at (id + 1) _octoShapes)
+}
+
+to '_octoStartBeam' msg {
+  '[ble:octoStartBeam]' msg
+}
+
+to '_octoStopBeam' {
+  '[ble:octoStopBeam]'
+}
+
+to octoBeamReceived {
+  comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
+  local 'newBeam' ('_octoReceiveBeam')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  _octoLastBeam = ('_octoShapeForID' newBeam)
+  return (booleanConstant true)
+}
+
+to octoLastBeam {
+  comment 'Return the name of the last shape received.'
+  if (_octoLastBeam == 0) {
+    return 'None'
+  }
+  return _octoLastBeam
+}
+
+to octoReceiveBeam {
+  local 'newBeam' ('_octoReceiveBeam')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  return ('_octoShapeForID' newBeam)
+}
+
+to octoSendBeam shape optionalDuration {
+  local 'duration' 200
+  if ((pushArgCount) > 1) {
+    duration = optionalDuration
+  }
+  if (_octoIsBeaming == 1) {
+    sayIt 'waiting...'
+    waitUntil (_octoIsBeaming == 0)
+    sayIt ''
+  }
+  _octoIsBeaming = 1
+  '_octoStartBeam' ('_octoMakeMessage' shape)
+  waitMillis duration
+  '_octoStopBeam'
+  _octoIsBeaming = 0
+}
+

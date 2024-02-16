@@ -80,7 +80,7 @@ to twoDigits n {
   return ('[data:join]' '' n)
 }
 
-script 43 43 {
+script 50 50 {
 comment 'This project fetches the current time (GMT) from
 the microblocks.fun server. It does so by parsing
 the headers of the HTTP response. After that, it
@@ -93,7 +93,7 @@ Remember to enter your Wifi network name and
 password.'
 }
 
-script 557 73 {
+script 564 80 {
 whenBroadcastReceived 'time received'
 forever {
   sayIt ('[data:join]' hours ':' (twoDigits minutes) ':' (twoDigits seconds))
@@ -103,7 +103,7 @@ forever {
 }
 }
 
-script 45 231 {
+script 52 238 {
 whenStarted
 server = 'microblocks.fun'
 '[tft:text]' 'Connecting' 0 (('[tft:getHeight]') / 3) (colorSwatch 46 255 40 255) 2 true
@@ -116,12 +116,12 @@ wifiConnect 'Network_Name' ''
 sendBroadcast 'time received'
 }
 
-script 557 253 {
+script 564 260 {
 whenButtonPressed 'A'
 'fetch current time from server' server
 }
 
-script 560 358 {
+script 567 365 {
 whenCondition (and ((getIPAddress) != '0.0.0.0') (seconds == 0))
 'fetch current time from server' server
 waitUntil (seconds != 0)
@@ -276,25 +276,40 @@ to request method data url optionalPort {
 
 module TFT Output
 author MicroBlocks
-version 1 3 
-tags tft graphics draw 
+version 1 7 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
   spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
   spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
   spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
   spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'makeGray' 'gray _ %' 'num' 50
   spec 'r' 'randomColor' 'random color'
+  space
   spec 'r' '[tft:getWidth]' 'TFT width'
   spec 'r' '[tft:getHeight]' 'TFT height'
+  space
   spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
-  spec ' ' '[tft:enableDisplay]' 'obsolete enable TFT _' 'bool' true
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
@@ -321,18 +336,25 @@ to randomColor {
   }
 }
 
+to tft_colorSwatch color {
+  return color
+}
+
 
 module WiFi Comm
 author MicroBlocks
-version 1 5 
+version 1 8 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
 
 to getIPAddress {
   return ('[net:myIPAddress]')
@@ -349,7 +371,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
   local 'startMSecs' (millisOp)
   repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
     comment 'Timeout after N seconds'
-    if (((millisOp) - startMSecs) > 10000) {
+    if (((millisOp) - startMSecs) > 30000) {
       sayIt 'Could not connect'
       return 0
     }
@@ -371,6 +393,10 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
   '[net:startWiFi]' ssid password true
   if ('Connected' != ('[net:wifiStatus]')) {
     sayIt 'Could not create hotspot'

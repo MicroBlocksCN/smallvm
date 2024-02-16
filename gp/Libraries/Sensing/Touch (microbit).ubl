@@ -1,11 +1,11 @@
 module 'Touch (microbit)' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'Capacitive touch sensing for micro:bit v1 and v2.'
 variables _lowCount _isHigh 
 
-	spec 'r' 'touch' 'pin _ touched : threshold _' 'num num' 0 0
-	spec 'r' 'logo touched' 'logo touched'
+  spec 'r' 'touch' 'pin _ touched : threshold _' 'num num' 0 0
+  spec 'r' 'logo touched' 'logo touched'
 
 to 'logo touched' {
   if ((boardType) == 'micro:bit') {return (booleanConstant false)}
@@ -39,7 +39,7 @@ to touch pin optionalThreshold {
       return _isHigh
     }
   }
-  digitalWriteOp touchPin false
+  digitalWriteOp pin false
   if (_isHigh == 0) {
     _isHigh = (booleanConstant false)
   }

@@ -166,34 +166,34 @@ of the power value determines motor direction.'
   analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
 }
 
-script 348 45 {
+script 353 50 {
 comment 'Click to test!'
 sendBroadcast 'Set Digital Pin,2,false'
 }
 
-script 45 47 {
+script 50 52 {
 comment 'Click to test!'
 sendBroadcast 'Set Digital Pin,2,true'
 }
 
-script 45 124 {
+script 50 129 {
 comment 'Click to test!'
 sendBroadcast 'Set Motor,A,100'
 }
 
-script 353 124 {
+script 358 129 {
 comment 'Click to test!'
 sendBroadcast 'Set Motor,A,0'
 }
 
-script 360 208 {
+script 365 213 {
 whenBroadcastReceived ''
 comment 'Handle commands with arguments
 (e.g. motor and pin control)'
 snapConnect_processCommands
 }
 
-script 45 216 {
+script 50 221 {
 whenStarted
 comment 'Send pin and sensor state'
 forever {
@@ -205,9 +205,13 @@ forever {
 }
 }
 
-script 366 343 {
+script 371 348 {
 whenBroadcastReceived 'Get Info'
 sendBroadcast ('[data:join]' 'info,SnapBridge 1.0 ' (boardType))
+}
+
+script 50 426 {
+to snapConnect_sendPinState {}
 }
 
 
@@ -232,22 +236,36 @@ to '_setAccelRange' n {
 }
 
 
-module 'Touch (MPR121)' Input
+module Touch Input
 author MicroBlocks
-version 1 4 
+version 1 10 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_initialized _touch_state _touch_last_state _touch_queue _touch_last_touched_pin 
+variables _touch_reg _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
-  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:0-11' 0
+  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
+  space
   spec 'r' 'touch_touch_event' 'pin touch event'
   spec 'r' 'touch_last_touched_pin' 'last touched pin'
+  space
+  spec 'r' 'touch_release_event' 'pin release event'
+  spec 'r' 'touch_last_released_pin' 'last released pin'
+  space
   spec 'r' 'touch_state_string' 'touch state string'
+  space
   spec ' ' '_touch_init' '_touch_init'
-  spec ' ' '_touch_record_touched_pins' '_touch_record_touched_pins'
   spec ' ' '_touch_update' '_touch_update'
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
 
 to '_touch_init' {
+  if (_touch_reg == 0) {_touch_reg = 90}
+  if (isType _touch_isTouched 'list') {
+    comment 'Already initialized.'
+    return 0
+  }
+  _touch_isTouched = (newList 12 (booleanConstant false))
+  _touch_eventPending = (newList 12 (booleanConstant false))
+  _touch_last_touched_pin = -1
+  _touch_last_released_pin = -1
   comment 'Soft reset -- sets all registers to defaults'
   '_touch_setRegister' '0x80' '0x63'
   comment 'Set filter parameters'
@@ -271,58 +289,76 @@ to '_touch_init' {
   local 'releaseThreshold' 20
   for i 12 {
     local 'reg' ((hexToInt '40') + (2 * i))
-    i2cSet 90 (reg - 1) touchThreshold
-    i2cSet 90 reg releaseThreshold
+    '_touch_setRegister' (reg - 1) touchThreshold
+    '_touch_setRegister' reg releaseThreshold
   }
   comment 'Start tracking all 12 inputs (proximity detection disabled)'
   '_touch_setRegister' '0x5E' '0xCC'
-  _touch_initialized = (booleanConstant true)
-}
-
-to '_touch_record_touched_pins' {
-  local 'last_state' _touch_last_state
-  '_touch_update'
-  comment 'If a pin was just touched, return the index of that pin,
-otherwise, return zero.'
-  for i 12 {
-    local 'previous' (last_state & (1 << (12 - i)))
-    local 'current' (_touch_state & (1 << (12 - i)))
-    if (and (previous == 0) (current != 0)) {
-      comment 'Return index of newly touched pin '
-      '[data:addLast]' (i - 1) _touch_queue
-    }
-  }
-  _touch_last_state = _touch_state
 }
 
 to '_touch_setRegister' reg value {
-  i2cSet 90 (hexToInt reg) (hexToInt value)
+  if (isType reg 'string') {reg = (hexToInt reg)}
+  if (isType value 'string') {value = (hexToInt value)}
+  i2cSet _touch_reg reg value
 }
 
 to '_touch_update' {
-  if (not _touch_initialized) {'_touch_init'}
-  _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
+  '_touch_init'
+  '[sensors:i2cWrite]' _touch_reg ('[data:makeList]' 0)
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' _touch_reg bytes
+  _touch_state = (((at 2 bytes) << 8) | (at 1 bytes))
+  if (_touch_state < 0) {
+    comment 'i2c read operation failed'
+    _touch_state = 0
+  }
+  for i 12 {
+    local 'isTouchedNow' ((_touch_state & (1 << (i - 1))) != 0)
+    if ((at i _touch_isTouched) != isTouchedNow) {
+      atPut i _touch_isTouched isTouchedNow
+      atPut i _touch_eventPending (booleanConstant true)
+    }
+  }
+  comment 'Leave some time between updates'
+  waitMillis 30
 }
 
 to touch_isTouched pin {
-  if (or (pin < 0) (pin > 11)) {return (booleanConstant false)}
+  if (or (pin < 1) (pin > 12)) {return (booleanConstant false)}
   '_touch_update'
-  return ((_touch_state & (1 << (11 - pin))) != 0)
+  return ((_touch_state & (1 << (pin - 1))) != 0)
+}
+
+to touch_last_released_pin {
+  comment 'Return the pin that triggered the last release event.'
+  '_touch_init'
+  return _touch_last_released_pin
 }
 
 to touch_last_touched_pin {
   comment 'Return the pin that triggered the last touch event.'
-  if (touch_isTouched _touch_last_touched_pin) {
-    return _touch_last_touched_pin
+  '_touch_init'
+  return _touch_last_touched_pin
+}
+
+to touch_release_event {
+  '_touch_update'
+  for i 12 {
+    if (and (at i _touch_eventPending) ((_touch_state & (1 << (i - 1))) == 0)) {
+      atPut i _touch_eventPending (booleanConstant false)
+      _touch_last_released_pin = i
+      return (booleanConstant true)
+    }
   }
-  return -1
+  _touch_last_released_pin = -1
+  return (booleanConstant false)
 }
 
 to touch_state_string {
   '_touch_update'
   local 'pin states' ('[data:makeList]')
   for i 12 {
-    if ((_touch_state & (1 << (12 - i))) != 0) {
+    if ((_touch_state & (1 << (i - 1))) != 0) {
       '[data:addLast]' '1' (v 'pin states')
     } else {
       '[data:addLast]' '0' (v 'pin states')
@@ -332,12 +368,13 @@ to touch_state_string {
 }
 
 to touch_touch_event {
-  if (_touch_queue == 0) {_touch_queue = ('[data:makeList]')}
-  if ((size _touch_queue) == 0) {'_touch_record_touched_pins'}
-  if ((size _touch_queue) > 0) {
-    _touch_last_touched_pin = (at 1 _touch_queue)
-    '[data:delete]' 1 _touch_queue
-    return (booleanConstant true)
+  '_touch_update'
+  for i 12 {
+    if (and (at i _touch_eventPending) ((_touch_state & (1 << (i - 1))) != 0)) {
+      atPut i _touch_eventPending (booleanConstant false)
+      _touch_last_touched_pin = i
+      return (booleanConstant true)
+    }
   }
   _touch_last_touched_pin = -1
   return (booleanConstant false)

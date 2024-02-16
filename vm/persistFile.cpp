@@ -26,20 +26,21 @@ static void closeAndOpenCodeFile() {
 	codeFile.seek(0, SeekEnd);
 }
 
-extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
+extern "C" int initCodeFile(uint8 *flash, int flashByteCount) {
+	// Called at startup on boards that store code in the file system.
+	// Initialize the file system, read the code file, and return
+
 	#if defined(ARDUINO_ARCH_ESP32)
 		myFS.begin(true);
 	#else
 		myFS.begin();
 	#endif
 	codeFile = myFS.open(FILE_NAME, "r");
-	if (codeFile) {
-		// read code file into simulated Flash:
-		codeFile.readBytes((char*) flash, flashByteCount);
-	} else {
-		clearCodeFile(0);
-	}
+	if (!codeFile) clearCodeFile(0);
+	// read code file into simulated Flash:
+	int bytesRead = codeFile.readBytes((char*) flash, flashByteCount);
 	closeAndOpenCodeFile();
+	return bytesRead;
 }
 
 extern "C" void writeCodeFile(uint8 *code, int byteCount) {
@@ -57,6 +58,26 @@ extern "C" void clearCodeFile(int cycleCount) {
 	int headerWord = ('S' << 24) | cycleCount; // Header record, version 1
 	writeCodeFileWord(headerWord);
 	closeAndOpenCodeFile();
+}
+
+// File operations for storing system state
+
+extern "C" void createFile(const char *fileName) {
+	File file = myFS.open(fileName, "w");
+	file.close();
+}
+
+extern "C" void deleteFile(const char *fileName) {
+	if (fileExists(fileName)) {
+		myFS.remove(fileName);
+	}
+}
+
+extern "C" int fileExists(const char *fileName) {
+	File file = myFS.open(fileName, "r");
+	if (!file) return false;
+	file.close();
+	return true;
 }
 
 #endif

@@ -31,17 +31,30 @@ static void stopRF(); // forward reference
 
 #define USE_NRF5x_CLOCK true
 
+// Both NIMBLE and the Nordic Softdevice BLE systems use Timer0.
+// MicroBlocks only supports BLE on the nRF52, we use TIMER1 on nRF52.
+// Use TIMER0 on the nRF51, since that is the only 32-bit timer on the nRF51.
+#if defined(NRF52)
+  #define MB_TIMER NRF_TIMER1
+  #define MB_TIMER_IRQn TIMER1_IRQn
+  #define MB_TIMER_IRQHandler TIMER1_IRQHandler
+#else
+  #define MB_TIMER NRF_TIMER0
+  #define MB_TIMER_IRQn TIMER0_IRQn
+  #define MB_TIMER_IRQHandler TIMER0_IRQHandler
+#endif
+
 static void initClock_NRF5x() {
-	NRF_TIMER0->TASKS_SHUTDOWN = true;
-	NRF_TIMER0->MODE = 0; // timer (not counter) mode
-	NRF_TIMER0->BITMODE = 3; // 32-bit
-	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
-	NRF_TIMER0->TASKS_START = true;
+	MB_TIMER->TASKS_SHUTDOWN = true;
+	MB_TIMER->MODE = 0; // timer (not counter) mode
+	MB_TIMER->BITMODE = 3; // 32-bit
+	MB_TIMER->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	MB_TIMER->TASKS_START = true;
 }
 
 uint32 microsecs() {
-	NRF_TIMER0->TASKS_CAPTURE[0] = true;
-	return NRF_TIMER0->CC[0];
+	MB_TIMER->TASKS_CAPTURE[0] = true;
+	return MB_TIMER->CC[0];
 }
 
 uint32 millisecs() {
@@ -71,12 +84,12 @@ void hardwareInit() {
 	#ifdef USE_NRF5x_CLOCK
 		initClock_NRF5x();
 	#endif
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		// Use synthesized LF clock to free up pin the speaker pin (P0.00)
 		NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
 		NRF_CLOCK->TASKS_LFCLKSTART = 1;
 
-		// On micro:bit v2, disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
+		// Disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
 		// (this change does not take effect until the next hard reset)
 		if (NRF_UICR->NFCPINS & 1) {
 			NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
@@ -88,12 +101,16 @@ void hardwareInit() {
 	initPins();
 	initRandomSeed();
 	turnOffInternalNeoPixels();
+	#ifdef ARDUINO_NRF52840_CLUE
+		turnOffInternalNeoPixels(); // must be done twice on the Clue. Why? Haven't got a clue!
+	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
-		touchSetCycles(0x800, 0x800);
+		touchSetCycles(0x800, 0x900);
 		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
 	tftInit();
+	tftClear();
 	#if defined(DATABOT)
 		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
@@ -101,33 +118,6 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
-}
-
-// Communication Functions
-
-int recvBytes(uint8 *buf, int count) {
-	int bytesRead = Serial.available();
-	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
-	for (int i = 0; i < bytesRead; i++) {
-		buf[i] = Serial.read();
-	}
-	return bytesRead;
-}
-
-int sendByte(char aByte) {
-	#ifdef ARDUINO_ARCH_RP2040
-		// Workaround for Pico Arduino bug (both mbed and Philhower):
-		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
-		Serial.write(aByte);
-		return 1; // assume byte was actually written
-	#else
-		return Serial.write(aByte);
-	#endif
-}
-
-void restartSerial() {
-	Serial.end();
-	Serial.begin(115200);
 }
 
 // General Purpose I/O Pins
@@ -206,6 +196,27 @@ void restartSerial() {
 	//	A3, A4, A5 - connector pins 4, 5, and 6
 	//	A6, A7 - connector pins 17, 18 and Grove connector 2
 
+#elif defined(CALLIOPE_V3)
+
+	#define BOARD_TYPE "Calliope v3"
+	#define DIGITAL_PINS 36
+	#define ANALOG_PINS 8
+	#define TOTAL_PINS 41
+	#define USE_DIGITAL_PIN_MAP true
+	static const int analogPin[8] = {0, 1, 2, 18, 4, 10, 16, 29}; // variant.h pin 3 is wrong
+	static const char digitalPin[36] = {
+		 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+		10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+		35, 36, 37, 38, 39, 40};
+		// Pin 30 - RGB NeoPixels
+		// Pin 31 - MOTOR_MODE
+		// Pin 32 - M0_DIR
+		// Pin 33 - M0_SPEED
+		// Pin 34 - M1_DIR
+		// Pin 35 - M1_SPEED
+	#define DEFAULT_TONE_PIN 27
+
 #elif defined(ARDUINO_SINOBIT)
 
 	#define BOARD_TYPE "sino:bit"
@@ -232,6 +243,7 @@ void restartSerial() {
 	#define DIGITAL_PINS 16
 	#define ANALOG_PINS 11
 	#define TOTAL_PINS 27
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[11] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 		// A0-A7 Pads on board
 		// A8 - light sensor
@@ -257,6 +269,7 @@ void restartSerial() {
 	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 10
 	#define TOTAL_PINS 14
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[10] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
 		// A0-A7 Pads on board
 		// A8 - light sensor
@@ -281,6 +294,7 @@ void restartSerial() {
 	#define DIGITAL_PINS 23
 	#define ANALOG_PINS 8
 	#define TOTAL_PINS 48
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
 	static const char digitalPin[23] = {
 		// Pins 0-20 Edge connector pins (except 17 & 18)
@@ -386,6 +400,14 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
+#elif defined(MAKERPORT) // must come before Zero
+
+	#define BOARD_TYPE "MakerPort"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 9
+	#define TOTAL_PINS 22
+	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 14};
+
 #elif defined(ADAFRUIT_METRO_M0_EXPRESS) // must come before Zero
 
 	#define BOARD_TYPE "Metro M0"
@@ -416,6 +438,7 @@ void restartSerial() {
 	#define DIGITAL_PINS 9
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS 18 // A0 is pin 17
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {A0};
 	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
 	#define PIN_LED LED_BUILTIN
@@ -469,7 +492,7 @@ void restartSerial() {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_M5Stick_Plus)
 	#define BOARD_TYPE "M5StickC+"
@@ -547,7 +570,7 @@ void restartSerial() {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ESP32_PICO)
 	#define BOARD_TYPE "ESP32-Pico-D4"
@@ -567,11 +590,12 @@ void restartSerial() {
 	#define BOARD_TYPE "Mbits"
 	#define PIN_BUTTON_A 36
 	#define PIN_BUTTON_B 39
-	#define DIGITAL_PINS 40
+	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {};
-	static const char digitalPin[] = {
+	static const char digitalPin[21] = {
 		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
 		14, 39, 15, 18, 19, 23, 2, 255, 255, 21, 22}; // edge connector pins 17 & 18 are not used
 	#define DEFAULT_TONE_PIN 33
@@ -623,6 +647,49 @@ void restartSerial() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+	#define BOARD_TYPE "ESP32-S3"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#ifdef BUILTIN_LED
+		#define PIN_LED BUILTIN_LED
+	#else
+		#define PIN_LED 2
+	#endif
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 0
+		#endif
+	#endif
+	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
+	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// USB pins: 19 (USB D-), 20 (USB D+)
+	// also possibly: 39-42 (JTAG pins)
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+		1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 1, 1, 0, 0};
+
+#elif defined(AIRM2MC3)
+	#define BOARD_TYPE "airm2m_core_esp32c3"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 5
+	#define TOTAL_PINS 22
+	static const int analogPin[] = {0, 1, 2, 3, 4};
+	#define PIN_LED 12
+	#define PIN_BUTTON_A 9
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
+		1, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -677,6 +744,7 @@ void restartSerial() {
 	#define DEFAULT_TONE_PIN 17 // maps to speaker pin
 	#define PIN_BUTTON_A 20
 	#define PIN_BUTTON_B 21
+	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {26, 27, 28, 29};
 	static char digitalPin[TOTAL_PINS] = {
 		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
@@ -815,10 +883,8 @@ void turnOffPins() {
 }
 
 int mapDigitalPinNum(int pinNum) {
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pinNum) && (pinNum <= 139)) {
@@ -830,10 +896,11 @@ int mapDigitalPinNum(int pinNum) {
 	#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_ESP32) ||  defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return -1;
 	#endif
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return -1; // out of range
 	return pinNum;
 }
 
-#if defined(ARDUINO_BBC_MICROBIT_V2)
+#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 static void setHighDrive(int pin) {
 	if ((pin < 0) || (pin >= PINS_COUNT)) return;
@@ -854,14 +921,19 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT)
 		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
-	#endif
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
-		if (6 == pinNum) return int2obj(readAnalogMicrophone());
-	#endif
-	#if defined(ARDUINO_CALLIOPE_MINI)
+	#elif defined(ARDUINO_BBC_MICROBIT_V2)
+		if (6 == pinNum) return int2obj(readAnalogMicrophone()); // A6
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+		if (29 == pinNum) return int2obj(readAnalogMicrophone());
+	#elif defined(ARDUINO_CALLIOPE_MINI)
 		if (0 == pinNum) return int2obj(readAnalogMicrophone());
+	#elif defined(CALLIOPE_V3)
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+		if (16 == pinNum) pinNum = 6; // map pin 16 to A6
+		if (18 == pinNum) pinNum = 3; // map pin 18 to A3
+		if (29 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
 	#ifdef ARDUINO_CITILAB_ED1
 		if ((100 <= pinNum) && (pinNum <= 139)) {
@@ -887,6 +959,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#if defined(ARDUINO_ARCH_RP2040) && !defined(PICO_ED)
 		if ((pinNum < 26) || (pinNum > 29)) return int2obj(0);
 		pinNum -= 26; // map pins 26-29 to A0-A3
+	#endif
+	#if defined(MAKERPORT)
+		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
+		if (14 == pinNum) pinNum = 8; // map pin 14 to A8
 	#endif
 
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
@@ -919,7 +995,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits (same clock rate as servos)
+			ledcSetup(esp32Channel, 100, 10); // 100Hz, 10 bits (same clock rate as servos)
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -970,8 +1046,7 @@ void primAnalogWrite(OBJ *args) {
 		} else {
 			return;
 		}
-	#elif defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || \
-			defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -998,16 +1073,18 @@ void primAnalogWrite(OBJ *args) {
 		(void)(modeChanged); // reference var to suppress compiler warning
 
 		SET_MODE(pinNum, OUTPUT);
-		#if defined(ARDUINO_BBC_MICROBIT_V2)
+		#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 			if ((27 == pinNum) && modeChanged) setHighDrive(pinNum); // use high drive for speaker
 		#endif
 	#endif
 
-	#if defined(ESP32) && !defined(ESP32_C3)
-		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
+	#if defined(ESP32)
+	  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(ESP32_C3)
+		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 and ESP32-S2 DAC pins
 			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
 		}
+	  #endif
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
@@ -1049,9 +1126,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1109,9 +1184,7 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
+	#elif defined(USE_DIGITAL_PIN_MAP)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1134,10 +1207,18 @@ void primDigitalSet(int pinNum, int flag) {
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 
-	#if defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		if (28 == pinNum) {
 			stopPWM();
 			setHighDrive(pinNum); // use high drive for microphone
+		}
+	#endif
+
+	#if defined(ESP32)
+		// stop PWM so we can do a normal digitalWrite
+		if (pwmRunning[pinNum]) {
+			pinDetach(pinNum);
+			pwmRunning[pinNum] = false;
 		}
 	#endif
 
@@ -1151,9 +1232,7 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_BBC_MICROBIT_V2) || \
-		defined(ARDUINO_Mbits)
+	#if defined(HAS_LED_MATRIX)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
@@ -1180,7 +1259,6 @@ void primSetUserLED(OBJ *args) {
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
-
 	#endif
 }
 
@@ -1303,13 +1381,13 @@ void stopPWM() {
 
 // NRF5 Servo State
 
-#define MAX_SERVOS 4
+#define MAX_SERVOS 8
 #define UNUSED 255
 
 static int servoIndex = 0;
 static char servoPinHigh = false;
-static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED};
-static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500};
+static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED};
+static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};
 
 // NRF5 Tone State
 
@@ -1320,36 +1398,36 @@ static char servoToneTimerStarted = 0;
 
 static void startServoToneTimer() {
 	// enable timer interrupts
-	NVIC_EnableIRQ(TIMER0_IRQn);
+	NVIC_EnableIRQ(MB_TIMER_IRQn);
 
 	// get current timer value
- 	NRF_TIMER0->TASKS_CAPTURE[0] = true;
- 	uint32_t wakeTime = NRF_TIMER0->CC[0];
+ 	MB_TIMER->TASKS_CAPTURE[0] = true;
+ 	uint32_t wakeTime = MB_TIMER->CC[0];
 
 	// set initial wake times a few (at least 2) usecs in the future to kick things off
-	NRF_TIMER0->CC[2] = wakeTime + 5;
-	NRF_TIMER0->CC[3] = wakeTime + 5;
+	MB_TIMER->CC[2] = wakeTime + 5;
+	MB_TIMER->CC[3] = wakeTime + 5;
 
 	// enable interrrupts on CC[2] and CC[3]
-	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
+	MB_TIMER->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
 
 	servoToneTimerStarted = true;
 }
 
-extern "C" void TIMER0_IRQHandler() {
-	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
-		uint32_t wakeTime = NRF_TIMER0->CC[2];
-		NRF_TIMER0->EVENTS_COMPARE[2] = 0; // clear interrupt
+extern "C" void MB_TIMER_IRQHandler() {
+	if (MB_TIMER->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
+		uint32_t wakeTime = MB_TIMER->CC[2];
+		MB_TIMER->EVENTS_COMPARE[2] = 0; // clear interrupt
 		if (tonePin >= 0) {
 			tonePinState = !tonePinState;
 			digitalWrite(tonePin, tonePinState);
-			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
+			MB_TIMER->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
 		}
 	}
 
-	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
-		uint32_t wakeTime = NRF_TIMER0->CC[3] + 12;
-		NRF_TIMER0->EVENTS_COMPARE[3] = 0; // clear interrupt
+	if (MB_TIMER->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
+		uint32_t wakeTime = MB_TIMER->CC[3] + 12;
+		MB_TIMER->EVENTS_COMPARE[3] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
 			digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
@@ -1364,11 +1442,11 @@ extern "C" void TIMER0_IRQHandler() {
 		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
 			digitalWrite(servoPin[servoIndex], HIGH);
 			servoPinHigh = true;
-			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
+			MB_TIMER->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER0->CC[3] = (wakeTime + 18000);
+			MB_TIMER->CC[3] = (wakeTime + 18000);
 		}
 	}
 }
@@ -1421,7 +1499,7 @@ static int attachServo(int pin) {
 	// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
 	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
 		if ((0 == esp32Channels[i]) && ((i & 7) > 1)) { // free channel
-			ledcSetup(i, 50, 10); // 50Hz, 10 bits
+			ledcSetup(i, 100, 10); // 100Hz, 10 bits
 			ledcAttachPin(pin, i);
 			esp32Channels[i] = pin;
 			return i;
@@ -1437,7 +1515,7 @@ static void setServo(int pin, int usecs) {
 		int esp32Channel = pinAttached(pin);
 		if (!esp32Channel) esp32Channel = attachServo(pin);
 		if (esp32Channel > 0) {
-			ledcWrite(esp32Channel, usecs * 1024 / 20000);
+			ledcWrite(esp32Channel, usecs * 1024 / 10000);
 		}
 	}
 }
@@ -1535,14 +1613,23 @@ static void setServo(int pin, int usecs) {
 Servo servo[TOTAL_PINS];
 
 static void setServo(int pin, int usecs) {
+	int servoIndex = pin;
+
+	#if defined(MAKERPORT)
+		// The MakerPort (SAM D21) can use only the first 12 servo channels.
+		// Map pins 7-18 to those channels. Servo capable pins are: 7-12, 14, 16-17
+		servoIndex -= 7;
+		if (servoIndex < 0) return;
+	#endif
+
 	if (usecs <= 0) {
-		if (servo[pin].attached()) servo[pin].detach();
+		if (servo[servoIndex].attached()) servo[servoIndex].detach();
 	} else {
-		if (!servo[pin].attached()) {
+		if (!servo[servoIndex].attached()) {
 			// allow a wide range of pulse widths; MicroBlocks library imposes its own limits
-			servo[pin].attach(pin, 200, 3000);
+			servo[servoIndex].attach(pin, 200, 3000);
 		}
-		servo[pin].writeMicroseconds(usecs);
+		servo[servoIndex].writeMicroseconds(usecs);
 	}
 }
 
@@ -1564,8 +1651,8 @@ static void setTone(int pin, int frequency) {
 	if (!servoToneTimerStarted) {
 		startServoToneTimer();
 	}
-	NRF_TIMER0->TASKS_CAPTURE[2] = true;
-	NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // set next wakeup time
+	MB_TIMER->TASKS_CAPTURE[2] = true;
+	MB_TIMER->CC[2] = (MB_TIMER->CC[2] + toneHalfPeriod); // set next wakeup time
 }
 
 void stopTone() { tonePin = -1; }
@@ -1618,11 +1705,21 @@ int tonePin = -1;
 static void setTone(int pin, int frequency) {
 	if (pin != tonePin) stopTone();
 	tonePin = pin;
+	if (frequency < 46) {
+		// Lowest frequency on SAMD21 is 46 Hz
+		stopTone();
+		return;
+	}
 	tone(tonePin, frequency);
 }
 
 void stopTone() {
 	if (tonePin >= 0) {
+		#if defined(ARDUINO_SAMD_ZERO)
+			// workaround for intermittent Tone library lockup when generating 38k IR Remote signal
+			NVIC_DisableIRQ(TC5_IRQn);
+			NVIC_ClearPendingIRQ(TC5_IRQn);
+		#endif
 		noTone(tonePin);
 		SET_MODE(tonePin, INPUT);
 	}
@@ -1790,10 +1887,8 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = DEFAULT_TONE_PIN;
 	#endif
 
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			pin = digitalPin[pin];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		pin = digitalPin[pin];
 	#endif
 
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
@@ -1826,10 +1921,8 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
-			pin = digitalPin[pin];
+	#if defined(USE_DIGITAL_PIN_MAP)
+		pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -1887,7 +1980,11 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 // Software serial (output only)
 
-static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
+#if !defined(__not_in_flash_func)
+  #define __not_in_flash_func(funcName) funcName
+#endif
+
+static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *args) {
 	// Write a byte to the given pin at the given baudrate using software serial.
 
 	if (argCount < 3) return fail(notEnoughArguments);
@@ -1896,8 +1993,34 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 	int baud = evalInt(args[2]);
 	int bitTime = 1000000 / baud;
 
+	// adjust the bitTime for slower cpu's
+	#if defined(ARDUINO_ARCH_SAMD)
+		bitTime -= 3;
+	#elif defined(NRF51) || defined(ESP8266) || defined(ARDUINO_SAM_DUE) || defined(RP2040_PHILHOWER)
+		bitTime -= 2;
+	#else
+		bitTime -= 1;
+	#endif
+
+	pinNum = mapDigitalPinNum(pinNum);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
+
+	#if defined(ARDUINO_ARCH_SAMD)
+		// Clear PINCFG register in case pin was previously used for hardware serial
+		// Arduino pinMode() should do this but does not.
+		#define PORT_BASE 0x41004400
+		int ulPort = g_APinDescription[pinNum].ulPort;
+		int ulPin = g_APinDescription[pinNum].ulPin;
+		volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + (0x80 * ulPort) + 0x40 + ulPin);
+		*cnf = *cnf & 0xFFFFFFFE; // turn off the PMUXEN bit (bit 0)
+	#endif
+
+	#if defined(RP2040_PHILHOWER)
+		// improves timing stability on RP2040
+		digitalWrite(pinNum, HIGH);
+		delayMicroseconds(bitTime);
+	#endif
 
 	// start bit
 	digitalWrite(pinNum, LOW);
@@ -1930,7 +2053,7 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
-#if defined(NRF51) || defined(NRF52)
+#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
 
 static void stopRF() {
 	NRF_PPI->CHEN = 0;

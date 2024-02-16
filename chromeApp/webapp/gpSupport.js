@@ -83,7 +83,9 @@ function setGPClipboard(s) {
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
 
-	if (isChromeOS()) {
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
+		navigator.clipboard.writeText(s).catch(() => {});
+	} else {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -91,15 +93,14 @@ function setGPClipboard(s) {
 		} catch (err) {
 			console.error('setGPClipboard failed', err);
 		}
-	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
-		navigator.clipboard.writeText(s).catch(() => {});
-	} else {
-		console.log('setGPClipboard failed');
 	}
 }
 
 async function readGPClipboard(s) {
-	if (isChromeOS()) {
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
+		var s = await navigator.clipboard.readText().catch(() => {});
+		if (s) GP.clipboard.value = s;
+	} else {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -107,11 +108,6 @@ async function readGPClipboard(s) {
 		} catch (err) {
 			console.error('readGPClipboard failed', err);
 		}
-	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
-		var s = await navigator.clipboard.readText().catch(() => {});
-		if (s) GP.clipboard.value = s;
-	} else {
-		console.log('readGPClipboard failed');
 	}
 	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;
@@ -186,16 +182,17 @@ function initGPEventHandlers() {
 			if (evt.keyIdentifier.startsWith('U+')) {
 				charCode = parseInt(evt.keyIdentifier.substring(2), 16);
 			}
-		} else if (evt.key && evt.key.charCodeAt) { // Chrome, Firefox
+		} else if (evt.key && evt.key.charCodeAt && (evt.key.length == 1)) { // Chrome, Firefox
 			if (evt.key.length == 1) {
 				charCode = evt.key.charCodeAt(0);
 			}
 		}
 		if (0 == charCode) {
-			if (8 == evt.keyCode) charCode = 8; // delete
+			if (8 == evt.keyCode) charCode = 8; // backspace key
 			if (9 == evt.keyCode) charCode = 9; // tab
 			if (13 == evt.keyCode) charCode = 13; // enter
 			if (27 == evt.keyCode) charCode = 27; // escape
+			if (46 == evt.keyCode) charCode = 8; // map delete key to backspace
 		}
 		if ((65 <= charCode) && (charCode <= 90) && !evt.shiftKey) charCode += 32; // lowercase
 
@@ -246,14 +243,23 @@ function initGPEventHandlers() {
 			GP.events.push([TEXTINPUT, key]); // suppress, but do generate a textinput event
 			evt.preventDefault();
 		}
-		if (8 == key) evt.preventDefault(); // delete
+		if (8 == key) evt.preventDefault(); // backspace key
 		if ((33 <= evt.which) && (evt.which <= 36)) evt.preventDefault(); // home, end, page up/down keys
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
+		if (46 == key) evt.preventDefault(); // delete key
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
-			// disable browser's handling of ctrl/cmd-X, ctrl/cmd-C, and ctrl/cmd-V
-			if ((88 == evt.keyCode) || (67 == evt.keyCode) || (86 == evt.keyCode)) evt.preventDefault();
-        }
+			// special case for ctrl/cmd-C, ctrl/cmd-V, and ctrl/cmd-X  (copy, paste, cut)
+			if ((67 == evt.keyCode) || (86 == evt.keyCode) || (88 == evt.keyCode)) {
+				// push key down/up events for GP
+				GP.events.push(keyEvent(KEY_DOWN, evt));
+				GP.events.push(keyEvent(KEY_UP, evt));
+
+				// focus and select clipboard element
+				GP.clipboard.focus();
+				GP.clipboard.select();
+			}
+		}
 	}
 	document.onkeyup = function(evt) {
 		GP.events.push(keyEvent(KEY_UP, evt));
@@ -812,6 +818,14 @@ function hasWebSerial() {
 	return (typeof navigator.serial != 'undefined');
 }
 
+function hasWebBluetooth() {
+	return (typeof navigator.bluetooth != 'undefined');
+}
+
+function webBluetoothConnected() {
+	return hasWebBluetooth() && bleSerial.isConnected();
+}
+
 // WebSerial support for Chrome browser (navigator.serial API)
 
 GP_webSerialPort = null;
@@ -933,7 +947,9 @@ function GP_openSerialPort(id, path, baud) {
 		}
 	}
 	if (GP.boardie.isOpen) { return 1; }
-	if (hasWebSerial()) {
+	if (hasWebBluetooth() && (path == 'webBLE')) {
+		bleSerial.connect();
+	} else if (hasWebSerial()) {
 		webSerialConnect();
 	} else if (hasChromeSerial()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
@@ -944,6 +960,7 @@ function GP_openSerialPort(id, path, baud) {
 
 function GP_isOpenSerialPort() {
 	if (GP.boardie.isOpen) { return true; }
+	if (webBluetoothConnected()) { return true; }
 	if (hasWebSerial()) return webSerialIsConnected();
 	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
@@ -952,6 +969,8 @@ function GP_isOpenSerialPort() {
 function GP_closeSerialPort() {
 	if (GP.boardie.isOpen) {
 		GP_closeBoardie();
+	} else if (webBluetoothConnected()) {
+		bleSerial.disconnect();
 	} else if (hasWebSerial()) {
 		webSerialDisconnect();
 	} else if (GP_serialPortID > 0) {
@@ -990,6 +1009,8 @@ function GP_writeSerialPort(data) {
 	if (GP.boardie.isOpen) {
 		GP.boardie.iframe.contentWindow.postMessage(data);
 		return data.buffer.byteLength;
+	} else if (webBluetoothConnected()) {
+		return bleSerial.write_data(data);
 	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
 	} else if (hasChromeSerial()) {
@@ -1039,6 +1060,99 @@ async function GP_setSerialPortDTRandRTS(dtrFlag, rtsFlag) {
 		chrome.serial.setControlSignals(GP_serialPortID, { dtr: dtrFlag, rts: rtsFlag }, ignore);
 	}
 }
+
+// Support for Web Bluetooth
+
+// MicroBlocks UUIDs:
+const MICROBLOCKS_SERVICE_UUID = 'bb37a001-b922-4018-8e74-e14824b3a638'
+const MICROBLOCKS_RX_CHAR_UUID = 'bb37a002-b922-4018-8e74-e14824b3a638' // board receive characteristic
+const MICROBLOCKS_TX_CHAR_UUID = 'bb37a003-b922-4018-8e74-e14824b3a638' // board transmit characteristic
+
+const BLE_PACKET_LEN = 240; // Max BLE attribute length is 512 but 240 gives best performance
+
+class NimBLESerial {
+	// Device to communicate over BLE using the Nordic Semiconductor UART service
+
+	constructor() {
+		this.device = undefined;
+		this.service = undefined;
+		this.rx_char = undefined;
+		this.connected = false;
+		this.sendInProgress = false;
+	}
+
+	handle_disconnected(event) {
+		this.rx_char = undefined;
+		this.connected = false;
+		this.sendInProgress = false;
+	}
+
+	handle_read(event) {
+		let data = new Uint8Array(event.target.value.buffer);
+		GP_serialInputBuffers.push(data);
+	}
+
+	async connect() {
+		// Connect to a microBit
+		this.device = await navigator.bluetooth.requestDevice({
+			filters: [{ services: [MICROBLOCKS_SERVICE_UUID] }]
+		})
+		this.device.addEventListener('gattserverdisconnected', this.handle_disconnected.bind(this));
+		const server = await this.device.gatt.connect();
+		this.service = await server.getPrimaryService(MICROBLOCKS_SERVICE_UUID);
+		const tx_char = await this.service.getCharacteristic(MICROBLOCKS_TX_CHAR_UUID);
+		this.rx_char = await this.service.getCharacteristic(MICROBLOCKS_RX_CHAR_UUID);
+		await tx_char.startNotifications();
+		// bind overrides the default this=tx_char to this=the NimBLESerial
+		tx_char.addEventListener("characteristicvaluechanged", this.handle_read.bind(this));
+ 		this.connected = true;
+		this.sendInProgress = false;
+		console.log("MicroBlocks BLE connected");
+   }
+
+	disconnect() {
+		if (this.device != undefined) {
+			this.device.gatt.disconnect();
+		}
+	}
+
+	isConnected() {
+		return this.connected;
+	}
+
+	write_data(data) {
+		// Write the given data (a Uint8Array) and return the number of bytes written.
+		// Detail: if not busy, start write_loop with as much data as we can send.
+
+		if (this.rx_char == undefined) {
+			throw TypeError("Not connected");
+		}
+		if (this.sendInProgress) {
+			return 0;
+		}
+		let byteCount = (data.length > BLE_PACKET_LEN) ? BLE_PACKET_LEN : data.length;
+		this.write_loop(data.subarray(0, byteCount));
+		return byteCount;
+ 	}
+
+	async write_loop(data) {
+		this.sendInProgress = true;
+		while (true) {
+			// try to send the given data until success
+			try {
+				await this.rx_char.writeValue(data);
+				this.sendInProgress = false;
+				return;
+			} catch (error) {
+				// for now: print the error but keep trying to send
+				// later: check error an give up if BLE disconnected
+				console.log(error);
+			}
+		}
+	}
+}
+
+const bleSerial = new NimBLESerial();
 
 // File read/write
 
@@ -1101,8 +1215,8 @@ function download(filename, text) {
 }
 
 async function GP_writeFile(data, fName, id) {
-	// Write the given data to the given file. fName should including an extension.
-	// id is hint for the operation type (e.g. 'project' for saving a project file.
+	// Write the given data to the given file. fName should include an extension.
+	// id is hint for the operation type (e.g. 'project' for saving a project file).
 	// The browser remembers the folder for the last save with that id.
 
 	function onFileSelected(entry) {
@@ -1185,9 +1299,8 @@ window.onbeforeunload = function() {
 
 // progressive web app service worker
 
-// window.onload = function() {
-//   if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
-//     navigator.serviceWorker.register('sw.js');
-//   }
-// }
-//
+window.onload = function() {
+  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
+    navigator.serviceWorker.register('sw.js');
+  }
+}

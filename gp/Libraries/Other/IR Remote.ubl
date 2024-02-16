@@ -1,19 +1,22 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 3 
+version 1 5 
 tags ir infrared remote 
 description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
 Note: Transmitting IR does not work on ESP8266 boards.
 
 Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.'
-variables _ir_pin _ir_pulse_times _ir_transmit_pin 
+variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin 
 
-  spec 'r' 'receiveIR' 'receive IR code'
   spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
+  spec 'r' 'ir_code_received' 'IR code received?'
+  spec 'r' 'ir_last_code' 'IR code'
   space
   spec ' ' 'IR_Transmit' 'IR transmit device _ command _' 'num num' 48896 1
   spec ' ' 'attachIRTransmitter' 'attach IR transmitter to pin _' 'num' 0
+  space
+  spec 'r' 'receiveIR' 'receive IR code'
   space
   spec ' ' '_testIR' '_test IR'
   spec 'r' '_receiveIRFromDevice' '_receive IR code from device _' 'num' 48896
@@ -74,12 +77,16 @@ to '_IR_SendByte' byte {
 to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
     _ir_pulse_times = (newList 200)
-    if (and (_ir_pin == 0) ((boardType) == 'CircuitPlayground')) {
-      _ir_pin = 11
-    } (and (_ir_pin == 0) ((boardType) == 'Citilab ED1')) {
-      _ir_pin = 35
-    } (and (_ir_pin == 0) ((boardType) == 'D1-Mini')) {
-      _ir_pin = 2
+    if (_ir_pin == 0) {
+      if ((boardType) == 'CircuitPlayground') {
+        _ir_pin = 11
+      } ((boardType) == 'Citilab ED1') {
+        _ir_pin = 35
+      } ((boardType) == 'D1-Mini') {
+        _ir_pin = 2
+      } ((boardType) == 'MakerPort') {
+        _ir_pin = 18
+      }
     }
   }
   fillList _ir_pulse_times 0
@@ -178,11 +185,24 @@ to attachIRTransmitter pin {
   _ir_transmit_pin = pin
 }
 
+to ir_code_received {
+  return ((receiveIR) >= 0)
+}
+
+to ir_last_code {
+  return _ir_last_code
+}
+
 to receiveIR {
   forever {
     '_captureIRMessage'
     if ('_got32Bits') {
-      return ('_getIRByte' 36 nil)
+      local 'id_lowByte' ('_getIRByte' 4 nil)
+      local 'id_highByte' ('_getIRByte' 20 nil)
+      _ir_last_device = ((id_highByte << 8) | id_lowByte)
+      _ir_last_code = ('_getIRByte' 36 nil)
+      atPut 'all' _ir_pulse_times 0
+      return _ir_last_code
     }
   }
 }

@@ -24,7 +24,31 @@
 
 // Forward Reference Declarations
 
+void delay(int); // Arduino delay function
+
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
+static void sendChunkCRC(int chunkID);
+static void sendData();
+
+// debugging
+
+#ifdef DEBUG_BEEP
+
+static void debugBeep(int count) {
+	// Useful for audio debugging communication issues.
+
+	const int speakerPin = 27;
+	pinMode(speakerPin, 1); // output pin
+	for (int i = 0; i < 10; i++) {
+		digitalWrite(speakerPin, true);
+		delay(count);
+		digitalWrite(speakerPin, false);
+		delay(count);
+	}
+	delay(20);
+}
+
+#endif
 
 // Named Primitive Support
 
@@ -34,7 +58,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 15
+#define MAX_PRIM_SETS 18
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
@@ -129,6 +153,7 @@ void primsInit() {
 	addIOPrims();
 	addMiscPrims();
 	addNetPrims();
+	addBLEPrims();
 	addRadioPrims();
 	addSensorPrims();
 	addSerialPrims();
@@ -136,6 +161,7 @@ void primsInit() {
 	addVarPrims();
 	addHIDPrims();
 	addOneWirePrims();
+	addCameraPrims();
 }
 
 // Task Ops
@@ -384,12 +410,6 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	chunks[chunkIndex].chunkType = chunkType;
 }
 
-static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
-	unsigned char attributeID = data[0];
-	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= CHUNK_ATTRIBUTE_COUNT)) return;
-	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
-}
-
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
 	uint8 buf[100];
 	if (byteCount > 99) byteCount = 99;
@@ -457,11 +477,16 @@ void softReset(int clearMemoryFlag) {
 
 	OBJ off = falseObj;
 	if (!useTFT) primSetUserLED(&off);
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_BBC_MICROBIT_V2)
-	OBJ enable = trueObj;
-	primMBEnableDisplay(1, &enable);
-	primMBDisplayOff(0, NULL);
-	updateMicrobitDisplay();
+	#if defined(OLED_128_64)
+		if (!useTFT) tftInit();
+	#endif
+
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+	defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3)
+		OBJ enable = trueObj;
+		primMBEnableDisplay(1, &enable);
+		primMBDisplayOff(0, NULL);
+		updateMicrobitDisplay();
 #endif
 
 	resetRadio();
@@ -489,10 +514,9 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
-int sendBytes(uint8 *buf, int start, int end);
-
-static inline void sendData() {
+static void sendData() {
 #ifdef EMSCRIPTEN
+	// xxx can this special case for EMSCRIPTEN be removed? try it and test w/ boardie.
 	if (outBufStart > outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
 			outBufStart = 0;
@@ -504,9 +528,15 @@ static inline void sendData() {
 		}
 	}
 #else
-	while (outBufStart != outBufEnd) {
-		if (!sendByte(outBuf[outBufStart])) break;
-		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+	int byteCount = 0;
+
+	if (outBufStart > outBufEnd) {
+		byteCount = sendBytes(outBuf, outBufStart, OUTBUF_SIZE);
+		outBufStart = (outBufStart + byteCount) & OUTBUF_MASK;
+	}
+	if (outBufStart < outBufEnd) {
+		byteCount = sendBytes(outBuf, outBufStart, outBufEnd);
+		outBufStart = (outBufStart + byteCount) & OUTBUF_MASK;
 	}
 #endif
 }
@@ -607,14 +637,15 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 				*dst++ = ((n >> 24) & 0xFF);
 			} else if (StringType == type) {
 				*dst++ = 2; // item type (2 is string)
+				int maxStringItem = 20;
 				char *s = obj2str(item);
 				int len = strlen(s);
-				if (len <= 12) {
+				if (len <= maxStringItem) {
 					*dst++ = len;
 					for (int i = 0; i < len; i++) *dst++ = s[i];
 				} else {
-					*dst++ = 12; // send 9 bytes plus '...'
-					for (int i = 0; i < 9; i++) *dst++ = s[i];
+					*dst++ = maxStringItem; // send (maxStringItem - 3) bytes, then '...'
+					for (int i = 0; i < (maxStringItem - 3); i++) *dst++ = s[i];
 					for (int i = 0; i < 3; i++) *dst++ = '.';
 				}
 			} else if (BooleanType == type) {
@@ -670,7 +701,7 @@ void logData(char *s) {
 void outputString(const char *s) {
 	// Sending a debug string. Use chunkID 255.
 
-	if (!serialConnected()) return; // serial port not open; do nothing
+	if (!ideConnected()) return; // serial port not open; do nothing
 
 	char data[200];
 	data[0] = 2; // data type (2 is string)
@@ -754,7 +785,7 @@ static void sendVersionString() {
 void sendBroadcastToIDE(char *s, int len) {
 	int spaceNeeded = len + 50; // leave room for header and a few other messages
 	if (!hasOutputSpace(spaceNeeded)) {
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			return; // apparently not connected to IDE
 		} else {
 			waitForOutbufBytes(spaceNeeded);
@@ -813,7 +844,7 @@ uint32_t crc32(uint8_t *buf, int byteCount) {
 	return ~crc;
 }
 
-void sendChunkCRC(int chunkID) {
+static void sendChunkCRC(int chunkID) {
 	// Send the 4-byte CRC-32 for the given chunk. Do nothing if the chunk is not in use.
 
 	if ((chunkID < 0) || (chunkID >= MAX_CHUNKS)) return;
@@ -824,10 +855,9 @@ void sendChunkCRC(int chunkID) {
 		uint32_t crc = crc32(chunkData, (4 * wordCount));
 		waitForOutbufBytes(9);
 		sendMessage(chunkCRCMsg, chunkID, 4, (char *) &crc);
+		sendData();
 	}
 }
-
-void delay(int); // Arduino delay function
 
 void sendAllCRCs() {
 	// count chunks
@@ -866,30 +896,7 @@ void sendAllCRCs() {
 	}
 }
 
-// Retrieving source code and attributes
-
-// static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
-// 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
-//
-// 	int wordCount = *(persistentRecord + 1);
-// 	int bodyBytes = 1 + (4 * wordCount);
-// 	waitForOutbufBytes(5 + bodyBytes);
-//
-// 	queueByte(251);
-// 	queueByte(chunkAttributeMsg);
-// 	queueByte(chunkIndex);
-// 	queueByte(bodyBytes & 0xFF); // low byte of size
-// 	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
-// 	queueByte(attributeID);
-// 	int *src = persistentRecord + 2;
-// 	for (int i = 0; i < wordCount; i++) {
-// 		int w = *src++;
-// 		queueByte(w & 0xFF);
-// 		queueByte((w >> 8) & 0xFF);
-// 		queueByte((w >> 16) & 0xFF);
-// 		queueByte((w >> 24) & 0xFF);
-// 	}
-// }
+// Retrieving source code
 
 static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chunkData) {
 	int msgSize = 1 + chunkBytes;
@@ -907,7 +914,7 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 }
 
 static void sendAllCode() {
-	// Send the code and attributes for all chunks to the IDE.
+	// Send the code for all chunks to the IDE.
 
 	int delayPerWord = extraByteDelay / 250; // derive from extraByteDelay
 	for (int chunkID = 0; chunkID < MAX_CHUNKS; chunkID++) {
@@ -1028,7 +1035,7 @@ static int receiveTimeout() {
 
 #if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
 
-int serialConnected() {
+int ideConnected() {
 	// Return true if the board is connected to the MicroBlocks IDE
 	// (i.e. if it has received a message from the IDE in the past 3 seconds).
 
@@ -1040,6 +1047,12 @@ int serialConnected() {
 }
 
 #endif
+
+static void sendPingNow(int chunkIndex) {
+	// Used to acknowledge receipt of a command that may take time, such as sending all CRC's.
+	sendMessage(pingMsg, chunkIndex, 0, NULL); // send a ping to acknowledge receipt
+	sendData();
+}
 
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete
@@ -1056,9 +1069,11 @@ static void processShortMessage() {
 		break;
 	case startChunkMsg:
 		startTaskForChunk(chunkIndex);
+		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case stopChunkMsg:
 		stopTaskForChunk(chunkIndex);
+		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case startAllMsg:
 		startAll();
@@ -1082,12 +1097,14 @@ static void processShortMessage() {
 		sendChunkCRC(chunkIndex);
 		break;
 	case getAllCRCsMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCRCs();
 		break;
 	case getVersionMsg:
 		sendVersionString();
 		break;
 	case getAllCodeMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCode();
 		break;
 	case deleteAllCodeMsg:
@@ -1103,7 +1120,10 @@ static void processShortMessage() {
 		softReset(true);
 		break;
 	case pingMsg:
-		sendMessage(pingMsg, chunkIndex, 0, NULL);
+		sendPingNow(chunkIndex);
+		break;
+	case enableBLEMsg:
+		BLE_setEnabled(chunkIndex);
 		break;
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
@@ -1134,7 +1154,9 @@ static void processLongMessage() {
 	int bodyBytes = msgLength - 1; // subtract terminator byte
 	switch (cmd) {
 	case chunkCodeMsg:
+		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
+		sendChunkCRC(chunkIndex);
 		break;
 	case setVarMsg:
 		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
@@ -1145,11 +1167,9 @@ static void processLongMessage() {
 	case broadcastMsg:
 		startReceiversOfBroadcast((char *) &rcvBuf[5], bodyBytes);
 		break;
-	case chunkAttributeMsg:
-		storeChunkAttribute(chunkIndex, bodyBytes, &rcvBuf[5]);
-		break;
 	case varNameMsg:
 		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
+		sendPingNow(chunkIndex); // send a ping to acknowledge save
 		break;
 	case extendedMsg:
 		processExtendedMessage(chunkIndex, bodyBytes, &rcvBuf[5]);
@@ -1168,11 +1188,20 @@ static void processLongMessage() {
 //	while ((microsecs() - start) < (uint32) usecs) /* wait */;
 // }
 
+void captureIncomingBytes() {
+	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	rcvByteCount += bytesRead;
+	// uncomment to check for serial buffer overruns:
+	// if (bytesRead > 49) reportNum("bytesRead", bytesRead);
+}
+
 void processMessage() {
 	// Process a message from the client.
 	sendData();
 
 	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	// uncomment to check for serial buffer overruns:
+	// if (bytesRead > 49) reportNum("bytesRead", bytesRead);
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 

@@ -133,15 +133,18 @@ to 'request method' request {
 
 module WiFi Comm
 author MicroBlocks
-version 1 5 
+version 1 8 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
   spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
   spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
   spec 'r' 'getIPAddress' 'IP address'
   spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
 
 to getIPAddress {
   return ('[net:myIPAddress]')
@@ -158,7 +161,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
   local 'startMSecs' (millisOp)
   repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
     comment 'Timeout after N seconds'
-    if (((millisOp) - startMSecs) > 10000) {
+    if (((millisOp) - startMSecs) > 30000) {
       sayIt 'Could not connect'
       return 0
     }
@@ -180,6 +183,10 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
   '[net:startWiFi]' ssid password true
   if ('Connected' != ('[net:wifiStatus]')) {
     sayIt 'Could not create hotspot'

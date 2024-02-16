@@ -10,13 +10,20 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Unify Arduino IDE and PlatformIO
 #if defined(NRF52_SERIES) && !defined(NRF52)
   #define NRF52 1
 #endif
 
-// Unify ESP32 S2 and S3
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+// Unify ESP32 S2, S3, C3, and H2 (is H2 the same as C6?)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32S3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)
   #define ESP32_S2_OR_S3 1
 #endif
 
@@ -24,8 +31,14 @@
   #define RP2040_PHILHOWER 1
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+#if defined(BLE_IDE) || defined(BLE_KEYBOARD) || defined(BLE_UART) || defined(BLE_OCTO)
+  #define USE_NIMBLE 1
+#endif
+
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3) || \
+	defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
+	defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
+		#define HAS_LED_MATRIX 1
 #endif
 
 // Unsigned integer types

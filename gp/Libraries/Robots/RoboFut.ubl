@@ -1,0 +1,81 @@
+module RoboFut Output
+author MicroBlocks
+version 1 0 
+description 'Blocks for the RoboFut football robot designed by Tesla Lab at the Galileo University in Guatemala.'
+
+  spec ' ' 'move forward' 'move forward'
+  spec ' ' 'move backwards' 'move backwards'
+  spec ' ' 'turn left' 'turn left'
+  spec ' ' 'turn right' 'turn right'
+  spec ' ' 'stop' 'stop'
+  spec ' ' 'pick ball' 'pick up ball'
+  spec ' ' 'shoot ball' 'shoot ball'
+  spec ' ' 'stop2 ball motors' 'stop ball motors'
+  spec ' ' 'stop all motors' 'stop all motors'
+
+to 'move backwards' {
+  digitalWriteOp 4 true
+  digitalWriteOp 18 false
+  digitalWriteOp 14 true
+  digitalWriteOp 27 false
+}
+
+to 'move forward' {
+  digitalWriteOp 4 false
+  digitalWriteOp 18 true
+  digitalWriteOp 14 false
+  digitalWriteOp 27 true
+}
+
+to 'pick ball' {
+  'stop2 ball motors'
+  digitalWriteOp 25 false
+  digitalWriteOp 26 true
+  digitalWriteOp 32 true
+  digitalWriteOp 33 false
+}
+
+to 'shoot ball' {
+  'stop2 ball motors'
+  digitalWriteOp 25 true
+  digitalWriteOp 26 false
+  digitalWriteOp 32 false
+  digitalWriteOp 33 true
+  waitMillis 1000
+  'stop2 ball motors'
+}
+
+to stop {
+  digitalWriteOp 4 false
+  digitalWriteOp 18 false
+  digitalWriteOp 14 false
+  digitalWriteOp 27 false
+}
+
+to 'stop all motors' {
+  for i ('[data:makeList]' 4 14 18 25 26 27 32 33) {
+    digitalWriteOp i false
+  }
+}
+
+to 'stop2 ball motors' {
+  digitalWriteOp 25 false
+  digitalWriteOp 26 false
+  digitalWriteOp 32 false
+  digitalWriteOp 33 false
+}
+
+to 'turn left' {
+  digitalWriteOp 4 true
+  digitalWriteOp 18 false
+  digitalWriteOp 14 false
+  digitalWriteOp 27 true
+}
+
+to 'turn right' {
+  digitalWriteOp 4 false
+  digitalWriteOp 18 true
+  digitalWriteOp 14 true
+  digitalWriteOp 27 false
+}
+

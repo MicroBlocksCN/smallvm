@@ -1,6 +1,6 @@
 module 'LCD Display' Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 description 'Library for 16x2 LCD text displays with 1602 controller I2C "backpack" like the ones from DFRobot, SunFounder, and others. These displays have two lines of sixteen characters.
 
 Most of these displays require 5 volts to provide sufficient LCD contrast, so you will need an external power source for 3.3v boards like the micro:bit.'
@@ -10,27 +10,22 @@ variables _LCD1602_ADDR _LCD1602_LINE1 _LCD1602_LINE2 _LCD1602_LOCK_MSECS
   spec ' ' 'LCD1602_write_field' 'write field _ on LCD line _ from _ to _' 'str num num num' 'Moon!' 1 8 12
   spec ' ' 'LCD1602_clear' 'clear LCD'
   spec 'r' 'LCD1602_isConnected' 'is LCD connected?'
-  spec ' ' '_LCD1602 init' '_LCD1602 init'
+  spec 'r' '_LCD1602 init' '_LCD1602 init'
   spec ' ' '_LCD1602 send' '_LCD1602 send byte _ mode _' 'num num' 10 1
-  spec ' ' '_LCD1602 send command' '_LCD1602 send command _' 'num' 10
-  spec ' ' '_LCD1602 send data' '_LCD1602 send data _' 'num' 10
   spec ' ' '_LCD1602 toggle enable' '_LCD1602 toggle enable _' 'num' 10
 
 to LCD1602_clear {
-  if (_LCD1602_ADDR == 0) {if (not (LCD1602_isConnected)) {
-    return
-  }}
+  if (not ('_LCD1602 init')) {return}
   waitUntil (((millisOp) - _LCD1602_LOCK_MSECS) > 500)
   _LCD1602_LOCK_MSECS = (millisOp)
   _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
   _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
-  '_LCD1602 send command' 1
+  '_LCD1602 send' 1 0
   _LCD1602_LOCK_MSECS = 0
 }
 
 to LCD1602_isConnected {
-  if (_LCD1602_ADDR == 0) {'_LCD1602 init'}
-  return (_LCD1602_ADDR != 0)
+  return ('_LCD1602 init')
 }
 
 to LCD1602_write string line {
@@ -40,21 +35,19 @@ to LCD1602_write string line {
 to LCD1602_write_buffer line {
   local 'bytes' 0
   if (line == 1) {
-    '_LCD1602 send command' (hexToInt '80')
+    '_LCD1602 send' (hexToInt '80') 0
     bytes = _LCD1602_LINE1
   } else {
-    '_LCD1602 send command' (hexToInt 'C0')
+    '_LCD1602 send' (hexToInt 'C0') 0
     bytes = _LCD1602_LINE2
   }
   for b bytes {
-    '_LCD1602 send data' b
+    '_LCD1602 send' b 1
   }
 }
 
 to LCD1602_write_field string line start end {
-  if (_LCD1602_ADDR == 0) {if (not (LCD1602_isConnected)) {
-    return
-  }}
+  if (not ('_LCD1602 init')) {return}
   string = ('[data:join]' '' string)
   if (or (start < 1) (start > 16)) {
     return
@@ -85,6 +78,10 @@ to LCD1602_write_field string line start end {
 }
 
 to '_LCD1602 init' {
+  comment 'Return true if already initialized'
+  if (_LCD1602_ADDR != 0) {
+    return true
+  }
   comment 'Use slow I2C speed'
   '[sensors:i2cSetClockSpeed]' 100000
   comment 'Try two common I2C addresses and
@@ -95,18 +92,21 @@ use the one that gets a response'
   }
   if ((i2cGet _LCD1602_ADDR 0) < 0) {
     _LCD1602_ADDR = 0
-    return
+    comment 'LCD panel not found'
+    return false
   }
   _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
   _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
   comment 'Initialize display'
-  '_LCD1602 send command' (hexToInt '33')
-  '_LCD1602 send command' (hexToInt '32')
-  '_LCD1602 send command' (hexToInt '06')
-  '_LCD1602 send command' (hexToInt '0C')
-  '_LCD1602 send command' (hexToInt '28')
-  '_LCD1602 send command' (hexToInt '01')
+  '_LCD1602 send' (hexToInt '33') 0
+  '_LCD1602 send' (hexToInt '32') 0
+  '_LCD1602 send' (hexToInt '06') 0
+  '_LCD1602 send' (hexToInt '0C') 0
+  '_LCD1602 send' (hexToInt '28') 0
+  '_LCD1602 send' (hexToInt '01') 0
+  '[sensors:i2cSetClockSpeed]' 400000
   waitMillis 250
+  return true
 }
 
 to '_LCD1602 send' bits mode {
@@ -121,15 +121,6 @@ to '_LCD1602 send' bits mode {
   '_LCD1602 toggle enable' (v 'low bits')
   comment 'Revert to fast I2C speed'
   '[sensors:i2cSetClockSpeed]' 400000
-}
-
-to '_LCD1602 send command' byte {
-  '_LCD1602 send' byte 0
-  waitMillis 1
-}
-
-to '_LCD1602 send data' byte {
-  '_LCD1602 send' byte 1
   waitMillis 1
 }
 

@@ -210,6 +210,24 @@ method slotInfoForIndex BlockSpec slotIndex {
   return (at slotInfo i)
 }
 
+method translatedSlotInfo BlockSpec {
+  // Return a copy of my slotInfo with the default string values translated.
+  // However, do not translate default values for slots with menus.
+
+  result = (clone slotInfo)
+  for i (count result) {
+    entry = (at result i)
+    slotDefault = (at entry 2)
+    slotMenu = (at entry 4)
+    if (and (isClass slotDefault 'String') (isNil slotMenu)) {
+      newEntry = (clone entry)
+      atPut newEntry 2 (localized slotDefault)
+      atPut result i newEntry
+    }
+  }
+  return result
+}
+
 method initializeForFunction BlockSpec function {
   blockOp = (functionName function)
   blockType = ' '
@@ -335,9 +353,8 @@ method specDefinitionString BlockSpec className {
 	  } else {
 		add defaultValues 'nil'
 	  }
-	  if ('menu' == slotType) { slotType = (join 'menu.' (at info 4)) }
-	  if (and ('str' == slotType) (notNil (at info 4))) {
-		slotType = (join 'str.' (at info 4))
+	  if (notNil (at info 4)) { // has a menu
+		slotType = (join slotType '.' (at info 4))
 	  }
 	  add slotTypes slotType
 	}

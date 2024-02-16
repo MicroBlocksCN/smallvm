@@ -1,58 +1,56 @@
 module main
-author wwj718
+author 'wwj718 & CWEIB'
 version 1 0 
 description ''
+variables last_ble_message 
 
-script 56 131 {
+script 40 40 {
 whenStarted
+waitMicros 500
 forever {
-  event = ('last BLE UART message')
-  if (event != (booleanConstant false)) {
-    valid_event = event
-    sendBroadcast 'process event'
+  if ('BLE Device connected') {
+    sayIt 'Client is connected'
+    last_ble_message = ('last BLE UART message')
+    if (last_ble_message != (booleanConstant false)) {
+      comment 'echo'
+      sayIt last_ble_message
+      'BLE UART write' last_ble_message
+    }
+  } else {
+    sayIt 'Wait for a client...'
   }
+  waitMillis 50
 }
 }
 
-script 360 135 {
+script 348 50 {
 whenStarted
-'start BLE UART server' 'MicroBlocks BLE UART server'
-}
-
-script 52 380 {
-whenBroadcastReceived 'process event'
-sayIt valid_event
-comment 'echo'
-'BLE UART write' valid_event
+'start BLE UART server' 'BLE echo server'
 }
 
 
 module 'BLE UART server' Comm
-author wwj718
-version 1 0 
-description 'BLE UART server.'
-variables event valid_event 
+author 'wwj718 & CWEIB'
+version 1 1 
+description 'BLE UART server. Firmware URL: https://wwj718.github.io/post/img/esp32-ble-nus-20231202.bin'
+variables _oldname 
 
-	spec ' ' 'start BLE UART server' 'start BLE UART server _' 'auto' 'MicroBlocks BLE UART server'
-	spec 'r' 'BLE Device connected' 'BLE Device connected'
-	spec 'r' 'last BLE UART message' 'last BLE UART message'
-	spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
-	spec ' ' '_start advertising and reconnect loop' '_start advertising and reconnect loop'
+  spec ' ' 'start BLE UART server' 'start BLE UART server _' 'auto' 'MicroBlocks BLE UART server'
+  spec 'r' 'BLE Device connected' 'BLE UART connected'
+  spec 'r' 'last BLE UART message' 'last BLE UART message'
+  spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
+  spec ' ' 'stop BLE UART server' 'stop BLE UART server'
 
 to 'BLE Device connected' {
-  return (callCustomReporter '[net:BLE_DeviceConnected]')
+  return (callCustomReporter '[ble:BLE_UART_Connected]')
 }
 
 to 'BLE UART write' message {
-  callCustomCommand '[net:BLE_UART_Write]' ('[data:makeList]' message)
-}
-
-to '_start advertising and reconnect loop' {
-  callCustomCommand '[net:StartAdvertisingAndReconnectLoop]'
+  callCustomCommand '[ble:BLE_UART_Write]' ('[data:makeList]' message)
 }
 
 to 'last BLE UART message' {
-  local 'tmp' (callCustomReporter '[net:BLE_UART_LastEvent]')
+  local 'tmp' (callCustomReporter '[ble:BLE_UART_LastEvent]')
   if (tmp != (booleanConstant false)) {
     return (at 1 tmp)
   } else {
@@ -61,15 +59,10 @@ to 'last BLE UART message' {
 }
 
 to 'start BLE UART server' name {
-  comment 'Blocked'
-  callCustomCommand '[net:BLE_UART_ServerStart]' ('[data:makeList]' name)
-  forever {
-    '_start advertising and reconnect loop'
-    if ('BLE Device connected') {
-      sayIt 'Client is connected'
-    } else {
-      sayIt 'Waiting a client connection...'
-    }
-  }
+  callCustomCommand '[ble:BLE_UART_Start]' ('[data:makeList]' name)
+}
+
+to 'stop BLE UART server' {
+  callCustomCommand '[ble:BLE_UART_Stop]'
 }
 

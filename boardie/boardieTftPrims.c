@@ -76,13 +76,8 @@ void updateMicrobitDisplay() {
 
 // TFT Primitives
 
-static OBJ primEnableDisplay(int argCount, OBJ *args) {
-	if (trueObj == args[0]) {
-		tftInit();
-	} else {
-		tftClear();
-	}
-	return falseObj;
+static OBJ primSetBacklight(int argCount, OBJ *args) {
+	return falseObj; // noop in Boardie
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
@@ -248,7 +243,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 			window.ctx.beginPath();
 			window.ctx.moveTo($0, $1);
 			window.ctx.lineTo($2, $3);
-			window.ctx.lineTo($3, $4);
+			window.ctx.lineTo($4, $5);
 			window.ctx.closePath();
 			if ($7) {
 				window.ctx.fill();
@@ -319,6 +314,21 @@ static OBJ primText(int argCount, OBJ *args) {
 	tftChanged();
 	return falseObj;
 }
+
+// defer/force update
+
+static OBJ primDeferUpdates(int argCount, OBJ *args) {
+	return falseObj; // noop; Boardie always defers updates
+}
+
+static OBJ primResumeUpdates(int argCount, OBJ *args) {
+	// Return control to the browser to allow display update.
+
+	taskSleep(0); // ends the current interpreter step
+	return falseObj;
+}
+
+// 8-bit primitives
 
 static OBJ primMergeBitmap(int argCount, OBJ *args) {
 	tftInit();
@@ -540,7 +550,7 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	{"enableDisplay", primEnableDisplay},
+	{"setBacklight", primSetBacklight},
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
 	{"setPixel", primSetPixel},
@@ -550,6 +560,9 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+
+	{"deferUpdates", primDeferUpdates},
+	{"resumeUpdates", primResumeUpdates},
 
 	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},

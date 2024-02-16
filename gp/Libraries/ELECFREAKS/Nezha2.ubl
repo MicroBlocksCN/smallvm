@@ -1,0 +1,193 @@
+module Nezha2 Output
+author wwj718 and MicroBlocks
+version 1 3 
+choices nezhaAnalogPort J1 J2 
+choices nezhaServoType '180°' '270°' '360°' 
+choices nezhaPort J1 J2 J3 J4 
+description 'Library for ELECFREAKS Nezha micro:bit expansion board.
+https://www.elecfreaks.com/learn-en/microbitExtensionModule/nezha.html
+
+The Nezha board has four DC motor ports, four servo ports, and a built-in, 900mAh rechargeable LiIon battery. It also has three Planet X I2C ports and four general Planet X ports, two of which are capable of reading analog values. Components are connected with easy-to-use RJ11 (telephone cord style) connectors. The Nezha board and Planet X components are compatible to Lego and Fischertechnik bricks.
+
+This library supports all the components included in the Nezha Inventor Kit for micro:bit. It was created by Wenjie Wu (wwj718) and extended by MicroBlocks.
+'
+
+  spec ' ' 'nezha_beep' 'Nezha beep _ Hz for _ msecs' 'num num' 440 100
+  space
+  spec ' ' 'nezha_setMotor' 'Nezha set motor _ speed to _ (-100-100)' 'menu.range:1-4 num' 1 50
+  spec ' ' 'nezha_stopMotor' 'Nezha stop motor _' 'menu.range:1-4' 1
+  spec ' ' 'nezha_allMotorsOff' 'Nezha stop all motors'
+  space
+  spec ' ' 'nezha_setServo' 'Nezha set _ servo _ angle to _' 'menu.nezhaServoType menu.range:1-4 num' '180°' 1 90
+  spec ' ' 'nezha_setContinuousServo' 'Nezha set continuous servo _ speed to _ (-100 to 100)' 'menu.range:1-4 num' 1 50
+  space
+  spec ' ' 'nezha_setLED' 'Nezha set LED _ to _ : brightness _ %' 'menu.nezhaPort bool num' 'J1' true 20
+  spec ' ' 'nezha_setAllLEDs' 'Nezha set all LEDs to _ : brightness _ %' 'bool num' true 20
+  space
+  spec 'r' 'nezha_trimPot' 'Nezha trim pot _' 'menu.nezhaAnalogPort' 'J1'
+  spec 'r' 'nezha_soilMoisture' 'Nezha soil moisture _' 'menu.nezhaAnalogPort' 'J1'
+  spec 'r' 'nezha_readAnalog' 'Nezha read analog _' 'menu.nezhaAnalogPort' 'J1'
+  space
+  spec 'r' 'nezha_crashSensor' 'Nezha crash sensor _' 'menu.nezhaPort' 'J1'
+  spec 'r' 'nezha_lineSensor' 'Nezha line sensor _ sees line on left _ right _' 'menu.nezhaPort bool bool' 'J1' true true
+  spec 'r' 'nezha_distance' 'Nezha distance _ (cm)' 'menu.nezhaPort' 'J1'
+  space
+  spec 'r' '_nezha_pinAForPort' '_Nezha pin A of _' 'menu.nezhaPort' 'J1'
+  spec 'r' '_nezha_pinBForPort' '_Nezha pin B of _' 'menu.nezhaPort' 'J1'
+
+to '_nezha_pinAForPort' port {
+  if (or ('J1' == port) (1 == port)) {
+    return 1
+  } (or ('J2' == port) (2 == port)) {
+    return 2
+  } (or ('J3' == port) (3 == port)) {
+    return 13
+  } (or ('J4' == port) (4 == port)) {
+    return 15
+  } else {
+    return 1
+  }
+}
+
+to '_nezha_pinBForPort' port {
+  if (or ('J1' == port) (1 == port)) {
+    return 8
+  } (or ('J2' == port) (2 == port)) {
+    return 12
+  } (or ('J3' == port) (3 == port)) {
+    return 14
+  } (or ('J4' == port) (4 == port)) {
+    return 16
+  } else {
+    return 8
+  }
+}
+
+to nezha_allMotorsOff {
+  for i 4 {
+    nezha_setMotor i 0
+  }
+}
+
+to nezha_beep freq msecs {
+  '[io:playTone]' 0 freq
+  waitMillis msecs
+  '[io:playTone]' 0 0
+}
+
+to nezha_crashSensor port {
+  return (not (digitalReadOp ('_nezha_pinBForPort' port)))
+}
+
+to nezha_distance port {
+  local 'trig' ('_nezha_pinAForPort' port)
+  local 'ech' ('_nezha_pinBForPort' port)
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp ech) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
+to nezha_lineSensor port leftSide rightSide {
+  return (and (leftSide == (not (digitalReadOp ('_nezha_pinAForPort' port)))) (rightSide == (not (digitalReadOp ('_nezha_pinBForPort' port)))))
+}
+
+to nezha_readAnalog port {
+  return (analogReadOp ('_nezha_pinAForPort' port))
+}
+
+to nezha_setAllLEDs state optionalBrightness {
+  local 'brightness' 100
+  if ((pushArgCount) > 1) {
+    brightness = optionalBrightness
+  }
+  for i 4 {
+    nezha_setLED i state brightness
+  }
+}
+
+to nezha_setContinuousServo servoNum power {
+  if (or (servoNum < 1) (servoNum > 4)) {return 0}
+  power = (maximum -100 (minimum power 100))
+  local 'cmd' (newList 4)
+  atPut 1 cmd (15 + servoNum)
+  atPut 2 cmd ('[misc:rescale]' power -100 100 0 180)
+  '[sensors:i2cWrite]' 16 cmd
+}
+
+to nezha_setLED port state optionalBrightness {
+  local 'brightness' 100
+  if ((pushArgCount) > 2) {
+    brightness = (maximum 0 (minimum optionalBrightness 100))
+  }
+  if (and (true == state) (brightness < 100)) {
+    analogWriteOp ('_nezha_pinAForPort' port) ('[misc:rescale]' brightness 0 100 0 1023)
+  } else {
+    digitalWriteOp ('_nezha_pinAForPort' port) state
+  }
+}
+
+to nezha_setMotor motorNum power {
+  local 'cmd' (newList 4)
+  if (or (motorNum < 1) (motorNum > 4)) {
+    return 0
+  }
+  atPut 1 cmd motorNum
+  if (power >= 0) {
+    atPut 2 cmd 1
+  } else {
+    atPut 2 cmd 2
+    power = (absoluteValue power)
+  }
+  atPut 3 cmd power
+  '[sensors:i2cWrite]' 16 cmd
+}
+
+to nezha_setServo servoType servoNum degrees {
+  local 'degreeRange' 100
+  if ('180°' == servoType) {
+    degreeRange = 180
+  } ('270°' == servoType) {
+    degreeRange = 270
+  } ('360°' == servoType) {
+    degreeRange = 360
+  }
+  degrees = (maximum 0 (minimum degrees degreeRange))
+  nezha_setContinuousServo servoNum ('[misc:rescale]' degrees 0 degreeRange -100 100)
+}
+
+to nezha_soilMoisture port {
+  comment 'Raw range seems to be roughly 70-520.
+Divide by 5 to get a range of roughly 14-100.
+Lower numbers indicate dryer soil.
+DIfferent pots will give different ranges.'
+  local 'result' ((1023 - (analogReadOp ('_nezha_pinAForPort' port))) / 5)
+  return (minimum result 100)
+}
+
+to nezha_stopMotor motorNum {
+  nezha_setMotor motorNum 0
+}
+
+to nezha_trimPot port {
+  return (analogReadOp ('_nezha_pinAForPort' port))
+}
+

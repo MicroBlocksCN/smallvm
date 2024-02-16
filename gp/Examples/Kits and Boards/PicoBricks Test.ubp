@@ -1,0 +1,403 @@
+module main
+author MicroBlocks
+version 1 0 
+description ''
+
+  spec ' ' 'displaySensor' 'display _ line _' 'auto auto' 123 1
+
+to displaySensor value line {
+  local 'rightJustified' ('[data:join]' '' value)
+  repeatUntil ((size rightJustified) >= 4) {
+    rightJustified = ('[data:join]' ' ' rightJustified)
+  }
+  local 'y' (8 + (12 * line))
+  '[tft:text]' rightJustified 95 y (colorSwatch 35 190 30 255) 1 false
+}
+
+script 320 50 {
+whenBroadcastReceived 'update display'
+'[display:mbDisplayOff]'
+'[tft:text]' 'PicoBricks' 0 0 (colorSwatch 35 190 30 255) 2 true
+'[tft:text]' 'Potentiometer:' 10 20 (colorSwatch 35 190 30 255) 1 true
+'[tft:text]' 'Light level:' 10 32 (colorSwatch 35 190 30 255) 1 true
+'[tft:text]' 'Temperature:' 10 44 (colorSwatch 35 190 30 255) 1 true
+'[tft:text]' 'Humidity:' 10 56 (colorSwatch 35 190 30 255) 1 true
+forever {
+  '_deferMonochromeDisplayUpdates'
+  '[tft:rect]' 90 20 38 44 (colorSwatch 0 0 0 255) true
+  displaySensor (pb_potentiometer) 1
+  displaySensor (pb_light_sensor) 2
+  displaySensor (pb_temperature) 3
+  displaySensor (pb_humidity) 4
+  '_resumeMonochromeDisplayUpdates'
+  waitMillis 100
+}
+}
+
+script 50 51 {
+whenStarted
+pb_set_relay true
+waitMillis 500
+pb_set_relay false
+waitMillis 500
+pb_set_red_LED true
+pb_beep 500
+pb_set_red_LED false
+waitMillis 500
+pb_set_rgb_color (colorSwatch 177 18 0 255)
+waitMillis 500
+pb_set_rgb_color (colorSwatch 19 105 16 255)
+waitMillis 500
+pb_set_rgb_color (colorSwatch 9 3 162 255)
+waitMillis 500
+pb_turn_off_RGB
+sendBroadcast 'update display'
+}
+
+script 52 453 {
+whenCondition (pb_button)
+pb_set_red_LED true
+waitUntil (not (pb_button))
+pb_set_red_LED false
+pb_set_rgb_color (pb_random_color)
+}
+
+
+module PicoBricks
+author MicroBlocks
+version 2 5 
+depends 'Temperature Humidity (DHT11, DHT22)' 
+description 'Robotistan PicoBricks Library
+
+This library controls these Pico Bricks components:
+- Red LED
+- RGB LED
+- DC Motors
+- Piezo speaker
+- Relay Switch (5V-250V, 5A)
+- Button
+- Potentiometer (variable resistor)
+- Light sensor (light dependent resistor)
+- Temperature and humidity sensor (DHT11)
+- switched to renamed DHT library
+
+Use separate libraries to control:
+- Servo motors
+- Graphic display (OLED)
+- WIFI/Bluetooth expansion board
+
+See https://www.robotistan.com, 
+https://wiki.microblocks.fun/boards/pico
+'
+variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED _pb_pin_TX _pb_pin_RX _pb_i2c_Addr 
+
+  spec ' ' 'pb_beep' 'PicoBricks beep _ ms' 'auto' 500
+  spec 'r' 'pb_button' 'PicoBricks button'
+  spec 'r' 'pb_humidity' 'PicoBricks humidity'
+  spec 'r' 'pb_light_sensor' 'PicoBricks light sensor (0-100) %'
+  spec 'r' 'pb_potentiometer' 'PicoBricks potentiometer'
+  spec 'r' 'pb_random_color' 'PicoBricks random color'
+  spec 'r' 'pb_rgb_color' 'PicoBricks color r _ g _ b _ (0-255)' 'auto auto auto' 0 0 0
+  spec ' ' 'pb_set_motor_speed' 'PicoBricks set motor _ speed _ (0-100)' 'auto num' 1 100
+  spec ' ' 'pb_set_red_LED' 'PicoBricks set red LED _' 'bool' true
+  spec ' ' 'pb_set_relay' 'PicoBricks set relay _' 'bool' true
+  spec ' ' 'pb_set_rgb_color' 'PicoBricks set RGB LED color _' 'color'
+  spec 'r' 'pb_temperature' 'PicoBricks temperature (°C)'
+  spec ' ' 'pb_turn_off_RGB' 'PicoBricks turn off RGB LED'
+  spec ' ' '_pb_init_pins' '_pb_init_pins'
+
+to '_pb_init_pins' {
+  if _pb_initialized {return}
+  _pb_pin_RGB_LED = 6
+  _pb_pin_RedLED = 7
+  _pb_pin_Button = 10
+  _pb_pin_DHT = 11
+  _pb_pin_Relay = 12
+  _pb_pin_Buzzer = 20
+  _pb_pin_Motor1 = 21
+  _pb_pin_Motor2 = 22
+  _pb_pin_Pot = 26
+  _pb_pin_LDR = 27
+  _pb_pin_TX = 0
+  _pb_pin_RX = 1
+  _pb_i2c_Addr = '3C'
+  _pb_initialized = (booleanConstant true)
+}
+
+to pb_beep duration {
+  local 'buzzer pin' 20
+  '[io:playTone]' (v 'buzzer pin') 300
+  waitMillis duration
+  '[io:playTone]' (v 'buzzer pin') 0
+}
+
+to pb_button {
+  '_pb_init_pins'
+  return (digitalReadOp _pb_pin_Button)
+}
+
+to pb_humidity {
+  '_pb_init_pins'
+  return (humidity_DHT11 _pb_pin_DHT)
+}
+
+to pb_light_sensor {
+  comment 'Returns Light Values s a percentage:
+0: dark,  100: light'
+  '_pb_init_pins'
+  return ('[misc:rescale]' (1023 - (analogReadOp _pb_pin_LDR)) 0 1023 0 100)
+}
+
+to pb_potentiometer {
+  '_pb_init_pins'
+  return (analogReadOp _pb_pin_Pot)
+}
+
+to pb_random_color {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to pb_rgb_color r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to pb_set_motor_speed which speed {
+  '_pb_init_pins'
+  speed = (maximum 0 (minimum speed 100))
+  if (which == 1) {
+    analogWriteOp _pb_pin_Motor1 ((1023 * speed) / 100)
+  } (which == 2) {
+    analogWriteOp _pb_pin_Motor2 ((1023 * speed) / 100)
+  }
+}
+
+to pb_set_red_LED aBoolean {
+  '_pb_init_pins'
+  digitalWriteOp _pb_pin_RedLED aBoolean
+}
+
+to pb_set_relay aBoolean {
+  '_pb_init_pins'
+  digitalWriteOp _pb_pin_Relay aBoolean
+}
+
+to pb_set_rgb_color color {
+  '_pb_init_pins'
+  '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
+  '[display:neoPixelSend]' color
+  waitMillis 1
+}
+
+to pb_temperature {
+  '_pb_init_pins'
+  return (temperature_DHT11 _pb_pin_DHT)
+}
+
+to pb_turn_off_RGB {
+  '_pb_init_pins'
+  '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
+  '[display:neoPixelSend]' 0
+  waitMillis 1
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 7 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to tft_colorSwatch color {
+  return color
+}
+
+
+module 'Temperature Humidity (DHT11, DHT22)' Input
+author MicroBlocks
+version 1 2 
+tags sensor dht11 dht22 temperature humidity 
+description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
+variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
+
+  spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
+  spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
+  spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 pin _' 'auto' 4
+  spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
+  spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' 4
+  spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
+  spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
+  spec 'r' '_dhtReady' '_dhtReady' 'any'
+
+to '_dhtChecksumOkay' {
+  if (not (isType _dhtData 'list')) {return (booleanConstant false)}
+  local 'checksum' 0
+  for i 4 {
+    checksum += (at i _dhtData)
+  }
+  checksum = (checksum & 255)
+  return (checksum == (at 5 _dhtData))
+}
+
+to '_dhtReadData' pin {
+  comment 'Create DHT data array the first time'
+  if (_dhtData == 0) {
+    _dhtData = (newList 5)
+  }
+  comment 'fill with 1''s set checksum will be bad if read fails'
+  atPut 'all' _dhtData 1
+  comment 'Pull pin low for >18msec to request data'
+  digitalWriteOp pin false
+  waitMillis 20
+  local 'useDHTPrimitive' (booleanConstant true)
+  if useDHTPrimitive {
+    result = ('[sensors:readDHT]' pin)
+    if ((booleanConstant false) != result) {
+      _dhtData = result
+    }
+    return 0
+  }
+  comment 'Read DHT start pulses (H L H L)'
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  local 'i' 1
+  local 'byte' 0
+  local 'bit' 1
+  comment 'Read 40 bits (5 bytes)'
+  repeat 40 {
+    waitUntil (digitalReadOp pin)
+    local 'start' (microsOp)
+    waitUntil (not (digitalReadOp pin))
+    if (((microsOp) - start) > 40) {
+      comment 'Long pulse - append a "1" bit'
+      byte += 1
+    }
+    if (bit == 8) {
+      atPut i _dhtData byte
+      i += 1
+      byte = 0
+      bit = 1
+    } else {
+      byte = (byte << 1)
+      bit += 1
+    }
+    waitUntil (not (digitalReadOp pin))
+  }
+}
+
+to '_dhtReady' {
+  local 'elapsed' ((millisOp) - _dhtLastReadTime)
+  return (or (elapsed < 0) (elapsed > 2000))
+}
+
+to '_dhtUpdate' pin isDHT11 {
+  if ('_dhtReady') {
+    _dht_temperature = 0
+    _dht_humidity = 0
+    '_dhtReadData' pin
+    _dhtLastReadTime = (millisOp)
+  }
+  if ('_dhtChecksumOkay') {
+    if isDHT11 {
+      _dht_temperature = (at 3 _dhtData)
+      _dht_humidity = (at 1 _dhtData)
+    } else {
+      local 'n' (((at 1 _dhtData) * 256) + (at 2 _dhtData))
+      _dht_humidity = ((n + 5) / 10)
+      n = ((((at 3 _dhtData) & 127) * 256) + (at 4 _dhtData))
+      if (((at 3 _dhtData) & 128) != 0) {
+        n = (0 - n)
+      }
+      _dht_temperature = ((n + 5) / 10)
+    }
+  }
+}
+
+to humidity_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_humidity
+}
+
+to humidity_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_humidity
+}
+
+to temperature_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_temperature
+}
+
+to temperature_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_temperature
+}
+

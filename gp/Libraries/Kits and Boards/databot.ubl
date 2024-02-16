@@ -1,0 +1,186 @@
+module databot
+author MicroBlocks
+version 1 5 
+depends 'Air Pressure (LPS22HB)' 'Gas (SGP30)' 'Temperature Humidity (SHTC3)' 'Light & Gesture (APDS9960)' 
+choices databot_tempUnits '°C' '°F' 
+description ''
+variables _databot_pixels 
+
+  spec ' ' 'databot_beep' 'databot beep'
+  space
+  spec ' ' 'databot_setAllLEDs' 'databot set all LEDs color _' 'color'
+  spec ' ' 'databot_setLED' 'databot set LED _ color _' 'num color' 1
+  spec 'r' 'databot_RGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 100
+  space
+  spec 'r' 'databot_light' 'databot light level'
+  space
+  spec 'r' 'databot_tilt_x' 'databot tilt x'
+  spec 'r' 'databot_tilt_y' 'databot tilt y'
+  spec 'r' 'databot_tilt_z' 'databot tilt z'
+  spec 'r' 'databot_acceleration' 'databot acceleration'
+  space
+  spec 'r' 'databot_temperature' 'databot temperature _' 'menu.databot_tempUnits' '°C'
+  spec 'r' 'databot_relative_humidity' 'databot relative humidity (%)'
+  spec 'r' 'databot_uvIndex' 'databot UV Index (x10)'
+  space
+  spec 'r' 'databot_temp_probe1' 'databot temp probe 1 _ (x10)' 'menu.databot_tempUnits' '°C'
+  spec 'r' 'databot_temp_probe2' 'databot temp probe 2 _ (x10)' 'menu.databot_tempUnits' '°C'
+  space
+  spec 'r' 'databot_magnetic_field' 'databot magnetic field'
+  space
+  spec ' ' '_databot_initLEDs' '_databot_initLEDs'
+  spec 'r' '_databot_DS18B20_address' '_databot_DS18B20_address pin _' 'num' 4
+  spec 'r' '_databot_raw_temperature' '_databot_raw_temperature pin _' 'num' 4
+
+to '_databot_DS18B20_address' pin {
+  '[1wire:init]' pin
+  '[1wire:scanStart]'
+  waitMillis 10
+  local 'addr' ('[data:newByteArray]' 8)
+  if (not ('[1wire:scanNext]' addr)) {
+    comment 'No response; temperature probe not plugged in?'
+    return 0
+  }
+  local 'family' (at 1 addr)
+  if (not (or (family == 34) (or (family == 40) (family == 66)))) {
+    comment 'Device is not a DS1822, DS18B20, or DS28EA00 temperature sensor'
+    return 0
+  }
+  return addr
+}
+
+to '_databot_initLEDs' {
+  '[display:neoPixelSetPin]' -1 false
+  if (not (isType _databot_pixels 'list')) {
+    _databot_pixels = (newList 3)
+  }
+}
+
+to '_databot_raw_temperature' pin {
+  comment 'Read the raw temperature. This function waits
+a full second fo the temperature sensor to
+measure the temperature, so it is best called
+from a dedicated task.'
+  local 'addr' ('_databot_DS18B20_address' pin)
+  if (addr == 0) {
+    sayIt 'Temperature probe not plugged in?'
+    waitMillis 2000
+    return 0
+  }
+  '[1wire:select]' addr
+  '[1wire:writeByte]' (hexToInt '44') true
+  waitMillis 1
+  '[1wire:select]' addr
+  '[1wire:writeByte]' (hexToInt 'BE')
+  local 'data' ('[data:newByteArray]' 9)
+  for i 9 {
+    atPut i data ('[1wire:readByte]')
+  }
+  if (('[1wire:crc8]' data) != 0) {
+    sayIt 'Bad temperature CRC'
+    return 0
+  }
+  local 'result' (((at 2 data) << 8) | (at 1 data))
+  if (result >= 32768) {
+    comment 'Sign-extend 16-bit negative number'
+    result = (result - 65536)
+  }
+  return result
+}
+
+to databot_RGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to databot_acceleration {
+  return ('[sensors:acceleration]')
+}
+
+to databot_beep {
+  '[io:playTone]' -1 440
+  waitMillis 100
+  '[io:playTone]' -1 0
+}
+
+to databot_light {
+  return (apds9960_light)
+}
+
+to databot_magnetic_field {
+  return ('[sensors:magneticField]')
+}
+
+to databot_relative_humidity {
+  return (shtc3_humidity)
+}
+
+to databot_setAllLEDs color {
+  '_databot_initLEDs'
+  atPut 'all' _databot_pixels color
+  '[display:neoPixelSend]' _databot_pixels
+  waitMicros 150
+}
+
+to databot_setLED index color {
+  '_databot_initLEDs'
+  if (and (1 <= index) (index <= 3)) {
+    if (3 == index) {
+      index = 2
+    } (2 == index) {
+      index = 3
+    }
+    atPut index _databot_pixels color
+    '[display:neoPixelSend]' _databot_pixels
+    waitMicros 150
+  }
+}
+
+to databot_temp_probe1 unit {
+  local 'raw' ('_databot_raw_temperature' 4)
+  if ('°F' == unit) {
+    return ((((10 * 9) * raw) / (16 * 5)) + 320)
+  } else {
+    return ((10 * raw) / 16)
+  }
+}
+
+to databot_temp_probe2 unit {
+  local 'raw' ('_databot_raw_temperature' 23)
+  if ('°F' == unit) {
+    return ((((10 * 9) * raw) / (16 * 5)) + 320)
+  } else {
+    return ((10 * raw) / 16)
+  }
+}
+
+to databot_temperature units {
+  if (units == '°C') {
+    return (shtc3_temperature)
+  } else {
+    return (32 + (9 * ((shtc3_temperature) / 5)))
+  }
+}
+
+to databot_tilt_x {
+  return ('[sensors:tiltX]')
+}
+
+to databot_tilt_y {
+  return ('[sensors:tiltY]')
+}
+
+to databot_tilt_z {
+  return ('[sensors:tiltZ]')
+}
+
+to databot_uvIndex {
+  local 'millivolts' ((3300 * (analogReadOp 34)) / 1023)
+  if (millivolts < 200) {
+    return 0
+  }
+  return ((millivolts - 132) / 94)
+}
+

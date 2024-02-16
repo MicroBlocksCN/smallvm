@@ -1,0 +1,1078 @@
+module main
+author MicroBLocks
+version 1 0 
+description 'Based on "BME680 Demo" by José Garcia.'
+variables server _day _hours _minutes _month _seconds _year 
+
+  spec 'r' 'online date from server' 'date and time from server _' 'auto' 'microblocks.fun'
+  spec 'r' 'files list' 'files list'
+  spec 'r' 'main menu' 'main page'
+  spec ' ' 'write' 'write _ to file _' 'auto auto' '' ''
+  spec 'r' 'file deleted' 'delete file _' 'auto' ''
+  spec 'r' 'graph with data' 'graph data from file _' 'auto' '(list)'
+  spec 'r' 'read file' 'read file _' 'auto' ''
+  spec 'r' 'delete all files' 'delete all files'
+  spec 'r' 'decimal' 'decimal _' 'auto' 123
+  spec 'r' 'chart script' 'html chart script'
+  spec 'r' 'download as csv file' 'html download as csv file _' 'auto' ''
+  spec 'r' 'html chart from colum' 'html chart from file _ column _' 'auto auto' '' 1
+  spec 'r' 'column names' 'column names _' 'auto' 1
+  spec 'r' 'current time short' 'current time short'
+  spec 'r' 'adjusted temperature' 'adjusted temperature'
+
+to 'adjusted temperature' {
+  return ((shtc3_temperature) - 7)
+}
+
+to 'chart script' {
+  return '<head>
+<script src="https://unpkg.com/tlx/browser/tlx.js"></script>
+<script src="https://unpkg.com/tlx-chart/browser/tlx-chart.js"></script>
+</head>'
+}
+
+to 'column names' index {
+  return (at index ('[data:makeList]' 'Temperature (&deg;C)' 'Humidity %' 'Air Pressure (mBar)' 'CO2 (ppm)' 'VOC (ppm)'))
+}
+
+to 'current time short' {
+  comment '+Timezone +Daylightsaving '
+  local 'hours' (_hours + (1 + -8))
+  local 'minutes' _minutes
+  if (hours < 10) {
+    hours = ('[data:join]' '0' hours)
+  }
+  if (minutes < 10) {
+    minutes = ('[data:join]' '0' minutes)
+  }
+  return ('[data:join]' hours ':' minutes)
+}
+
+to decimal int {
+  comment 'one decimal'
+  return ('[data:join]' (int / 10) '.' (int % 10))
+}
+
+to 'delete all files' {
+  for name ('file names') {
+    '[file:delete]' name
+  }
+  return '<p>All files  removed successfully</p>
+<button onclick="location.href=''/''" type="button">Back</button>'
+}
+
+to 'download as csv file' filename {
+  return ('[data:join]' '<button onclick="location.href=''/' filename '.csv''" type="button">Download as CSV</button>
+<br><br>
+<button onclick="location.href=''/''" type="button">Back</button>')
+}
+
+to 'file deleted' name {
+  '[file:delete]' name
+  if (('[data:find]' ('current date') ('file names')) == -1) {
+    return ('[data:join]' '<p>File ' name ' removed successfully</p>
+<button onclick="location.href=''/''" type="button">Back</button>')
+  } else {
+    return ('[data:join]' '<p>Error removing file ' name '</p>
+<button onclick="location.href=''/''" type="button">Back</button>')
+  }
+}
+
+to 'files list' {
+  local 'string' ''
+  for 'file name' ('file names') {
+    string = ('[data:join]' string '<li><a href="/' (v 'file name') '">' (v 'file name') '</a>&nbsp<button onclick="location.href=''/' (v 'file name') '/delete''" type="button">Delete</button></li>')
+  }
+  return string
+}
+
+to 'graph with data' filename {
+  local 'html' ('[data:join]' ('chart script') '<body><h1>Recorded Data</h1>')
+  for i 5 {
+    html = ('[data:join]' html ('html chart from colum' filename i))
+  }
+  return ('[data:join]' html ('download as csv file' filename) '</body>')
+}
+
+to 'html chart from colum' filename col {
+  local 'html' ('[data:join]' '<b>' ('column names' col) '</b>
+<tlx-chart chart-type="LineChart"
+	chart-columns="${[''Timestamp'',''' ('column names' col) ''']}"
+	chart-data="${[')
+  '[file:open]' filename
+  comment 'Only the last 60 reads (aprox. 30 chars per line) Max 110 for ESP32 16000 bytes memory'
+  local 'read_size' (30 * 60)
+  if (('[file:fileSize]' filename) > read_size) {
+    '[file:setReadPosition]' (('[file:fileSize]' filename) - read_size) filename
+    local 'var' ('[file:readLine]' filename)
+  }
+  repeatUntil ('[file:endOfFile]' filename) {
+    local 'colums' ('[data:split]' ('[file:readLine]' filename) ',')
+    html = ('[data:join]' html '[' ('[data:join]' (at 1 colums) ',' (at (col + 1) colums)) '],')
+  }
+  '[file:close]' filename
+  html = ('[data:join]' html ']}">
+</tlx-chart>')
+  return html
+}
+
+to 'main menu' {
+  return ('[data:join]' '<h1>Databot Data Logger</h1>
+<h3>Current values (Temperature &deg;C / Humidity % / Pressure mBar / CO2 ppm / Volatile Organic Compounds (VOC) ppm;): ' ('[data:joinStrings]' ('[data:makeList]' ('adjusted temperature') (shtc3_humidity) (lps22hb_airPressureMbar) (at 1 ('SGP30 read')) (at 2 ('SGP30 read'))) '/') '</h3>
+<p>Daily records with data registered every minute. Click on each link to visualize them in a linear graph:</p>
+<ul>' ('files list') '</ul>
+<button onclick="location.href=''/deleteAll''" type="button">Delete all files</button>
+<br><br>
+<i>File system info:  ' ('[file:systemInfo]'))
+}
+
+to 'read file' name {
+  '[file:open]' name
+  local 'string' ''
+  repeatUntil ('[file:endOfFile]' name) {
+    string = ('[data:join]' string ('[file:readLine]' name) ('[data:unicodeString]' 13))
+  }
+  '[file:close]' name
+  return string
+}
+
+to write data name {
+  '[file:open]' name
+  '[file:appendLine]' data name
+  '[file:close]' name
+}
+
+script 572 50 {
+whenBroadcastReceived 'connected'
+forever {
+  if (('current date') == '0-00-0') {
+    'fetch current time from server' 'microblocks.fun'
+  } else {
+    if ((timer) >= 60000) {
+      write ('[data:joinStrings]' ('[data:makeList]' ('[data:join]' '''' ('current time short') '''') ('adjusted temperature') (shtc3_humidity) (lps22hb_airPressureMbar) (at 1 ('SGP30 read')) (at 2 ('SGP30 read'))) ',') ('current date')
+      resetTimer
+    }
+  }
+  tick
+}
+}
+
+script 53 67 {
+whenStarted
+comment 'Enter your WiFi network name and password:'
+wifiConnect '' ''
+sendBroadcast 'connected'
+forever {
+  local 'request' ('[net:httpServerGetRequest]')
+  if (request != '') {
+    local 'path' ('path of request' request)
+    if (path == '/') {
+      '[net:respondToHttpRequest]' '200 OK' ('main menu')
+    }
+    if (path == '/deleteAll') {
+      '[net:respondToHttpRequest]' '200 OK' ('delete all files')
+    }
+    for name ('file names') {
+      if (path == ('[data:join]' '/' name)) {'[net:respondToHttpRequest]' '200 OK' ('graph with data' name)}
+      if (path == ('[data:join]' '/' name '/delete')) {'[net:respondToHttpRequest]' '200 OK' ('file deleted' name)}
+      if (path == ('[data:join]' '/' name '.csv')) {'[net:respondToHttpRequest]' '200 OK' ('read file' name) 'Content-Type: text/csv'}
+    }
+    '[net:respondToHttpRequest]' '404 Not Found' '<h1>404 Not Found</h1><p>I''m sorry, this page does not exist :(</p>'
+  }
+  waitMillis 10
+}
+}
+
+script 50 893 {
+to 'main menu' {}
+}
+
+
+module 'Air Pressure (LPS22HB)' Input
+author MicroBlocks
+version 1 4 
+description 'Sense air pressure and altitude with the LPS22HB air pressure sensor.
+The altimeter can either report changes relative to the starting altitude. If calibrated to a known starting altitude, it can report absolute altitude.'
+variables _lps22hb_basePressure _lps22hb_baseAltitude 
+
+  spec 'r' 'lps22hb_airPressureMbar' 'air pressure (mBar)'
+  spec 'r' 'lps22hb_airPressurePSI' 'air pressure (PSI x10)'
+  space
+  spec ' ' 'lps22hb_setBaseAltitude' 'set current altitude _ meters' 'num' 0
+  spec ' ' 'lps22hb_setBasePressure' 'set base pressure (mBar x10) _ at _ meters' 'num num' 1013 0
+  spec 'r' 'lps22hb_altitudeCentimeters' 'altitude (cm)'
+  spec 'r' 'lps22hb_altitudeFeet' 'altitude (feet)'
+  space
+  spec 'r' 'lps22hb_temperature' 'lps22hb temperature (°C)'
+  space
+  spec 'r' '_lps22hb_altitudeMillimeters' '_lps22hb_altitudeMillimeters'
+  spec 'r' '_lps22hb_rawPressure' '_lps22hb_rawPressure'
+  spec 'r' '_lps22hb_readPressure' '_lps22hb_readPressure'
+
+to '_lps22hb_altitudeMillimeters' {
+  if (_lps22hb_basePressure == 0) {
+    comment 'if base altitude not set, use zero (useful for relative measurments)'
+    lps22hb_setBaseAltitude 0
+  }
+  mmChange = ('[misc:pressureToAltitude]' _lps22hb_basePressure ('_lps22hb_rawPressure'))
+  return ((1000 * _lps22hb_baseAltitude) + mmChange)
+}
+
+to '_lps22hb_rawPressure' {
+  local 'LPS22HB' (hexToInt '5C')
+  local 'raw' ('_lps22hb_readPressure')
+  if (raw == 0) {
+    comment 'LPS22HB sometimes gets stuck returning zero pressure
+This sequence may unstick it.'
+    i2cSet LPS22HB (hexToInt '11') 128
+    i2cSet LPS22HB (hexToInt '10') 0
+    raw = ('_lps22hb_readPressure')
+  }
+  return raw
+}
+
+to '_lps22hb_readPressure' {
+  local 'LPS22HB' (hexToInt '5C')
+  i2cSet LPS22HB (hexToInt '11') 1
+  waitMillis 2
+  local 'result' (i2cGet LPS22HB (hexToInt '28'))
+  result = (((i2cGet LPS22HB (hexToInt '29')) << 8) | result)
+  result = (((i2cGet LPS22HB (hexToInt '2A')) << 16) | result)
+  return result
+}
+
+to lps22hb_airPressureMbar {
+  return (('_lps22hb_rawPressure') / 4096)
+}
+
+to lps22hb_airPressurePSI {
+  return (('_lps22hb_rawPressure') / 28241)
+}
+
+to lps22hb_altitudeCentimeters {
+  return (('_lps22hb_altitudeMillimeters') / 10)
+}
+
+to lps22hb_altitudeFeet {
+  return (('_lps22hb_altitudeMillimeters') / 305)
+}
+
+to lps22hb_setBaseAltitude baseMeters {
+  local 'total' 0
+  comment 'Start regular sampling with filtering. Sampling rate is 75/9.'
+  local 'LPS22HB' (hexToInt '5C')
+  i2cSet LPS22HB (hexToInt '10') (hexToInt '58')
+  waitMillis 300
+  repeat 20 {
+    total += ('_lps22hb_rawPressure')
+    waitMillis 1
+  }
+  _lps22hb_basePressure = (total / 20)
+  _lps22hb_baseAltitude = baseMeters
+}
+
+to lps22hb_setBasePressure basePressureMBar baseMeters {
+  _lps22hb_basePressure = ((basePressureMBar * 4096) / 10)
+  _lps22hb_baseAltitude = baseMeters
+}
+
+to lps22hb_temperature {
+  local 'LPS22HB' (hexToInt '5C')
+  i2cSet LPS22HB (hexToInt '11') 1
+  waitMillis 1
+  local 'result' (i2cGet LPS22HB (hexToInt '2B'))
+  result = (((i2cGet LPS22HB (hexToInt '2C')) << 8) | result)
+  if (result >= 32768) {
+    result = (result - 65536)
+  }
+  if ('Databot' == (boardType)) {
+    comment 'Adjust for extra heat from PC board'
+    result += -1230
+  }
+  return (result / 100)
+}
+
+
+module DateTime
+author unknown
+version 1 0 
+description ''
+variables _day _hours _minutes _month _seconds _year 
+
+  spec ' ' 'fetch current time from server' 'fetch date and time from server _' 'auto' 'microblocks.fun'
+  spec ' ' 'tick' 'tick'
+  spec 'r' 'current date' 'current date'
+  spec 'r' 'current time' 'current time'
+  spec 'r' 'online date from server' 'date and time from server _' 'auto' 'microblocks.fun'
+  spec 'r' 'seconds' 'seconds'
+
+to 'current date' {
+  local 'month' _month
+  if (month < 10) {
+    month = ('[data:join]' '0' month)
+  }
+  return ('[data:join]' _year '-' month '-' _day)
+}
+
+to 'current time' {
+  local 'hours' _hours
+  local 'minutes' _minutes
+  local 'seconds' _seconds
+  if (hours < 10) {
+    hours = ('[data:join]' '0' hours)
+  }
+  if (minutes < 10) {
+    minutes = ('[data:join]' '0' minutes)
+  }
+  if (seconds < 10) {
+    seconds = ('[data:join]' '0' seconds)
+  }
+  return ('[data:join]' hours ':' minutes ':' seconds)
+}
+
+to 'fetch current time from server' url {
+  local 'current datetime' ('online date from server' url)
+  _year = ('[data:copyFromTo]' (v 'current datetime') 8 11)
+  _day = ('[data:copyFromTo]' (v 'current datetime') 1 2)
+  local 'month names' ('[data:makeList]' 'Jan' 'Feb' 'Mar' 'Apr' 'May' 'Jun' 'Jul' 'Aug' 'Sep' 'Oct' 'Nov' 'Dec')
+  local 'month name' ('[data:copyFromTo]' (v 'current datetime') 4 6)
+  _month = 1
+  repeatUntil ((at _month (v 'month names')) == (v 'month name')) {
+    _month += 1
+  }
+  local 'start ms' (millisOp)
+  _hours = (('[data:copyFromTo]' (v 'current datetime') 13 14) + 1)
+  _minutes = (('[data:copyFromTo]' (v 'current datetime') 16 17) + 0)
+  _seconds = (('[data:copyFromTo]' (v 'current datetime') 19 20) - (((millisOp) - (v 'start ms')) / 1000))
+}
+
+to 'online date from server' server {
+  local 'url' ('[data:join]' server '/nonExistentPage')
+  local 'response' ('_request_url' url 'GET' '')
+  local 'header' ('_http_header_text' response)
+  return ('[data:copyFromTo]' header (('[data:find]' 'Date:' header) + 11) (('[data:find]' 'GMT' header) - 2))
+}
+
+to seconds {
+  return _seconds
+}
+
+to tick {
+  _seconds += 1
+  if (_seconds == 60) {
+    _seconds = 0
+    _minutes += 1
+    if (_minutes == 60) {
+      _minutes = 0
+      _hours += 1
+      if (_hours == 24) {
+        _hours = 0
+      }
+    }
+  }
+  waitMillis 1000
+}
+
+
+module Files Data
+author MicroBlocks
+version 1 3 
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file names' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
+}
+
+
+module 'Gas (SGP30)' Input
+author 'José García Yeste'
+version 1 1 
+tags sensor co2 
+description 'Support for Sensirion SGP30 Air Quality Sensor.
+Returns the CO2 in ppm and TVOC in ppb.
+
+Based on: https://github.com/adafruit/Adafruit_SGP30/blob/master/Adafruit_SGP30.cpp'
+variables '_SGP30 inizialized' 
+
+  spec 'r' 'SGP30 connected' 'SGP30 connected'
+  spec 'r' 'SGP30 read' 'SGP30 read air quality'
+  spec 'r' 'SGP30 read raw' 'SGP30 read raw'
+  spec ' ' 'SGP30 setup' 'SGP30 setup'
+  spec 'r' 'SGP30 get baseline' 'SGP30 get baseline'
+  spec ' ' 'SGP30 set baseline' 'SGP30 set baseline co2 _ tvoc _' 'auto auto' 36885 36209
+  spec 'r' '_SGP30 generate CRC' '_SGP30 generate CRC _' 'auto' 400
+
+to 'SGP30 connected' {
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '2F'))
+  local 'response' (newList 3)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+  '[sensors:i2cRead]' (hexToInt '58') response
+  local 'featureset' (((at 1 response) << 8) | (at 2 response))
+  return ((featureset & (hexToInt 'F0')) == (hexToInt '20'))
+}
+
+to 'SGP30 get baseline' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '15'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+  local 'baseline' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 baseline (((at 1 response) << 8) | (at 2 response))
+  atPut 2 baseline (((at 4 response) << 8) | (at 5 response))
+  return baseline
+}
+
+to 'SGP30 read' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '08'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 12
+  local 'aq' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 aq (((at 1 response) << 8) | (at 2 response))
+  atPut 2 aq (((at 4 response) << 8) | (at 5 response))
+  return aq
+}
+
+to 'SGP30 read raw' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '50'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 25
+  local 'raw' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 raw (((at 1 response) << 8) | (at 2 response))
+  atPut 2 raw (((at 4 response) << 8) | (at 5 response))
+  return raw
+}
+
+to 'SGP30 set baseline' co2 tvoc {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '1E') (tvoc >> 8) (tvoc & 255) ('_SGP30 generate CRC' tvoc) (co2 >> 8) (co2 & 255) ('_SGP30 generate CRC' co2))
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+}
+
+to 'SGP30 setup' {
+  if ((v '_SGP30 inizialized') == 0) {
+    '_SGP30 inizialized' = 1
+    local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '03'))
+    '[sensors:i2cWrite]' (hexToInt '58') cmd
+    waitMillis 10
+  }
+}
+
+to '_SGP30 generate CRC' value {
+  local 'buf' ('[data:makeList]' (value >> 8) (value & 255))
+  local 'crc' (hexToInt 'FF')
+  for i (size buf) {
+    crc = (crc ^ (at i buf))
+    for i 8 {
+      if ((crc & (hexToInt '80')) != 0) {
+        crc = ((crc << 1) ^ (hexToInt '31'))
+      } else {
+        crc = (crc << 1)
+      }
+    }
+  }
+  return (crc & 255)
+}
+
+script 642 50 {
+to 'SGP30 set baseline' {}
+}
+
+
+module 'HTTP client' Comm
+author MicroBlocks
+version 1 4 
+depends WiFi 
+tags http network get post put delete 
+description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
+'
+
+  spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+  spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+  spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+  spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+  spec 'r' '_http_status' '_status of response _' 'auto' ''
+  spec 'r' '_line_end' '_line_end'
+  spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+  spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
+  spec 'r' '_readHTTPResponse' '_readHTTPResponse'
+  spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
+  spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
+
+to '_http_body_start' response {
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
+}
+
+to '_http_header' header response {
+  local 'header text' ('_http_header_text' response)
+  header = ('_lowercase' header)
+  repeatUntil ((size (v 'header text')) < 3) {
+    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
+    if (('_lowercase' key) == header) {
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
+    }
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
+  }
+  return (booleanConstant false)
+}
+
+to '_http_header_text' response {
+  local 'headersStart' (('[data:find]' ('_line_end') response) + 2)
+  return ('[data:copyFromTo]' response headersStart (('_http_body_start' response) + 2))
+}
+
+to '_http_status' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
+to '_http_status_text' response {
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
+}
+
+to '_lowercase' string {
+  local 'lowercased' ''
+  local 'char code' ''
+  for c (size string) {
+    'char code' = ('[data:unicodeAt]' c string)
+    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
+      'char code' = ((v 'char code') + 32)
+    }
+    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
+  }
+  return lowercased
+}
+
+to '_readHTTPResponse' {
+  local 'response' ''
+  local 'lastChunkTime' (millisOp)
+  repeatUntil (not ('[net:httpIsConnected]')) {
+    local 'chunk' ('[net:httpResponse]')
+    if ((size chunk) > 0) {
+      response = ('[data:join]' response chunk)
+      lastChunkTime = (millisOp)
+    } (((millisOp) - lastChunkTime) > 10000) {
+      return response
+    }
+    waitMillis 20
+  }
+  response = ('[data:join]' response ('[net:httpResponse]'))
+  return response
+}
+
+to '_request_url' url method body optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'host' ''
+  local 'path' ''
+  local 'slashPosition' ('[data:find]' '/' url)
+  if (slashPosition > 0) {
+    host = ('[data:copyFromTo]' url 1 (slashPosition - 1))
+    path = ('[data:copyFromTo]' url (slashPosition + 1))
+  } else {
+    host = url
+  }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  '[net:httpConnect]' host port
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  }
+  '[net:httpRequest]' method host path
+  return ('_readHTTPResponse')
+}
+
+to 'http܃//' url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 1) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url 'GET' '' port)
+  if (response != '') {
+    if (('_http_status' response) == 200) {
+      return ('[data:copyFromTo]' response ('_http_body_start' response))
+    } else {
+      return ('_http_status_text' response)
+    }
+  } else {
+    return 'Failed to get response'
+  }
+}
+
+to request method data url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url method data port)
+  if (response != '') {
+    local 'status' ('_http_status' response)
+    local 'body start' ('_http_body_start' response)
+    if (and (200 == status) ((v 'body start') > 0)) {
+      sayIt ('[data:copyFromTo]' response (v 'body start'))
+    } else {
+      sayIt ('_http_status_text' response)
+    }
+  } else {
+    sayIt 'Failed to get response'
+  }
+}
+
+
+module 'HTTP server' Comm
+author MicroBlocks
+version 1 3 
+depends WiFi 
+tags http network 
+description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
+
+  spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+  spec 'r' 'request method' 'method of request _' 'str' ''
+  spec 'r' 'path of request' 'path of request _' 'str' ''
+  spec 'r' 'headers of request' 'headers of request _' 'str' ''
+  spec 'r' 'body of request' 'body of request _' 'str' ''
+  spec 'r' 'content length of request' 'content length of request _' 'str' ''
+  spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
+  spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+  spec 'r' '_toString' '_toString _' 'auto' 'abc'
+
+to '_endOfHeaders' request {
+  return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
+}
+
+to '_toString' aStringOrByteArray {
+  comment 'If argument is a byte array, convert it to a string. '
+  if (not (isType aStringOrByteArray 'string')) {
+    aStringOrByteArray = ('[data:join]' '' aStringOrByteArray)
+  }
+  return aStringOrByteArray
+}
+
+to 'body of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('[data:copyFromTo]' request (i + 4))
+}
+
+to 'content length of request' request {
+  local 'i' ('_endOfHeaders' request)
+  if (i < 0) {
+    return 0
+  }
+  local 'j' ('[data:find]' 'Content-Length: ' request)
+  if (j < 0) {
+    comment 'Try alternate capitalization'
+    j = ('[data:find]' 'Content-length: ' request)
+  }
+  if (or (j < 0) (j > i)) {
+    return 0
+  }
+  j += 16
+  local 'k' ('[data:find]' ('[data:unicodeString]' 13) request j)
+  return (('[data:copyFromTo]' request j (k - 1)) + 0)
+}
+
+to 'headers of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('_toString' ('[data:copyFromTo]' request 1 (i - 1)))
+}
+
+to 'path of request' request {
+  return ('_toString' ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1)))
+}
+
+to 'request method' request {
+  return ('_toString' ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1)))
+}
+
+
+module 'Temperature Humidity (SHTC3)' Input
+author MicroBlocks
+version 1 4 
+description 'Support for the SHTC3 temperature and relative humidity sensor.'
+
+  spec 'r' 'shtc3_temperature' 'SHTC3 temperature (°C)'
+  spec 'r' 'shtc3_humidity' 'SHTC3 relative humidity (%)'
+  space
+  spec ' ' '_shtc3_send_cmd' '_shtc3_send_cmd _' 'num' 0
+  spec 'r' '_shtc3_read' '_shtc3_read'
+  spec 'r' '_shtc3_crcOkay' '_shtc3_crcOkay _ _ _' 'num num num' 0 0 0
+
+to '_shtc3_crcOkay' b1 b2 b3 {
+  local 'crc' 255
+  for i 2 {
+    if (1 == i) {
+      crc = (crc ^ b1)
+    } else {
+      crc = (crc ^ b2)
+    }
+    repeat 8 {
+      if ((crc & 128) != 0) {
+        crc = (((crc << 1) ^ 49) & 255)
+      } else {
+        crc = (crc << 1)
+      }
+    }
+  }
+  return (0 == (crc ^ b3))
+}
+
+to '_shtc3_read' {
+  local 'SHTC addr' (hexToInt '70')
+  comment 'Wakeup'
+  '_shtc3_send_cmd' (hexToInt '3517')
+  comment 'Read data, temperature first. Do not use clock stretching; it blocks the CPU for ~12 msecs!'
+  '_shtc3_send_cmd' (hexToInt '7866')
+  waitMillis 13
+  local 'sixBytes' (newList 6)
+  '[sensors:i2cRead]' (v 'SHTC addr') sixBytes
+  comment 'Do not send sleep command; that results in i2c error on next call'
+  return sixBytes
+}
+
+to '_shtc3_send_cmd' cmd {
+  local 'SHTC addr' (hexToInt '70')
+  '[sensors:i2cWrite]' (v 'SHTC addr') ('[data:makeList]' ((cmd >> 8) & 255) (cmd & 255))
+}
+
+to shtc3_humidity {
+  local 'data' ('_shtc3_read')
+  local 'high' (at 4 data)
+  local 'low' (at 5 data)
+  if (not ('_shtc3_crcOkay' high low (at 6 data))) {
+    return 0
+  }
+  local 'humidity' ((100 * ((high << 8) | low)) >> 16)
+  if ('Databot' == (boardType)) {
+    comment 'Adjust for extra heat from PC board'
+    humidity += 10
+  }
+  return humidity
+}
+
+to shtc3_temperature {
+  local 'data' ('_shtc3_read')
+  local 'high' (at 1 data)
+  local 'low' (at 2 data)
+  if (not ('_shtc3_crcOkay' high low (at 3 data))) {
+    return 0
+  }
+  local 'temperature' (((175 * ((high << 8) | low)) >> 16) - 45)
+  if ('Databot' == (boardType)) {
+    temperature += -10
+    comment 'Adjust for extra heat from PC board'
+  }
+  return temperature
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 8 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 30000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+
+module databot
+author MicroBlocks
+version 1 5 
+depends 'Air Pressure (LPS22HB)' 'Gas (SGP30)' 'Temperature Humidity (SHTC3)' 'Light & Gesture (APDS9960)' 
+choices databot_tempUnits '°C' '°F' 
+description ''
+variables _databot_pixels 
+
+  spec ' ' 'databot_beep' 'databot beep'
+  space
+  spec ' ' 'databot_setAllLEDs' 'databot set all LEDs color _' 'color'
+  spec ' ' 'databot_setLED' 'databot set LED _ color _' 'num color' 1
+  spec 'r' 'databot_RGB' 'color r _ g _ b _ (0-255)' 'num num num' 100 0 100
+  space
+  spec 'r' 'databot_light' 'databot light level'
+  space
+  spec 'r' 'databot_tilt_x' 'databot tilt x'
+  spec 'r' 'databot_tilt_y' 'databot tilt y'
+  spec 'r' 'databot_tilt_z' 'databot tilt z'
+  spec 'r' 'databot_acceleration' 'databot acceleration'
+  space
+  spec 'r' 'databot_temperature' 'databot temperature _' 'menu.databot_tempUnits' '°C'
+  spec 'r' 'databot_relative_humidity' 'databot relative humidity (%)'
+  spec 'r' 'databot_uvIndex' 'databot UV Index (x10)'
+  space
+  spec 'r' 'databot_temp_probe1' 'databot temp probe 1 _ (x10)' 'menu.databot_tempUnits' '°C'
+  spec 'r' 'databot_temp_probe2' 'databot temp probe 2 _ (x10)' 'menu.databot_tempUnits' '°C'
+  space
+  spec 'r' 'databot_magnetic_field' 'databot magnetic field'
+  space
+  spec ' ' '_databot_initLEDs' '_databot_initLEDs'
+  spec 'r' '_databot_DS18B20_address' '_databot_DS18B20_address pin _' 'num' 4
+  spec 'r' '_databot_raw_temperature' '_databot_raw_temperature pin _' 'num' 4
+
+to '_databot_DS18B20_address' pin {
+  '[1wire:init]' pin
+  '[1wire:scanStart]'
+  waitMillis 10
+  local 'addr' ('[data:newByteArray]' 8)
+  if (not ('[1wire:scanNext]' addr)) {
+    comment 'No response; temperature probe not plugged in?'
+    return 0
+  }
+  local 'family' (at 1 addr)
+  if (not (or (family == 34) (or (family == 40) (family == 66)))) {
+    comment 'Device is not a DS1822, DS18B20, or DS28EA00 temperature sensor'
+    return 0
+  }
+  return addr
+}
+
+to '_databot_initLEDs' {
+  '[display:neoPixelSetPin]' -1 false
+  if (not (isType _databot_pixels 'list')) {
+    _databot_pixels = (newList 3)
+  }
+}
+
+to '_databot_raw_temperature' pin {
+  comment 'Read the raw temperature. This function waits
+a full second fo the temperature sensor to
+measure the temperature, so it is best called
+from a dedicated task.'
+  local 'addr' ('_databot_DS18B20_address' pin)
+  if (addr == 0) {
+    sayIt 'Temperature probe not plugged in?'
+    waitMillis 2000
+    return 0
+  }
+  '[1wire:select]' addr
+  '[1wire:writeByte]' (hexToInt '44') true
+  waitMillis 1
+  '[1wire:select]' addr
+  '[1wire:writeByte]' (hexToInt 'BE')
+  local 'data' ('[data:newByteArray]' 9)
+  for i 9 {
+    atPut i data ('[1wire:readByte]')
+  }
+  if (('[1wire:crc8]' data) != 0) {
+    sayIt 'Bad temperature CRC'
+    return 0
+  }
+  local 'result' (((at 2 data) << 8) | (at 1 data))
+  if (result >= 32768) {
+    comment 'Sign-extend 16-bit negative number'
+    result = (result - 65536)
+  }
+  return result
+}
+
+to databot_RGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to databot_acceleration {
+  return ('[sensors:acceleration]')
+}
+
+to databot_beep {
+  '[io:playTone]' -1 440
+  waitMillis 100
+  '[io:playTone]' -1 0
+}
+
+to databot_light {
+  return (apds9960_light)
+}
+
+to databot_magnetic_field {
+  return ('[sensors:magneticField]')
+}
+
+to databot_relative_humidity {
+  return (shtc3_humidity)
+}
+
+to databot_setAllLEDs color {
+  '_databot_initLEDs'
+  atPut 'all' _databot_pixels color
+  '[display:neoPixelSend]' _databot_pixels
+  waitMicros 150
+}
+
+to databot_setLED index color {
+  '_databot_initLEDs'
+  if (and (1 <= index) (index <= 3)) {
+    if (3 == index) {
+      index = 2
+    } (2 == index) {
+      index = 3
+    }
+    atPut index _databot_pixels color
+    '[display:neoPixelSend]' _databot_pixels
+    waitMicros 150
+  }
+}
+
+to databot_temp_probe1 unit {
+  local 'raw' ('_databot_raw_temperature' 4)
+  if ('°F' == unit) {
+    return ((((10 * 9) * raw) / (16 * 5)) + 320)
+  } else {
+    return ((10 * raw) / 16)
+  }
+}
+
+to databot_temp_probe2 unit {
+  local 'raw' ('_databot_raw_temperature' 23)
+  if ('°F' == unit) {
+    return ((((10 * 9) * raw) / (16 * 5)) + 320)
+  } else {
+    return ((10 * raw) / 16)
+  }
+}
+
+to databot_temperature units {
+  if (units == '°C') {
+    return (shtc3_temperature)
+  } else {
+    return (32 + (9 * ((shtc3_temperature) / 5)))
+  }
+}
+
+to databot_tilt_x {
+  return ('[sensors:tiltX]')
+}
+
+to databot_tilt_y {
+  return ('[sensors:tiltY]')
+}
+
+to databot_tilt_z {
+  return ('[sensors:tiltZ]')
+}
+
+to databot_uvIndex {
+  local 'millivolts' ((3300 * (analogReadOp 34)) / 1023)
+  if (millivolts < 200) {
+    return 0
+  }
+  return ((millivolts - 132) / 94)
+}
+

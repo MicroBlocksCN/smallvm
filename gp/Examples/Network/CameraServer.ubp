@@ -1,0 +1,199 @@
+module main
+author MicroBlocks
+version 1 0 
+description ''
+variables responses 
+
+script 50 50 {
+whenStarted
+comment 'This server requires  an ESP32 camera board such as the
+Freenove ESP32-WROVER. To any request,  it returns the
+a snapshot from the camera as jpeg image.'
+comment 'Remember to use your network name (SSID) and password below'
+wifiConnect '***' '***'
+'[camera:setSize]' '640x480'
+'[camera:setEncoding]' 'jpeg' 100
+forever {
+  repeatUntil (('[net:httpServerGetRequest]') != '') {
+    waitMillis 10
+  }
+  '[net:respondToHttpRequest]' '200 OK' ('[camera:takePhoto]') 'Content-Type: image/jpeg'
+}
+}
+
+
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 1 
+tags tilt acceleration light sensor 
+choices accelerometerRange '1' '2' '4' '8' 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+
+to '_setAccelRange' n {
+  '[sensors:setAccelerometerRange]' (0 + n)
+}
+
+
+module Camera Input
+author MicroBlocks
+version 1 0 
+choices camera_frameSize '320x240' '352x288' '640x480' '800x600' '1024x768' '1280x1024' '1600x1200' 
+choices camera_format jpeg rgb565 grayscale 
+description 'Primitives for ESP32 Camera boards (e.g. Freenove ESP32-WROVER).'
+
+  spec 'r' '[camera:hasCamera]' 'has camera'
+  spec 'r' '[camera:takePhoto]' 'get camera image'
+  spec ' ' '[camera:setSize]' 'set camera image size _' 'menu.camera_frameSize' '640x480'
+  spec ' ' '[camera:setEncoding]' 'set camera format _ jpeg quality _ (0-100)' 'menu.camera_format num' 'jpeg' 100
+
+module 'HTTP server' Comm
+author MicroBlocks
+version 1 3 
+depends WiFi 
+tags http network 
+description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
+
+  spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+  spec 'r' 'request method' 'method of request _' 'str' ''
+  spec 'r' 'path of request' 'path of request _' 'str' ''
+  spec 'r' 'headers of request' 'headers of request _' 'str' ''
+  spec 'r' 'body of request' 'body of request _' 'str' ''
+  spec 'r' 'content length of request' 'content length of request _' 'str' ''
+  spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
+  spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+  spec 'r' '_toString' '_toString _' 'auto' 'abc'
+
+to '_endOfHeaders' request {
+  return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
+}
+
+to '_toString' aStringOrByteArray {
+  comment 'If argument is a byte array, convert it to a string. '
+  if (not (isType aStringOrByteArray 'string')) {
+    aStringOrByteArray = ('[data:join]' '' aStringOrByteArray)
+  }
+  return aStringOrByteArray
+}
+
+to 'body of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('[data:copyFromTo]' request (i + 4))
+}
+
+to 'content length of request' request {
+  local 'i' ('_endOfHeaders' request)
+  if (i < 0) {
+    return 0
+  }
+  local 'j' ('[data:find]' 'Content-Length: ' request)
+  if (j < 0) {
+    comment 'Try alternate capitalization'
+    j = ('[data:find]' 'Content-length: ' request)
+  }
+  if (or (j < 0) (j > i)) {
+    return 0
+  }
+  j += 16
+  local 'k' ('[data:find]' ('[data:unicodeString]' 13) request j)
+  return (('[data:copyFromTo]' request j (k - 1)) + 0)
+}
+
+to 'headers of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('_toString' ('[data:copyFromTo]' request 1 (i - 1)))
+}
+
+to 'path of request' request {
+  return ('_toString' ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1)))
+}
+
+to 'request method' request {
+  return ('_toString' ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1)))
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 8 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 30000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+

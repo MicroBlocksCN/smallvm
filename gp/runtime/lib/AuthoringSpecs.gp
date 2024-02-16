@@ -141,14 +141,7 @@ method specsFor AuthoringSpecs category {
 		currentCategory = entry
 	  }
 	} (currentCategory == category) {
-	  spec = (specForEntry this entry)
-	  for n (slotCount spec) {
-		default = (at (slotInfoForIndex spec n) 2)
-		if (isClass default 'String') {
-			atPut (slotInfoForIndex spec n) 2 (localized default)
-		}
-	  }
-	  add result spec
+	  add result (specForEntry this entry)
 	}
   }
   return result
@@ -265,6 +258,7 @@ method translateToCurrentLanguage AuthoringSpecs spec {
   }
   result = (clone spec)
   setField result 'specs' newSpecStrings
+  setField result 'slotInfo' (translatedSlotInfo spec)
   return result
 }
 
@@ -274,9 +268,7 @@ method needsTranslation AuthoringSpecs spec {
   if (isNil translationDictionary) { return false }
   for s (specs spec) {
 	localization = (localizedOrNil s)
-	if (or (isNil localization) (localization == '--MISSING--')) {
-		return false
-	} else {
+	if (and (notNil localization) (localization != '--MISSING--')) {
 		return true
 	}
   }

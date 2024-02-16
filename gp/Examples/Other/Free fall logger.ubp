@@ -59,19 +59,25 @@ to '_setAccelRange' n {
 
 module Files Data
 author MicroBlocks
-version 1 2 
-tags data esp 
+version 1 3 
 description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
   spec ' ' '[file:open]' 'open file _' 'str'
   spec ' ' '[file:close]' 'close file _' 'str'
   spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
   spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
   spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
   spec 'r' '[file:endOfFile]' 'end of file _' 'str'
   spec 'r' '[file:readLine]' 'next line of file _' 'str'
   spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
   spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
   spec 'r' 'file names' 'file names : in directory _' 'str'
   spec 'r' '[file:fileSize]' 'size of file _' 'str'
   spec 'r' '[file:systemInfo]' 'file system info'
@@ -85,5 +91,10 @@ to 'file names' dir {
     fileName = ('[file:nextInList]')
   }
   return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
 }
 

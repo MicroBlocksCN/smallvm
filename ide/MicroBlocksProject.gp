@@ -222,12 +222,16 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 // Variables
 
 method allVariableNames MicroBlocksProject {
+	// Return a sorted array of all global variables. Use case-insensitive sort.
+
 	result = (dictionary)
 	addAll result (variableNames main)
 	for lib (values libraries) {
 		addAll result (variableNames lib)
 	}
-	return (sorted (keys result))
+	return (sorted
+		(keys result)
+		(function s1 s2 { return ((toUpperCase s1) < (toUpperCase s2)) }))
 }
 
 method addVariable MicroBlocksProject newVar {
@@ -238,6 +242,20 @@ method deleteVariable MicroBlocksProject varName {
 	for lib (values libraries) {
 		deleteVariable lib varName
 	}
+}
+
+// Variables
+
+method allBroadcasts MicroBlocksProject {
+	result = (dictionary)
+	for entry (scripts main) {
+		for b (allBlocks (last entry)) {
+			if (isOneOf (primName b) 'sendBroadcast' 'whenBroadcastReceived') {
+				add result (first (argList b))
+			}
+		}
+	}
+	return (toList (sorted (keys result)))
 }
 
 // Loading
@@ -260,9 +278,9 @@ method loadFromString MicroBlocksProject s updateLibraries {
 	initialize this
 	cmdList = (parse s)
 	if (and (notEmpty cmdList) ('projectName' == (primName (first cmdList)))) {
-      // skip projectName line, if any
-      cmdList = (copyFromTo cmdList 2)
-    }
+		// skip projectName line, if any
+		cmdList = (copyFromTo cmdList 2)
+	}
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
 	isFirst = true
@@ -322,15 +340,7 @@ method parsedSpecs MicroBlocksProject cmdList {
 			slotTypes = ''
 			if ((count args) > 3) { slotTypes = (at args 4) }
 			slotDefaults = (array)
-			if ((count args) > 4) {
-				slotDefaults = (copyArray args ((count args) - 4) 5)
-				for n (count slotDefaults) {
-					default = (at slotDefaults n)
-					if (isClass default 'String') {
-						atPut slotDefaults n (localized default)
-					}
-				}
-			}
+			if ((count args) > 4) { slotDefaults = (copyArray args ((count args) - 4) 5) }
 			spec = (blockSpecFromStrings op blockType specString slotTypes slotDefaults)
 			atPut specs op spec
 		}
@@ -639,9 +649,7 @@ method codeString MicroBlocksModule owningProject newLibName {
 	}
 
 	// add description
-	desc = description
-	if (needsQuotes this desc) { desc = (join '''' desc '''') }
-	add result (join 'description ' desc (newline))
+	add result (join 'description ' (printString description) (newline))
 
 	// add variable declaration
 	if ((count variableNames) > 0) {
@@ -654,7 +662,9 @@ method codeString MicroBlocksModule owningProject newLibName {
 	processed = (dictionary)
 
 	for op blockList {
-		if ('space' != op) {
+		if ('-' == op) {
+			add result (join '  space' (newline))
+		} else {
 			spec = (at projectSpecs op)
 			if (notNil spec) {
 				add result (join '  ' (specDefinitionString spec) (newline))
@@ -859,6 +869,8 @@ method stringArgs MicroBlocksModule cmd {
 	args = (list)
 	for arg (argList cmd) {
 		if (isClass arg 'String') { // quoted item
+			add args arg
+		} (isClass arg 'Integer') {
 			add args arg
 		} else { // unquoted item: mapped to "(v 'varName')" block by the parser
 			add args (first (argList arg))

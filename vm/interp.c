@@ -42,6 +42,7 @@ OBJ vars[MAX_VARS];
 // The VM stops the task and records the error code and IP where the error occurred.
 
 static uint8 errorCode = noError;
+static int taskSleepMSecs = 0;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
@@ -51,6 +52,14 @@ OBJ fail(uint8 errCode) {
 int failure() {
 	return errorCode != noError;
 }
+
+#ifndef EMSCRIPTEN
+	void taskSleep(int msecs) {
+		// Make the current task sleep for the given number of milliseconds to free up cycles.
+		taskSleepMSecs = msecs;
+		errorCode = sleepSignal;
+	}
+#endif
 
 // Printing
 
@@ -215,6 +224,16 @@ OBJ primBoardType() {
 
 // Misc primitives
 
+static OBJ primModulo(int argCount, OBJ *args) {
+	int n = evalInt(args[0]);
+	int modulus = evalInt(args[1]);
+	if (0 == modulus) return fail(zeroDivide);
+	if (modulus < 0) modulus = -modulus;
+	int result = n % modulus;
+	if (result < 0) result += modulus;
+	return int2obj(result);
+}
+
 static OBJ primRandom(int argCount, OBJ *args) {
 	int first = 1, last = 100; // defaults for zero arguments
 	if (argCount == 1) { // use range [1..arg]
@@ -312,6 +331,16 @@ static int stringsEqual(OBJ obj1, OBJ obj2) {
 	return true;
 }
 
+static OBJ argOrDefault(OBJ *fp, int argNum, OBJ defaultValue) {
+	// Useful for working with optional arguments.
+	// Return the given argument or defaultValue if the argument was not supplied by the caller.
+
+	if (argNum < 1) return defaultValue; // argNum index is 1-based
+	int actualArgCount = obj2int(*(fp - 3));
+	if (argNum > actualArgCount) return defaultValue; // argument not supplied, return default
+	return *(fp - (4 + actualArgCount) + argNum); // return the desired argument
+}
+
 static int functionNameMatches(int chunkIndex, char *functionName) {
 	// Return true if given chunk is the function with the given function name.
 	// by checking the function name in the function's metadata.
@@ -351,10 +380,11 @@ static int functionNameMatches(int chunkIndex, char *functionName) {
 static int chunkIndexForFunction(char *functionName) {
 	// Return the chunk index for the function with the given name or -1 if not found.
 
+	int nameLength = strlen(functionName);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int chunkType = chunks[i].chunkType;
 		if (functionHat == chunkType) {
-			if (broadcastMatches(i, functionName, strlen(functionName))) return i;
+			if (broadcastMatches(i, functionName, nameLength)) return i;
 			if (functionNameMatches(i, functionName)) return i;
 		}
 	}
@@ -364,13 +394,16 @@ static int chunkIndexForFunction(char *functionName) {
 PrimitiveFunction findPrimitive(char *namedPrimitive);
 
 static int findCallee(char *functionOrPrimitiveName) {
+	// Look for a primitive match first since that is fast
+	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
+	if (f) return (int) f;
+
+	// Look for a user-defined function match (slow if no match found!)
 	int result = chunkIndexForFunction(functionOrPrimitiveName);
 	if (result >= 0) return (0xFFFFFF00 | result); // set top 24 bits to show callee is a chunk
 	// assume: result < 256 (MAX_CHUNKS) so it fits in low 8 bits
 
-	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
-	if (f) return (int) f;
-
+	fail(primitiveNotImplemented);
 	return -1;
 }
 
@@ -477,7 +510,7 @@ static void runTask(Task *task) {
 		&&longMultiply_op,
 		&&isType_op,
 		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
-		&&pop_op,  // this is the ignoreArgs opcode, an alias for pop_op
+		&&pop_op, // this is the ignoreArgs opcode, an alias for pop_op
 		&&newList_op,
 		&&RESERVED_op,
 		&&fillList_op,
@@ -496,7 +529,7 @@ static void runTask(Task *task) {
 		&&logData_op,
 		&&boardType_op,
 		&&comment_op,
-		&&RESERVED_op,
+		&&argOrDefault_op,
 		&&RESERVED_op,
 		&&analogPins_op,
 		&&digitalPins_op,
@@ -556,6 +589,15 @@ static void runTask(Task *task) {
 	DISPATCH();
 
 	error:
+		// sleepSignal is not a actual error; it just suspends the current task
+		if (sleepSignal == errorCode) {
+			errorCode = noError; // clear the error
+			if (taskSleepMSecs > 0) {
+				task->status = waiting_micros;
+				task->wakeTime = microsecs() + (taskSleepMSecs * 1000);
+			}
+			goto suspend;
+		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
@@ -943,8 +985,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	modulo_op:
-		tmp = evalInt(*(sp - 1));
-		*(sp - arg) = ((0 == tmp) ? fail(zeroDivide) : int2obj(evalInt(*(sp - 2)) % tmp));
+		*(sp - arg) = primModulo(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	absoluteValue_op:
@@ -1055,7 +1096,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
 		}
@@ -1071,7 +1112,7 @@ static void runTask(Task *task) {
 		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
 	logData_op:
-		if (!serialConnected()) {
+		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
 		}
@@ -1096,6 +1137,16 @@ static void runTask(Task *task) {
 		DISPATCH();
 	comment_op:
 		POP_ARGS_COMMAND();
+		DISPATCH();
+	argOrDefault_op:
+		if (arg < 2) {
+			*(sp - arg) = fail(notEnoughArguments); // not enough arguments to primitive
+		} else if (fp <= task->stack) {
+			*(sp - arg) = *(sp - 1); // not in a function call; return default value
+		} else {
+			*(sp - arg) = argOrDefault(fp, obj2int(*(sp - 2)), *(sp - 1));
+		}
+		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// I/O operations:
@@ -1214,6 +1265,7 @@ static void runTask(Task *task) {
 	callCustomCommand_op:
 	callCustomReporter_op:
 		if (arg > 0) {
+			taskSleep(-1); // do background VM tasks sooner
 			uint32 callee = -1;
 			OBJ params = *(sp - 1); // save the parameters array, if any
 			// look up the function or primitive name
@@ -1266,14 +1318,11 @@ static void runTask(Task *task) {
 		DISPATCH();
 }
 
-// Task Scheduler
-
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || \
-	defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
-		#define HAS_WIFI true
-#endif
+// Interpreter Entry Point
 
 static int currentTaskIndex = -1;
+
+#if !defined(EMSCRIPTEN)
 
 void vmLoop() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
@@ -1282,14 +1331,14 @@ void vmLoop() {
 	while (true) {
 		if (count-- < 0) {
 			// do background VM tasks once every N VM loop cycles
-			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
-				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
-					updateMicrobitDisplay();
-			#endif
-			checkButtons();
 			processMessage();
-			count = 25; // must be under 30 when building on mbed to avoid serial errors
+			checkButtons();
+			#if defined(HAS_LED_MATRIX)
+				updateMicrobitDisplay();
+			#endif
+			count = 95; // must be under 30 when building on mbed to avoid serial errors
+		} else if ((count & 0xF) == 0) {
+			captureIncomingBytes();
 		}
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
@@ -1313,6 +1362,12 @@ void vmLoop() {
 				break;
 			}
 		}
+		if (taskSleepMSecs) {
+			// if any task called taskSleep(), do VM background tasks sooner
+			taskSleepMSecs = 0;
+			count = (count < 5) ? count : 5;
+		}
+
 #ifdef GNUBLOCKS
 		if (!runCount) { // no active tasks; consider taking a nap
 			if (!usecs) usecs = microsecs(); // get usecs
@@ -1332,6 +1387,8 @@ void vmLoop() {
 	}
 }
 
+#endif // not EMSCRIPTEN
+
 // Boardie support
 
 #ifdef EMSCRIPTEN
@@ -1341,15 +1398,15 @@ void vmLoop() {
 #define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
-void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
 
 void interpretStep() {
+	uint32 endTime = millisecs() + 15;
 	processMessage();
 	checkButtons();
 	updateMicrobitDisplay();
-	int cycles = 0;
 	shouldYield = false;
-	while ((cycles < 10000) && !shouldYield) {
+	while ((millisecs() < endTime) && !shouldYield) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
 		uint32 usecs = microsecs(); // get usecs
@@ -1389,7 +1446,6 @@ void interpretStep() {
 				break;
 			} // relinquish control
 		}
-		cycles++;
 	}
 }
 

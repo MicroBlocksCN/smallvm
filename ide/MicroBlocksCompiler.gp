@@ -65,18 +65,18 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		'-'
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
-		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _' 'num auto')
+		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
 		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
-		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _' 'num num num' 1000000 0 0)
+		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _ : bit order _' 'num num num str' 1000000 0 0 'MSB')
 		(array ' ' '[sensors:spiExchange]'	'spi exchange bytes _' 'auto' 'aByteArray')
 		'-'
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array ' ' '[serial:write]'			'serial write _' 'str' 'aByteStringOrByteArray')
-		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'str num' 'aByteStringOrByteArray' 1)
+		(array ' ' '[serial:write]'			'serial write _' 'auto' 'anIntegerStringListOrByteArray')
+		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'auto num' 'aStringListOrByteArray' 1)
 		'-'
 		(array ' ' '[io:softWriteByte]'		'soft serial write byte _ pin _ baud _' 'num num num' '85' 2 9600)
 	'Control'
@@ -93,8 +93,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
-		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
+		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str.broadcastMenu' 'go!')
+		(array ' ' 'sendBroadcast'		'broadcast _' 'str.broadcastMenu' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
@@ -107,6 +107,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
+		(array 'r' 'argOrDefault'		'arg _ default _' 'num auto' 1 'default')
 		'-'
 		(array ' ' 'callCustomCommand'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
 		(array 'r' 'callCustomReporter'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
@@ -135,6 +136,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 		'-'
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
+		(array 'r' '[data:convertType]'	'convert _ to _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
 		'-'
@@ -262,14 +264,22 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address')
 		(array 'r' '[net:udpRemotePort]'		'UDP remote port')
 
-		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
+		(array ' ' '[tft:setBacklight]'		'set TFT backlight _ (0-10)' 'num' 10)
+		(array ' ' '[tft:getWidth]'			'TFT width')
+		(array ' ' '[tft:getHeight]'		'TFT height')
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
 		(array ' ' '[tft:line]'				'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
 		(array ' ' '[tft:rect]'				'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
 		(array ' ' '[tft:roundedRect]'		'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
-		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 0 80 16777215 1 false 16777215)
+		(array ' ' '[tft:drawBitmap]'		'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10)
+		(array ' ' '[tft:deferUpdates]'		'defer TFT display updates')
+		(array ' ' '[tft:resumeUpdates]'	'resume TFT display updates')
+
+		(array ' ' '[tft:mergeBitmap]'		'mergeBitmap _ width _ buffer _ scale _ alphaIndex _ destX _ destY _' 'auto num auto num num num num')
+		(array ' ' '[tft:drawBuffer]'		'drawBuffer _ palette _ scale _ : srcX _ srcY _ copyWidth _ copyHeight _' 'auto auto num num num num num')
 
 		(array 'r' '[tft:tftTouched]'		'TFT touched')
 		(array 'r' '[tft:tftTouchX]'		'TFT touch X position')
@@ -282,6 +292,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[file:endOfFile]'		'end of file _' 'str')
 		(array 'r' '[file:readLine]'		'next line of file _' 'str')
 		(array 'r' '[file:readBytes]'		'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0)
+		(array 'r' '[file:readInto]'		'read into _ from file _' 'str str' 'a ByteArray' '')
+		(array 'r' '[file:readPosition]'	'read position of file _' 'str')
+		(array ' ' '[file:setReadPosition]'	'set read position _ of file _' 'num str')
 		(array ' ' '[file:appendLine]'		'append line _ to file _' 'str str')
 		(array ' ' '[file:appendBytes]'		'append bytes _ to file _' 'str str')
 		(array 'r' '[file:fileSize]'		'size of file _' 'str')
@@ -408,7 +421,7 @@ method initOpcodes SmallCompiler {
 		printIt 75
 		boardType 76
 		comment 77
-	RESERVED 78
+		argOrDefault 78
 	RESERVED 79
 		analogPins 80
 		digitalPins 81

@@ -10,11 +10,11 @@ emcc -std=gnu99 -Wall -O3 \
 	--closure 1 \
 	--memory-init-file 0 \
 	-s WASM=1 \
-	-sEXPORTED_FUNCTIONS=_main,_getScripts,_yield \
+	-sEXPORTED_FUNCTIONS=_main,_getScripts,_taskSleep \
 	-I ../vm \
 	boardie.c ../vm/*.c \
 	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c boardieNetPrims.c \
-	boardieSensorPrims.c boardieFilePrims.c \
+	boardieSensorPrims.c boardieFilePrims.c boardieSerialPrims.c \
 	-o run_boardie.js
 
 cp font/adafruit_font.ttf ../chromeApp/webapp/boardie
