@@ -15,7 +15,7 @@ choices button_Menu A B
 choices attitude_Menu R P Y 
 choices move_Menu 'Forward(0mm~25mm)' 'Backward(-25mm~0mm)' 'Left Shift(0mm~18mm)' 'Right Shift(-18mm~0mm)' 
 choices angle_Menu roll pitch yaw 
-choices action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' Wave 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
 variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata _actions _buttons 
