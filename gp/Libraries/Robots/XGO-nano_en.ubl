@@ -1,0 +1,636 @@
+module 'XGO-nano' Control
+author luwudynamics
+version 2 30 
+choices leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
+choices arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
+choices move_direction_Menu X Y 
+choices motor_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
+choices transmove_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
+choices direction_Menu 'counter-clockwise' clockwise 
+choices speed_Menu Fast Normal Slow 
+choices translation_Menu X Y Z 
+choices action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' Wave 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices gait_Menu Trot Walk 'High Walk' 'Micro Trot' 
+choices button_Menu A B 
+choices attitude_Menu R P Y 
+choices move_Menu 'Forward(0mm~25mm)' 'Backward(-25mm~0mm)' 'Left Shift(0mm~18mm)' 'Right Shift(-18mm~0mm)' 
+choices angle_Menu roll pitch yaw 
+choices transrotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
+description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
+'
+variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata _actions _buttons 
+
+  spec ' ' '初始化XGO-nano' 'XGO init'
+  spec ' ' 'XGO复位' 'XGO reset'
+  space
+  spec 'r' '读取机器狗电量' 'get battery level'
+  spec 'r' '获取机器狗版本' 'get all servos angle'
+  spec 'r' '读取第' 'say leg _ servos angle' 'auto' 1
+  spec 'r' '姿态角度' 'get gyro angle _' 'menu.angle_Menu' 'roll'
+  space
+  spec ' ' '将当前朝向设置为0' 'set towards 0'
+  spec ' ' '设置转动到角度' 'rotation to _' 'auto' '10'
+  space
+  spec ' ' '设置迈步频率为' 'set frequency _' 'menu.speed_Menu num' 'Normal'
+  spec ' ' '设置运动步态为' 'set gait _' 'menu.gait_Menu num' 'Trot'
+  spec ' ' '单个舵机运动' 'set _ leg _ joint servos to _ °' 'menu.leg_Menu menu.motor_Menu num' 'Left Front' 'Upper(-30°~30°)' 40
+  spec ' ' '机械臂运动' 'set arm _ joint servos to _ °' 'menu.arm_Menu num' 'Upper(-65°~65°)' 40
+  space
+  spec ' ' '执行命令' 'execute action _' 'menu.action_Menu' 'Lie Down'
+  spec ' ' '机器狗平移' 'move _ with stride _ mm for _ ms' 'menu.move_Menu num num' 'Forward(0mm~25mm)' 15 3000
+  spec ' ' '机器狗旋转' 'Rotate _ at speed _ degrees/second for _ ms' 'menu.direction_Menu num num' 'counter-clockwise' 100 3000
+  spec ' ' '机器狗轴向平移' 'Translation along _ _ mm' 'menu.transmove_Menu num' 'X(-25mm~25mm)' 5
+  spec ' ' '机器狗轴向旋转' 'Rotate _ _ °' 'menu.transrotate_Menu num' 'X(-20°~20°)' 5
+  spec ' ' '机器狗单腿运动' 'set _ foot position to X(-25~25) _ mm Y(-15~15) _ mm Z(60~110) _ mm' 'menu.leg_Menu num num num' 'Left Front' 0 0 70
+  space
+  spec ' ' '机器狗机械臂' 'set arm position X(-80~155) _ mm Z(-95~155) _ mm' 'auto auto' 100 -60
+  spec ' ' '机器狗夹爪' 'claw _' 'auto' '128'
+  space
+  spec ' ' '陀螺仪' 'gyros _' 'bool' false
+  spec ' ' '表演模式' 'performance mode _' 'bool' false
+  spec ' ' '卸载所有舵机' 'unload all servo _' 'bool' false
+  spec ' ' '2P' '2Pin 5V output _' 'bool' false
+  spec ' ' '数字IO输出' 'digtial IO output _' 'bool' false
+  spec 'r' '读取按键' 'readbutton _' 'menu.button_Menu' 'A'
+  space
+  spec ' ' '_执行动作组编号' 'perform action _' 'auto' 1
+  spec 'r' '_button double pressed' 'button _ double pressed' 'auto' 'A'
+  spec 'r' '_button pressed' 'button _ pressed' 'auto' 5
+  spec 'r' '_button long pressed' 'button _ long pressed' 'auto' 5
+  spec ' ' '_XGO转向' 'XGO turn towards _' 'auto' '10'
+  spec ' ' '_移动机器狗' 'XGO-nano move _ step _' 'menu.move_direction_Menu num' 'X' 2
+  spec 'r' '_conver2u8t' '_conver2u8t _ _ _' 'auto auto auto' '10' '10' '10'
+  spec 'r' '_conver2u8' '_conver2u8 _ _' 'num num' 30 96
+  spec ' ' '_机器狗单腿运动' 'set _ foot position X _ Y _ Z _' 'num num num num' 1 2 2 66
+  spec ' ' '_HLgetdata_from_cmd' '_read_data'
+  spec 'r' '_conver2float' '_conver2float _ _ _' 'auto auto auto' '10' '10' '10'
+  spec ' ' '_单个舵机' 'oneservo _ _ _ _' 'auto auto auto auto' 10 10 '10' '10'
+  spec ' ' '_运动步态' 'set gait _' 'auto' '10'
+  spec ' ' '_单个舵机运动' 'servo _  angle _ °' 'num num' 1 40
+  spec ' ' '_串口结束' '_close serial'
+  spec 'r' '_修正后的余数' '_modified remainder _ _' 'auto auto' '10' '10'
+  spec 'r' '_button' '_button _' 'auto' 10
+  spec ' ' '_updateButtons' '_updateButtons'
+  spec 'r' '_read button' '_read button _' 'auto' 10
+
+to '2P' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 144 1 100))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 144 0 101))
+    '_串口结束'
+  }
+}
+
+to 'XGO复位' {
+  '_执行动作组编号' 255
+  waitMillis 100
+}
+
+to '_HLgetdata_from_cmd' {
+  repeatUntil (0 == (('[data:joinStrings]' _buffer) + 0)) {
+    _buffer = (newList 32)
+    local 'idx' 1
+    local 'serBuff' ('[serial:read]')
+    waitMillis 20
+    if ((size serBuff) > 0) {
+      for byte serBuff {
+        atPut idx _buffer byte
+        idx += 1
+      }
+    }
+  }
+}
+
+to '_XGO转向' steps {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 50 ('_conver2u8' 100 steps)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (60 + ('_conver2u8' 100 steps))) % 256))))
+  '_串口结束'
+}
+
+to '_button' 'pin or name' {
+  '_updateButtons'
+  for 'each button' _buttons {
+    if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
+  }
+  comment 'This button has not been initialized. Let''s add it.'
+  local 'new button' ('[data:makeList]' (v 'pin or name') '' '' 'waiting')
+  '[data:addLast]' (v 'new button') _buttons
+  return (v 'new button')
+}
+
+to '_button double pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'double press') {
+    comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+    atPut 4 button 'double press handled'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to '_button long pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'long press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to '_button pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'single press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to '_conver2float' data min max {
+  return (((data * (max - min)) / 255) + min)
+}
+
+to '_conver2u8' limit u8_data {
+  return ((255 * (u8_data + limit)) / (limit * 2))
+}
+
+to '_conver2u8t' min_data max_data u8_data {
+  if (min_data <= u8_data) {
+    return ((255 * (u8_data - min_data)) / (max_data - min_data))
+  } else {
+    return 0
+  }
+}
+
+to '_read button' 'pin or name' {
+  if ((v 'pin or name') == 'A') {
+    return (buttonA)
+  } ((v 'pin or name') == 'B') {
+    return (buttonB)
+  } else {
+    return (digitalReadOp (v 'pin or name'))
+  }
+}
+
+to '_updateButtons' {
+  if (_buttons == 0) {_buttons = ('[data:makeList]')}
+  for button _buttons {
+    local 'currently pressed' ('_read button' (at 1 button))
+    local 'previous state' (at 4 button)
+    if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
+      comment 'save state change time'
+      atPut 2 button (millisOp)
+      atPut 3 button (v 'currently pressed')
+      atPut 4 button 'pressed'
+    } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
+      local 'press time' ((millisOp) - (at 2 button))
+      comment 'There''s been a press. Let''s check how long it was.'
+      if ((v 'press time') > 500) {
+        atPut 4 button 'long press'
+      } ((v 'press time') > 250) {
+        atPut 4 button 'single press'
+      } else {
+        comment 'This is an internal intermediate state.
+It could turn out to be a single press or a double press.'
+        atPut 2 button (millisOp)
+        atPut 4 button 'short press'
+      }
+    } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
+      atPut 4 button 'double press'
+    } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
+      atPut 4 button 'single press'
+    } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
+      comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+      atPut 4 button 'waiting'
+    }
+  }
+}
+
+to '_串口结束' {
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+  '[serial:write]' _buffer
+  waitMillis 50
+}
+
+to '_修正后的余数' arg value {
+  if ((255 - (arg + value)) >= 0) {
+    return ((255 - (arg + value)) % 255)
+  } else {
+    return (((255 - (arg + value)) % 255) + 1)
+  }
+}
+
+to '_单个舵机' args steps min max {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 args ('_conver2u8t' min max steps)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - ((10 + args) + ('_conver2u8t' min max steps))) % 256))))
+  '_串口结束'
+}
+
+to '_单个舵机运动' nums steps {
+  if (nums == 1) {
+    '_单个舵机' 80 steps -70 50
+  } (nums == 2) {
+    '_单个舵机' 81 steps -70 90
+  } (nums == 3) {
+    '_单个舵机' 82 steps -30 30
+  } (nums == 4) {
+    '_单个舵机' 83 steps -70 50
+  } (nums == 5) {
+    '_单个舵机' 84 steps -70 90
+  } (nums == 6) {
+    '_单个舵机' 85 steps -30 30
+  } (nums == 7) {
+    '_单个舵机' 86 steps -70 50
+  } (nums == 8) {
+    '_单个舵机' 87 steps -70 90
+  } (nums == 9) {
+    '_单个舵机' 88 steps -30 30
+  } (nums == 10) {
+    '_单个舵机' 89 steps -70 50
+  } (nums == 11) {
+    '_单个舵机' 90 steps -70 90
+  } (nums == 12) {
+    '_单个舵机' 91 steps -30 30
+  } (nums == 13) {
+    '_单个舵机' 113 steps -65 65
+  } (nums == 14) {
+    '_单个舵机' 93 steps -115 70
+  } (nums == 15) {
+    '_单个舵机' 94 steps -85 100
+  }
+}
+
+to '_执行动作组编号' data {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 62 data))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (72 + data)) % 256))))
+  '_串口结束'
+}
+
+to '_机器狗单腿运动' leg X Y Z {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 64) ('_conver2u8' 25 X)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' (leg + 74) ('_conver2u8' 25 X)))))
+  '_串口结束'
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 65) ('_conver2u8' 18 Y)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' (leg + 75) ('_conver2u8' 18 Y)))))
+  '_串口结束'
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 (leg + 66) ('_conver2u8t' 60 110 Z)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' (leg + 76) ('_conver2u8t' 60 110 Z)))))
+  '_串口结束'
+}
+
+to '_移动机器狗' move_direction steps {
+  if (move_direction == 'X') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 48 ('_conver2u8' 25 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (58 + ('_conver2u8' 25 steps))) % 256))))
+    '_串口结束'
+  } (move_direction == 'Y') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 49 ('_conver2u8' 18 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (59 + ('_conver2u8' 18 steps))) % 256))))
+    '_串口结束'
+  }
+}
+
+to '_运动步态' x {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 9 x))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (19 + x)) % 256))))
+  '_串口结束'
+}
+
+to '初始化XGO-nano' {
+  if ('micro:bit v2' == (boardType)) {callCustomCommand '[serial:setPins]' ('[data:makeList]' 13 14)}
+  '[serial:open]' 115200
+}
+
+to '单个舵机运动' legs motor degree {
+  if (legs == 'Left Front') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_单个舵机运动' 3 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_单个舵机运动' 2 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_单个舵机运动' 1 degree
+    }
+  } (legs == 'Right Front') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_单个舵机运动' 6 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_单个舵机运动' 5 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_单个舵机运动' 4 degree
+    }
+  } (legs == 'Right Rear') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_单个舵机运动' 9 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_单个舵机运动' 8 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_单个舵机运动' 7 degree
+    }
+  } (legs == 'Left Rear') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_单个舵机运动' 12 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_单个舵机运动' 11 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_单个舵机运动' 10 degree
+    }
+  }
+}
+
+to '卸载所有舵机' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 32 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (42 + 1)) % 255))))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 32 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (42 + 0)) % 255))))
+    '_串口结束'
+  }
+}
+
+to '姿态角度' angel {
+  if (angel == 'roll') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 102 2 140))
+    '_串口结束'
+  } (angel == 'pitch') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 103 2 139))
+    '_串口结束'
+  } (angel == 'yaw') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 104 2 138))
+    '_串口结束'
+  }
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    if ((at 6 rx_data) > 128) {
+      return ((at 7 rx_data) + (((at 6 rx_data) - 256) * 256))
+    } else {
+      return ((at 7 rx_data) + ((at 6 rx_data) * 256))
+    }
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
+to '将当前朝向设置为0' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 6 1 238))
+  '_串口结束'
+}
+
+to '执行命令' foo {
+  if (not (isType _actions 'list')) {_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pich,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
+  local 'an' ('[data:find]' foo _actions)
+  if (an == 25) {
+    '_执行动作组编号' 128
+  } (an == 26) {
+    '_执行动作组编号' 129
+  } (an == 27) {
+    '_执行动作组编号' 130
+  } else {
+    '_执行动作组编号' an
+  }
+}
+
+to '数字IO输出' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 145 1 99))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 145 0 100))
+    '_串口结束'
+  }
+}
+
+to '机器狗单腿运动' leg X Y Z {
+  if (leg == 'Left Front') {
+    '_机器狗单腿运动' 0 X Y Z
+  } (leg == 'Right Front') {
+    '_机器狗单腿运动' 3 X Y Z
+  } (leg == 'Right Rear') {
+    '_机器狗单腿运动' 6 X Y Z
+  } (leg == 'Left Rear') {
+    '_机器狗单腿运动' 9 X Y Z
+  }
+}
+
+to '机器狗夹爪' pos {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 113 pos))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' 123 ('_conver2u8t' 0 255 pos)))))
+  '_串口结束'
+}
+
+to '机器狗平移' move_direction steps times {
+  if (move_direction == 'Forward(0mm~25mm)') {
+    '_移动机器狗' 'X' steps
+    waitMillis times
+    '_移动机器狗' 'X' 0
+    waitMillis 50
+    '_移动机器狗' 'Y' 0
+  } (move_direction == 'Backward(-25mm~0mm)') {
+    '_移动机器狗' 'X' (0 - steps)
+    waitMillis times
+    '_移动机器狗' 'X' 0
+    waitMillis 50
+    '_移动机器狗' 'Y' 0
+  } (move_direction == 'Left Shift(0mm~18mm)') {
+    '_移动机器狗' 'Y' steps
+    waitMillis times
+    '_移动机器狗' 'Y' 0
+    waitMillis 50
+    '_移动机器狗' 'X' 0
+  } (move_direction == 'Right Shift(-18mm~0mm)') {
+    '_移动机器狗' 'Y' (0 - steps)
+    waitMillis times
+    '_移动机器狗' 'Y' 0
+    waitMillis 50
+    '_移动机器狗' 'X' 0
+  }
+}
+
+to '机器狗旋转' direction steps times {
+  if (direction == 'counter-clockwise') {
+    '_XGO转向' steps
+    waitMillis times
+    '_XGO转向' 0
+  } (direction == 'clockwise') {
+    '_XGO转向' (0 - steps)
+    waitMillis times
+    '_XGO转向' 0
+  }
+}
+
+to '机器狗机械臂' arm_x arm_z {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 115 ('_conver2u8t' -80 155 arm_x)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' 125 ('_conver2u8t' -80 155 arm_x)))))
+  '_串口结束'
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 116 ('_conver2u8t' -95 155 arm_z)))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' 126 ('_conver2u8t' -95 155 arm_z)))))
+  '_串口结束'
+}
+
+to '机器狗机械臂稳定模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 114 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (124 + 1)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 114 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (124 + 0)) % 255))))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
+    '[serial:write]' _buffer
+    waitMillis 50
+  }
+}
+
+to '机器狗轴向平移' direction steps {
+  if (direction == 'X(-25mm~25mm)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 51 ('_conver2u8' 25 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (61 + ('_conver2u8' 25 steps))) % 256))))
+    '_串口结束'
+  } (direction == 'Y(-18mm~18mm)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 52 ('_conver2u8' 18 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (62 + ('_conver2u8' 18 steps))) % 256))))
+    '_串口结束'
+  } (direction == 'Z(60mm~110mm)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 53 ('_conver2u8t' 60 110 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (63 + ('_conver2u8t' 60 110 steps))) % 256))))
+    '_串口结束'
+  }
+}
+
+to '机器狗轴向旋转' direction steps {
+  if (direction == 'X(-20°~20°)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 54 ('_conver2u8' 20 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (64 + ('_conver2u8' 20 steps))) % 256))))
+    '_串口结束'
+  } (direction == 'Y(-20°~20°)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 55 ('_conver2u8' 20 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (65 + ('_conver2u8' 20 steps))) % 256))))
+    '_串口结束'
+  } (direction == 'Z(-12°~12°)') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 56 ('_conver2u8' 12 steps)))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (66 + ('_conver2u8' 12 steps))) % 256))))
+    '_串口结束'
+  }
+}
+
+to '机械臂运动' arm degree {
+  if (arm == 'Upper(-65°~65°)') {
+    '_单个舵机运动' 13 degree
+  } (arm == 'Middle(-115°~70°)') {
+    '_单个舵机运动' 14 degree
+  } (arm == 'Lower(-90°~105°)') {
+    '_单个舵机运动' 15 degree
+  }
+}
+
+to '获取机器狗版本' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 80 15 149))
+  '_串口结束'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return ('[data:makeList]' ('_conver2float' (at 6 rx_data) -70 50) ('_conver2float' (at 7 rx_data) -70 90) ('_conver2float' (at 8 rx_data) -30 30) ('_conver2float' (at 9 rx_data) -70 50) ('_conver2float' (at 10 rx_data) -70 90) ('_conver2float' (at 11 rx_data) -30 30) ('_conver2float' (at 12 rx_data) -70 50) ('_conver2float' (at 13 rx_data) -70 90) ('_conver2float' (at 14 rx_data) -30 30) ('_conver2float' (at 15 rx_data) -70 50) ('_conver2float' (at 16 rx_data) -70 90) ('_conver2float' (at 17 rx_data) -30 30) ('_conver2float' (at 18 rx_data) -65 65) ('_conver2float' (at 19 rx_data) -70 60) ('_conver2float' (at 20 rx_data) -90 105))
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
+to '表演模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 1)) % 255))))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
+    '_串口结束'
+  }
+}
+
+to '设置转动到角度' angle {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 10 1 63))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((angle >> 8) & 255) (angle & 255) ((255 - (74 + ((angle & 255) + ((angle >> 8) & 255)))) % 256))))
+  '_串口结束'
+}
+
+to '设置迈步频率为' mode {
+  if (mode == 'Normal') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 0)) % 256))))
+    '_串口结束'
+  } (mode == 'Slow') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 1)) % 256))))
+    '_串口结束'
+  } (mode == 'Fast') {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 2))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 2)) % 256))))
+    '_串口结束'
+  }
+}
+
+to '设置运动步态为' mode {
+  if (mode == 'Trot') {
+    '_运动步态' 0
+  } (mode == 'Walk') {
+    '_运动步态' 1
+  } (mode == 'High Walk') {
+    '_运动步态' 2
+  } (mode == 'Micro Trot') {
+    '_运动步态' 3
+  }
+}
+
+to '读取按键' button {
+  if (button == 'A') {
+    return (digitalReadOp 34)
+  } (button == 'B') {
+    return (digitalReadOp 35)
+  }
+}
+
+to '读取机器狗电量' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 1 1 242))
+  '_串口结束'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
+to '读取第' foo {
+  local 'var' foo
+  forever {
+    if (isType ('获取机器狗版本') 'list') {
+      comment '获取不到舵机角度时返回对象不是列表'
+      sayIt ('[data:joinStrings]' ('[data:copyFromTo]' ('获取机器狗版本') (1 + ((var - 1) * 3)) (3 + ((var - 1) * 3))) '|')
+    }
+    waitMillis 200
+  }
+}
+
+to '陀螺仪' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 97 1))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (107 + 1)) % 255))))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 97 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (107 + 0)) % 255))))
+    '_串口结束'
+  }
+}
+
