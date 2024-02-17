@@ -44,6 +44,14 @@
 		// Primo: SoftDevice: 0-112k; App: 112k-210k; Persistent Mem: 210k-488k; Boot: 488k-512k
 		#define START (210 * 1024)
 		#define HALF_SPACE (100 * 1024)
+	#elif defined(NRF52833_XXAA)
+		// nrf52833: SoftDevice + app: 0-316k; Persistent Mem: 316-436k; User data: 436k-464k; Boot: 464k-512k
+		#define START (316 * 1024)
+		#define HALF_SPACE (60 * 1024)
+	#elif defined(NRF52840_XXAA)
+		// nrf52840: SoftDevice + app: 0-450k; Persistent Mem: 450k-570k; User data: 948k-976k; Boot: 976k-1024k
+		#define START (450 * 1024)
+		#define HALF_SPACE (60 * 1024)
 	#elif defined(NRF52)
 		// nrf52832: SoftDevice + app: 0-316k; Persistent Mem: 316-436k; User data: 436k-464k; Boot: 464k-512k
 		#define START (316 * 1024)
@@ -401,7 +409,7 @@ void flashWriteWord(int *addr, int value) {
 		#define USE_CODE_FILE RP2040_PHILHOWER
 		#define HALF_SPACE (40 * 1024)
 	#else
-		#define HALF_SPACE (10 * 1024)
+		#define HALF_SPACE (40 * 1024)
 	#endif
 
 	#define START (&flash[0])
