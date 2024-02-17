@@ -3147,6 +3147,24 @@ Octopus OLED draw circle x _ y _ radius _
 Octopus OLED fill circle x _ y _ radius _
 八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
+#### 
+# OctoStudio
+
+Octo start
+Octo 启动
+
+Octo beam to phones _
+Octo 给手机发信号 _
+
+duration _ ms
+持续 _ 毫秒
+
+Octo receive beam
+Octo 收到的信号
+
+Octo stop
+Octo 停止
+
 
 ####
 # TM1650
