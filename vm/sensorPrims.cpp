@@ -2652,7 +2652,10 @@ static PrimEntry entries[] = {
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
-
+	{"captureStart", captureStartPrim},
+	{"captureCount", primCaptureCount},
+	{"captureEnd", primCaptureEnd},
+	
 	#if defined(COCOROBO)
 	{"Humidity", primHumidity},		
   	#endif
