@@ -26,14 +26,6 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 
 #elif defined(NRF52) // use UART directly
 
-// Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
-// not updated correctly. As a work around (hack!), we fill the receive buffer with
-// 255's and detect the number of bytes by finding the last non-255 value. This
-// implementation could miss an actual 255 data byte if it happens to the be last
-// byte received when a read operation is performed. However, that should not be an
-// problem in most real applications since 255 bytes are rare in string data, and
-// this work around avoids using a hardware counter, interrupts, or PPI entries.
-
 // Pin numbers for nRF52 boards. May be changed before calling serialOpen().
 #if defined(CALLIOPE_V3)
 	uint8 nrf52PinRx = 16;
@@ -76,9 +68,6 @@ static void serialOpen(int baudRate) {
 	// set baud rate
 	NRF_UARTE1->BAUDRATE = 268 * baudRate;
 
-	// clear receive buffer
-	memset(rxBufA, 255, RX_BUF_SIZE);
-
 	// initialize Easy DMA pointers
 	NRF_UARTE1->RXD.PTR = (uint32_t) rxBufA;
 	NRF_UARTE1->RXD.MAXCNT = RX_BUF_SIZE;
@@ -106,28 +95,23 @@ static void serialOpen(int baudRate) {
 static int serialAvailable() {
 	if (!NRF_UARTE1->EVENTS_RXDRDY) return 0;
 
-	// clear the idle receive buffer
-	uint8* idleRxBuf = INACTIVE_RX_BUF();
-	memset(idleRxBuf, 255, RX_BUF_SIZE);
+	NRF_UARTE1->EVENTS_ENDRX = false;
+	NRF_UARTE1->TASKS_STOPRX = true; // force stop
+	NRF_UARTE1->TASKS_FLUSHRX = true; // flush the last few bytes out of the FIFO
+	while (!NRF_UARTE1->EVENTS_ENDRX) /* wait for stop */;
+	int rcvCount = NRF_UARTE1->RXD.AMOUNT;
 
 	// switch receive buffers
-	NRF_UARTE1->RXD.PTR = (uint32_t) idleRxBuf;
+	NRF_UARTE1->RXD.PTR = (uint32) INACTIVE_RX_BUF();
 	NRF_UARTE1->RXD.MAXCNT = RX_BUF_SIZE;
 	NRF_UARTE1->EVENTS_RXDRDY = false;
 	NRF_UARTE1->TASKS_STARTRX = true;
 
-	uint8* rxBuf = INACTIVE_RX_BUF();
-	uint8* p = rxBuf + (RX_BUF_SIZE - 1);
-	while ((255 == *p) && (p >= rxBuf)) p--; // scan from end of buffer for first non-255 byte
-	return (p - rxBuf) + 1;
+	return rcvCount;
 }
 
 static void serialReadBytes(uint8 *buf, int byteCount) {
-	uint8* rxBuf = INACTIVE_RX_BUF();
-	for (int i = 0; i < byteCount; i++) {
-		*buf++ = rxBuf[i];
-		rxBuf[i] = 255;
-	}
+	memcpy(buf, INACTIVE_RX_BUF(), byteCount);
 }
 
 static int serialWriteBytes(uint8 *buf, int byteCount) {
