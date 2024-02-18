@@ -241,10 +241,12 @@ static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 		return;
 	}
 	while (bytesToWrite > 0) {
+		captureIncomingBytes();
 		int written = serialWriteBytes(buf, bytesToWrite);
 		if (written) {
 			buf += written;
 			bytesToWrite -= written;
+			captureIncomingBytes();
 		} else {
 			// do background VM tasks
 			#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3) || defined(GNUBLOCKS)
@@ -359,6 +361,7 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	int bytesToWrite = 0;
 	int bytesWritten = 0;
 
+	captureIncomingBytes();
 	if (bufType == ListType) { // list
 		// Note: startIndex is 0-based
 		uint8 listBytes[TX_BUF_SIZE]; // buffer of bytes from list
@@ -381,6 +384,7 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 		uint8 *src = ((uint8 *) &FIELD(buf, 0)) + startIndex;
 		bytesWritten = serialWriteBytes(src, bytesToWrite);
 	}
+	captureIncomingBytes();
 	return int2obj(bytesWritten);
 }
 
