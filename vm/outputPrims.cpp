@@ -777,6 +777,8 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 			pinNum = 13; // internal NeoPixel pin
 		#elif defined(DATABOT)
 			pinNum = 2; // internal NeoPixel pin
+		#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+		    pinNum = 48; // ESP32-S3-DevKitC-1 internal NeoPixel pin
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
