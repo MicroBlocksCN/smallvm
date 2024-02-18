@@ -24,7 +24,7 @@ static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(NRF52) // use UART directly
+#elif defined(NRF52) // use custom UART
 
 // Pin numbers for nRF52 boards. May be changed before calling serialOpen().
 #if defined(CALLIOPE_V3)
@@ -34,6 +34,45 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 	uint8 nrf52PinRx = 0;
 	uint8 nrf52PinTx = 1;
 #endif
+
+// Custom UART MBSerial
+Uart MBSerial((NRF_UART_Type *) NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
+
+static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
+	nrf52PinRx = rxPin;
+	nrf52PinTx = txPin;
+	return trueObj;
+}
+
+static void serialOpen(int baudRate) {
+	if (isOpen) MBSerial.end();
+	MBSerial.setPins(nrf52PinRx, nrf52PinTx);
+	MBSerial.begin(baudRate);
+	isOpen = true;
+}
+
+static void serialClose() {
+	if (isOpen) MBSerial.end();
+	isOpen = false;
+}
+
+static int serialAvailable() {
+	return MBSerial.available();
+}
+
+static void serialReadBytes(uint8 *buf, int byteCount) {
+	for (int i = 0; i < byteCount; i++) {
+		int ch = MBSerial.read();
+		buf[i] = (ch >= 0) ? ch : 0;
+	}
+}
+
+static int serialWriteBytes(uint8 *buf, int byteCount) {
+	return MBSerial.write(buf, byteCount);
+}
+
+#elif defined(NRF52_DEPRECATED) // use UART DMA
 
 #define RX_BUF_SIZE 256
 uint8 rxBufA[RX_BUF_SIZE];
@@ -317,27 +356,31 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	if (!((bufType == StringType) || (bufType == ByteArrayType) || (bufType == ListType))) return fail(needsByteArray);
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 
+	int bytesToWrite = 0;
+	int bytesWritten = 0;
+
 	if (bufType == ListType) { // list
+		// Note: startIndex is 0-based
+		uint8 listBytes[TX_BUF_SIZE]; // buffer of bytes from list
 		int listCount = obj2int(FIELD(buf, 0));
 		if (startIndex >= listCount) return fail(indexOutOfRangeError);
 		for (int i = startIndex + 1; i <= listCount; i++) {
 			OBJ item = FIELD(buf, i);
-			if (isInt(item)) {
-				int byteValue = obj2int(item);
-				if (byteValue > 255) return fail(byteOutOfRange);
-				uint8 oneByte = byteValue;
-				serialWriteSync(&oneByte, 1);
-			}
+			if (!isInt(item)) return fail(needsIntegerIndexError);
+			int byteValue = obj2int(item);
+			if ((byteValue < 0) || (byteValue > 255)) return fail(byteOutOfRange);
+			listBytes[bytesToWrite++] = byteValue;
+			if (bytesToWrite >= sizeof(listBytes)) break;
 		}
-		return int2obj((listCount - startIndex) + 1);
+		bytesWritten = serialWriteBytes(listBytes, bytesToWrite);
+	} else { // string or byte array
+		// Note: startIndex is 0-based
+		int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
+		if (startIndex >= srcLen) return fail(indexOutOfRangeError);
+		bytesToWrite = srcLen - startIndex;
+		uint8 *src = ((uint8 *) &FIELD(buf, 0)) + startIndex;
+		bytesWritten = serialWriteBytes(src, bytesToWrite);
 	}
-
-	int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
-	if (startIndex >= srcLen) return fail(indexOutOfRangeError);
-
-	int bytesToWrite = srcLen - startIndex;
-	if (bytesToWrite > TX_BUF_SIZE) bytesToWrite = TX_BUF_SIZE;
-	int bytesWritten = serialWriteBytes((uint8 *) &FIELD(buf, 0), bytesToWrite);
 	return int2obj(bytesWritten);
 }
 
