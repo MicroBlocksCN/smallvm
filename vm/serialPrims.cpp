@@ -36,7 +36,13 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 #endif
 
 // Custom UART MBSerial
-Uart MBSerial((NRF_UART_Type *) NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+
+#if defined(SERIAL_PORT_USBVIRTUAL) && !defined(BLE_IDE)
+	// using the adafruitnordicnrf framework (uses different Uart() contructor)
+	Uart MBSerial(NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+#else
+	Uart MBSerial((NRF_UART_Type *) NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+#endif
 extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
 
 static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
