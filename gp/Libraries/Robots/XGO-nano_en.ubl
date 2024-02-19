@@ -1,6 +1,6 @@
-module 'XGO-nano'
+module 'XGO-nano' Control
 author luwudynamics
-version 2 33
+version 2 35
 choices XGO_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
 choices XGO_arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
 choices XGO_move_XGO_direction_Menu X Y 
@@ -260,7 +260,7 @@ to XGO_unload_all_servo mode {
 }
 
 to '_HLgetdata_from_cmd' {
-  repeatUntil (0 == (('[data:joinStrings]' _buffer) + 0)) {
+  repeatUntil (0 == (('[data:joinStrings]'  _XGO_buffer) + 0)) {
     _XGO_buffer = (newList 32)
     local 'idx' 1
     local 'serBuff' ('[serial:read]')
@@ -302,7 +302,7 @@ to '_XGO_move' move_direction steps {
 
 to '_XGO_serial_end' {
   _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
-  '[serial:write]' _buffer
+  '[serial:write]'  _XGO_buffer
   waitMillis 50
 }
 
