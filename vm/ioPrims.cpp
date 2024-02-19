@@ -480,8 +480,8 @@ void hardwareInit() {
 	#define PIN_BUTTON_A 39
 	#define PIN_BUTTON_B 38
 	#define DEFAULT_TONE_PIN 25
-	#ifdef BUILTIN_LED
-		#define PIN_LED BUILTIN_LED
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
 	#else
 		#define PIN_LED 2
 	#endif
@@ -702,8 +702,8 @@ void hardwareInit() {
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
-	#ifdef BUILTIN_LED
-		#define PIN_LED BUILTIN_LED
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
 	#else
 		#define PIN_LED 2
 	#endif
