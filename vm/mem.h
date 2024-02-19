@@ -19,12 +19,20 @@ extern "C" {
   #define NRF52 1
 #endif
 
-// Unify ESP32 S2, S3, C3, and H2 (is H2 the same as C6?)
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32S3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32H2)
-  #define ESP32_S2_OR_S3 1
+// Define short symbols ESP32 variants
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+  #define ESP32_S2 1
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  #define ESP32_S3 1
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  #define ESP32_C3 1
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+  #define ESP32_C6 1
+#endif
+
+// Unify ESP32 S2, S3, C3
+#if defined(ESP32_S2) || defined(ESP32_S3) || defined(ESP32_C3)
+  #define ESP32_S2_S3_OR_C3 1
 #endif
 
 #if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)

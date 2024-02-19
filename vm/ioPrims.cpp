@@ -648,7 +648,7 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
 	#define ANALOG_PINS 20
@@ -678,18 +678,17 @@ void hardwareInit() {
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 1, 1, 0, 0};
 
-#elif defined(AIRM2MC3)
-	#define BOARD_TYPE "airm2m_core_esp32c3"
-	#define DIGITAL_PINS 22
+#elif defined(ESP32_C3)
+	#define BOARD_TYPE "ESP32-C3"
+	#define DIGITAL_PINS 20
 	#define ANALOG_PINS 5
-	#define TOTAL_PINS 22
+	#define TOTAL_PINS 20
+	#define PIN_LED -1 // has an RGB Neopixel rather than a user LED
 	static const int analogPin[] = {0, 1, 2, 3, 4};
-	#define PIN_LED 12
 	#define PIN_BUTTON_A 9
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
-		1, 1};
+		0, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -1079,7 +1078,7 @@ void primAnalogWrite(OBJ *args) {
 	#endif
 
 	#if defined(ESP32)
-	  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(ESP32_C3)
+	  #if !defined(ESP32_S3) && !defined(ESP32_C3)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 and ESP32-S2 DAC pins
 			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
@@ -1244,6 +1243,7 @@ void primSetUserLED(OBJ *args) {
 		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
+		if (PIN_LED < 0) return; // board does not have a user LED
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
 		} else {
@@ -1730,7 +1730,7 @@ void stopTone() {
 
 // DAC (digital to analog converter) Support
 
-#if defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
+#if defined(ESP32) && !defined(ESP32_S3) && !defined(ESP32_C3)
 
 #include "driver/dac_common.h"
 
@@ -2091,7 +2091,7 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
-#elif defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
+#elif defined(ESP32) && !defined(ESP32_S2_S3_OR_C3)
 
 #include "driver/ledc.h"
 

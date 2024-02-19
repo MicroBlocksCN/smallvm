@@ -24,15 +24,7 @@ static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(NRF52) // use UART directly
-
-// Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
-// not updated correctly. As a work around (hack!), we fill the receive buffer with
-// 255's and detect the number of bytes by finding the last non-255 value. This
-// implementation could miss an actual 255 data byte if it happens to the be last
-// byte received when a read operation is performed. However, that should not be an
-// problem in most real applications since 255 bytes are rare in string data, and
-// this work around avoids using a hardware counter, interrupts, or PPI entries.
+#elif defined(NRF52) // use custom UART
 
 // Pin numbers for nRF52 boards. May be changed before calling serialOpen().
 #if defined(CALLIOPE_V3)
@@ -42,6 +34,51 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 	uint8 nrf52PinRx = 0;
 	uint8 nrf52PinTx = 1;
 #endif
+
+// Custom UART MBSerial
+
+#if defined(SERIAL_PORT_USBVIRTUAL) && !defined(BLE_IDE)
+	// using the adafruitnordicnrf framework (uses different Uart() contructor)
+	Uart MBSerial(NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+#else
+	Uart MBSerial((NRF_UART_Type *) NRF_UARTE1, UARTE1_IRQn, nrf52PinRx, nrf52PinTx);
+#endif
+extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
+
+static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
+	nrf52PinRx = rxPin;
+	nrf52PinTx = txPin;
+	return trueObj;
+}
+
+static void serialOpen(int baudRate) {
+	if (isOpen) MBSerial.end();
+	MBSerial.setPins(nrf52PinRx, nrf52PinTx);
+	MBSerial.begin(baudRate);
+	isOpen = true;
+}
+
+static void serialClose() {
+	if (isOpen) MBSerial.end();
+	isOpen = false;
+}
+
+static int serialAvailable() {
+	return MBSerial.available();
+}
+
+static void serialReadBytes(uint8 *buf, int byteCount) {
+	for (int i = 0; i < byteCount; i++) {
+		int ch = MBSerial.read();
+		buf[i] = (ch >= 0) ? ch : 0;
+	}
+}
+
+static int serialWriteBytes(uint8 *buf, int byteCount) {
+	return MBSerial.write(buf, byteCount);
+}
+
+#elif defined(NRF52_DEPRECATED) // use UART DMA
 
 #define RX_BUF_SIZE 256
 uint8 rxBufA[RX_BUF_SIZE];
@@ -76,9 +113,6 @@ static void serialOpen(int baudRate) {
 	// set baud rate
 	NRF_UARTE1->BAUDRATE = 268 * baudRate;
 
-	// clear receive buffer
-	memset(rxBufA, 255, RX_BUF_SIZE);
-
 	// initialize Easy DMA pointers
 	NRF_UARTE1->RXD.PTR = (uint32_t) rxBufA;
 	NRF_UARTE1->RXD.MAXCNT = RX_BUF_SIZE;
@@ -106,28 +140,23 @@ static void serialOpen(int baudRate) {
 static int serialAvailable() {
 	if (!NRF_UARTE1->EVENTS_RXDRDY) return 0;
 
-	// clear the idle receive buffer
-	uint8* idleRxBuf = INACTIVE_RX_BUF();
-	memset(idleRxBuf, 255, RX_BUF_SIZE);
+	NRF_UARTE1->EVENTS_ENDRX = false;
+	NRF_UARTE1->TASKS_STOPRX = true; // force stop
+	NRF_UARTE1->TASKS_FLUSHRX = true; // flush the last few bytes out of the FIFO
+	while (!NRF_UARTE1->EVENTS_ENDRX) /* wait for stop */;
+	int rcvCount = NRF_UARTE1->RXD.AMOUNT;
 
 	// switch receive buffers
-	NRF_UARTE1->RXD.PTR = (uint32_t) idleRxBuf;
+	NRF_UARTE1->RXD.PTR = (uint32) INACTIVE_RX_BUF();
 	NRF_UARTE1->RXD.MAXCNT = RX_BUF_SIZE;
 	NRF_UARTE1->EVENTS_RXDRDY = false;
 	NRF_UARTE1->TASKS_STARTRX = true;
 
-	uint8* rxBuf = INACTIVE_RX_BUF();
-	uint8* p = rxBuf + (RX_BUF_SIZE - 1);
-	while ((255 == *p) && (p >= rxBuf)) p--; // scan from end of buffer for first non-255 byte
-	return (p - rxBuf) + 1;
+	return rcvCount;
 }
 
 static void serialReadBytes(uint8 *buf, int byteCount) {
-	uint8* rxBuf = INACTIVE_RX_BUF();
-	for (int i = 0; i < byteCount; i++) {
-		*buf++ = rxBuf[i];
-		rxBuf[i] = 255;
-	}
+	memcpy(buf, INACTIVE_RX_BUF(), byteCount);
 }
 
 static int serialWriteBytes(uint8 *buf, int byteCount) {
@@ -218,10 +247,12 @@ static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 		return;
 	}
 	while (bytesToWrite > 0) {
+		captureIncomingBytes();
 		int written = serialWriteBytes(buf, bytesToWrite);
 		if (written) {
 			buf += written;
 			bytesToWrite -= written;
+			captureIncomingBytes();
 		} else {
 			// do background VM tasks
 			#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3) || defined(GNUBLOCKS)
@@ -333,27 +364,33 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	if (!((bufType == StringType) || (bufType == ByteArrayType) || (bufType == ListType))) return fail(needsByteArray);
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 
+	int bytesToWrite = 0;
+	int bytesWritten = 0;
+
+	captureIncomingBytes();
 	if (bufType == ListType) { // list
+		// Note: startIndex is 0-based
+		uint8 listBytes[TX_BUF_SIZE]; // buffer of bytes from list
 		int listCount = obj2int(FIELD(buf, 0));
 		if (startIndex >= listCount) return fail(indexOutOfRangeError);
 		for (int i = startIndex + 1; i <= listCount; i++) {
 			OBJ item = FIELD(buf, i);
-			if (isInt(item)) {
-				int byteValue = obj2int(item);
-				if (byteValue > 255) return fail(byteOutOfRange);
-				uint8 oneByte = byteValue;
-				serialWriteSync(&oneByte, 1);
-			}
+			if (!isInt(item)) return fail(needsIntegerIndexError);
+			int byteValue = obj2int(item);
+			if ((byteValue < 0) || (byteValue > 255)) return fail(byteOutOfRange);
+			listBytes[bytesToWrite++] = byteValue;
+			if (bytesToWrite >= sizeof(listBytes)) break;
 		}
-		return int2obj((listCount - startIndex) + 1);
+		bytesWritten = serialWriteBytes(listBytes, bytesToWrite);
+	} else { // string or byte array
+		// Note: startIndex is 0-based
+		int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
+		if (startIndex >= srcLen) return fail(indexOutOfRangeError);
+		bytesToWrite = srcLen - startIndex;
+		uint8 *src = ((uint8 *) &FIELD(buf, 0)) + startIndex;
+		bytesWritten = serialWriteBytes(src, bytesToWrite);
 	}
-
-	int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
-	if (startIndex >= srcLen) return fail(indexOutOfRangeError);
-
-	int bytesToWrite = srcLen - startIndex;
-	if (bytesToWrite > TX_BUF_SIZE) bytesToWrite = TX_BUF_SIZE;
-	int bytesWritten = serialWriteBytes((uint8 *) &FIELD(buf, 0), bytesToWrite);
+	captureIncomingBytes();
 	return int2obj(bytesWritten);
 }
 
