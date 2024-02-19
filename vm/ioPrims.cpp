@@ -648,7 +648,7 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
 	#define ANALOG_PINS 20
@@ -1079,7 +1079,7 @@ void primAnalogWrite(OBJ *args) {
 	#endif
 
 	#if defined(ESP32)
-	  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(ESP32_C3)
+	  #if !defined(ESP32_S3) && !defined(ESP32_C3)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 and ESP32-S2 DAC pins
 			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
@@ -1730,7 +1730,7 @@ void stopTone() {
 
 // DAC (digital to analog converter) Support
 
-#if defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
+#if defined(ESP32) && !defined(ESP32_S3) && !defined(ESP32_C3)
 
 #include "driver/dac_common.h"
 
@@ -2091,7 +2091,7 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
-#elif defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
+#elif defined(ESP32) && !defined(ESP32_S2_S3_OR_C3)
 
 #include "driver/ledc.h"
 
