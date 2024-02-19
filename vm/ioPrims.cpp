@@ -683,6 +683,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 20
 	#define ANALOG_PINS 5
 	#define TOTAL_PINS 20
+	#define PIN_LED -1 // has an RGB Neopixel rather than a user LED
 	static const int analogPin[] = {0, 1, 2, 3, 4};
 	#define PIN_BUTTON_A 9
 	static const char reservedPin[TOTAL_PINS] = {
@@ -1242,6 +1243,7 @@ void primSetUserLED(OBJ *args) {
 		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
+		if (PIN_LED < 0) return; // board does not have a user LED
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
 		} else {
