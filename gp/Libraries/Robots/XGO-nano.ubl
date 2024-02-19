@@ -1,24 +1,24 @@
-module 'XGO-nano' Control
+module 'XGO-nano' Output
 author luwudynamics
-version 2 35
-choices XGO_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
-choices XGO_arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
-choices XGO_move_XGO_direction_Menu X Y 
+version 2 36 
 choices XGO_motor_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
-choices XGO_transmove_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
 choices XGO_direction_Menu 'counter-clockwise' clockwise 
-choices XGO_speed_Menu Fast Normal Slow 
-choices XGO_translation_Menu X Y Z 
-choices XGO_transrotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
-choices XGO_gait_Menu Trot Walk 'High Walk' 'Micro Trot' 
-choices XGO_button_Menu A B 
 choices XGO_attitude_Menu R P Y 
 choices XGO_move_Menu 'Forward(0mm~25mm)' 'Backward(-25mm~0mm)' 'Left Shift(0mm~18mm)' 'Right Shift(-18mm~0mm)' 
+choices XGO_arm_Menu 'Upper(-65°~65°)' 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
 choices XGO_angle_Menu roll pitch yaw 
+choices XGO_move_XGO_direction_Menu X Y 
+choices XGO_transmove_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
+choices XGO_gait_Menu Trot Walk 'High Walk' 'Micro Trot' 
+choices XGO_button_Menu A B 
+choices XGO_speed_Menu Fast Normal Slow 
 choices XGO_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices XGO_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
+choices XGO_translation_Menu X Y Z 
+choices XGO_transrotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
-variables _XGO_buffer  _XGO_actions _buttons 
+variables _XGO_buffer _XGO_actions _buttons 
 
   spec ' ' 'XGO-nano_init' 'XGO init'
   spec ' ' 'XGO_reset' 'XGO reset'
@@ -117,6 +117,17 @@ to XGO_axial_rotate direction steps {
   }
 }
 
+to XGO_battery_level {
+  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 1 1 242))
+  '_XGO_serial_end'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
 to XGO_digital_IO mode {
   if (mode == (booleanConstant true)) {
     _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 145 1 99))
@@ -187,6 +198,40 @@ to XGO_read_button button {
   }
 }
 
+to XGO_read_gyro angel {
+  if (angel == 'roll') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 102 2 140))
+    '_XGO_serial_end'
+  } (angel == 'pitch') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 103 2 139))
+    '_XGO_serial_end'
+  } (angel == 'yaw') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 104 2 138))
+    '_XGO_serial_end'
+  }
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    if ((at 6 rx_data) > 128) {
+      return ((at 7 rx_data) + (((at 6 rx_data) - 256) * 256))
+    } else {
+      return ((at 7 rx_data) + ((at 6 rx_data) * 256))
+    }
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
+to XGO_read_motor {
+  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 80 15 149))
+  '_XGO_serial_end'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return ('[data:makeList]' ('_conver2float' (at 6 rx_data) -70 50) ('_conver2float' (at 7 rx_data) -70 90) ('_conver2float' (at 8 rx_data) -30 30) ('_conver2float' (at 9 rx_data) -70 50) ('_conver2float' (at 10 rx_data) -70 90) ('_conver2float' (at 11 rx_data) -30 30) ('_conver2float' (at 12 rx_data) -70 50) ('_conver2float' (at 13 rx_data) -70 90) ('_conver2float' (at 14 rx_data) -30 30) ('_conver2float' (at 15 rx_data) -70 50) ('_conver2float' (at 16 rx_data) -70 90) ('_conver2float' (at 17 rx_data) -30 30) ('_conver2float' (at 18 rx_data) -65 65) ('_conver2float' (at 19 rx_data) -70 60) ('_conver2float' (at 20 rx_data) -90 105))
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
 to XGO_reset {
   '_XGO_action' 255
   waitMillis 100
@@ -225,9 +270,94 @@ to XGO_set_a_leg leg X Y Z {
   }
 }
 
+to XGO_set_arm arm degree {
+  if (arm == 'Upper(-65°~65°)') {
+    '_XGO_set_leg' 13 degree
+  } (arm == 'Middle(-115°~70°)') {
+    '_XGO_set_leg' 14 degree
+  } (arm == 'Lower(-90°~105°)') {
+    '_XGO_set_leg' 15 degree
+  }
+}
+
 to XGO_set_claw pos {
   _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 113 pos))
   _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ('_XGO_modified_remainder' 123 ('_conver2u8t' 0 255 pos)))))
+  '_XGO_serial_end'
+}
+
+to XGO_set_gait mode {
+  if (mode == 'Trot') {
+    '_XGO_set_gait' 0
+  } (mode == 'Walk') {
+    '_XGO_set_gait' 1
+  } (mode == 'High Walk') {
+    '_XGO_set_gait' 2
+  } (mode == 'Micro Trot') {
+    '_XGO_set_gait' 3
+  }
+}
+
+to XGO_set_leg legs motor degree {
+  if (legs == 'Left Front') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_XGO_set_leg' 3 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_XGO_set_leg' 2 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_XGO_set_leg' 1 degree
+    }
+  } (legs == 'Right Front') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_XGO_set_leg' 6 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_XGO_set_leg' 5 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_XGO_set_leg' 4 degree
+    }
+  } (legs == 'Right Rear') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_XGO_set_leg' 9 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_XGO_set_leg' 8 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_XGO_set_leg' 7 degree
+    }
+  } (legs == 'Left Rear') {
+    if (motor == 'Upper(-30°~30°)') {
+      '_XGO_set_leg' 12 degree
+    } (motor == 'Middle(-70°~90°)') {
+      '_XGO_set_leg' 11 degree
+    } (motor == 'Lower(-85°~50°)') {
+      '_XGO_set_leg' 10 degree
+    }
+  }
+}
+
+to XGO_set_rotation_to angle {
+  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 10 1 63))
+  _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((angle >> 8) & 255) (angle & 255) ((255 - (74 + ((angle & 255) + ((angle >> 8) & 255)))) % 256))))
+  '_XGO_serial_end'
+}
+
+to XGO_set_stride_frequency mode {
+  if (mode == 'Normal') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 0))
+    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 0)) % 256))))
+    '_XGO_serial_end'
+  } (mode == 'Slow') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 1))
+    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 1)) % 256))))
+    '_XGO_serial_end'
+  } (mode == 'Fast') {
+    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 2))
+    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 2)) % 256))))
+    '_XGO_serial_end'
+  }
+}
+
+to XGO_set_towards_0 {
+  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 6 1 238))
   '_XGO_serial_end'
 }
 
@@ -260,7 +390,7 @@ to XGO_unload_all_servo mode {
 }
 
 to '_HLgetdata_from_cmd' {
-  repeatUntil (0 == (('[data:joinStrings]'  _XGO_buffer) + 0)) {
+  repeatUntil (0 == (('[data:joinStrings]' _XGO_buffer) + 0)) {
     _XGO_buffer = (newList 32)
     local 'idx' 1
     local 'serBuff' ('[serial:read]')
@@ -302,7 +432,7 @@ to '_XGO_move' move_direction steps {
 
 to '_XGO_serial_end' {
   _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' 0 170)))
-  '[serial:write]'  _XGO_buffer
+  '[serial:write]' _XGO_buffer
   waitMillis 50
 }
 
@@ -328,6 +458,40 @@ to '_XGO_set_gait' x {
   _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 9 x))
   _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (19 + x)) % 256))))
   '_XGO_serial_end'
+}
+
+to '_XGO_set_leg' nums steps {
+  if (nums == 1) {
+    '_XGO_set_a_servo' 80 steps -70 50
+  } (nums == 2) {
+    '_XGO_set_a_servo' 81 steps -70 90
+  } (nums == 3) {
+    '_XGO_set_a_servo' 82 steps -30 30
+  } (nums == 4) {
+    '_XGO_set_a_servo' 83 steps -70 50
+  } (nums == 5) {
+    '_XGO_set_a_servo' 84 steps -70 90
+  } (nums == 6) {
+    '_XGO_set_a_servo' 85 steps -30 30
+  } (nums == 7) {
+    '_XGO_set_a_servo' 86 steps -70 50
+  } (nums == 8) {
+    '_XGO_set_a_servo' 87 steps -70 90
+  } (nums == 9) {
+    '_XGO_set_a_servo' 88 steps -30 30
+  } (nums == 10) {
+    '_XGO_set_a_servo' 89 steps -70 50
+  } (nums == 11) {
+    '_XGO_set_a_servo' 90 steps -70 90
+  } (nums == 12) {
+    '_XGO_set_a_servo' 91 steps -30 30
+  } (nums == 13) {
+    '_XGO_set_a_servo' 113 steps -65 65
+  } (nums == 14) {
+    '_XGO_set_a_servo' 93 steps -115 70
+  } (nums == 15) {
+    '_XGO_set_a_servo' 94 steps -85 100
+  }
 }
 
 to '_XGO_turn_towards' steps {
@@ -406,40 +570,6 @@ to '_read button' 'pin or name' {
   }
 }
 
-to '_XGO_set_leg' nums steps {
-  if (nums == 1) {
-    '_XGO_set_a_servo' 80 steps -70 50
-  } (nums == 2) {
-    '_XGO_set_a_servo' 81 steps -70 90
-  } (nums == 3) {
-    '_XGO_set_a_servo' 82 steps -30 30
-  } (nums == 4) {
-    '_XGO_set_a_servo' 83 steps -70 50
-  } (nums == 5) {
-    '_XGO_set_a_servo' 84 steps -70 90
-  } (nums == 6) {
-    '_XGO_set_a_servo' 85 steps -30 30
-  } (nums == 7) {
-    '_XGO_set_a_servo' 86 steps -70 50
-  } (nums == 8) {
-    '_XGO_set_a_servo' 87 steps -70 90
-  } (nums == 9) {
-    '_XGO_set_a_servo' 88 steps -30 30
-  } (nums == 10) {
-    '_XGO_set_a_servo' 89 steps -70 50
-  } (nums == 11) {
-    '_XGO_set_a_servo' 90 steps -70 90
-  } (nums == 12) {
-    '_XGO_set_a_servo' 91 steps -30 30
-  } (nums == 13) {
-    '_XGO_set_a_servo' 113 steps -65 65
-  } (nums == 14) {
-    '_XGO_set_a_servo' 93 steps -115 70
-  } (nums == 15) {
-    '_XGO_set_a_servo' 94 steps -85 100
-  }
-}
-
 to '_updateButtons' {
   if (_buttons == 0) {_buttons = ('[data:makeList]')}
   for button _buttons {
@@ -476,133 +606,3 @@ positives.'
   }
 }
 
-to XGO_battery_level {
-  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 1 1 242))
-  '_XGO_serial_end'
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    return (at 6 rx_data)
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-to XGO_read_gyro angel {
-  if (angel == 'roll') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 102 2 140))
-    '_XGO_serial_end'
-  } (angel == 'pitch') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 103 2 139))
-    '_XGO_serial_end'
-  } (angel == 'yaw') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 104 2 138))
-    '_XGO_serial_end'
-  }
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    if ((at 6 rx_data) > 128) {
-      return ((at 7 rx_data) + (((at 6 rx_data) - 256) * 256))
-    } else {
-      return ((at 7 rx_data) + ((at 6 rx_data) * 256))
-    }
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-to XGO_read_motor {
-  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 80 15 149))
-  '_XGO_serial_end'
-  local 'rx_data' ('[serial:read]')
-  if ((at 'last' rx_data) == 170) {
-    return ('[data:makeList]' ('_conver2float' (at 6 rx_data) -70 50) ('_conver2float' (at 7 rx_data) -70 90) ('_conver2float' (at 8 rx_data) -30 30) ('_conver2float' (at 9 rx_data) -70 50) ('_conver2float' (at 10 rx_data) -70 90) ('_conver2float' (at 11 rx_data) -30 30) ('_conver2float' (at 12 rx_data) -70 50) ('_conver2float' (at 13 rx_data) -70 90) ('_conver2float' (at 14 rx_data) -30 30) ('_conver2float' (at 15 rx_data) -70 50) ('_conver2float' (at 16 rx_data) -70 90) ('_conver2float' (at 17 rx_data) -30 30) ('_conver2float' (at 18 rx_data) -65 65) ('_conver2float' (at 19 rx_data) -70 60) ('_conver2float' (at 20 rx_data) -90 105))
-  } else {
-    sayIt 'Communication Failure!!!'
-  }
-}
-
-
-to XGO_set_arm arm degree {
-  if (arm == 'Upper(-65°~65°)') {
-    '_XGO_set_leg' 13 degree
-  } (arm == 'Middle(-115°~70°)') {
-    '_XGO_set_leg' 14 degree
-  } (arm == 'Lower(-90°~105°)') {
-    '_XGO_set_leg' 15 degree
-  }
-}
-
-to XGO_set_gait mode {
-  if (mode == 'Trot') {
-    '_XGO_set_gait' 0
-  } (mode == 'Walk') {
-    '_XGO_set_gait' 1
-  } (mode == 'High Walk') {
-    '_XGO_set_gait' 2
-  } (mode == 'Micro Trot') {
-    '_XGO_set_gait' 3
-  }
-}
-
-to XGO_set_leg  legs motor degree {
-  if (legs == 'Left Front') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 3 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 2 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 1 degree
-    }
-  } (legs == 'Right Front') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 6 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 5 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 4 degree
-    }
-  } (legs == 'Right Rear') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 9 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 8 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 7 degree
-    }
-  } (legs == 'Left Rear') {
-    if (motor == 'Upper(-30°~30°)') {
-      '_XGO_set_leg' 12 degree
-    } (motor == 'Middle(-70°~90°)') {
-      '_XGO_set_leg' 11 degree
-    } (motor == 'Lower(-85°~50°)') {
-      '_XGO_set_leg' 10 degree
-    }
-  }
-}
-
-to XGO_set_rotation_to angle {
-  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 10 1 63))
-  _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((angle >> 8) & 255) (angle & 255) ((255 - (74 + ((angle & 255) + ((angle >> 8) & 255)))) % 256))))
-  '_XGO_serial_end'
-}
-
-to XGO_set_stride_frequency mode {
-  if (mode == 'Normal') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 0))
-    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 0)) % 256))))
-    '_XGO_serial_end'
-  } (mode == 'Slow') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 1))
-    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 1)) % 256))))
-    '_XGO_serial_end'
-  } (mode == 'Fast') {
-    _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 61 2))
-    _XGO_buffer = ('[data:join]' _XGO_buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (71 + 2)) % 256))))
-    '_XGO_serial_end'
-  }
-}
-
-to XGO_set_towards_0 {
-  _XGO_buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 6 1 238))
-  '_XGO_serial_end'
-}
