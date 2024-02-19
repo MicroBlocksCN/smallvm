@@ -2091,7 +2091,7 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
-#elif defined(ESP32) && !defined(ESP32_S2_S3_OR_C3)
+#elif defined(ESP32_ORIGINAL)
 
 #include "driver/ledc.h"
 

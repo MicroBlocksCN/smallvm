@@ -264,8 +264,7 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
   #define PIN_SPI_SCK  PIN_SPI0_SCK
 #endif
 
-#if defined(ESP32) || defined(ESP32_S2_OR_S3) || defined(ESP32_C3) || \
-	defined(ESP8266) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
+#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
   #define BitOrder int
 #endif
 
@@ -1384,7 +1383,7 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	#if defined(DATABOT)
 		return int2obj(databotMageneticField());
-	#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_S2_S3_OR_C3)
+	#elif defined(ESP32_ORIGINAL)
 		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
