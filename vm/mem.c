@@ -49,6 +49,8 @@
   #define OBJSTORE_BYTES 14000
 #elif defined(HAS_CAMERA)
   #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
+#elif defined(ESP32_S3) || defined(ESP32_C3)
+  #define OBJSTORE_BYTES 80000
 #elif defined(ARDUINO_ARCH_ESP32)
   // object store is allocated from heap on ESP32
   #if defined(USE_NIMBLE)
