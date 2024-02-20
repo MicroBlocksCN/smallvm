@@ -21,8 +21,8 @@ static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) { return fail(primitiveN
 static void serialOpen(int baudRate) { fail(primitiveNotImplemented); }
 static void serialClose() { fail(primitiveNotImplemented); }
 static int serialAvailable() { return -1; }
-static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
-static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
+static void serialReadBytes(uint8 *buf, uint32 byteCount) { fail(primitiveNotImplemented); }
+static int serialWriteBytes(uint8 *buf, uint32 byteCount) { fail(primitiveNotImplemented); return 0; }
 
 #elif defined(NRF52) // use custom UART
 
@@ -67,7 +67,7 @@ static int serialAvailable() {
 	return MBSerial.available();
 }
 
-static void serialReadBytes(uint8 *buf, int byteCount) {
+static void serialReadBytes(uint8 *buf, uint32 byteCount) {
 	for (int i = 0; i < byteCount; i++) {
 		int ch = MBSerial.read();
 		buf[i] = (ch >= 0) ? ch : 0;
@@ -155,11 +155,11 @@ static int serialAvailable() {
 	return rcvCount;
 }
 
-static void serialReadBytes(uint8 *buf, int byteCount) {
+static void serialReadBytes(uint8 *buf, uint32 byteCount) {
 	memcpy(buf, INACTIVE_RX_BUF(), byteCount);
 }
 
-static int serialWriteBytes(uint8 *buf, int byteCount) {
+static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
 	if (!NRF_UARTE1->EVENTS_ENDTX) return 0; // last transmission is still in progress
 	if (byteCount > TX_BUF_SIZE) return 0; // fail if can't send the entire buffer
 	for (int i = 0; i < byteCount; i++) {
@@ -224,11 +224,11 @@ static int serialAvailable() {
 	return isOpen ? SERIAL_PORT.available() : 0;
 }
 
-static void serialReadBytes(uint8 *buf, int byteCount) {
+static void serialReadBytes(uint8 *buf, uint32 byteCount) {
 	if (isOpen) SERIAL_PORT.readBytes(buf, byteCount);
 }
 
-static int serialWriteBytes(uint8 *buf, int byteCount) {
+static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
 	if (!isOpen) return 0;
 	return SERIAL_PORT.write(buf, byteCount);
 }
