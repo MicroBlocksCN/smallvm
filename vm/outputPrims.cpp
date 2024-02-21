@@ -920,6 +920,12 @@ static inline int gamma(int val) {
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
 
+	#if defined(ARDUINO_Mbits)
+	    // The Mbits power supply cannot supply enough current to run both
+	    // the WiFi/BLE radio and the Neopixel array a full brightness.
+	    if (val > 175) val = 175; // limit brightness to avoid making WiFi fail
+	#endif
+
 	const int neoMax = 40;
 	const int divisor = (255 * 255) / neoMax;
 	return ((val * val) / divisor) & 0xFF;
