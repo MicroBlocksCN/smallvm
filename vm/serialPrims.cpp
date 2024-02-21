@@ -45,6 +45,8 @@ static int serialWriteBytes(uint8 *buf, uint32 byteCount) { fail(primitiveNotImp
 #endif
 extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
 
+uint8 txBuf[TX_BUF_SIZE];
+
 static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
 	nrf52PinRx = rxPin;
 	nrf52PinTx = txPin;
@@ -55,6 +57,13 @@ static void serialOpen(int baudRate) {
 	if (isOpen) MBSerial.end();
 	MBSerial.setPins(nrf52PinRx, nrf52PinTx);
 	MBSerial.begin(baudRate);
+
+	// enable UART and send zero bytes to initialize
+ 	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
+	NRF_UARTE1->TXD.PTR = (uint32_t) txBuf;
+	NRF_UARTE1->TXD.MAXCNT = 0;
+	NRF_UARTE1->TASKS_STARTTX = 1;
+
 	isOpen = true;
 }
 
@@ -74,8 +83,18 @@ static void serialReadBytes(uint8 *buf, uint32 byteCount) {
 	}
 }
 
-static int serialWriteBytes(uint8 *buf, int byteCount) {
-	return MBSerial.write(buf, byteCount);
+static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
+	if (!isOpen) return 0;
+	if (!NRF_UARTE1->EVENTS_ENDTX) return 0; // last transmission is still in progress
+	if (byteCount > TX_BUF_SIZE) byteCount = TX_BUF_SIZE;
+
+	memcpy(txBuf, buf, byteCount);
+	NRF_UARTE1->EVENTS_ENDTX = false;
+	NRF_UARTE1->TXD.PTR = (uint32_t) txBuf;
+	NRF_UARTE1->TXD.MAXCNT = byteCount;
+	NRF_UARTE1->TASKS_STARTTX = 1;
+
+	return byteCount;
 }
 
 #elif defined(NRF52_DEPRECATED) // use UART DMA
