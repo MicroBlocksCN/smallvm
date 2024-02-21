@@ -306,6 +306,7 @@ static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
 static OBJ primSerialRead(int argCount, OBJ *args) {
 	if (!isOpen) return fail(serialPortNotOpen);
 
+	taskSleep(-1);
 	int byteCount = serialAvailable();
 	if (byteCount == 0) return (OBJ) &emptyByteArray;
 	if (byteCount < 0) return fail(primitiveNotImplemented);
@@ -325,6 +326,7 @@ static OBJ primSerialReadInto(int argCount, OBJ *args) {
 
 	if (!isOpen) return fail(serialPortNotOpen);
 
+	taskSleep(-1);
 	int byteCount = serialAvailable();
 	if (byteCount == 0) return zeroObj;
 	if (byteCount < 0) return fail(primitiveNotImplemented);
