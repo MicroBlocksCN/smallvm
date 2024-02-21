@@ -45,7 +45,7 @@ static int serialWriteBytes(uint8 *buf, uint32 byteCount) { fail(primitiveNotImp
 #endif
 extern "C" void UARTE1_IRQHandler() { MBSerial.IrqHandler(); }
 
-uint8 txBuf[TX_BUF_SIZE];
+uint8 txBuf[512]; // extra large output buffer on nRF52 boards
 
 static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
 	nrf52PinRx = rxPin;
@@ -86,7 +86,7 @@ static void serialReadBytes(uint8 *buf, uint32 byteCount) {
 static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
 	if (!isOpen) return 0;
 	if (!NRF_UARTE1->EVENTS_ENDTX) return 0; // last transmission is still in progress
-	if (byteCount > TX_BUF_SIZE) byteCount = TX_BUF_SIZE;
+	if (byteCount > sizeof(txBuf)) byteCount = sizeof(txBuf);
 
 	memcpy(txBuf, buf, byteCount);
 	NRF_UARTE1->EVENTS_ENDTX = false;
@@ -291,6 +291,7 @@ static OBJ primSerialOpen(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	int baudRate = obj2int(args[0]);
 	serialOpen(baudRate);
+	taskSleep(5); // leave a litte time for things to settle
 	return falseObj;
 }
 
