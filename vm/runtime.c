@@ -999,7 +999,7 @@ int indexOfVarNamed(const char *s) {
 #define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
 static uint8 rcvBuf[RCVBUF_SIZE];
 static int rcvByteCount = 0;
-static uint32 lastRcvTime = 0;
+uint32 lastRcvTime = 0;
 
 static void skipToStartByteAfter(int startIndex) {
 	int i, nextStart = -1;

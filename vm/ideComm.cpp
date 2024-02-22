@@ -13,14 +13,17 @@
 #include "interp.h"
 #include "persist.h"
 
-int BLE_connected_to_IDE = false;
 char BLE_ThreeLetterID[4];
+int BLE_connected_to_IDE = false;
+int USB_connected_to_IDE = false;
 
 #if defined(BLE_IDE)
 
 // BLE Communications
 
 #include <NimBLEDevice.h>
+
+extern uint32 lastRcvTime;
 
 // BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
 // INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
@@ -44,10 +47,10 @@ static uint8_t bleRecvBuf[RECV_BUF_MAX];
 static int bleBytesAvailable = 0;
 static int overRuns = 0;
 
-// MicroBlocks UUIDs:
-#define SERVICE_UUID			"bb37a001-b922-4018-8e74-e14824b3a638" // MicroBlocks IDE service
-#define CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
-#define CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
+// MicroBlocks IDE Service UUIDs:
+#define MB_SERVICE_UUID				"bb37a001-b922-4018-8e74-e14824b3a638"
+#define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
+#define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
 
 // BLE Helper Functions
 
@@ -126,13 +129,17 @@ static int gotSerialPing() {
 	return false;
 }
 
-static void updateConnectionMode() {
+// BLE Operation
+
+static void updateConnectionMode() {  // deprecated
 	if (BLE_connected_to_IDE) {
 		if (gotSerialPing()) {
 			// new serial connection; disconnect BLE
 			if (connID != -1) { pServer->disconnect(connID); }
 			connID = -1;
 			pServer->removeService(pService);
+			BLE_pauseAdvertising();
+			lastRcvTime = microsecs();
 			BLE_connected_to_IDE = false;
 			serviceOnline = false;
 			return;
@@ -143,6 +150,27 @@ static void updateConnectionMode() {
 			pServer->addService(pService);
 			pServer->getAdvertising()->start();
 			serviceOnline = true;
+		}
+	}
+}
+
+static void updateConnectionState() { // does not work
+	if (USB_connected_to_IDE && !ideConnected()) {
+		// resume BLE service and advertisting
+		pServer->addService(pService);
+		BLE_resumeAdvertising();
+		USB_connected_to_IDE = false;
+	}
+	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
+		if (gotSerialPing()) {
+			// new serial connection; disconnect BLE if it is connected
+			if (connID != -1) { pServer->disconnect(connID); }
+			connID = -1;
+			// remove IDE BLE service
+			pServer->removeService(pService);
+			BLE_pauseAdvertising();
+			lastRcvTime = microsecs();
+			USB_connected_to_IDE = true;
 		}
 	}
 }
@@ -181,14 +209,16 @@ static int bleSendData(uint8_t *data, int byteCount) {
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
-		pServer->getAdvertising()->stop(); // don't advertise while connected
+		BLE_pauseAdvertising();  // don't advertise while connected
+//		pServer->getAdvertising()->stop(); // don't advertise while connected
 		connID = desc->conn_handle;
 		BLE_connected_to_IDE = true;
 	}
-	void onDisconnect(BLEServer* pServer) {
-		pServer->getAdvertising()->start(); // restart advertising
+	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		connID = -1;
 		BLE_connected_to_IDE = false;
+//		pServer->getAdvertising()->start(); // restart advertising
+		BLE_resumeAdvertising();
 	}
 };
 
@@ -221,12 +251,12 @@ void BLE_start() {
 	pServer->setCallbacks(new MyServerCallbacks());
 
 	// Create BLE Service
-	pService = pServer->createService(SERVICE_UUID);
+	pService = pServer->createService(MB_SERVICE_UUID);
 
 	// Create BLE Characteristics
-	pTxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
+	pTxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
 	pTxCharacteristic->setCallbacks(new MyCallbacks());
-	pRxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
+	pRxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
 	pRxCharacteristic->setCallbacks(new MyCallbacks());
 
 	// Start the service
@@ -263,7 +293,7 @@ void BLE_stop() {
 void BLE_pauseAdvertising() {
 	if (!pServer) return;
 	pServer->getAdvertising()->stop();
-	pServer->getAdvertising()->removeServiceUUID(NimBLEUUID(SERVICE_UUID));
+	pServer->getAdvertising()->removeServiceUUID(NimBLEUUID(MB_SERVICE_UUID));
 }
 
 void BLE_resumeAdvertising() {
@@ -271,7 +301,9 @@ void BLE_resumeAdvertising() {
 
 	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
-	pAdvertising->addServiceUUID(SERVICE_UUID);
+	if (!BLE_connected_to_IDE && !USB_connected_to_IDE) {
+		pAdvertising->addServiceUUID(MB_SERVICE_UUID);
+	}
 	pAdvertising->setName(uniqueName);
 	pAdvertising->setMinInterval(100);
 	pAdvertising->setMaxInterval(200);
@@ -283,7 +315,7 @@ void BLE_resumeAdvertising() {
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead;
 
-	updateConnectionMode();
+	updateConnectionState();
 
 	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
 		bytesRead = Serial.available();
