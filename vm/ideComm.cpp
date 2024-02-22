@@ -114,13 +114,10 @@ static void show_BLE_ID() {
 }
 
 static int gotSerialPing() {
-	char buf[20];
+	char buf[8];
 	int byteCount = Serial.available();
 	if (byteCount < 3) return false;
-	delay(5); // wait for a few more bytes
-	byteCount = Serial.available();
-	if (byteCount > (int) sizeof(buf)) byteCount = sizeof(buf);
-	byteCount = Serial.readBytes((char *) buf, byteCount);
+	byteCount = Serial.readBytes((char *) buf, sizeof(buf));
 	for (int i = 0; i < byteCount - 2; i++) {
 		if ((buf[i] == 0xFA) && (buf[i+1] == 0x1A) && (buf[i+2] == 0)) {
 			return true; // receive ping message from IDE
@@ -129,36 +126,10 @@ static int gotSerialPing() {
 	return false;
 }
 
-// BLE Operation
-
-static void updateConnectionMode() {  // deprecated
-	if (BLE_connected_to_IDE) {
-		if (gotSerialPing()) {
-			// new serial connection; disconnect BLE
-			if (connID != -1) { pServer->disconnect(connID); }
-			connID = -1;
-			pServer->removeService(pService);
-			BLE_pauseAdvertising();
-			lastRcvTime = microsecs();
-			BLE_connected_to_IDE = false;
-			serviceOnline = false;
-			return;
-		}
-	} else {
-		if (!serviceOnline && !ideConnected() && pServer) {
-			// lost serial connection; restore service and advertising
-			pServer->addService(pService);
-			pServer->getAdvertising()->start();
-			serviceOnline = true;
-		}
-	}
-}
-
-static void updateConnectionState() { // does not work
+static void updateConnectionState() {
 	if (USB_connected_to_IDE && !ideConnected()) {
 		// resume BLE service and advertisting
 		pServer->addService(pService);
-		BLE_resumeAdvertising();
 		USB_connected_to_IDE = false;
 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
@@ -168,12 +139,15 @@ static void updateConnectionState() { // does not work
 			connID = -1;
 			// remove IDE BLE service
 			pServer->removeService(pService);
-			BLE_pauseAdvertising();
+			BLE_connected_to_IDE = false;
+			// tell runtime that we've gotten a ping
 			lastRcvTime = microsecs();
 			USB_connected_to_IDE = true;
 		}
 	}
 }
+
+// BLE Operation
 
 static void bleReceiveData(const uint8_t *data, int byteCount) {
 	int available = RECV_BUF_MAX - bleBytesAvailable;
@@ -209,16 +183,12 @@ static int bleSendData(uint8_t *data, int byteCount) {
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
-		BLE_pauseAdvertising();  // don't advertise while connected
-//		pServer->getAdvertising()->stop(); // don't advertise while connected
 		connID = desc->conn_handle;
 		BLE_connected_to_IDE = true;
 	}
 	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		connID = -1;
 		BLE_connected_to_IDE = false;
-//		pServer->getAdvertising()->start(); // restart advertising
-		BLE_resumeAdvertising();
 	}
 };
 
