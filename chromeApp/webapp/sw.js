@@ -4,16 +4,27 @@
 var cacheName = 'MicroBlocks';
 
 var filesToCache = [
-  '/run/',
-  '/run/microblocks.html',
-  '/run/emModule.js',
-  '/run/gpSupport.js',
-  '/run/FileSaver.js',
-  '/run/gp_wasm.js',
-  '/run/gp_wasm.wasm',
-  // '/run/gp_wasm.data',
-  // use cloud file for speeding up
-  // 'https://scratch3-files.just4fun.site/gp_wasm-1-2-5.data',
+  './microblocks.html',
+  './emModule.js',
+  './gpSupport.js',
+  './FileSaver.js',
+  './gp_wasm.js',
+  './gp_wasm.wasm',
+  './gp_wasm.data',
+  './favicon.ico',
+  './manifest.json',
+
+  './boardie/boardie.html',
+  './boardie/vm.html',
+  './boardie/styles.css',
+  './boardie/boardie.js',
+  './boardie/run_boardie.js',
+  './boardie/run_boardie.wasm',
+  './boardie/adafruit_font.ttf',
+  './boardie/README',
+
+  './icons/Bunny192.png',
+  './icons/Bunny512.png',
 ];
 
 self.addEventListener('install', function(e) {
