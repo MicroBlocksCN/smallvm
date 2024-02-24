@@ -872,7 +872,7 @@ Shift
 Shift
 
 Control
-Control
+控制
 
 Alt / ⌥
 Alt / ⌥
@@ -2954,8 +2954,8 @@ NeZha set continuous rotation servo _ speed to _ %
 HuskyLens
 二哈识图
 
-HL init & set I2Caddr (hex) _
-二哈 初始化并设置 I2C 地址 _
+HL set Comms i2cAddr _ serial _
+二哈 设置 I2C 地址 _ 串行 _
 
 HL change algorithm _
 二哈 切换算法 _
@@ -3077,10 +3077,10 @@ Y 终点
 id
 id
 
-HL learn current object with ID _
+HL learn current object as ID _
 二哈 当前学习对象的 ID _
 
-HL learn object with ID _ Name _
+HL learn object as ID _ Name _
 二哈 学习对象的 ID _ 名称 _
 
 HL set CustomName _ for a learned object with ID _
@@ -3449,7 +3449,7 @@ Right Shift(-18mm~0mm)
 roll
 翻滚
 
-pitch 
+pitch
 俯仰
 
 yaw
@@ -3561,6 +3561,9 @@ rotation to _
 设置转动到角度 _
 
 set stride frequency _
+设置迈步频率为 _
+
+set frequency _
 设置迈步频率为 _
 
 set gait _
