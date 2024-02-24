@@ -88,13 +88,10 @@ to '_tmWriteByte' byte {
     byte = (byte >> 1)
     '_tmBitDelay'
   }
-  comment 'Read ack'
+  comment 'Clock ack bit (ignored)'
   digitalWriteOp _tmClockPin false
   digitalWriteOp _tmDataPin false
   digitalWriteOp _tmClockPin true
-  '_tmBitDelay'
-  local 'ack' (digitalReadOp _tmDataPin)
-  '_tmBitDelay'
 }
 
 to tmClear {
