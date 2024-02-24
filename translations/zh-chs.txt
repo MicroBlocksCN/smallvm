@@ -979,15 +979,71 @@ hold _ mouse button
 release mouse buttons
 松开鼠标按键
 
+####
+# Lists library
+# Extra utilities for list manipulation and access
 
-#### BLE Keyboard
+Lists
+列表
+
+list _ contains _
+列表 _ 包含 _
+
+
+circular item _ of _
+列表项 _ 属于 _
+
+aListOrString
+--MISSING--
+
+map _ over _
+映射 _ 与 _
+
+aFunction
+aFunction
+
+filter _ with _
+过滤 _ 用 _
+
+pick _ from _
+选择 _ 从 _
+
+
+a few
+a few
+
+some
+some
+
+most
+most
+
+reverse _
+颠倒 _
+
+shuffle _
+打乱 _
+
+sort _
+排序 _
+
+shuffled _
+已打乱的 _
+
+reversed _
+已颠倒的 _
+
+sorted _
+已排序的 _
+
+####
+# BLE Keyboard library
 
 BLE Keyboard
 蓝牙键盘
 
 start BLE Keyboard
 启动蓝牙键盘
-
 
 ####
 # Radio comm library
@@ -2795,21 +2851,6 @@ wifi 最后广播的字符串
 
 wifi set group _ (0-255)
 wifi 设置广播分组 _ (0-255)
-# BLE UART server
-start BLE UART server _
-创建蓝牙广播 _
-
-BLE Device connected
-蓝牙服务器已连接
-
-last BLE UART message
-最后一次的接收到的消息
-
-BLE UART write _
-向蓝牙连接的的设备发送 _
-
-stop BLE UART server
-停止蓝牙广播
 
 # BLE UART server
 start BLE UART server _
@@ -3195,7 +3236,7 @@ Octopus OLED draw circle x _ y _ radius _
 Octopus OLED fill circle x _ y _ radius _
 八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
-#### 
+####
 # OctoStudio
 
 Octo beam to phones _
@@ -3227,7 +3268,6 @@ clover
 
 moon
 月亮
-
 
 ####
 # TM1650
@@ -3489,7 +3529,7 @@ Right Shift(-18mm~0mm)
 roll
 翻滚
 
-pitch 
+pitch
 俯仰
 
 yaw
@@ -3601,6 +3641,9 @@ rotation to _
 设置转动到角度 _
 
 set stride frequency _
+设置迈步频率为 _
+
+set frequency _
 设置迈步频率为 _
 
 set gait _
