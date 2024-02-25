@@ -19,6 +19,7 @@ linux+pi/qemu
 linux+pi/GnuBlocks
 linux+pi/ubuntu*
 linux+pi/run
+extraVMs/vm*
 precompiled/vm.*
 precompiled/vm_*
 precompiled/node_modules
