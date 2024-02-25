@@ -1014,65 +1014,124 @@ static int readTemperature() {
 
 #elif defined(DATABOT)
 
+typedef enum {
+	accel_unknown = -1,
+	accel_none = 0,
+	accel_ICM20948 = 1,
+	accel_MPU9250 = 2,
+} AccelerometerType_t;
+
+static AccelerometerType_t accelType = accel_unknown;
+
+#define ICM20948 0x68
 #define MPU9250 0x69
 
-// registers (decimal, following datasheet)
+// ICM20948 registers
+#define ICM20948_PWR_MGMNT_1 0x06
+#define ICM20948_PWR_MGMNT_2 0x07
+#define ICM20948_ACCEL_CONFIG 0x14
+#define ICM20948_BANK_SEL 0x7F
+#define ICM20948_FILTERING 0x11
+
+
+// MPU9250 registers (decimal, following datasheet)
 #define MPU9250_BYPASS_EN 55
 #define MPU9250_ACCEL_XOUT_H 59
 #define MPU9250_PWR_MGMT_1 107
 
-static uint8 mpu9250Data[6];
+static uint8 databotData[6];
 
-static void mpu9250readData(int reg) {
-	if (!accelStarted) {
-		if (!wireStarted) startWire();
-		if (!wireStarted) return;
+static void setRegisterBank(int regBank) {
+	// Set ICM20948 register bank
+	switch(regBank) {
+	case 0: writeI2CReg(ICM20948, ICM20948_BANK_SEL, 0); break;
+	case 1: writeI2CReg(ICM20948, ICM20948_BANK_SEL, 16); break;
+	case 2: writeI2CReg(ICM20948, ICM20948_BANK_SEL, 32); break;
+	case 3: writeI2CReg(ICM20948, ICM20948_BANK_SEL, 48); break;
+	}
+}
 
+static void startAccelerometer() {
+	if (!wireStarted) startWire();
+	if (!wireStarted) return;
+
+	if (readI2CReg(ICM20948, 0) == 234) {
+		accelType = accel_ICM20948;
+		setRegisterBank(0);
+		writeI2CReg(ICM20948, ICM20948_PWR_MGMNT_1, 0x80); // reset
+		delay(5); // leave time for reset
+		writeI2CReg(ICM20948, ICM20948_PWR_MGMNT_1, 1); // wake up and use auto clock select
+		setRegisterBank(2);
+		writeI2CReg(ICM20948, ICM20948_ACCEL_CONFIG, ICM20948_FILTERING);
+		setRegisterBank(0);
+	} else {
+		accelType = accel_MPU9250;
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
 		writeI2CReg(MPU9250, MPU9250_BYPASS_EN, 2); // allows i2c access to magnetometer
-		accelStarted = true;
 	}
-
+	accelStarted = true;
+}
+static void databotReadData(int i2cAddr, int reg) {
 	// Request data starting at reg
-	Wire.beginTransmission(MPU9250);
+	Wire.beginTransmission(i2cAddr);
 	Wire.write(reg);
 	Wire.endTransmission();
 
 	// Read data
-	int count = sizeof(mpu9250Data);
-	Wire.requestFrom(MPU9250, count);
+	int count = sizeof(databotData);
+	Wire.requestFrom(i2cAddr, count);
 	for (int i = 0; i < count; i++) {
-		mpu9250Data[i] = Wire.available() ? Wire.read() : 0;
+		databotData[i] = Wire.available() ? Wire.read() : 0;
 	}
 }
 
-static int mpu9250valueAt(int i) {
-	// Return signed 16-bit value at the given index in mpu9250Data.
+static int databotSigned16IntAt(int i) {
+	// Return signed 16-bit value at the given index in databotData.
 
-	int val = (mpu9250Data[i] << 8) | mpu9250Data[i + 1];
+	int val = (databotData[i] << 8) | databotData[i + 1];
 	if (val >= 32768) val -= 65536; // negative 16-bit value
 	return val;
 }
 
 static int readAcceleration(int registerID) {
-	mpu9250readData(MPU9250_ACCEL_XOUT_H);
-
+	if (!accelStarted) startAccelerometer();
 	int val = 0;
-	if (1 == registerID) val = mpu9250valueAt(2); // x-axis
-	if (3 == registerID) val = mpu9250valueAt(0); // y-axis
-	if (5 == registerID) val = mpu9250valueAt(4); // z-axis
 
-	return (100 * val) >> 14;
+	switch (accelType) {
+	case accel_ICM20948:
+		setRegisterBank(0);
+		databotReadData(ICM20948, 0x2D);
+		if (1 == registerID) val = databotSigned16IntAt(0); // x-axis
+		if (3 == registerID) val = databotSigned16IntAt(2); // y-axis
+		if (5 == registerID) val = databotSigned16IntAt(4); // z-axis
+		return (100 * val) >> 14;
+	case accel_MPU9250:
+		databotReadData(MPU9250, MPU9250_ACCEL_XOUT_H);
+		if (1 == registerID) val = databotSigned16IntAt(2); // x-axis
+		if (3 == registerID) val = databotSigned16IntAt(0); // y-axis
+		if (5 == registerID) val = databotSigned16IntAt(4); // z-axis
+		return (100 * val) >> 14;
+	}
+	return 0;
 }
 
 static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
-	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+	// See ICM20948 Register Map and Descriptions, ACCEL_CONFIG, pg. 64.
+	// See MPU9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
 
 	if ((range < 0) || (range > 3)) return; // out of range
-	writeI2CReg(MPU9250, 0x1C, (range << 3));
+	switch (accelType) {
+	case accel_ICM20948:
+		setRegisterBank(2);
+		writeI2CReg(ICM20948, ICM20948_ACCEL_CONFIG, ICM20948_FILTERING | (range << 1));
+		break;
+	case accel_MPU9250:
+		writeI2CReg(MPU9250, 0x1C, (range << 3));
+		break;
+	}
 }
 
 static int readTemperature() {
@@ -1087,13 +1146,74 @@ static int readTemperature() {
 	return (val - fudgeFactor) / 100; // degrees C
 }
 
+// AK09916 magnetometer built into ICM20948
+#define AK09916_ADDR 0x0C
+#define AK09916_SLAVE_ADDR 0x03
+#define AK09916_SLAVE_REG 0x04
+#define AK09916_SLAVE_CTRL 0x05
+#define AK09916_SLAVE_D0 0x06
+#define AK09916_MAG_DATA 0x3B
+
+// AK8963 magnetometer built into MPU9250
 #define AK8963 0x0C
 #define AK8963_X_LOW 0x03
 #define AK8963_CONTROL_1 0x0A
 
 static int databotMagStarted = false;
 
-static int databotMageneticField() {
+static void writeAK09916Register(int magReg, int value) {
+	setRegisterBank(3);
+	writeI2CReg(ICM20948, AK09916_SLAVE_ADDR, AK09916_ADDR);
+	writeI2CReg(ICM20948, AK09916_SLAVE_REG, magReg);
+	writeI2CReg(ICM20948, AK09916_SLAVE_D0, value);
+	writeI2CReg(ICM20948, AK09916_SLAVE_CTRL, 0x81);
+}
+
+static void startReadingAK09916() {
+	setRegisterBank(3);
+	writeI2CReg(ICM20948, AK09916_SLAVE_ADDR, 128 | AK09916_ADDR); // read bit + address
+	writeI2CReg(ICM20948, AK09916_SLAVE_REG, 17); // 17 is start of mag data in AK09916
+	writeI2CReg(ICM20948, AK09916_SLAVE_CTRL, 128 | 8); // must read 8 bytes, including status
+	setRegisterBank(0);
+}
+
+static int databotAK09916MageneticField() {
+	static uint8 magData[6];
+
+	if (!databotMagStarted) {
+		readAcceleration(1); // start accelerometer
+		setRegisterBank(0);
+		writeI2CReg(ICM20948, 3, 32);  // set up I2C communications with magnetometer
+		setRegisterBank(3);
+		writeI2CReg(ICM20948, 1, 7); // set I2C clock rate
+		writeAK09916Register(0x32, 1); // reset magnetometer
+		delay(10);
+		writeAK09916Register(0x31, 8); // sample magnetometer at 100 Hz
+		startReadingAK09916();
+		databotMagStarted = true;
+	}
+
+	// Request mag data
+	setRegisterBank(0);
+	Wire.beginTransmission(ICM20948);
+	Wire.write(AK09916_MAG_DATA);
+	Wire.endTransmission(true);
+
+	// Read mag data
+	int count = sizeof(magData);
+	Wire.requestFrom(ICM20948, count);
+	for (int i = 0; i < count; i++) {
+		magData[i] = Wire.available() ? Wire.read() : 0;
+	}
+
+	int magX = fix16bitSign((magData[1] << 8) + magData[0]);
+	int magY = fix16bitSign((magData[3] << 8) + magData[2]);
+	int magZ = fix16bitSign((magData[5] << 8) + magData[4]);
+
+	return sqrt((magX * magX) + (magY * magY) + (magZ * magZ));
+}
+
+static int databotAK8963MageneticField() {
 	static uint8 magData[7]; // includes ST2 register
 
 	if (!databotMagStarted) {
@@ -1120,9 +1240,20 @@ static int databotMageneticField() {
 
 	int magX = fix16bitSign((magData[1] << 8) + magData[0]);
 	int magY = fix16bitSign((magData[3] << 8) + magData[2]);
-	int magZ = fix16bitSign((magData[5] << 8) + magData[3]);
+	int magZ = fix16bitSign((magData[5] << 8) + magData[4]);
 
 	return sqrt((magX * magX) + (magY * magY) + (magZ * magZ));
+}
+
+static int databotMageneticField() {
+	if (!accelStarted) startAccelerometer(); // detect accelerometer type
+	switch (accelType) {
+	case accel_ICM20948:
+		return databotAK09916MageneticField();
+	case accel_MPU9250:
+		return databotAK8963MageneticField();
+	}
+	return 0;
 }
 
 #elif defined(RP2040_PHILHOWER)
