@@ -369,7 +369,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
-void BLE_initThreeLetterID() { }
+void BLE_initThreeLetterID() { BLE_ThreeLetterID[0] = 0; }
 void BLE_start() { }
 void BLE_stop() { }
 void BLE_pauseAdvertising() { }

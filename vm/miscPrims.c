@@ -15,6 +15,23 @@
 #include "mem.h"
 #include "interp.h"
 #include "tinyJSON.h"
+#include "version.h"
+
+OBJ primVersion(int argCount, OBJ *args) {
+	int result = atoi(&VM_VERSION[1]); // skip initial "v"
+	return int2obj(result);
+}
+
+OBJ primBLE_ID(int argCount, OBJ *args) {
+	OBJ result;
+	if (strlen(BLE_ThreeLetterID) == 3) {
+		result = newStringFromBytes(BLE_ThreeLetterID, 3);
+	} else {
+		result = newString(0);
+	}
+	if (!result) return fail(insufficientMemoryError);
+	return result;
+}
 
 OBJ primHexToInt(int argCount, OBJ *args) {
 	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
@@ -218,6 +235,8 @@ static OBJ primBMP680GasResistance(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
+	{"version", primVersion},
+	{"bleID", primBLE_ID},
 	{"hexToInt", primHexToInt},
 	{"rescale", primRescale},
 	{"sin", primSine},
