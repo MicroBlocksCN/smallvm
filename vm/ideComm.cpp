@@ -343,6 +343,8 @@ void BLE_setEnabled(int enableFlag) {
 }
 
 int BLE_isEnabled() {
+	return true; // xxx temporary workaround for crash bug
+
 	#if defined(ARDUINO_ARCH_ESP32)
 		return !fileExists(BLE_DISABLED_FILE);
 	#elif defined(NRF52)
