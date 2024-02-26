@@ -40,6 +40,8 @@ uint32 millisecs() {
 
 // Communication/System Functions
 
+char BLE_ThreeLetterID[4] = "";
+
 void initMessageService() {
 	EM_ASM_({
 		window.recvBuffer = [];
@@ -84,6 +86,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // Keyboard support
+
 void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
@@ -112,6 +115,7 @@ void initKeyboardHandler() {
 }
 
 // Sound support
+
 void initSound() {
 	EM_ASM_({
 		var context = new AudioContext();
