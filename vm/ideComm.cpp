@@ -129,16 +129,18 @@ static int gotSerialPing() {
 static void updateConnectionState() {
 	if (USB_connected_to_IDE && !ideConnected()) {
 		// resume BLE service and advertisting
-		pServer->addService(pService);
+		if (pServer) pServer->addService(pService);
 		USB_connected_to_IDE = false;
 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (gotSerialPing()) {
 			// new serial connection; disconnect BLE if it is connected
-			if (connID != -1) { pServer->disconnect(connID); }
-			connID = -1;
-			// remove IDE BLE service
-			pServer->removeService(pService);
+			if (pServer) {
+				if (connID != -1) { pServer->disconnect(connID); }
+				connID = -1;
+				// remove IDE BLE service
+				pServer->removeService(pService);
+			}
 			BLE_connected_to_IDE = false;
 			// tell runtime that we've gotten a ping
 			lastRcvTime = microsecs();
@@ -343,8 +345,6 @@ void BLE_setEnabled(int enableFlag) {
 }
 
 int BLE_isEnabled() {
-	return true; // xxx temporary workaround for crash bug
-
 	#if defined(ARDUINO_ARCH_ESP32)
 		return !fileExists(BLE_DISABLED_FILE);
 	#elif defined(NRF52)
