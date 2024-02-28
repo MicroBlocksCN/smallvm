@@ -28,7 +28,7 @@ static int deferUpdates = false;
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
-	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106)
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI)
 
 	#define BLACK 0
 
@@ -561,6 +561,29 @@ static int deferUpdates = false;
 
 		#undef UPDATE_DISPLAY
 		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(-1); }}
+	
+	#elif defined(MINGBAI)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_MOSI 23
+		#define TFT_SCLK 18
+		#define TFT_CS 16
+		#define TFT_DC 17
+		#define TFT_RST -1
+		// #define TFT_BL 4
+		#define TFT_WIDTH 240
+		#define TFT_HEIGHT 240
+		// #define TFT_PWR 22
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		// Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setRotation(2);
+			tftClear();
+			useTFT = true;
+		}
 
 	#elif defined(TTGO_DISPLAY)
 		#include "Adafruit_GFX.h"
