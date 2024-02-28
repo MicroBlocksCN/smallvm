@@ -1247,6 +1247,113 @@ static OBJ primHumidity(int argCount, OBJ *args) {
 	return int2obj(readHumidity());
 }
 
+#elif defined(MINGBAI)
+static uint8 accelData[6];
+
+#define QMI8658_I2C_ADDR 106
+
+static void startAccelerometer() {
+	writeI2CReg(QMI8658_I2C_ADDR, 0x60, 0x01);
+	delayMicroseconds(20);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x02, 0x60);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x08, 0x03);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x03, 0x1c);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x04, 0x40);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x06, 0x55);
+	readI2CReg(QMI8658_I2C_ADDR, 0x00);
+	writeI2CReg(QMI8658_I2C_ADDR, 0x03, (readI2CReg(QMI8658_I2C_ADDR, 0x03) & 0x8f));
+	delay(100);
+	accelStarted = true;
+}
+static void accelreadData() {
+	if (!accelStarted) {
+		startAccelerometer();
+	}
+	// Request accelerometer data
+	Wire.beginTransmission(QMI8658_I2C_ADDR);
+	Wire.write(0x35);
+	Wire.endTransmission();
+
+	// Read data
+	int count = sizeof(accelData);
+	Wire.requestFrom(QMI8658_I2C_ADDR, count);
+
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		accelData[i] = Wire.read();
+	}
+
+}
+
+static int readAcceleration(int registerID) {
+	accelreadData();
+
+	int val = 0;
+	if (1 == registerID) val = - fix16bitSign((accelData[3] << 8) | accelData[2]);  // x-axis
+	if (3 == registerID) val =   fix16bitSign((accelData[1] << 8) | accelData[0]);  // y-axis
+	if (5 == registerID) val = - fix16bitSign((accelData[5] << 8) | accelData[4]);  // z-axis
+
+	return (100 * val) >> 14;
+}
+
+#define AHT_ADDR 0x38
+enum registers
+{
+    sfe_aht20_reg_reset = 0xBA,
+    sfe_aht20_reg_initialize = 0xBE,
+    sfe_aht20_reg_measure = 0xAC,
+};
+static int readTemperature() {
+	if (!wireStarted) startWire();
+	if (!wireStarted) return 0;	
+
+	Wire.requestFrom(AHT_ADDR, (uint8_t)1);
+    if (Wire.available()){
+		uint8_t statusByte = Wire.read();
+		if(!(statusByte & (1 << 3))){
+			//initialize
+			//Send 0xBE0800
+			Wire.beginTransmission(AHT_ADDR);
+			Wire.write(sfe_aht20_reg_initialize);
+			Wire.write(0x08);
+			Wire.write(0x00);
+			Wire.endTransmission();
+			delay(75);
+		}
+	}
+	//Immediately trigger a measurement. Send 0xAC3300
+	Wire.beginTransmission(AHT_ADDR);
+    Wire.write(sfe_aht20_reg_measure);
+    Wire.write(0x33);
+    Wire.write(0x00);
+	Wire.endTransmission();
+	delay(50);
+	if (Wire.requestFrom(AHT_ADDR, 6) > 0)
+	{
+		Wire.read(); // Read and discard state
+		uint32_t incoming = 0;
+		incoming |= (uint32_t)Wire.read() << (8 * 2);
+		incoming |= (uint32_t)Wire.read() << (8 * 1);
+		uint8_t midByte = Wire.read();
+		incoming |= midByte;// humidity data not use
+
+		uint32_t tdata = midByte;
+		tdata <<= 8;
+		tdata |=Wire.read();
+		tdata <<= 8;
+		tdata |=Wire.read();
+		//Need to get rid of data in bits > 20
+		tdata = tdata & (~(0xFFF00000));
+		return (tdata * 191 / 1000000 - 50 );
+	}
+	return 0;
+}
+
+static void setAccelRange(int range) {
+	//not apply this method
+	return;
+}
+
 #elif defined(ARDUINO_Labplus_mPython) //not finish yet
 static uint8 accelData[6];
 
