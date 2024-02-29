@@ -1801,6 +1801,9 @@ acord _ per a arrel _
 arpeggiate _ in order _ duration _ and volume _ on _ _
 arpegia _ amb ordre _ durada _ i volum _ al _ _
 
+improvised arpeggio over _ for _ bars with durations _
+arpegi improvisat sobre _ durant _ compassos amb durades _
+
 improvise over _ for _ bars with durations _ on _ _ volume _
 improvisa sobre _ durant _ compassos amb durades _ al _ _ volum _
 
