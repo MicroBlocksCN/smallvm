@@ -1160,7 +1160,9 @@ method installBoardSpecificBlocks SmallRuntime {
 	} ('Wukong2040' == boardType) {
 		importEmbeddedLibrary scripter 'WuKong2040'
 	} ('Databot' == boardType) {
-		importEmbeddedLibrary scripter 'Databot'
+		importEmbeddedLibrary scripter 'databot'
+	} ('MakerPort' == boardType) {
+		importEmbeddedLibrary scripter 'MakerPort'
 	}
 }
 
