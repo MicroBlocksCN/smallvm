@@ -1245,6 +1245,8 @@ _ chord for root _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
 
+improvised arpeggio over _ for _ bars with durations _
+
 improvise over _ for _ bars with durations _ on _ _ volume _
 
 _ transposed _ semitones
