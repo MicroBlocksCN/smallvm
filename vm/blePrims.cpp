@@ -4,7 +4,7 @@
 
 // Copyright 2023 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// blePrims.cpp - MicroBlocks network primitives
+// blePrims.cpp - MicroBlocks Bluetooth Low Energy (BLE) primitives
 // Wenjie Wu, December 2023
 
 #include <stdio.h>
@@ -12,10 +12,17 @@
 #include "mem.h"
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
+#if defined(BLE_IDE)
+	// include OCTO primitives when BLE_IDE is enabled
+	#define BLE_OCTO 1
+#endif
+
 #if defined(BLE_UART)
 
+// *** This BLE_UART code is currently under development but not ready for prime time yet. ***
+
 // Experimental! Optional BLE UART support (compile with -D BLE_UART)
-// Code provided by Wenji Wu
+// Original code provided by Wenji Wu. Thanks!
 
 // https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
 // https://github.com/h2zero/NimBLE-Arduino/blob/release/1.4/examples/Refactored_original_examples/BLE_uart/BLE_uart.ino
@@ -23,119 +30,144 @@
 
 #include <NimBLEDevice.h>
 
+static BLEServer *pUARTServer = NULL;
+static BLEService *pUARTService = NULL;
+static BLECharacteristic * pUARTTxCharacteristic;
+static BLECharacteristic * pUARTRxCharacteristic;
+static int uartConnectionID = -1;
 static bool bleUARTStarted = false;
-BLEServer *pUARTServer = NULL;
-BLECharacteristic * pUARTTxCharacteristic;
-BLECharacteristic * pUARTRxCharacteristic;
-bool deviceConnected = false;
 
-static char lastBLE_UART_Message[100];
-static bool hasBLE_UART_Message = false;
+// Empty byte array constant
+static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+
+// Receive buffer
+static uint8 uartRecvBuf[256];
+static int uartBytesReceived = 0;
 
 // UUIDs for the Nordic UART Service (NUS)
-#define SERVICE_UUID			"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_RX	"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX	"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_SERVICE_UUID	"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 class UARTServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* pUARTServer) {
-		outputString("UART connected");
-		pUARTServer->stopAdvertising();
-		deviceConnected = true;
+	void onConnect(BLEServer* pUARTServer, ble_gap_conn_desc* desc) {
+outputString("UART connected");
+		uartConnectionID = desc->conn_handle;
 	}
 
 	void onDisconnect(BLEServer* pUARTServer) {
-		outputString("UART disconnected");
-		pUARTServer->startAdvertising();
-		deviceConnected = false;
+outputString("UART disconnected");
+		uartConnectionID = -1;
 	}
 };
 
 class UARTCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic) {
+	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
 		const char *rxValue = pCharacteristic->getValue().c_str();
-
-		int len = strlen(rxValue);
-		if (len > 0) {
-			if (len > 99) len = 99;
-			memcpy(lastBLE_UART_Message, rxValue, len);
-			lastBLE_UART_Message[len] = '\0';
-			hasBLE_UART_Message = true;
-		}
+		int byteCount = strlen(rxValue);
+		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
+		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
+		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
+		uartBytesReceived += byteCount;
+	}
+	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
+		// noop
 	}
 };
 
-static OBJ primBLE_UART_Start(int argCount, OBJ *args) {
-	const char* name = (argCount > 0) ? obj2str(args[0]) : "NimBLE UART";
-
-	if (bleUARTStarted) {
-		return falseObj;
-	}
+static OBJ primUART_start(int argCount, OBJ *args) {
+	if (bleUARTStarted) return falseObj;
 	bleUARTStarted = true;
 
-	// Create BLE Device
-	BLEDevice::init(name);
+	// Stop BLE IDE service, if running
+	BLE_stop();
 
-	// Create BLE Server
+	char uartName[32];
+	BLE_initThreeLetterID();
+	sprintf(uartName, "MicroBlocks UART %s", BLE_ThreeLetterID);
+	BLEDevice::init(uartName); // initialize BLE device
+
+	// Create BLE Server and Service
 	pUARTServer = BLEDevice::createServer();
 	pUARTServer->setCallbacks(new UARTServerCallbacks());
-
-	// Create BLE Service
-	BLEService *pService = pUARTServer->createService(SERVICE_UUID);
+	pUARTService = pUARTServer->createService(UART_SERVICE_UUID);
 
 	// Create BLE Characteristics
-	pUARTTxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
-	pUARTRxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE);
+	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
+	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
+	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE);
 	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
 
-	// Start the service
-	pService->start();
+	// Add and start service
+	pUARTServer->addService(pUARTService);
+ 	pUARTService->start();
 
-	// Add the service to the advertisment data
-	pUARTServer->getAdvertising()->addServiceUUID(pService->getUUID());
-
-	// Start advertising
-	pUARTServer->getAdvertising()->start();
+	// Start server
+	pUARTServer->start();
+	BLEDevice::startAdvertising(); // needed?
 
 	return falseObj;
 }
 
-static OBJ primBLE_UART_Stop(int argCount, OBJ *args) {
+static OBJ primUART_stop(int argCount, OBJ *args) {
 	if (bleUARTStarted) {
-		BLEDevice::stopAdvertising();
-		BLEDevice::deinit(false);
 		bleUARTStarted = false;
+		if (uartConnectionID != -1) {
+			pUARTServer->disconnect(uartConnectionID);
+			uartConnectionID = -1;
+		}
+		pUARTServer->stopAdvertising();
+		pUARTServer->removeService(pUARTService);
+		BLEDevice::stopAdvertising();
+
+		pUARTServer = NULL;
+		pUARTService = NULL;
+		pUARTTxCharacteristic = NULL;
+		pUARTRxCharacteristic = NULL;
+
+outputString("Restarting BLE service");
+		BLE_start(); // restart IDE service
 	}
 	return falseObj;
 }
 
-static OBJ primBLE_UART_Connected(int argCount, OBJ *args) {
-	return deviceConnected ? trueObj : falseObj;
+static OBJ primUART_connected(int argCount, OBJ *args) {
+	return (uartConnectionID != -1) ? trueObj : falseObj;
 }
 
-static OBJ primBLE_UART_LastEvent(int argCount, OBJ *args) {
-	if (hasBLE_UART_Message == true) {
-		OBJ event = newObj(ListType, 2, zeroObj);
-		FIELD(event, 0) = int2obj(1); //list size
-		FIELD(event, 1) = newStringFromBytes(lastBLE_UART_Message, strlen(lastBLE_UART_Message));
-		hasBLE_UART_Message = false;
-		return event;
+static OBJ primUART_read(int argCount, OBJ *args) {
+	if (uartBytesReceived <= 0) return (OBJ) &emptyByteArray;
+
+	int wordCount = (uartBytesReceived + 3) / 4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (!result) return fail(insufficientMemoryError);
+	setByteCountAdjust(result, uartBytesReceived);
+	memcpy(&FIELD(result, 0), uartRecvBuf, uartBytesReceived);
+	uartBytesReceived = 0;
+	return result;
+}
+
+static OBJ primUART_write(int argCount, OBJ *args) {
+	OBJ arg = args[0];
+	int byteCount = 0;
+	if (IS_TYPE(arg, StringType)) {
+		byteCount = strlen(obj2str(arg));
+	} else if (IS_TYPE(arg, ByteArrayType)) {
+		byteCount = BYTES(arg);
 	} else {
-		return falseObj;
+		return fail(needsByteArray);
 	}
-}
 
-static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
-	char* message = obj2str(args[0]);
-	pUARTTxCharacteristic->setValue((uint8_t*) message, strlen(message));
+	if (byteCount > 240) byteCount = 240;
+	pUARTTxCharacteristic->setValue((uint8_t *) &FIELD(arg, 0), byteCount);
 	pUARTTxCharacteristic->notify();
-	delay(10); // bluetooth stack will go into congestion, if too many packets are sent
-	return falseObj;
+	taskSleep(10); // bluetooth stack will go into congestion if packets are sent too fast
+	return int2obj(byteCount);
 }
 
 #endif // BLE_UART
 
-#if defined(BLE_IDE) //Octo primtives; included in standard BLE release
+#if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
 
 #include <NimBLEDevice.h>
 
@@ -488,14 +520,14 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 static PrimEntry entries[] = {
 
 	#if defined(BLE_UART)
-		{"BLE_UART_Start", primBLE_UART_Start},
-		{"BLE_UART_Stop", primBLE_UART_Stop},
-		{"BLE_UART_Connected", primBLE_UART_Connected},
-		{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
-		{"BLE_UART_Write", primBLE_UART_Write},
+		{"uartStart", primUART_start},
+		{"uartStop", primUART_stop},
+		{"uartConnected", primUART_connected},
+		{"uartRead", primUART_read},
+		{"uartWrite", primUART_write},
 	#endif
 
-	#if defined(BLE_IDE)
+	#if defined(BLE_OCTO)
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
