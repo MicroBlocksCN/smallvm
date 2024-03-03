@@ -341,7 +341,7 @@ void resetRadio() {
 
 static OBJ primDisableRadio(int argCount, OBJ *args) {
 	if (!radioInitialized) return falseObj;
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	disableRadio();
 	radioInitialized = false;
@@ -349,7 +349,7 @@ static OBJ primDisableRadio(int argCount, OBJ *args) {
 }
 
 static OBJ primMessageReceived(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	return receiveMakeCodeMessage() ? trueObj : falseObj;
 }
@@ -358,7 +358,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
@@ -378,7 +378,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
@@ -393,7 +393,7 @@ static OBJ primPacketSend(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		int n = obj2int(args[0]);
@@ -409,7 +409,7 @@ static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 1) && IS_TYPE(args[0], StringType) && isInt(args[1])) {
 		char *s = obj2str(args[0]);
@@ -432,7 +432,7 @@ static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && IS_TYPE(args[0], StringType)) {
 		char *s = obj2str(args[0]);
@@ -450,7 +450,7 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
 }
 
 static OBJ primSetChannel(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setChannel(obj2int(args[0]));
@@ -459,7 +459,7 @@ static OBJ primSetChannel(int argCount, OBJ *args) {
 }
 
 static OBJ primSetGroup(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setGroup(obj2int(args[0]));
@@ -468,7 +468,7 @@ static OBJ primSetGroup(int argCount, OBJ *args) {
 }
 
 static OBJ primSetPower(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	if ((argCount > 0) && isInt(args[0])) {
 		setPower(obj2int(args[0]));
@@ -506,13 +506,13 @@ static OBJ primDeviceID(int argCount, OBJ *args) { return falseObj; }
 // Additional Primitives
 
 static OBJ primReceivedInteger(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	return int2obj(receivedInteger);
 }
 
 static OBJ primReceivedMessageType(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	const char *s = "other";
 	if (-1 == receivedMessageType) s = "none";
@@ -526,7 +526,7 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 }
 
 static OBJ primReceivedString(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	return newStringFromBytes(receivedString, strlen(receivedString));
 }
@@ -535,12 +535,12 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 	// Return the signal strength (RSSI) of the most recently received packet.
 	// Values are negative, with higher values for stronger signals.
 
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 	return int2obj(radioSignalStrength);
 }
 
 static OBJ primMessageSenderID(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 
 	char s[10];
 	sprintf(s, "%08x", receivedMessageSenderID);
