@@ -13,24 +13,22 @@
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
 #if defined(BLE_IDE)
-	// include OCTO primitives when BLE_IDE is enabled
+	// include UART and OCTO primitives when BLE_IDE is enabled
+	#define BLE_UART 1
 	#define BLE_OCTO 1
 #endif
 
 #if defined(BLE_UART)
 
-// *** This BLE_UART code is currently under development but not ready for prime time yet. ***
+// Original UARTR code was provided by Wenji Wu. Thanks!
 
-// Experimental! Optional BLE UART support (compile with -D BLE_UART)
-// Original code provided by Wenji Wu. Thanks!
-
-// https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
-// https://github.com/h2zero/NimBLE-Arduino/blob/release/1.4/examples/Refactored_original_examples/BLE_uart/BLE_uart.ino
-// client debug: chrome://bluetooth-internals/
+// BLE UART service and IDE service are mutually incompatible:
+// * When the board is connected to the IDE via BLE, then the UART cannot be started.
+// * Similarly, when the UART is in use you cannot connect the IDE to the board via BLE.
+// However, can always connect the the board using a USB cable.
 
 #include <NimBLEDevice.h>
 
-static BLEServer *pUARTServer = NULL;
 static BLEService *pUARTService = NULL;
 static BLECharacteristic * pUARTTxCharacteristic;
 static BLECharacteristic * pUARTRxCharacteristic;
@@ -50,13 +48,10 @@ static int uartBytesReceived = 0;
 #define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 class UARTServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* pUARTServer, ble_gap_conn_desc* desc) {
-outputString("UART connected");
+	void onConnect(BLEServer* server, ble_gap_conn_desc* desc) {
 		uartConnectionID = desc->conn_handle;
 	}
-
-	void onDisconnect(BLEServer* pUARTServer) {
-outputString("UART disconnected");
+	void onDisconnect(BLEServer* server) {
 		uartConnectionID = -1;
 	}
 };
@@ -76,57 +71,48 @@ class UARTCallbacks: public BLECharacteristicCallbacks {
 };
 
 static OBJ primUART_start(int argCount, OBJ *args) {
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
+
 	if (bleUARTStarted) return falseObj;
 	bleUARTStarted = true;
+	BLEServer *pServer = BLEDevice::getServer();
 
-	// Stop BLE IDE service, if running
-	BLE_stop();
+	BLE_suspendIDEService();
 
-	char uartName[32];
-	BLE_initThreeLetterID();
-	sprintf(uartName, "MicroBlocks UART %s", BLE_ThreeLetterID);
-	BLEDevice::init(uartName); // initialize BLE device
+	if (!pUARTService) {
+		// Create UART service (first time only)
+		pUARTService = pServer->createService(UART_SERVICE_UUID);
+		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
+		pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
+		pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE);
+		pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
+	} else {
+		// Add existing UART service
+		pServer->addService(pUARTService);
+	}
 
-	// Create BLE Server and Service
-	pUARTServer = BLEDevice::createServer();
-	pUARTServer->setCallbacks(new UARTServerCallbacks());
-	pUARTService = pUARTServer->createService(UART_SERVICE_UUID);
-
-	// Create BLE Characteristics
-	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
-	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
-	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE);
-	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
-
-	// Add and start service
-	pUARTServer->addService(pUARTService);
- 	pUARTService->start();
-
-	// Start server
-	pUARTServer->start();
-	BLEDevice::startAdvertising(); // needed?
+	pServer->setCallbacks(new UARTServerCallbacks());
+	pUARTService->start();
+	BLEDevice::getAdvertising()->addServiceUUID(UART_SERVICE_UUID);
+ 	BLEDevice::startAdvertising();
 
 	return falseObj;
 }
 
+
 static OBJ primUART_stop(int argCount, OBJ *args) {
 	if (bleUARTStarted) {
 		bleUARTStarted = false;
+		BLEServer *pServer = BLEDevice::getServer();
+
 		if (uartConnectionID != -1) {
-			pUARTServer->disconnect(uartConnectionID);
+			// disconnect UART connection
+			pServer->disconnect(uartConnectionID);
 			uartConnectionID = -1;
 		}
-		pUARTServer->stopAdvertising();
-		pUARTServer->removeService(pUARTService);
-		BLEDevice::stopAdvertising();
 
-		pUARTServer = NULL;
-		pUARTService = NULL;
-		pUARTTxCharacteristic = NULL;
-		pUARTRxCharacteristic = NULL;
-
-outputString("Restarting BLE service");
-		BLE_start(); // restart IDE service
+		pServer->removeService(pUARTService); // remove but don't deallocate
+		BLE_resumeIDEService();
 	}
 	return falseObj;
 }
@@ -161,7 +147,7 @@ static OBJ primUART_write(int argCount, OBJ *args) {
 	if (byteCount > 240) byteCount = 240;
 	pUARTTxCharacteristic->setValue((uint8_t *) &FIELD(arg, 0), byteCount);
 	pUARTTxCharacteristic->notify();
-	taskSleep(10); // bluetooth stack will go into congestion if packets are sent too fast
+	taskSleep(15); // data will be dropped if sent too fast
 	return int2obj(byteCount);
 }
 
