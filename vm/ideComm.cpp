@@ -282,6 +282,20 @@ void BLE_resumeAdvertising() {
 	if (serviceOnline) pAdvertising->start();
 }
 
+// Stop and resume IDE service (used by BLE UART
+
+void BLE_suspendIDEService() {
+	pServer->removeService(pService);
+	pServer->setCallbacks(NULL);
+}
+
+void BLE_resumeIDEService() {
+	pServer->addService(pService);
+	pServer->setCallbacks(new MyServerCallbacks());
+	pService->start();
+	BLE_resumeAdvertising();
+}
+
 // IDE receive and send
 
 int recvBytes(uint8 *buf, int count) {
