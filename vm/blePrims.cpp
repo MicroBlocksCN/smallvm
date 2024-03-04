@@ -47,6 +47,8 @@ static int uartBytesReceived = 0;
 #define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
+static void stopBLEScanner(); // forward reference
+
 class UARTServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* server, ble_gap_conn_desc* desc) {
 		uartConnectionID = desc->conn_handle;
@@ -77,6 +79,9 @@ static OBJ primUART_start(int argCount, OBJ *args) {
 	bleUARTStarted = true;
 	BLEServer *pServer = BLEDevice::getServer();
 
+	// Workaround: Stop the scanner, if running, to avoid a fatal NimBLE error
+	stopBLEScanner();
+
 	BLE_suspendIDEService();
 
 	if (!pUARTService) {
@@ -104,6 +109,9 @@ static OBJ primUART_stop(int argCount, OBJ *args) {
 	if (bleUARTStarted) {
 		bleUARTStarted = false;
 		BLEServer *pServer = BLEDevice::getServer();
+
+		// Workaround: Stop the scanner, if running, to avoid a NimBLE assertion failure
+		stopBLEScanner();
 
 		if (uartConnectionID != -1) {
 			// disconnect UART connection
@@ -268,6 +276,13 @@ static void startBLEScanner() {
 		pScanner->setDuplicateFilter(false); // good ???
 		pScanner->start(0, NULL, false);
 		bleScannerRunning = true;
+	}
+}
+
+static void stopBLEScanner() {
+	if (bleScannerRunning) {
+		BLEDevice::getScan()->stop();
+		bleScannerRunning = false;
 	}
 }
 
