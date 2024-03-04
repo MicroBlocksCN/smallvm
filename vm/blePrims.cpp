@@ -14,152 +14,9 @@
 
 #if defined(BLE_IDE)
 	// include UART and OCTO primitives when BLE_IDE is enabled
-	#define BLE_UART 1
 	#define BLE_OCTO 1
+	#define BLE_UART 1
 #endif
-
-#if defined(BLE_UART)
-
-// Original UART code was provided by Wenji Wu. Thanks!
-
-// BLE UART service and IDE service are mutually incompatible:
-// * When the board is connected to the IDE via BLE, then the UART cannot be started.
-// * When the UART is in use you cannot connect the IDE to the board via BLE.
-// However, can always connect the the board using a USB cable.
-
-#include <NimBLEDevice.h>
-
-static BLEService *pUARTService = NULL;
-static BLECharacteristic * pUARTTxCharacteristic;
-static BLECharacteristic * pUARTRxCharacteristic;
-static int uartConnectionID = -1;
-static bool bleUARTStarted = false;
-
-// Empty byte array constant
-static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
-
-// Receive buffer
-static uint8 uartRecvBuf[256];
-static int uartBytesReceived = 0;
-
-// UUIDs for the Nordic UART Service (NUS)
-#define UART_SERVICE_UUID	"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-static void stopBLEScanner(); // forward reference
-
-class UARTServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* server, ble_gap_conn_desc* desc) {
-		uartConnectionID = desc->conn_handle;
-	}
-	void onDisconnect(BLEServer* server) {
-		uartConnectionID = -1;
-	}
-};
-
-class UARTCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
-		const char *rxValue = pCharacteristic->getValue().c_str();
-		int byteCount = strlen(rxValue);
-		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
-		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
-		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
-		uartBytesReceived += byteCount;
-	}
-	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
-		// noop
-	}
-};
-
-static OBJ primUART_start(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
-
-	if (bleUARTStarted) return falseObj;
-	bleUARTStarted = true;
-	BLEServer *pServer = BLEDevice::getServer();
-
-	// Workaround: Stop the scanner, if running, to avoid a fatal NimBLE error
-	stopBLEScanner();
-
-	BLE_suspendIDEService();
-
-	if (!pUARTService) {
-		// Create UART service (first time only)
-		pUARTService = pServer->createService(UART_SERVICE_UUID);
-		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
-		pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
-		pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
-		pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
-	} else {
-		// Add existing UART service
-		pServer->addService(pUARTService);
-	}
-
-	pServer->setCallbacks(new UARTServerCallbacks());
-	pUARTService->start();
-	BLEDevice::getAdvertising()->addServiceUUID(UART_SERVICE_UUID);
- 	BLEDevice::startAdvertising();
-
-	return falseObj;
-}
-
-
-static OBJ primUART_stop(int argCount, OBJ *args) {
-	if (bleUARTStarted) {
-		bleUARTStarted = false;
-		BLEServer *pServer = BLEDevice::getServer();
-
-		// Workaround: Stop the scanner, if running, to avoid a NimBLE assertion failure
-		stopBLEScanner();
-
-		if (uartConnectionID != -1) {
-			// disconnect UART connection
-			pServer->disconnect(uartConnectionID);
-			uartConnectionID = -1;
-		}
-
-		pServer->removeService(pUARTService); // remove but don't deallocate
-		BLE_resumeIDEService();
-	}
-	return falseObj;
-}
-
-static OBJ primUART_connected(int argCount, OBJ *args) {
-	return (uartConnectionID != -1) ? trueObj : falseObj;
-}
-
-static OBJ primUART_read(int argCount, OBJ *args) {
-	if (uartBytesReceived <= 0) return (OBJ) &emptyByteArray;
-
-	int wordCount = (uartBytesReceived + 3) / 4;
-	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
-	if (!result) return fail(insufficientMemoryError);
-	setByteCountAdjust(result, uartBytesReceived);
-	memcpy(&FIELD(result, 0), uartRecvBuf, uartBytesReceived);
-	uartBytesReceived = 0;
-	return result;
-}
-
-static OBJ primUART_write(int argCount, OBJ *args) {
-	OBJ arg = args[0];
-	int byteCount = 0;
-	if (IS_TYPE(arg, StringType)) {
-		byteCount = strlen(obj2str(arg));
-	} else if (IS_TYPE(arg, ByteArrayType)) {
-		byteCount = BYTES(arg);
-	} else {
-		return fail(needsByteArray);
-	}
-
-	if (byteCount > 240) byteCount = 240;
-	pUARTTxCharacteristic->setValue((uint8_t *) &FIELD(arg, 0), byteCount);
-	pUARTTxCharacteristic->notify();
-	taskSleep(15); // data will be dropped if sent too fast
-	return int2obj(byteCount);
-}
-
-#endif // BLE_UART
 
 #if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
 
@@ -348,7 +205,149 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 	return result;
 }
 
-#endif // Octo primitives
+#endif // BLE_OCTO
+
+#if defined(BLE_UART)
+
+// Original UART code was provided by Wenji Wu. Thanks!
+
+// BLE UART service and IDE service are mutually incompatible:
+// * When the board is connected to the IDE via BLE, then the UART cannot be started.
+// * When the UART is in use you cannot connect the IDE to the board via BLE.
+// However, can always connect the the board using a USB cable.
+
+#include <NimBLEDevice.h>
+
+static BLEService *pUARTService = NULL;
+static BLECharacteristic * pUARTTxCharacteristic;
+static BLECharacteristic * pUARTRxCharacteristic;
+static int uartConnectionID = -1;
+static bool bleUARTStarted = false;
+
+// Empty byte array constant
+static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+
+// Receive buffer
+static uint8 uartRecvBuf[256];
+static int uartBytesReceived = 0;
+
+// UUIDs for the Nordic UART Service (NUS)
+#define UART_SERVICE_UUID	"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+
+class UARTServerCallbacks: public BLEServerCallbacks {
+	void onConnect(BLEServer* server, ble_gap_conn_desc* desc) {
+		uartConnectionID = desc->conn_handle;
+	}
+	void onDisconnect(BLEServer* server) {
+		uartConnectionID = -1;
+	}
+};
+
+class UARTCallbacks: public BLECharacteristicCallbacks {
+	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+		const char *rxValue = pCharacteristic->getValue().c_str();
+		int byteCount = strlen(rxValue);
+		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
+		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
+		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
+		uartBytesReceived += byteCount;
+	}
+	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
+		// noop
+	}
+};
+
+static OBJ primUART_start(int argCount, OBJ *args) {
+	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
+
+	if (bleUARTStarted) return falseObj;
+	bleUARTStarted = true;
+	BLEServer *pServer = BLEDevice::getServer();
+
+	// Workaround: Stop the scanner, if running, to avoid a fatal NimBLE error
+	stopBLEScanner();
+
+	BLE_suspendIDEService();
+
+	if (!pUARTService) {
+		// Create UART service (first time only)
+		pUARTService = pServer->createService(UART_SERVICE_UUID);
+		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
+		pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
+		pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
+		pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
+	} else {
+		// Add existing UART service
+		pServer->addService(pUARTService);
+	}
+
+	pServer->setCallbacks(new UARTServerCallbacks());
+	pUARTService->start();
+	BLEDevice::getAdvertising()->addServiceUUID(UART_SERVICE_UUID);
+ 	BLEDevice::startAdvertising();
+
+	return falseObj;
+}
+
+
+static OBJ primUART_stop(int argCount, OBJ *args) {
+	if (bleUARTStarted) {
+		bleUARTStarted = false;
+		BLEServer *pServer = BLEDevice::getServer();
+
+		// Workaround: Stop the scanner, if running, to avoid a NimBLE assertion failure
+		stopBLEScanner();
+
+		if (uartConnectionID != -1) {
+			// disconnect UART connection
+			pServer->disconnect(uartConnectionID);
+			uartConnectionID = -1;
+		}
+
+		pServer->removeService(pUARTService); // remove but don't deallocate
+		BLE_resumeIDEService();
+	}
+	return falseObj;
+}
+
+static OBJ primUART_connected(int argCount, OBJ *args) {
+	return (uartConnectionID != -1) ? trueObj : falseObj;
+}
+
+static OBJ primUART_read(int argCount, OBJ *args) {
+	if (uartBytesReceived <= 0) return (OBJ) &emptyByteArray;
+
+	int wordCount = (uartBytesReceived + 3) / 4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (!result) return fail(insufficientMemoryError);
+	setByteCountAdjust(result, uartBytesReceived);
+	memcpy(&FIELD(result, 0), uartRecvBuf, uartBytesReceived);
+	uartBytesReceived = 0;
+	return result;
+}
+
+static OBJ primUART_write(int argCount, OBJ *args) {
+	OBJ arg = args[0];
+	int byteCount = 0;
+	if (IS_TYPE(arg, StringType)) {
+		byteCount = strlen(obj2str(arg));
+	} else if (IS_TYPE(arg, ByteArrayType)) {
+		byteCount = BYTES(arg);
+	} else {
+		return fail(needsByteArray);
+	}
+
+	if (byteCount > 240) byteCount = 240;
+	pUARTTxCharacteristic->setValue((uint8_t *) &FIELD(arg, 0), byteCount);
+	pUARTTxCharacteristic->notify();
+	taskSleep(15); // data will be dropped if sent too fast
+	return int2obj(byteCount);
+}
+
+#endif // BLE_UART
+
 
 #if defined(BLE_KEYBOARD)
 
@@ -512,19 +511,19 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 
+	#if defined(BLE_OCTO)
+		{"octoStartBeam", primOctoStartBeam},
+		{"octoStopBeam", primOctoStopBeam},
+		{"octoReceive", primOctoReceive},
+		{"scanReceive", primScanReceive},
+	#endif
+
 	#if defined(BLE_UART)
 		{"uartStart", primUART_start},
 		{"uartStop", primUART_stop},
 		{"uartConnected", primUART_connected},
 		{"uartRead", primUART_read},
 		{"uartWrite", primUART_write},
-	#endif
-
-	#if defined(BLE_OCTO)
-		{"octoStartBeam", primOctoStartBeam},
-		{"octoStopBeam", primOctoStopBeam},
-		{"octoReceive", primOctoReceive},
-		{"scanReceive", primScanReceive},
 	#endif
 
 	#if defined(BLE_KEYBOARD)
