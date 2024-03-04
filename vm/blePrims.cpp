@@ -20,11 +20,11 @@
 
 #if defined(BLE_UART)
 
-// Original UARTR code was provided by Wenji Wu. Thanks!
+// Original UART code was provided by Wenji Wu. Thanks!
 
 // BLE UART service and IDE service are mutually incompatible:
 // * When the board is connected to the IDE via BLE, then the UART cannot be started.
-// * Similarly, when the UART is in use you cannot connect the IDE to the board via BLE.
+// * When the UART is in use you cannot connect the IDE to the board via BLE.
 // However, can always connect the the board using a USB cable.
 
 #include <NimBLEDevice.h>
@@ -160,7 +160,6 @@ static OBJ primUART_write(int argCount, OBJ *args) {
 NimBLEUUID ANDROID_OCTO_UUID	= NimBLEUUID("2540b6b0-0001-4538-bcd7-7ecfb51297c1");
 NimBLEUUID iOS_OCTO_UUID		= NimBLEUUID("2540b6b0-0002-4538-bcd7-7ecfb51297c1");
 
-static BLEScan* pOctoScanner = NULL;
 static BLEAdvertising* pAdvertising = NULL;
 
 static bool bleScannerRunning = false;
@@ -257,24 +256,17 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 	}
 };
 
-static void scanComplete(BLEScanResults scanResults) {
-	// Restarts the scanner so that we scan continuously.
-
-	pOctoScanner->clearResults();
-	pOctoScanner->start(1, scanComplete, false);
-}
-
 static void startBLEScanner() {
 	if (!bleScannerRunning) {
 		// initialize allZeroMessageID; ignore messages with that ID sent by iOS OctoStudio
 		memcpy(&allZeroMessageID, "00000000", 8);
 
-		pOctoScanner = BLEDevice::getScan();
-		pOctoScanner->setAdvertisedDeviceCallbacks(new BLEScannerCallbacks());
-		pOctoScanner->setMaxResults(0); // don't save results; use callback only
-		pOctoScanner->setActiveScan(true); // required by Octo
-		pOctoScanner->setDuplicateFilter(false); // good ???
-		pOctoScanner->start(1, scanComplete, false);
+		BLEScan *pScanner = BLEDevice::getScan();
+		pScanner->setAdvertisedDeviceCallbacks(new BLEScannerCallbacks());
+		pScanner->setMaxResults(0); // don't save results; use callback only
+		pScanner->setActiveScan(true); // required by Octo
+		pScanner->setDuplicateFilter(false); // good ???
+		pScanner->start(0, NULL, false);
 		bleScannerRunning = true;
 	}
 }
