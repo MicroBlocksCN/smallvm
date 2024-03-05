@@ -109,6 +109,7 @@ to 'rhy_start counting' bars {
 
 to 'rhy_stop counting' {
   _rhy_looping = (booleanConstant false)
+  _rhy_tick = 0
 }
 
 to rhy_triplet duration {
