@@ -590,15 +590,16 @@ void hardwareInit() {
 	#define BOARD_TYPE "Mbits"
 	#define PIN_BUTTON_A 36
 	#define PIN_BUTTON_B 39
-	#define DIGITAL_PINS 21
+	#define DIGITAL_PINS 22
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {};
-	static const char digitalPin[21] = {
+	static const char digitalPin[22] = {
 		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
-		14, 39, 15, 18, 19, 23, 2, 255, 255, 21, 22}; // edge connector pins 17 & 18 are not used
-	#define DEFAULT_TONE_PIN 33
+		14, 39, 15, 18, 19, 23, 2, 255, 255, 21,
+		22, 33}; // edge connector pins 17 & 18 are not used
+	#define DEFAULT_TONE_PIN 21
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
