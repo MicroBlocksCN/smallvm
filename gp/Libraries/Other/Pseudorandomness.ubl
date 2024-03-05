@@ -19,10 +19,11 @@ to 'pseudorand list' count low high seed {
 }
 
 to 'pseudorand number' low high seed {
+  if (low == high) {return low}
   comment 'xorshift pseudorandom number generator'
   seed = (seed ^ (seed << 13))
   seed = (seed ^ (seed << 17))
   seed = (seed ^ (seed << 5))
-  return (((absoluteValue seed) % ((absoluteValue high) - (absoluteValue low))) + (absoluteValue low))
+  return (((absoluteValue seed) % ((absoluteValue high) - (absoluteValue (low - 1)))) + (absoluteValue low))
 }
 
