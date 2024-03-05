@@ -24,6 +24,6 @@ to 'pseudorand number' low high seed {
   seed = (seed ^ (seed << 13))
   seed = (seed ^ (seed << 17))
   seed = (seed ^ (seed << 5))
-  return (((absoluteValue seed) % ((absoluteValue high) - (absoluteValue low))) + (absoluteValue low))
+  return (((absoluteValue seed) % ((absoluteValue high) - (absoluteValue (low - 1)))) + (absoluteValue low))
 }
 
