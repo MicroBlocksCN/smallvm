@@ -57,6 +57,111 @@ OBJ primRescale(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+// HSV Colors
+
+static float clampedPercent(int percent) {
+	// Return a float between 0.0 and 1.0 for the given percent.
+
+	if (percent < 0) percent = 0;
+	if (percent > 100) percent = 100;
+	return (float) percent / 100.0;
+}
+
+static void extractHSV(int rgb, float *hue, float *sat, float *bri) {
+	int r = (rgb >> 16) & 255;
+	int g = (rgb >> 8) & 255;
+	int b = rgb & 255;
+
+	int min = (r < g) ? ((r < b) ? r : b) : ((g < b) ? g : b);
+	int max = (r > g) ? ((r > b) ? r : b) : ((g > b) ? g : b);
+
+	if (max == min) {
+		// gray; hue is arbitrarily chosen to be zero
+		*hue = 0.0;
+		*sat = 0.0;
+		*bri = max / 255.0;
+	}
+
+	int f = 0;
+	int i = 0;
+	if (r == min) {
+		f = g - b;
+		i = 3;
+	} else if(g == min) {
+		f = b - r;
+		i = 5;
+	} else if (b == min) {
+		f = r - g;
+		i = 1;
+	}
+
+	*hue = fmod(60.0 * (i - (((float) f) / (max - min))), 360.0);
+	*sat = 0.0;
+	if (max > 0) *sat = ((float) (max - min)) / max;
+  	*bri = max / 255.0;
+}
+
+OBJ primHSVColor(int argCount, OBJ *args) {
+	if (argCount < 3) return fail(notEnoughArguments);
+
+	int h = evalInt(args[0]) % 360;
+	if (h < 0) h += 360;
+	float s = clampedPercent(evalInt(args[1]));
+	float v = clampedPercent(evalInt(args[2]));
+
+	int i = h / 60;
+	float f = (h / 60.0) - i;
+	float p = v * (1.0 - s);
+	float q = v * (1.0 - (s * f));
+	float t = v * (1.0 - (s * (1.0 - f)));
+	float r, g, b;
+
+	switch (i) {
+	case 0:
+		r = v; g = t; b = p;
+		break;
+	case 1:
+		r = q; g = v; b = p;
+		break;
+	case 2:
+		r = p; g = v; b = t;
+		break;
+	case 3:
+		r = p; g = q; b = v;
+		break;
+	case 4:
+		r = t; g = p; b = v;
+		break;
+	case 5:
+		r = v; g = p; b = q;
+		break;
+	}
+
+	int rgb = (((int) (255 * r)) << 16) | (((int) (255 * g)) << 8) | ((int) (255 * b));
+	return int2obj(rgb);
+}
+
+OBJ primColorHue(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	float h, s, v;
+	extractHSV(evalInt(args[0]), &h, &s, &v);
+	return int2obj((int) h);
+}
+
+OBJ primColorSaturation(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	float h, s, v;
+	extractHSV(evalInt(args[0]), &h, &s, &v);
+	return int2obj((int) (100.0 * s));
+}
+
+OBJ primColorBrightness(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	float h, s, v;
+	extractHSV(evalInt(args[0]), &h, &s, &v);
+	return int2obj((int) (100.0 * v));
+}
+
 static OBJ primSine(int argCount, OBJ *args) {
 	// Returns the sine of the given angle * 2^14 (i.e. a fixed point integer with 13 bits of
 	// fraction). The input is the angle in hundreths of a degree (e.g. 4500 means 45 degrees).
@@ -239,6 +344,10 @@ static PrimEntry entries[] = {
 	{"bleID", primBLE_ID},
 	{"hexToInt", primHexToInt},
 	{"rescale", primRescale},
+	{"hsvColor", primHSVColor},
+	{"hue", primColorHue},
+	{"saturation", primColorSaturation},
+	{"brightness", primColorBrightness},
 	{"sin", primSine},
 	{"sqrt", primSqrt},
 	{"atan2", primArctan},
