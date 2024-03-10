@@ -14,9 +14,6 @@ This library currently supports only "peripheral" mode. The board starts BLE ser
   spec 'r' 'bleSerial_readString' 'BLE serial read string'
   spec 'r' 'bleSerial_readBytes' 'BLE serial read bytes'
   spec ' ' 'bleSerial_write' 'BLE serial write _' 'str' 'aStringOrByteArray'
-  space
-  spec 'r' '[ble:uartRead]' '_BLE serial read as bytes _' 'bool' false
-  spec ' ' '[ble:uartWrite]' '_BLE serial write _ (max 240)' 'str' 'aStringOrByteArray'
 
 to bleSerial_readBytes {
   return ('[ble:uartRead]' true)
@@ -31,8 +28,8 @@ to bleSerial_write aStringOrByteArray {
   local 'bytes' ('[data:convertType]' aStringOrByteArray 'byte array')
   local 'i' 1
   local 'end' (size bytes)
-  while (i < end) {
-    '[ble:uartWrite]' 'bytes' i
+  repeatUntil (i > end) {
+    '[ble:uartWrite]' bytes i
     i += 240
   }
 }
