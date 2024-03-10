@@ -224,8 +224,9 @@ static BLECharacteristic * pUARTRxCharacteristic;
 static int uartConnectionID = -1;
 static bool bleUARTStarted = false;
 
-// Empty byte array constant
+// Empty byte array and string constants
 static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+static uint32 emptyString[2] = { HEADER(StringType, 1), 0 };
 
 // Receive buffer
 static uint8 uartRecvBuf[256];
@@ -291,7 +292,6 @@ static OBJ primUART_start(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-
 static OBJ primUART_stop(int argCount, OBJ *args) {
 	if (bleUARTStarted) {
 		bleUARTStarted = false;
@@ -317,30 +317,51 @@ static OBJ primUART_connected(int argCount, OBJ *args) {
 }
 
 static OBJ primUART_read(int argCount, OBJ *args) {
-	if (uartBytesReceived <= 0) return (OBJ) &emptyByteArray;
+	// If optional argument is true, return a byte array. Otherwise, return a string.
 
-	int wordCount = (uartBytesReceived + 3) / 4;
-	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
-	if (!result) return fail(insufficientMemoryError);
-	setByteCountAdjust(result, uartBytesReceived);
-	memcpy(&FIELD(result, 0), uartRecvBuf, uartBytesReceived);
+	if (uartConnectionID == -1) uartBytesReceived = 0;
+	int returnBytes = (argCount > 0) && (trueObj == args[0]);
+	if (uartBytesReceived <= 0) return (returnBytes ? (OBJ) &emptyByteArray : (OBJ) &emptyString);
+
+	OBJ result = falseObj;
+	if (returnBytes) { // return a ByteArray
+		int wordCount = (uartBytesReceived + 3) / 4;
+		result = newObj(ByteArrayType, wordCount, falseObj);
+		if (!result) return fail(insufficientMemoryError);
+		setByteCountAdjust(result, uartBytesReceived);
+		memcpy(&FIELD(result, 0), uartRecvBuf, uartBytesReceived);
+	} else { // return a string
+		const char *s = (const char *) uartRecvBuf;
+		result = newStringFromBytes(s, uartBytesReceived);
+		if (!result) return fail(insufficientMemoryError);
+	}
 	uartBytesReceived = 0;
 	return result;
 }
 
 static OBJ primUART_write(int argCount, OBJ *args) {
 	OBJ arg = args[0];
+	int startIndex = 0;
+
+	if (uartConnectionID == -1) return zeroObj;
+
+	if ((argCount > 1) && isInt(args[1])) { // optional second argument: startIndex
+		startIndex = obj2int(args[1]) - 1; // convert to zero based index
+		if (startIndex < 0) startIndex = 0;
+	}
+
 	int byteCount = 0;
 	if (IS_TYPE(arg, StringType)) {
-		byteCount = strlen(obj2str(arg));
+		byteCount = strlen(obj2str(arg)) - startIndex;
 	} else if (IS_TYPE(arg, ByteArrayType)) {
-		byteCount = BYTES(arg);
+		byteCount = BYTES(arg) - startIndex;
 	} else {
 		return fail(needsByteArray);
 	}
+	if (byteCount <= 0) return zeroObj;
 
-	if (byteCount > 240) byteCount = 240;
-	pUARTTxCharacteristic->setValue((uint8_t *) &FIELD(arg, 0), byteCount);
+	if (byteCount > 240) byteCount = 240; // maximum payload for efficient transfer
+	pUARTTxCharacteristic->setValue(((uint8_t *) &FIELD(arg, 0)) + startIndex, byteCount);
 	pUARTTxCharacteristic->notify();
 	taskSleep(15); // data will be dropped if sent too fast
 	return int2obj(byteCount);

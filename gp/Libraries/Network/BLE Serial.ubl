@@ -10,5 +10,30 @@ This library currently supports only "peripheral" mode. The board starts BLE ser
   spec ' ' '[ble:uartStart]' 'start BLE serial'
   spec ' ' '[ble:uartStop]' 'stop BLE serial'
   spec 'r' '[ble:uartConnected]' 'BLE serial connected?'
-  spec 'r' '[ble:uartRead]' 'BLE serial read'
-  spec ' ' '[ble:uartWrite]' 'BLE serial write _' 'str' 'aStringOrByteArray'
+  space
+  spec 'r' 'bleSerial_readString' 'BLE serial read string'
+  spec 'r' 'bleSerial_readBytes' 'BLE serial read bytes'
+  spec ' ' 'bleSerial_write' 'BLE serial write _' 'str' 'aStringOrByteArray'
+  space
+  spec 'r' '[ble:uartRead]' '_BLE serial read as bytes _' 'bool' false
+  spec ' ' '[ble:uartWrite]' '_BLE serial write _ (max 240)' 'str' 'aStringOrByteArray'
+
+to bleSerial_readBytes {
+  return ('[ble:uartRead]' true)
+}
+
+to bleSerial_readString {
+  return ('[ble:uartRead]' false)
+}
+
+to bleSerial_write aStringOrByteArray {
+  comment 'Send the given string or byte array, breaking it into 240 byte chunks if necessary.'
+  local 'bytes' ('[data:convertType]' aStringOrByteArray 'byte array')
+  local 'i' 1
+  local 'end' (size bytes)
+  while (i < end) {
+    '[ble:uartWrite]' 'bytes' i
+    i += 240
+  }
+}
+
