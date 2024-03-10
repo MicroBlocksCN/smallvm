@@ -226,7 +226,7 @@ static bool bleUARTStarted = false;
 
 // Empty byte array and string constants
 static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
-static uint32 emptyString[2] = { HEADER(StringType, 1), 0 };
+static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
 
 // Receive buffer
 static uint8 uartRecvBuf[256];
@@ -321,7 +321,7 @@ static OBJ primUART_read(int argCount, OBJ *args) {
 
 	if (uartConnectionID == -1) uartBytesReceived = 0;
 	int returnBytes = (argCount > 0) && (trueObj == args[0]);
-	if (uartBytesReceived <= 0) return (returnBytes ? (OBJ) &emptyByteArray : (OBJ) &emptyString);
+	if (uartBytesReceived <= 0) return (returnBytes ? (OBJ) &emptyByteArray : (OBJ) &emptyMBString);
 
 	OBJ result = falseObj;
 	if (returnBytes) { // return a ByteArray
