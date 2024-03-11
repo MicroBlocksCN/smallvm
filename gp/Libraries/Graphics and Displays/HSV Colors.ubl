@@ -1,8 +1,10 @@
 module 'HSV Colors' Operators
 author MicroBlocks
-version 1 1 
-depends Fractions 
-description 'HSV to RGB color conversions.
+version 1 1
+depends Fractions
+description 'Deprecated! Will be removed. Please use the Color library instead.
+
+HSV to RGB color conversions.
 '
 
   spec 'r' 'HSV_hsv_to_color' 'color of hue _ saturation _ brightness _ (0-100)' 'num num num' 0 100 50
