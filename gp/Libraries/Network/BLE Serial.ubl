@@ -1,6 +1,6 @@
 module 'BLE Serial' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'Support for Bluetooth Low Energy (BLE) serial configured as a Nordic UART service.
 
 BLE serial and IDE connections are mutually exclusive; you cannot use the BLE serial while connected via BLE and vice versa. Also, you cannot use the OctoStudio features while using BLE serial.
