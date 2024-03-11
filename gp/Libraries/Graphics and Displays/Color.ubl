@@ -1,12 +1,16 @@
 module Color Operators
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'Support for color operations, Work with color hue, saturation, and brightness (HSV).'
 
   spec 'r' 'color_colorSwatch' '_' 'color'
   spec 'r' 'color_RGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'color_gray' 'gray _ %' 'num' 50
   spec 'r' 'color_random' 'random color'
+  space
+  spec 'r' 'color_red' 'red _' 'color'
+  spec 'r' 'color_green' 'green _' 'color'
+  spec 'r' 'color_blue' 'blue _' 'color'
   space
   spec 'r' '[misc:hsvColor]' 'color hue _ (0-360) saturation _ % brightness _ %' 'num num num' 0 90 100
   spec 'r' '[misc:hue]' 'hue _' 'color'
@@ -24,6 +28,10 @@ to color_RGB r g b {
   return ((r << 16) | ((g << 8) | b))
 }
 
+to color_blue color {
+  return (color & 255)
+}
+
 to color_colorSwatch color {
   return color
 }
@@ -32,6 +40,10 @@ to color_gray percent {
   gray = ((percent * 255) / 100)
   gray = (maximum 0 (minimum gray 255))
   return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to color_green color {
+  return ((color >> 8) & 255)
 }
 
 to color_random {
@@ -44,6 +56,10 @@ to color_random {
   } else {
     return ((n1 << 8) | n2)
   }
+}
+
+to color_red color {
+  return ((color >> 16) & 255)
 }
 
 to color_withBrightness color brightness {
