@@ -1,17 +1,32 @@
-module TFThanzi Output
-author Patch
-version 1 0 
-depends 'Graphics and Displays/TFT' 
+module TFThanzi
+author 'Patch & Rang'
+version 1 1
+depends TFT
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.1 增加了颜色设置，增加了几个汉字和数字示例
+-------
 取模工具：
 https://create.codelab.club/projects/53070
 https://create.codelab.club/projects/53122
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/'
 
-  spec ' ' 'han16' 'hanzi data _ x _ y _ size _' 'auto auto auto auto' 0 10 10 1
+  spec ' ' 'draw' 'draw _ x _ y _ size _ _' 'str num num num color' 'text code' 0 0 3
+  spec 'r' 'numbers' 'numbers'
+  spec 'r' 'digit' 'digit _' 'auto' '9'
+  spec ' ' 'drawNumber' 'drawNumber _ x _ y _ size _ _' 'auto auto auto auto color' '123' '0' '0' '3'
+  spec ' ' 'drawSample x' 'drawSample x _ y _ size _ _' 'auto auto auto color' '0' '0' '3'
+  spec 'r' 'sample' 'sample'
 
-to han16 data x y size {
+to digit foo {
+  local 'var' ('[data:convertType]' foo 'number')
+  if (var == 0) {
+    return (at 10 (numbers))
+  }
+  return (at var (numbers))
+}
+
+to draw data x y size color {
   local 'xx' 0
   local 'yy' -1
   local 'fbl' (hexToInt ('[data:join]' (at 1 data) (at 2 data)))
@@ -21,7 +36,7 @@ to han16 data x y size {
       yy += 8
     }
     for i 4 {
-      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {'[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size (colorSwatch 255 255 255 255)}
+      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {'[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size color}
       yy += -1
     }
     if ((j % 2) == 0) {
@@ -31,3 +46,26 @@ to han16 data x y size {
   }
 }
 
+to drawNumber number x y size color {
+  local 'var' ('[data:convertType]' number 'string')
+  for i (size var) {
+    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
+    draw (digit (at i var)) (x + ((i - 1) * (size * 16))) y size color
+  }
+}
+
+to 'drawSample x' x y size color {
+  local 'var' ('[data:convertType]' number 'string')
+  for i (size (sample)) {
+    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
+    draw (at i (sample)) (x + ((i - 1) * (size * 16))) y size color
+  }
+}
+
+to numbers {
+  return ('[data:makeList]' '10100000000000000202FEFE00000000000000000000004040407F7F404000000000' '1010000000000202020202020202827C000000007C42414141414141414140000000' '101000000804020202020202828244380000000010204040404040404040211E0000' '10100000000080402010080402FEFE000000000C0A09080808080808087F7F080800' '10100000FE82828282828282828202000000000010204040404040404040211E0000' '10100000000000804020100804020000000000001C224141414141414141221C0000' '10100000020202020202020282C2E27E0000000000000070381C0E07030100000000' '10100000FC02020202020202020202FC000000003D424242424242424242423D0000' '10100000FC02020202020202020202FC0000000001424242424242424242423F0000' '10100000FC02020202020202020202FC000000003F404040404040404040403F0000')
+}
+
+to sample {
+  return ('[data:makeList]' '101020F02824F62D24E00808C83E0808F8000041310D033F41414443485048463100' '101000001010101010907E1010101010F000000040201008060100102040300E0100' '10100002F2121212F21A1612F2121212E20000003F0000000F0000000F0020403F00' '10100000202022242820E03826202020E0000000004020100C030010214220100F00')
+}
