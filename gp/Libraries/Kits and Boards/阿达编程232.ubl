@@ -1,0 +1,131 @@
+module '阿达编程232'
+author '邵悦'
+version 2 9 
+depends 'Graphics and Displays/Four Digit Display (TM1637)' Tone 'Sensing/Distance (HC-SR04)' 'Sensing/IR Motion (PIR)' 'Sensing/Temperature Humidity (DHT11, DHT22)' 
+choices COLOR_menu RED BLUE PURPLE OFF 
+choices ALL_menu '2' '3' '4' '5' '6' '7' '8' 
+choices D_menu '2' '3' '4' '5' '6' '7' '8' 
+choices IN_menu '1' '2' '3' 
+choices KEY_menu '1' '2' '3' '4' 
+description 'ESP32 grove扩展板带
+'
+
+  spec ' ' '四位数码管 超能板' '四位数码管 接口D _ 显示数字 _' 'menu.D_menu auto' '8' 10
+  spec ' ' '连接蜂鸣器' '连接蜂鸣器 接口D _' 'menu.D_menu' '2'
+  spec ' ' '彩灯' '彩灯 _ 接口D _' 'menu.COLOR_menu menu.D_menu' 'RED' '6'
+  space
+  spec 'r' '按键' '按键 _ 接口A _' 'menu.KEY_menu menu.IN_menu' '1' '3'
+  spec 'r' '旋钮 超能板' '旋钮 接口A _' 'menu.IN_menu' '2'
+  spec 'r' '超能超声波 接' '超声波测距cm 接口 _' 'menu.D_menu' '3'
+  spec 'r' '湿度 超能板' '湿度 接口D _' 'menu.D_menu' '2'
+  spec 'r' '温度 超能板' '温度 接口D _' 'menu.D_menu' '2'
+  spec 'r' '人体红外' '人体红外 接口D _' 'menu.D_menu' '2'
+  spec 'r' '响度 超能板' '响度 接口A _' 'menu.IN_menu' '5'
+  spec 'r' '光亮' '光亮 接口A _' 'menu.IN_menu' '5'
+  space
+  spec 'r' '端口' '端口 _ 主引脚' 'menu.ALL_menu' '2'
+  spec 'r' 'getPort' 'grove端口 _' 'menu.ALL_menu' '2'
+  space
+  spec 'r' '_grove_pins' '_grove_pins _' 'auto' '1'
+  spec 'r' '_grove_pin2' '_grove_pin2 _' 'auto' '1'
+  spec 'r' '_grove_pin1' '_grove_pin1 _' 'auto' '1'
+
+to '_grove_pin1' foo {
+  return (0 + (at 1 ('_grove_pins' foo)))
+}
+
+to '_grove_pin2' foo {
+  return (0 + (at 2 ('_grove_pins' foo)))
+}
+
+to '_grove_pins' foo {
+  if (not (isType foo 'list')) {foo = (getPort foo)}
+  return foo
+}
+
+to getPort foo {
+  local 'var' ('[data:makeList]' '3,1' '26,25' '25,17' '17,16' '16,27' '27,14' '14,12' '12,13' '99,99' '2,4' '4,35' '35,34' '34,36')
+  if ((boardType) == 'R32SHIELD') {
+    var = ('[data:makeList]' '26,25' '14,12' '17,16' '34,36' '35,34')
+  }
+  if (foo <= (size var)) {
+    return ('[data:split]' (at foo var) ',')
+  }
+}
+
+to '人体红外' foo {
+  return (PIR ('_grove_pin1' foo))
+}
+
+to '光亮' foo {
+  return (analogReadOp ('_grove_pin1' (10 + foo)))
+}
+
+to '响度 超能板' foo {
+  return (analogReadOp ('_grove_pin1' (10 + foo)))
+}
+
+to '四位数码管 超能板' foo bar {
+  tmInitialize ('_grove_pin1' foo) ('_grove_pin2' foo)
+  if (isType bar 'number') {
+    tmDisplayNumber bar
+  } else {
+    tmClear
+  }
+}
+
+to '彩灯' foo baz {
+  if (foo == 'RED') {
+    analogWriteOp ('_grove_pin1' baz) 1023
+    analogWriteOp ('_grove_pin2' baz) 0
+  } (foo == 'BLUE') {
+    analogWriteOp ('_grove_pin1' baz) 0
+    analogWriteOp ('_grove_pin2' baz) 1023
+  } (foo == 'PURPLE') {
+    analogWriteOp ('_grove_pin1' baz) 1023
+    analogWriteOp ('_grove_pin2' baz) 1023
+  } else {
+    analogWriteOp ('_grove_pin1' baz) 0
+    analogWriteOp ('_grove_pin2' baz) 0
+  }
+}
+
+to '按键' foo bar {
+  local 'var' (analogReadOp ('_grove_pin1' (10 + bar)))
+  local 'key' 0
+  if (var < 150) {
+    key = 1
+  } (var < 300) {
+    key = 2
+  } (var < 450) {
+    key = 3
+  } (var < 600) {
+    key = 4
+  }
+  return ((0 + foo) == key)
+}
+
+to '旋钮 超能板' foo {
+  return (1023 - (analogReadOp ('_grove_pin1' (10 + foo))))
+}
+
+to '温度 超能板' foo {
+  return (temperature_DHT11 ('_grove_pin1' foo))
+}
+
+to '湿度 超能板' foo {
+  return (humidity_DHT11 ('_grove_pin1' foo))
+}
+
+to '端口' foo {
+  return ('_grove_pin1' foo)
+}
+
+to '超能超声波 接' foo {
+  return ('distance (cm)' ('_grove_pin1' foo) ('_grove_pin2' foo))
+}
+
+to '连接蜂鸣器' foo {
+  'attach buzzer to pin' ('_grove_pin1' foo)
+}
+
