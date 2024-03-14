@@ -141,6 +141,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
 		(array 'r' '[data:convertType]'	'convert _ to _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
+		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
+		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
 		'-'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
@@ -791,6 +793,8 @@ method instructionsForExpression SmallCompiler expr {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
 		return (instructionsForOr this args)
+	} ('ifExpression' == op) {
+		return (instructionsForIfExpression this args)
 	} (isFunctionCall this op) {
 		return (instructionsForFunctionCall this op args false)
 	} else {
@@ -873,6 +877,18 @@ method instructionsForOrOLD SmallCompiler args { // xxx remove later
 	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
 	add result (array 'jmp' 1) // skip over true case
 	add result (array 'pushImmediate' trueObj) // some condition was true: push result
+	return result
+}
+
+method instructionsForIfExpression SmallCompiler args {
+	trueCase = (instructionsForExpression this (at args 2))
+	falseCase = (instructionsForExpression this (at args 3))
+	add falseCase (array 'jmp' (count trueCase))
+
+	result = (instructionsForExpression this (first args)) // test
+	add result (array 'jmpTrue' (count falseCase))
+	addAll result falseCase
+	addAll result trueCase
 	return result
 }
 
