@@ -400,6 +400,14 @@ void hardwareInit() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
+#elif defined(MAKERPORT_V2) // must come before Zero
+
+	#define BOARD_TYPE "MakerPort"
+	#define DIGITAL_PINS 26
+	#define ANALOG_PINS 9
+	#define TOTAL_PINS 26
+	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 14};
+
 #elif defined(MAKERPORT) // must come before Zero
 
 	#define BOARD_TYPE "MakerPort"
