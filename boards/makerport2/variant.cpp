@@ -86,8 +86,9 @@ const PinDescription g_APinDescription[] =
   { PORTB, 23, PIO_SERCOM_ALT, PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_NONE }, // SCK: SERCOM4/PAD[3]
   { PORTA, 13, PIO_DIGITAL,    PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_NONE },
 
+  // PA0, PA1: XTAL Oscillator
   // PA30, PA31: SWCLOCK, SWDIO (for installing bootloader)
-  // PA27, PA28: unconnected pins (connected to test pads on board)
+  // PA26, PA27: unconnected pins
 };
 
 const void* g_apTCInstances[TCC_INST_NUM+TC_INST_NUM] = { TCC0, TCC1, TCC2, TC3, TC4, TC5 };
@@ -100,9 +101,8 @@ SERCOM sercom3( SERCOM3 );
 SERCOM sercom4( SERCOM4 );
 SERCOM sercom5( SERCOM5 );
 
-// xxx flipped
-Uart Serial2( &sercom0, PIN_SERIAL1_RX, PIN_SERIAL1_TX, PAD_SERIAL1_RX, PAD_SERIAL1_TX );
-Uart Serial1( &sercom5, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX ) ;
+Uart Serial1( &sercom5, PIN_SERIAL1_RX, PIN_SERIAL1_TX, PAD_SERIAL1_RX, PAD_SERIAL1_TX ) ;
+Uart Serial2( &sercom0, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX );
 
 void SERCOM0_Handler()
 {

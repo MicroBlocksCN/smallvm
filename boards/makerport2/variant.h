@@ -93,15 +93,15 @@ static const uint8_t DAC0 = PIN_DAC0;
  * Serial interfaces
  */
 
-// Serial1
-#define PIN_SERIAL1_RX       (21ul)
-#define PIN_SERIAL1_TX       (20ul)
+// Serial2 (sercom5)
+#define PIN_SERIAL1_RX       (25ul)
+#define PIN_SERIAL1_TX       (24ul)
 #define PAD_SERIAL1_TX       (UART_TX_PAD_2)
 #define PAD_SERIAL1_RX       (SERCOM_RX_PAD_3)
 
-// Serial2
-#define PIN_SERIAL2_RX       (25ul)
-#define PIN_SERIAL2_TX       (24ul)
+// Serial2 (sercom0)
+#define PIN_SERIAL2_RX       (21ul)
+#define PIN_SERIAL2_TX       (20ul)
 #define PAD_SERIAL2_TX       (UART_TX_PAD_2)
 #define PAD_SERIAL2_RX       (SERCOM_RX_PAD_3)
 
