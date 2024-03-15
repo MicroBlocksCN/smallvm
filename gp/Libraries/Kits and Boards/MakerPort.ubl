@@ -1,6 +1,6 @@
 module MakerPort Output
 author MicroBlocks
-version 1 10 
+version 1 11 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
@@ -75,6 +75,10 @@ to makerport_loudness {
 to makerport_mp3_hasCard {
   comment 'Note: This command works only if MP3 player is
 connected to the hardware serial pins.'
+  if ((digitalPins) > 24) {
+    comment 'MakerPort v1.52 or later: serial port connected to external pins, not MP3 player'
+    _makerport_microSDInserted = (booleanConstant true)
+  }
   if (isType _makerport_microSDInserted 'boolean') {
     comment 'return previously determined value'
     return _makerport_microSDInserted
