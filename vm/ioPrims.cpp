@@ -402,7 +402,7 @@ void hardwareInit() {
 
 #elif defined(MAKERPORT_V2) // must come before Zero
 
-	#define BOARD_TYPE "MakerPort"
+	#define BOARD_TYPE "MakerPort V2"
 	#define DIGITAL_PINS 26
 	#define ANALOG_PINS 9
 	#define TOTAL_PINS 26
@@ -1006,7 +1006,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum < 26) || (pinNum > 29)) return int2obj(0);
 		pinNum -= 26; // map pins 26-29 to A0-A3
 	#endif
-	#if defined(MAKERPORT)
+	#if defined(MAKERPORT) || defined(MAKERPORT_V2)
 		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
 		if (14 == pinNum) pinNum = 8; // map pin 14 to A8
 	#endif
@@ -1662,7 +1662,7 @@ Servo servo[TOTAL_PINS];
 static void setServo(int pin, int usecs) {
 	int servoIndex = pin;
 
-	#if defined(MAKERPORT)
+	#if defined(MAKERPORT) || defined(MAKERPORT_V2)
 		// The MakerPort (SAM D21) can use only the first 12 servo channels.
 		// Map pins 7-18 to those channels. Servo capable pins are: 7-12, 14, 16-17
 		servoIndex -= 7;
