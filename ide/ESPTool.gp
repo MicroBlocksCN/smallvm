@@ -651,7 +651,7 @@ method startStub ESPTool hexStartAddr {
 	waitForMsg this // wait for and discard response to start command
 	msg = (waitForMsg this) // wait for four byte stub startup message: 'OHAI'
 	if (or (isNil msg) (msg != (list 79 72 65 73))) {
-		print 'Error: Stub did not repsond'
+		print 'Error: Stub did not respond'
 		return false
 	}
 	print 'Stub started'
