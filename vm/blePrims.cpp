@@ -275,7 +275,7 @@ static OBJ primUART_start(int argCount, OBJ *args) {
 	if (!pUARTService) {
 		// Create UART service (first time only)
 		pUARTService = pServer->createService(UART_SERVICE_UUID);
-		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY); // NIMBLE_PROPERTY::READ);
+		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
 		pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
 		pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
 		pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
