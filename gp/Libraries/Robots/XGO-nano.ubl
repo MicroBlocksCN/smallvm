@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 2 24 
+version 2 28 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -9,7 +9,7 @@ choices transmove_Menu 'X(-25mm-25mm)' 'Y(-18mm-18mm)' 'Z(60mm-110mm)'
 choices direction_Menu '逆时针' '顺时针' 
 choices speed_Menu '正常' '慢速' '快速' 
 choices translation_Menu X Y Z 
-choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' 
 choices gait_Menu '对角' '行走' '高抬腿' '微调' 
 choices button_Menu A B 
 choices attitude_Menu R P Y 
@@ -39,6 +39,8 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '执行命令' '执行命令 _' 'menu.action_Menu' '趴下'
   spec ' ' '机器狗平移' '向 _ 步幅为 _ 毫米持续 _ 毫秒' 'menu.move_Menu num num' '前平移（0mm~25mm）' 15 3000
   spec ' ' '机器狗旋转' '向 _ 方向以速度 _ 度/秒旋转 _ 毫秒' 'menu.direction_Menu num num' '逆时针' 100 3000
+  spec ' ' '机器狗平移无时间' '向 _ 步幅为 _ 毫米' 'menu.move_Menu num num' '前平移（0mm~25mm）' 15
+  spec ' ' '机器狗旋转无时间' '向 _ 方向以速度 _ 度/秒' 'menu.direction_Menu num' '逆时针' 100
   spec ' ' '机器狗轴向平移' '沿 _ 轴平移 _ mm' 'menu.transmove_Menu num' 'X(-25mm-25mm)' 5
   spec ' ' '机器狗轴向旋转' '沿 _ 旋转 _ °' 'menu.transrotate_Menu num' 'X(-20°-20°)' 5
   spec ' ' '机器狗单腿运动' '设置 _ 腿足尖坐标位置为 X（-25-25） _ mm Y（-15-15） _ mm Z（60-110） _ mm' 'menu.leg_Menu num num num' '左前' 0 0 70
@@ -370,10 +372,10 @@ to '姿态角度' angel {
   }
   local 'rx_data' ('[serial:read]')
   if ((at 'last' rx_data) == 170) {
-    if ((at 6 rx_data) == 0) {
-      return (at 7 rx_data)
-    } ((at 6 rx_data) == 255) {
-      return ((at 7 rx_data) - 256)
+    if ((at 6 rx_data) > 128) {
+      return ((at 7 rx_data) + (((at 6 rx_data) - 256) * 256))
+    } else {
+      return ((at 7 rx_data) + ((at 6 rx_data) * 256))
     }
   } else {
     sayIt '通信失败！！！'
@@ -386,7 +388,7 @@ to '将当前朝向设置为0' {
 }
 
 to '执行命令' foo {
-  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动ROLL,转动PITCH,转动YAW,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮,上抓,中抓,下抓' ',')}
+  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动ROLL,转动PITCH,转动YAW,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮,上抓,中抓,下抓,爬楼梯' ',')}
   local 'an' ('[data:find]' foo 动作列表)
   if (an == 25) {
     '_执行动作组编号' 128
@@ -394,6 +396,8 @@ to '执行命令' foo {
     '_执行动作组编号' 129
   } (an == 27) {
     '_执行动作组编号' 130
+  } (an == 28) {
+    '_执行动作组编号' 144
   } else {
     '_执行动作组编号' an
   }
@@ -455,6 +459,22 @@ to '机器狗平移' move_direction steps times {
   }
 }
 
+to '机器狗平移无时间' move_direction steps times {
+  if (move_direction == '前平移（0mm~25mm）') {
+    '_移动机器狗' 'X' steps
+    '_移动机器狗' 'Y' 0
+  } (move_direction == '后平移（-25mm~0mm）') {
+    '_移动机器狗' 'X' (0 - steps)
+    '_移动机器狗' 'Y' 0
+  } (move_direction == '左平移（0mm~18mm）') {
+    '_移动机器狗' 'Y' steps
+    '_移动机器狗' 'X' 0
+  } (move_direction == '右平移（-18mm~0mm）') {
+    '_移动机器狗' 'Y' (0 - steps)
+    '_移动机器狗' 'X' 0
+  }
+}
+
 to '机器狗旋转' direction steps times {
   if (direction == '逆时针') {
     '_XGO转向' steps
@@ -464,6 +484,14 @@ to '机器狗旋转' direction steps times {
     '_XGO转向' (0 - steps)
     waitMillis times
     '_XGO转向' 0
+  }
+}
+
+to '机器狗旋转无时间' direction steps times {
+  if (direction == '逆时针') {
+    '_XGO转向' steps
+  } (direction == '顺时针') {
+    '_XGO转向' (0 - steps)
   }
 }
 
