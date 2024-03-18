@@ -102,7 +102,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 
 	if (!allowBLE_and_WiFi) {
-		if (BLE_connected_to_IDE) return fail(cannotUseRadioWithBLE);
+		if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
 		BLE_stop();
 	}
 
