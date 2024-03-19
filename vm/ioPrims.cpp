@@ -780,6 +780,60 @@ void hardwareInit() {
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0};
 
+#elif defined(FUTURE_LITE)
+	#define BOARD_TYPE "FUTURE-LITE"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_LED 10
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 16
+	#define DEFAULT_TONE_PIN 8
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
+	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// USB pins: 19 (USB D-), 20 (USB D+)
+	// also possibly: 39-42 (JTAG pins)
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
+#elif defined(M5_CARDPUTER)
+	#define BOARD_TYPE "M5-CARDPUTER"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED -1
+	#endif
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 0
+		#endif
+	#endif
+	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
+	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// USB pins: 19 (USB D-), 20 (USB D+)
+	// also possibly: 39-42 (JTAG pins)
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
@@ -891,25 +945,6 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
-
-#elif defined(FUTURE_LITE)
-	#define BOARD_TYPE "FUTURE-LITE"
-	#define DIGITAL_PINS 40
-	#define ANALOG_PINS 16
-	#define TOTAL_PINS 50
-	static const int analogPin[] = {};
-	#define PIN_LED 10
-	#define PIN_BUTTON_A 15
-	#define PIN_BUTTON_B 16
-	#define DEFAULT_TONE_PIN 8
-	#undef BUTTON_PRESSED
-	#define BUTTON_PRESSED HIGH
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(AIRM2MC3)
 	#define BOARD_TYPE "airm2m_core_esp32c3"
@@ -1528,7 +1563,8 @@ void primSetUserLED(OBJ *args) {
 			primMBUnplot(2, coords);
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
-		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
+		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY) || defined(M5_CARDPUTER) || \
+		defined(FUTURE_LITE)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (PIN_LED < 0) return; // board does not have a user LED
@@ -1597,7 +1633,7 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE)
+		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE)
 			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
