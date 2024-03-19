@@ -73,7 +73,7 @@ method baudForBoard ESPTool boardName {
 	} ('M5Atom-Matrix' == boardName) { return 115200
 	} ('Databot' == boardName) { return 230400
 	} ('Mbits' == boardName) { return 230400
-	} (isOneOf boardName 'ESP32-S2' 'ESP32-S3' 'ESP32-C3') { return 460800
+	} (isOneOf boardName 'ESP32-S2' 'ESP32-S3' 'ESP32-C3') { return 115200 // was 460800
 	}
 	return 115200
 }
