@@ -3728,6 +3728,26 @@ _修正后的余数 _ _
 Communication Failure!!!
 通信失败!!!
 
+#### Four Digit Display (TM1637)
+Four Digit Display (TM1637)
+4位数码管(TM1637)
+
+four digit initialize clock _ data _
+4位数码管初始化 时钟 _ 数据 _
+
+four digit show number _
+4位数码管显示数字 _
+
+four digit clear
+4位数码管清屏
+
+four digit brightness _ (0 to 7)
+设置4位数码管亮度 _ (0 to 7)
+
+four digit show colon _
+4位数码管亮度冒号
+
+
 ##################
 # MicroBlocks UI #
 ##################
