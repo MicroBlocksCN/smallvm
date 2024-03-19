@@ -41,6 +41,9 @@
 #elif defined(HALOCODE)
 	#define PIN_WIRE_SCL 18
 	#define PIN_WIRE_SDA 19
+#elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)
+	#define PIN_WIRE_SCL 1
+	#define PIN_WIRE_SDA 2
 #elif defined(ARDUINO_Mbits)
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
