@@ -1,20 +1,23 @@
 module Rhythm Control
 author MicroBlocks
-version 2 1 
+version 2 2 
 description 'Keeps time according to a tempo and time signature. Useful to create musical patterns.
 
 Includes abstractions for note durations, bars and beats.
 '
-variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures _rhy_tick 
+variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures 
 
   spec ' ' 'rhy_set tempo' 'set tempo to _ bpm at _ / _ signature' 'auto auto auto' 250 4 4
   space
   spec ' ' 'rhy_start counting' 'start counting _ bars' 'auto' 16
   spec ' ' 'rhy_stop counting' 'stop counting'
-  spec ' ' 'rhy_wait until next' 'wait until next _' 'auto' ''
   space
-  spec 'r' 'rhy_current beat' 'current beat'
   spec 'r' 'rhy_current bar' 'current bar'
+  spec 'r' 'rhy_current beat' 'current beat'
+  space
+  spec ' ' 'rhy_wait until next' 'wait until next _ duration' 'auto' ''
+  spec ' ' 'rhy wait until beat' 'wait until beat _' 'auto' 3
+  spec ' ' 'rhy wait until bar' 'wait until bar _' 'auto' 2
   space
   spec 'r' 'rhy_whole duration' '¹⁄₁'
   spec 'r' 'rhy_half duration' '½'
@@ -43,31 +46,42 @@ to '_rhy between' foo a b {
 }
 
 to '_rhy duration of note value' 'note value' {
-  for i (v 'note value') {
-    if (('_rhy 2 ^' i) == (v 'note value')) {return (at i ('[data:makeList]' ('rhy_half duration') ('rhy_quarter duration') ('rhy_eighth duration') ('rhy_sixteenth duration')))}
-  }
-  return ('rhy_whole duration')
+  return ((_rhy_beat_duration * _rhy_reference_note) / (v 'note value'))
 }
 
 to '_rhy loop' {
   repeatUntil (not _rhy_looping) {
-    _rhy_tick = 0
     for bar _rhy_bars {
       for beat _rhy_measures {
         if (not _rhy_looping) {stopTask}
         'rhy_wait until next' _rhy_beat_duration
-        _rhy_tick += 1
       }
     }
   }
 }
 
+to 'rhy wait until bar' 'bar number' {
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  local 'round duration' ((v 'bar duration') * _rhy_bars)
+  local 'wakeTime' (((v 'round duration') * (((millisOp) / (v 'round duration')) + 1)) + (((v 'bar number') - 1) * (v 'bar duration')))
+  waitMillis ((wakeTime - (millisOp)) % (v 'round duration'))
+}
+
+to 'rhy wait until beat' 'beat number' {
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  local 'wakeTime' (((v 'bar duration') * (((millisOp) / (v 'bar duration')) + 1)) + (((v 'beat number') - 1) * _rhy_beat_duration))
+  waitMillis ((wakeTime - (millisOp)) % (v 'bar duration'))
+}
+
 to 'rhy_current bar' {
-  return ((_rhy_tick / _rhy_measures) + 1)
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  local 'round duration' ((v 'bar duration') * _rhy_bars)
+  return ((((millisOp) % (v 'round duration')) / (v 'bar duration')) + 1)
 }
 
 to 'rhy_current beat' {
-  return ((_rhy_tick % _rhy_measures) + 1)
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  return ((((millisOp) % (v 'bar duration')) / _rhy_beat_duration) + 1)
 }
 
 to rhy_dotted duration {
@@ -75,29 +89,26 @@ to rhy_dotted duration {
 }
 
 to 'rhy_eighth duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 240}
-  return (30000 / _rhy_tempo)
+  return ('_rhy duration of note value' 8)
 }
 
 to 'rhy_half duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 240}
-  return (120000 / _rhy_tempo)
+  return ('_rhy duration of note value' 2)
 }
 
 to 'rhy_quarter duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 240}
-  return (60000 / _rhy_tempo)
+  return ('_rhy duration of note value' 4)
 }
 
 to 'rhy_set tempo' tempo measures 'note value' {
   _rhy_tempo = tempo
-  _rhy_beat_duration = ('_rhy duration of note value' (v 'note value'))
+  _rhy_reference_note = (v 'note value')
+  _rhy_beat_duration = (60000 / _rhy_tempo)
   _rhy_measures = measures
 }
 
 to 'rhy_sixteenth duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 240}
-  return (15000 / _rhy_tempo)
+  return ('_rhy duration of note value' 16)
 }
 
 to 'rhy_start counting' bars {
@@ -109,7 +120,6 @@ to 'rhy_start counting' bars {
 
 to 'rhy_stop counting' {
   _rhy_looping = (booleanConstant false)
-  _rhy_tick = 0
 }
 
 to rhy_triplet duration {
@@ -122,7 +132,6 @@ to 'rhy_wait until next' duration {
 }
 
 to 'rhy_whole duration' {
-  if (_rhy_tempo == 0) {_rhy_tempo = 240}
-  return (240000 / _rhy_tempo)
+  return ('_rhy duration of note value' 1)
 }
 
