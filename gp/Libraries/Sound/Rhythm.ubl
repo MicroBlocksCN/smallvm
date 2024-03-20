@@ -12,6 +12,9 @@ variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures
   spec ' ' 'rhy_start counting' 'start counting _ bars' 'auto' 16
   spec ' ' 'rhy_stop counting' 'stop counting'
   space
+  spec 'r' 'rhy_current bar' 'current bar'
+  spec 'r' 'rhy_current beat' 'current beat'
+  space
   spec ' ' 'rhy_wait until next' 'wait until next _ duration' 'auto' ''
   spec ' ' 'rhy wait until beat' 'wait until beat _' 'auto' 3
   spec ' ' 'rhy wait until bar' 'wait until bar _' 'auto' 2
@@ -68,6 +71,17 @@ to 'rhy wait until beat' 'beat number' {
   local 'bar duration' (_rhy_measures * _rhy_beat_duration)
   local 'wakeTime' (((v 'bar duration') * (((millisOp) / (v 'bar duration')) + 1)) + (((v 'beat number') - 1) * _rhy_beat_duration))
   waitMillis ((wakeTime - (millisOp)) % (v 'bar duration'))
+}
+
+to 'rhy_current bar' {
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  local 'round duration' ((v 'bar duration') * _rhy_bars)
+  return ((((millisOp) % (v 'round duration')) / (v 'bar duration')) + 1)
+}
+
+to 'rhy_current beat' {
+  local 'bar duration' (_rhy_measures * _rhy_beat_duration)
+  return ((((millisOp) % (v 'bar duration')) / _rhy_beat_duration) + 1)
 }
 
 to rhy_dotted duration {
