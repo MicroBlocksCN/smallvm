@@ -227,7 +227,10 @@ static void stopAllTasks() {
 void startAll() {
 	// Start tasks for all start and 'when' hat blocks.
 
-	stopAllTasks(); // stop any running tasks
+	// stop running tasks, reset, and clear memory
+	stopAllTasks();
+	softReset(true);
+
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		uint8 chunkType = chunks[i].chunkType;
 		if ((startHat == chunkType) || (whenConditionHat == chunkType)) {
