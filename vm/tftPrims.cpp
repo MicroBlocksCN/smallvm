@@ -28,7 +28,7 @@ static int deferUpdates = false;
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
-	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER)
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER)
 
 	#define BLACK 0
 
@@ -114,6 +114,14 @@ static int deferUpdates = false;
 			digitalWrite(32, HIGH);
 			useTFT = true;
 		}
+	#elif defined(ARDUINO_M5STACK_CORES3)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h" //todo
+		#define TFT_CS	14
+		#define TFT_DC	27
+		#define TFT_RST	33
+		#define TFT_WIDTH 320
+		#define TFT_HEIGHT 240
 
 	#elif defined(M5_CARDPUTER)
 		#include "Adafruit_GFX.h"	
@@ -130,7 +138,7 @@ static int deferUpdates = false;
 		
 		void tftInit() {
 			tft.init(TFT_HEIGHT, TFT_WIDTH);
-			tft.setSPISpeed(40000000);
+			// tft.setSPISpeed(40000000);
 			tft.setRotation(3);
 			// tft.invertDisplay(true); 
 			// Turn on backlight
@@ -139,7 +147,30 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
-
+	#elif defined(M5_DIN_METER)
+		#include "Adafruit_GFX.h"	
+		#include "Adafruit_ST7789.h"
+		#define TFT_CS		7
+		#define TFT_DC		4
+		#define TFT_RST	8	
+		#define TFT_MOSI 5
+		#define TFT_SCLK 6
+		#define TFT_BL 9
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	135
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		
+		void tftInit() {
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			// tft.setSPISpeed(40000000);
+			tft.setRotation(1);
+			// tft.invertDisplay(true); 
+			// Turn on backlight
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, HIGH);
+			tftClear();
+			useTFT = true;
+		}
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
