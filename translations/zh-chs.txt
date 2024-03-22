@@ -3745,7 +3745,7 @@ four digit brightness _ (0 to 7)
 设置4位数码管亮度 _ (0 to 7)
 
 four digit show colon _
-4位数码管亮度冒号
+4位数码管亮度冒号 _
 
 
 ##################
