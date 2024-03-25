@@ -563,5 +563,5 @@ static PrimEntry entries[] = {
 };
 
 void addBLEPrims() {
-	addPrimitiveSet("ble", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(BLEPrims, "ble", sizeof(entries) / sizeof(PrimEntry), entries);
 }

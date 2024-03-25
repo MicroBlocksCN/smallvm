@@ -135,5 +135,5 @@ static PrimEntry entries[] = {
 };
 
 void addOneWirePrims() {
-	addPrimitiveSet("1wire", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(OneWirePrims, "1wire", sizeof(entries) / sizeof(PrimEntry), entries);
 }

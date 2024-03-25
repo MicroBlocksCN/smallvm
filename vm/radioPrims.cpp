@@ -567,5 +567,5 @@ static PrimEntry entries[] = {
 };
 
 void addRadioPrims() {
-	addPrimitiveSet("radio", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(RadioPrims, "radio", sizeof(entries) / sizeof(PrimEntry), entries);
 }

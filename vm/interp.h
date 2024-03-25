@@ -372,21 +372,42 @@ void getMACAddress(uint8 *sixBytes);
 
 // Primitive Sets
 
+// These primitive set indices are compiled into primitive calls, so their order cannot change.
+// New primitive sets must be added at the end, just before PrimitiveSetCount.
+typedef enum {
+	VarPrims,
+	DataPrims,
+	MiscPrims,
+	IOPrims	,
+	SensorPrims,
+	SerialPrims,
+	DisplayPrims,
+	FilePrims,
+	NetPrims,
+	BLEPrims,
+	RadioPrims,
+	TFTPrims,
+	HIDPrims,
+	CameraPrims,
+	OneWirePrims,
+	PrimitiveSetCount
+} PrimitiveSetIndex;
+
+void addVarPrims();
 void addDataPrims();
+void addMiscPrims();
+void addIOPrims();
+void addSensorPrims();
+void addSerialPrims();
 void addDisplayPrims();
 void addFilePrims();
-void addIOPrims();
-void addMiscPrims();
 void addNetPrims();
 void addBLEPrims();
 void addRadioPrims();
-void addSensorPrims();
-void addSerialPrims();
 void addTFTPrims();
-void addVarPrims();
 void addHIDPrims();
-void addOneWirePrims();
 void addCameraPrims();
+void addOneWirePrims();
 
 // Named Primitive Support
 
@@ -397,7 +418,7 @@ typedef const struct {
 	PrimitiveFunction primFunc;
 } PrimEntry;
 
-void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries);
+void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 

@@ -483,5 +483,5 @@ static PrimEntry entries[] = {
 };
 
 void addSerialPrims() {
-	addPrimitiveSet("serial", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(SerialPrims, "serial", sizeof(entries) / sizeof(PrimEntry), entries);
 }

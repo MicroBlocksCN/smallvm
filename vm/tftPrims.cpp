@@ -1320,5 +1320,5 @@ static PrimEntry entries[] = {
 };
 
 void addTFTPrims() {
-	addPrimitiveSet("tft", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(TFTPrims, "tft", sizeof(entries) / sizeof(PrimEntry), entries);
 }

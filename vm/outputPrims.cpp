@@ -1149,5 +1149,5 @@ static PrimEntry entries[] = {
 };
 
 void addDisplayPrims() {
-	addPrimitiveSet("display", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(DisplayPrims, "display", sizeof(entries) / sizeof(PrimEntry), entries);
 }

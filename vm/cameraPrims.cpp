@@ -202,5 +202,5 @@ static PrimEntry entries[] = {
 };
 
 void addCameraPrims() {
-	addPrimitiveSet("camera", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(CameraPrims, "camera", sizeof(entries) / sizeof(PrimEntry), entries);
 }

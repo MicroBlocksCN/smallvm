@@ -185,5 +185,5 @@ static PrimEntry entries[] = {
 };
 
 void addHIDPrims() {
-	addPrimitiveSet("hid", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(HIDPrims, "hid", sizeof(entries) / sizeof(PrimEntry), entries);
 }

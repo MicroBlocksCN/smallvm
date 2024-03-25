@@ -362,5 +362,5 @@ static PrimEntry entries[] = {
 };
 
 void addMiscPrims() {
-	addPrimitiveSet("misc", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(MiscPrims, "misc", sizeof(entries) / sizeof(PrimEntry), entries);
 }

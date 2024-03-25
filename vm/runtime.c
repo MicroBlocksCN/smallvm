@@ -26,6 +26,7 @@
 
 void delay(int); // Arduino delay function
 
+static void softReset(int clearMemoryFlag);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
 static void sendData();
@@ -58,17 +59,13 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 18
-PrimitiveSet primSets[MAX_PRIM_SETS];
+PrimitiveSet primSets[PrimitiveSetCount];
 int primSetCount = 0;
 
-void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries) {
-	if (primSetCount < MAX_PRIM_SETS) {
-		primSets[primSetCount].setName = setName;
-		primSets[primSetCount].entryCount = entryCount;
-		primSets[primSetCount].entries = entries;
-		primSetCount++;
-	}
+void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries) {
+	primSets[primSetIndex].setName = setName;
+	primSets[primSetIndex].entryCount = entryCount;
+	primSets[primSetIndex].entries = entries;
 }
 
 PrimitiveFunction findPrimitive(char *primName) {
@@ -145,7 +142,6 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 
 void primsInit() {
 	// Called at startup to call functions to add named primitive sets.
-	// Note: when adding a new primitive set, increase MAX_PRIM_SETS if necessary.
 
 	addDataPrims();
 	addDisplayPrims();
@@ -470,7 +466,7 @@ static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
 
 // Soft Reset
 
-void softReset(int clearMemoryFlag) {
+static void softReset(int clearMemoryFlag) {
 	// Reset the hardware and, optionally, clear memory.
 	// Do not reload scripts from persistent memory.
 	// This is not a full hardware reset/reboot, but close.

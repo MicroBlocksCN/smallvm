@@ -2294,5 +2294,5 @@ static PrimEntry entries[] = {
 };
 
 void addIOPrims() {
-	addPrimitiveSet("io", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(IOPrims, "io", sizeof(entries) / sizeof(PrimEntry), entries);
 }
