@@ -77,7 +77,7 @@ static int serialAvailable() {
 }
 
 static void serialReadBytes(uint8 *buf, uint32 byteCount) {
-	for (int i = 0; i < byteCount; i++) {
+	for (uint32 i = 0; i < byteCount; i++) {
 		int ch = MBSerial.read();
 		buf[i] = (ch >= 0) ? ch : 0;
 	}
@@ -386,8 +386,8 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	if (!((bufType == StringType) || (bufType == ByteArrayType) || (bufType == ListType))) return fail(needsByteArray);
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 
-	int bytesToWrite = 0;
-	int bytesWritten = 0;
+	uint32 bytesToWrite = 0;
+	uint32 bytesWritten = 0;
 
 	captureIncomingBytes();
 	if (bufType == ListType) { // list
