@@ -107,6 +107,27 @@ PrimitiveFunction findPrimitive(char *primName) {
 	return NULL;
 }
 
+OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args) {
+	// Call a named primitive with the given primitive set index and name.
+
+	PrimEntry *entries = primSets[setIndex].entries;
+	int entryCount = primSets[setIndex].entryCount;
+	for (int i = 0; i < entryCount; i++) {
+		if (0 == strcmp(entries[i].primName, primName)) {
+			OBJ result = (entries[i].primFunc)(argCount, args); // call the primitive
+			tempGCRoot = NULL; // clear tempGCRoot in case it was used
+			return result;
+		}
+	}
+
+	char s[200];
+	snprintf(s, sizeof(s), "Unknown primitive [%s:%s]", primSets[setIndex].setName, primName);
+	outputString(s);
+	return fail(primitiveNotImplemented);
+
+	return falseObj;
+}
+
 OBJ callPrimitive(int argCount, OBJ *args) {
 	// Call a named primitive. The first two arguments are the primitive set name
 	// and the primitive name, followed by the arguments to the primitive itself.

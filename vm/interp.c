@@ -573,8 +573,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&primitiveCommand_op,
+		&&primitiveReporter_op,
 		&&callCustomCommand_op,
 		&&callCustomReporter_op,
 		&&callCommandPrimitive_op,
@@ -1259,6 +1259,22 @@ static void runTask(Task *task) {
 	neoPixelSetPin_op:
 		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	// new primitive call ops:
+	primitiveCommand_op:
+		tmp = (arg >> 17) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		arg = arg & 0xFF; // argument count
+		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	primitiveReporter_op:
+		tmp = (arg >> 17) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		arg = arg & 0xFF; // argument count
+		*(sp - arg) = newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
+		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// call a function using the function name and parameter list:

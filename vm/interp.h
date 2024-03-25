@@ -420,6 +420,7 @@ typedef const struct {
 
 void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
+OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args);
 void primsInit();
 
 #ifdef __cplusplus
