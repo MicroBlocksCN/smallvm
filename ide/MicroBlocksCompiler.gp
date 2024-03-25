@@ -7,16 +7,16 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes argNames localVars trueObj falseObj zeroObj oneObj stringClassID
+defineClass SmallCompiler opcodes primsets argNames localVars trueObj falseObj zeroObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
+	initPrimsets this
 	argNames = (dictionary)
 	localVars = (dictionary)
 	falseObj = 0
 	trueObj = 4
 	zeroObj = ((0 << 1) | 1)
-	oneObj = ((1 << 1) | 1)
 	stringClassID = 4
 	return this
 }
@@ -494,6 +494,36 @@ method initOpcodes SmallCompiler {
 	// renamed opcodes:
 	atPut opcodes 'newArray' 60
 	atPut opcodes 'fillArray' 62
+}
+
+method initPrimsets SmallCompiler {
+	// Initialize the primitive set table, which maps a primitive set name to its index.
+	// NOTE: The primitive set order must match PrimitiveSetIndex enum in interp.c!
+
+	primSetNames = '
+		vars
+		data
+		misc
+		io
+		sensors
+		serial
+		display
+		file
+		net
+		ble
+		radio
+		tft
+		hid
+		camera
+		1wire'
+
+	primsets = (dictionary)
+	primSetIndex = 0
+	for primSetName (copyFromTo (lines primSetNames) 2) {
+		primSetName = (trim primSetName)
+		atPut primsets primSetName primSetIndex
+		primSetIndex += 1
+	}
 }
 
 // instruction generation: entry point
