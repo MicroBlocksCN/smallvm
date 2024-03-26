@@ -1982,7 +1982,7 @@ method waitForResponse SmallRuntime {
 			recvBuf = (join recvBuf s)
 			return true
 		}
-		if ((iter % 20) == 0) { sendMsg this 'pingMsg' }
+		if ((iter % 50) == 0) { sendMsg this 'pingMsg' }
 		iter += 1
 		waitMSecs 5
 	}
@@ -2354,6 +2354,7 @@ method sendFileData SmallRuntime fileName fileData {
 			fileTransferProgress = (round (100 * (bytesSent / totalBytes)))
 			doOneCycle (global 'page')
 		}
+		processMessages this
 	}
 	// final (empty) chunk
 	msg = (list)
