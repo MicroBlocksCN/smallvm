@@ -72,6 +72,24 @@ uint32 millisecs() { return (uint32) millis(); }
 
 #endif
 
+static uint32 microsecondHighBits = 0;
+static uint32 lastMicrosecs = 0;
+
+uint64 totalMicrosecs() {
+	// Returns a 64-bit integer containing microseconds since start.
+
+	return ((uint64) microsecondHighBits << 32) | microsecs();
+}
+
+void handleMicosecondClockWrap() {
+	// Increment microsecondHighBits if the microsecond clock has wrapped since the last
+	// time this function was called.
+
+	uint32 now = microsecs();
+	if (lastMicrosecs > now) microsecondHighBits++; // clock wrapped
+	lastMicrosecs = now;
+}
+
 // Hardware Initialization
 
 	#if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)

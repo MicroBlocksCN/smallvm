@@ -1,9 +1,14 @@
 module 'Misc Primitives'
 author MicroBlocks
-version 1 4 
+version 1 5
 description 'Miscellaneous system primitives.
 '
 
+  spec 'r' '[misc:seconds]' 'seconds'
+  space
+  spec 'r' '[misc:usecsSince]' 'microseconds since _ : end time _' 'num auto' 0 'now'
+  spec 'r' '[misc:msecsSince]' 'milliseconds since _ : end time _' 'num auto' 0 'now'
+  space
   spec ' ' 'noop' 'no op'
   spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
   space

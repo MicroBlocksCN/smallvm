@@ -1081,7 +1081,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	millis_op:
 		STACK_CHECK(1);
-		*sp++ = int2obj(millisecs());
+		*sp++ = int2obj((uint32) ((totalMicrosecs() / 1000) & 0x3FFFFFFF)); // result range is 0 - 1073741823
 		DISPATCH();
 	micros_op:
 		STACK_CHECK(1);
@@ -1352,6 +1352,7 @@ void vmLoop() {
 			#if defined(HAS_LED_MATRIX)
 				updateMicrobitDisplay();
 			#endif
+			handleMicosecondClockWrap();
 			count = 95; // must be under 30 when building on mbed to avoid serial errors
 		} else if ((count & 0xF) == 0) {
 			captureIncomingBytes();

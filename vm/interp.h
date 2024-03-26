@@ -260,8 +260,11 @@ void outputRecordHeaders();
 
 // Platform Specific Operations
 
+uint64 totalMicrosecs();
 uint32 microsecs(void);
 uint32 millisecs(void);
+uint32 seconds();
+void handleMicosecondClockWrap();
 
 int ideConnected();
 int recvBytes(uint8 *buf, int count);
