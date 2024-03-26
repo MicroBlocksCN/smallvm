@@ -1147,6 +1147,7 @@ static void processShortMessage() {
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
 			processFileMessage(cmd, 0, NULL);
+			sendData();
 		}
 	}
 	skipToStartByteAfter(3);
@@ -1196,6 +1197,7 @@ static void processLongMessage() {
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
 			processFileMessage(cmd, bodyBytes, (char *) &rcvBuf[5]);
+			sendData();
 		}
 	}
 	skipToStartByteAfter(5 + msgLength);
