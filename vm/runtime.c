@@ -60,7 +60,6 @@ typedef struct {
 } PrimitiveSet;
 
 PrimitiveSet primSets[PrimitiveSetCount];
-int primSetCount = 0;
 
 void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries) {
 	primSets[primSetIndex].setName = setName;
@@ -93,7 +92,7 @@ PrimitiveFunction findPrimitive(char *primName) {
 	strncpy(opName, colon + 1, count);
 	opName[count] = 0;
 
-	for (int i = 0; i < primSetCount; i++) {
+	for (int i = 0; i < PrimitiveSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
 			PrimEntry *entries = primSets[i].entries;
 			int entryCount = primSets[i].entryCount;
@@ -142,7 +141,7 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 	char *setName = IS_TYPE(args[0], StringType) ? obj2str(args[0]) : (char *) "";
 	char *primName = IS_TYPE(args[1], StringType) ? obj2str(args[1]) : (char *) "";
 
-	for (int i = 0; i < primSetCount; i++) {
+	for (int i = 0; i < PrimitiveSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
 			PrimEntry *entries = primSets[i].entries;
 			int entryCount = primSets[i].entryCount;
