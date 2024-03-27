@@ -171,6 +171,33 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
+	#elif defined(ARDUINO_M5Stick_C2)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_MOSI 15
+		#define TFT_SCLK 13
+		#define TFT_CS		5
+		#define TFT_DC		14
+		#define TFT_RST		12
+		#define TFT_BL 27
+
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	135
+		
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		
+		void tftInit() {
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setRotation(3);
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, HIGH);
+			tftClear();
+			useTFT = true;
+		}
+
+
+
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
@@ -443,6 +470,54 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
+		// touch screen
+		#define HAS_TFT_TOUCH
+		#define TOUCH_CS_PIN 39
+
+		void touchInit() {
+			pinMode(TOUCH_CS_PIN, INPUT);	
+			Wire1.begin(21, 22);
+			Wire1.beginTransmission(0x38);
+			Wire1.write(0xA4);
+			Wire1.write(0);
+			Wire1.endTransmission();
+
+			Wire1.beginTransmission(0x38);
+			Wire1.write(0x88);
+			Wire1.write(13);
+			Wire1.endTransmission();
+			touchEnabled = true;
+		}
+		bool ispressed(){
+			return (digitalRead(TOUCH_CS_PIN) == LOW);
+		}
+		
+		static uint8 touchData[11];
+		static int readFT6336Data(int index){
+			if (ispressed()){
+				Wire1.beginTransmission(0x38);
+				Wire1.write(0x02);
+				Wire1.endTransmission();
+				// uint8 touchData[11];
+				int count = sizeof(touchData);
+				Wire1.requestFrom(0x38, count);
+				for (int i = 0; i < count; i++) {
+					touchData[i] = Wire1.available() ? Wire1.read() : 0;
+				}
+				int val = -1;
+				if(touchData[0]){
+					if (1 == index) val = ((touchData[1] << 8) | touchData[2]) & 0x0fff;
+					if (2 == index) val = ((touchData[3] << 8) | touchData[4]) & 0x0fff;
+					if (3 == index) val = touchData[0];
+				}
+				return val;
+			} else{
+				touchData[0] = 0;
+				return 0;
+			}
+		}
+
+
 		
 	#elif defined(ARDUINO_NRF52840_CLUE)
 		#include "Adafruit_GFX.h"
@@ -1003,6 +1078,9 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
 		pinMode(32, OUTPUT);
 		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stick_C2)
+		pinMode(19, OUTPUT);
+		digitalWrite(19, (brightness > 0) ? HIGH : LOW);
 	#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_Plus)
 		brightness = (brightness <= 0) ? 0 : brightness + 7; // 8 is lowest setting that turns on backlight
 		if (brightness > 15) brightness = 15;
@@ -1360,7 +1438,11 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 static OBJ primTftTouched(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
 		if (!touchEnabled) { touchInit(); }
-		return ts.touched() ? trueObj : falseObj;
+		#ifdef ARDUINO_M5STACK_Core2
+			return	ispressed() ? trueObj : falseObj;		
+		#else
+			return ts.touched() ? trueObj : falseObj;
+		#endif
 	#endif
 	return falseObj;
 }
@@ -1368,10 +1450,14 @@ static OBJ primTftTouched(int argCount, OBJ *args) {
 static OBJ primTftTouchX(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
 		if (!touchEnabled) { touchInit(); }
-		if (ts.touched()) {
-			TS_Point p = ts.getMappedPoint();
-			return int2obj(p.x);
-		}
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(1));	
+		#else
+			if (ts.touched()) {
+				TS_Point p = ts.getMappedPoint();
+				return int2obj(p.x);
+			}
+		#endif
 	#endif
 	return int2obj(-1);
 }
@@ -1379,10 +1465,14 @@ static OBJ primTftTouchX(int argCount, OBJ *args) {
 static OBJ primTftTouchY(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
 		if (!touchEnabled) { touchInit(); }
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(2));	
+		#else
 		if (ts.touched()) {
 			TS_Point p = ts.getMappedPoint();
 			return int2obj(p.y);
 		}
+		#endif
 	#endif
 	return int2obj(-1);
 }
@@ -1390,10 +1480,14 @@ static OBJ primTftTouchY(int argCount, OBJ *args) {
 static OBJ primTftTouchPressure(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
 		if (!touchEnabled) { touchInit(); }
-		if (ts.touched()) {
-			TS_Point p = ts.getMappedPoint();
-			return int2obj(p.z);
-		}
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(3));
+		#else
+			if (ts.touched()) {
+				TS_Point p = ts.getMappedPoint();
+				return int2obj(p.z);
+			}
+		#endif
 	#endif
 	return int2obj(-1);
 }
