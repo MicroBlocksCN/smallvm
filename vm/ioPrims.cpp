@@ -608,7 +608,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		1, 0, 0, 0, 1, 0, 0, 1, 1, 1,
 		1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
 
-#elif defined(ARDUINO_M5Stick_Plus)
+#elif defined(ARDUINO_M5Stick_Plus) || defined(ARDUINO_M5Stick_C2)
 	#define BOARD_TYPE "M5StickC+"
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
@@ -617,7 +617,11 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 37
 	#define PIN_BUTTON_B 39
 	#define DEFAULT_TONE_PIN 2
+	#if defined(ARDUINO_M5Stick_Plus)
 	#define PIN_LED 10
+	#else
+	#define PIN_LED 19
+	#endif
 	#define INVERT_USER_LED true
 	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
@@ -721,10 +725,10 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED -1 // no built-in LED
 	#define DEFAULT_TONE_PIN 2
 	// Pins 5 and 15 are reserved for use by the M5Stack Core2 TFT display
-	static char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 0, 1, 1, 1, 1, 1,
-		1, 1, 0, 0, 0, 1, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 0,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(COCUBE)
@@ -943,6 +947,22 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
+#elif defined(M5_ATOMS3LITE)
+	#define BOARD_TYPE "M5-AtomS3Lite"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_LED 35
+	#define PIN_BUTTON_A 42
+
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
 #elif defined(M5_CARDPUTER)
 	#define BOARD_TYPE "M5-CARDPUTER"
 	#define DIGITAL_PINS 49
@@ -961,11 +981,6 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 			#define PIN_BUTTON_A 0
 		#endif
 	#endif
-	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
-	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
-	// USB pins: 19 (USB D-), 20 (USB D+)
-	// also possibly: 39-42 (JTAG pins)
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -988,11 +1003,6 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 42
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
-	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
-	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
-	// USB pins: 19 (USB D-), 20 (USB D+)
-	// also possibly: 39-42 (JTAG pins)
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2166,7 +2176,7 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(NEOPIXEL_PIN_LED)
+		#if defined(M5STAMP) || defined(M5_ATOMS3LITE)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 			taskSleep(1);

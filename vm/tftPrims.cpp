@@ -177,6 +177,33 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			tftClear();
 			useTFT = true;
 		}
+	#elif defined(ARDUINO_M5Stick_C2)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_MOSI 15
+		#define TFT_SCLK 13
+		#define TFT_CS		5
+		#define TFT_DC		14
+		#define TFT_RST		12
+		#define TFT_BL 27
+
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	135
+		
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		
+		void tftInit() {
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setRotation(3);
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, HIGH);
+			tftClear();
+			useTFT = true;
+		}
+
+
+
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
@@ -426,6 +453,54 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 				useTFT = true;
 			}
 		}
+		// touch screen
+		#define HAS_TFT_TOUCH
+		#define TOUCH_CS_PIN 39
+
+		void touchInit() {
+			pinMode(TOUCH_CS_PIN, INPUT);	
+			Wire1.begin(21, 22);
+			Wire1.beginTransmission(0x38);
+			Wire1.write(0xA4);
+			Wire1.write(0);
+			Wire1.endTransmission();
+
+			Wire1.beginTransmission(0x38);
+			Wire1.write(0x88);
+			Wire1.write(13);
+			Wire1.endTransmission();
+			touchEnabled = true;
+		}
+		bool ispressed(){
+			return (digitalRead(TOUCH_CS_PIN) == LOW);
+		}
+		
+		static uint8 touchData[11];
+		static int readFT6336Data(int index){
+			if (ispressed()){
+				Wire1.beginTransmission(0x38);
+				Wire1.write(0x02);
+				Wire1.endTransmission();
+				// uint8 touchData[11];
+				int count = sizeof(touchData);
+				Wire1.requestFrom(0x38, count);
+				for (int i = 0; i < count; i++) {
+					touchData[i] = Wire1.available() ? Wire1.read() : 0;
+				}
+				int val = -1;
+				if(touchData[0]){
+					if (1 == index) val = ((touchData[1] << 8) | touchData[2]) & 0x0fff;
+					if (2 == index) val = ((touchData[3] << 8) | touchData[4]) & 0x0fff;
+					if (3 == index) val = touchData[0];
+				}
+				return val;
+			} else{
+				touchData[0] = 0;
+				return 0;
+			}
+		}
+
+
 		
 	#elif defined(ARDUINO_NRF52840_CLUE)
 		#define TFT_CS		31
@@ -1087,7 +1162,10 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
 		pinMode(32, OUTPUT);
 		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
-	#elif defined(ARDUINO_M5Stick_Plus)
+	#elif defined(ARDUINO_M5Stick_C2)
+		pinMode(19, OUTPUT);
+		digitalWrite(19, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_Plus)
 		brightness = (brightness <= 0) ? 0 : brightness + 7; // 8 is lowest setting that turns on backlight
 		if (brightness > 15) brightness = 15;
 		int n = readAXP(0x28);
@@ -1637,268 +1715,64 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-#if defined(HAS_EXTERNAL_DISPLAY_PRIMS)
+// touchscreen ops
 
-static Arduino_DataBus* makeDataBus(int dc, int cs) {
-	#if defined(ARDUINO_ARCH_NRF52840)
-		return new Arduino_NRFXSPI(dc, cs);
-	#elif defined(TARGET_RP2040) || defined(PICO_RP2350)
-		return new Arduino_RPiPicoSPI(dc, cs);
-	#elif defined(ESP32) && (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3)
-		return new Arduino_ESP32SPI(dc, cs);
-	#elif defined(ESP8266)
-		return new Arduino_ESP8266SPI(dc, cs);
-	#else
-		return new Arduino_HWSPI(dc, cs);
+static OBJ primTftTouched(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		#ifdef ARDUINO_M5STACK_Core2
+			return	ispressed() ? trueObj : falseObj;		
+		#else
+			return ts.touched() ? trueObj : falseObj;
+		#endif
 	#endif
+	return falseObj;
 }
 
-static void turnOnBacklight(int blPin) {
-	if (blPin < 0) return; // not defined
-	pinMode(blPin, OUTPUT);
-	digitalWrite(blPin, HIGH);
+static OBJ primTftTouchX(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(1));	
+		#else
+			if (ts.touched()) {
+				TS_Point p = ts.getMappedPoint();
+				return int2obj(p.x);
+			}
+		#endif
+	#endif
+	return int2obj(-1);
 }
 
-static void freeDisplayController() {
-	if (!tft) delete tft;
-	tftWidth = 0;
-	tftHeight = 0;
-	useTFT = false;
-}
-
-static void init_7735(int w, int h, int rotation, int dcPin, int csPin, int backlightPin,
-		int resetPin = GFX_NOT_DEFINED, int invertColors = false,
-		int xOffset = 0, int yOffset = 0) {
-	if ((w < 80) || (w > 132) || (h < 128) || (h > 162)) return;
-	if (!tft) delete tft;
-	Arduino_DataBus *bus = makeDataBus(dcPin, csPin);
-	tft = new Arduino_ST7735(bus, resetPin, rotation, invertColors,
-		w, h, xOffset, yOffset, xOffset, yOffset);
-
-	if (!tft->begin()) {
-		freeDisplayController();
-		outputString("Display initialization failed!");
-	} else {
-		tftWidth = (rotation & 1) ? h : w;
-		tftHeight = (rotation & 1) ? w : h;
-		isMonochrome = false;
-		turnOnBacklight(backlightPin);
-		tftClear();
-		useTFT = true;
-	}
-}
-
-static void init_7789(int w, int h, int rotation, int dcPin, int csPin, int backlightPin,
-		int resetPin = GFX_NOT_DEFINED, int invertColors = false,
-		int xOffset = 0, int yOffset = 0) {
-	if ((w < 32) || (w > 240) || (h < 32) || (h > 320)) return;
-	if (!tft) delete tft;
-	Arduino_DataBus *bus = makeDataBus(dcPin, csPin);
-	tft = new Arduino_ST7789(bus, resetPin, rotation, invertColors,
-		w, h, xOffset, yOffset, xOffset, yOffset);
-	if (!tft->begin()) {
-		freeDisplayController();
-		outputString("Display initialization failed!");
-	} else {
-		tftWidth = (rotation & 1) ? h : w;
-		tftHeight = (rotation & 1) ? w : h;
-		isMonochrome = false;
-		turnOnBacklight(backlightPin);
-		tftClear();
-		useTFT = true;
-	}
-}
-
-static void init_7796(int w, int h, int rotation, int dcPin, int csPin, int backlightPin,
-		int resetPin = GFX_NOT_DEFINED, int invertColors = false,
-		int xOffset = 0, int yOffset = 0) {
-	if ((w < 32) || (w > 480) || (h < 32) || (h > 480)) return;
-	if (!tft) delete tft;
-	Arduino_DataBus *bus = makeDataBus(dcPin, csPin);
-	tft = new Arduino_ST7796(bus, resetPin, rotation, invertColors,
-		w, h, xOffset, yOffset, xOffset, yOffset);
-	if (!tft->begin()) {
-		freeDisplayController();
-		outputString("Display initialization failed!");
-	} else {
-		tftWidth = (rotation & 1) ? h : w;
-		tftHeight = (rotation & 1) ? w : h;
-		isMonochrome = false;
-		turnOnBacklight(backlightPin);
-		tftClear();
-		useTFT = true;
-	}
-}
-
-static void init_9341(int rotation, int dcPin, int csPin, int backlightPin,
-		int resetPin = GFX_NOT_DEFINED, int invertColors = false) {
-	if (!tft) delete tft;
-	Arduino_DataBus *bus = makeDataBus(dcPin, csPin);
-	tft = new Arduino_ILI9341(bus, resetPin, rotation, invertColors);
-	if (!tft->begin()) {
-		freeDisplayController();
-		outputString("Display initialization failed!");
-	} else {
-		tftWidth = 320;
-		tftHeight = 240;
-		isMonochrome = false;
-		turnOnBacklight(backlightPin);
-		tftWidth = 320;
-		tftHeight = 240;
-		tftClear();
-		useTFT = true;
-	}
-}
-
-static void init_1306(int w, int h, int resetPin) {
-	if ((w < 32) || (w > 128) || (h < 16) || (h > 128)) return;
-	if (!tft) delete tft;
-
-	if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
-
-	const int OLED_ADDR_1 = 0x3C;
-	const int OLED_ADDR_2 = 0x3D;
-	int oledAddr = 0;
-	int response = readI2CReg(OLED_ADDR_1, 0); // see if OLED responds at OLED_ADDR_1
-	if (response >= 0) {
-		oledAddr = OLED_ADDR_1;
-	} else {
-		response = readI2CReg(OLED_ADDR_2, 0); // try OLED_ADDR_2
-		if (response >= 0) {
-			oledAddr = OLED_ADDR_2;
-		} else {
-			return; // no OLED display detected
+static OBJ primTftTouchY(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(2));	
+		#else
+		if (ts.touched()) {
+			TS_Point p = ts.getMappedPoint();
+			return int2obj(p.y);
 		}
-	}
-	isOLED1106 = (8 == (response & 15));
-
-	Arduino_DataBus *bus = new Arduino_Wire(oledAddr, 0x00, 0x40);
-	Arduino_G *g;
-	if (isOLED1106) {
-		g = new Arduino_SH1106(bus, resetPin, w, h);
-	} else {
-		g = new Arduino_SSD1306(bus, resetPin, w, h);
-	}
-	tft = new Arduino_Canvas_Mono(w, h, g, 0, 0, true);
-	if (!tft->begin(400000)) {
-		freeDisplayController();
-		outputString("Display initialization failed!");
-	} else {
-		isMonochrome = true;
-		tftWidth = w;
-		tftHeight = h;
-		tftClear();
-		useTFT = true;
-	}
+		#endif
+	#endif
+	return int2obj(-1);
 }
 
-static OBJ primInitST7735(int argCount, OBJ *args) {
-	if (argCount < 6) return fail(notEnoughArguments);
-	if (!(isInt(args[0]) && isInt(args[1]) && isInt(args[2]) &&
-		  isInt(args[3]) && isInt(args[4]) && isInt(args[5]))) {
-				return fail(needsIntegerError);
-	}
-	int w = obj2int(args[0]);
-	int h = obj2int(args[1]);
-	int rotation = obj2int(args[2]);
-	if (rotation < 0) rotation = 0;
-	if (rotation > 3) rotation = 3;
-	int dcPin = mapDigitalPinNum(obj2int(args[3]));
-	int csPin = mapDigitalPinNum(obj2int(args[4]));
-	int blPin = mapDigitalPinNum(obj2int(args[5]));
-	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
-	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
-	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
-	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
-	int yOffset = ((argCount > 10) && isInt(args[10])) ? obj2int(args[10]) : 0;
-
-	init_7735(w, h, rotation, dcPin, csPin, blPin, rstPin, invertDisplay, xOffset, yOffset);
-	return falseObj;
+static OBJ primTftTouchPressure(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		#ifdef ARDUINO_M5STACK_Core2
+			return int2obj(readFT6336Data(3));
+		#else
+			if (ts.touched()) {
+				TS_Point p = ts.getMappedPoint();
+				return int2obj(p.z);
+			}
+		#endif
+	#endif
+	return int2obj(-1);
 }
-
-static OBJ primInitST7789(int argCount, OBJ *args) {
-	if (argCount < 6) return fail(notEnoughArguments);
-	if (!(isInt(args[0]) && isInt(args[1]) && isInt(args[2]) &&
-		  isInt(args[3]) && isInt(args[4]) && isInt(args[5]))) {
-				return fail(needsIntegerError);
-	}
-	int w = obj2int(args[0]);
-	int h = obj2int(args[1]);
-	int rotation = obj2int(args[2]);
-	if (rotation < 0) rotation = 0;
-	if (rotation > 3) rotation = 3;
-	int dcPin = mapDigitalPinNum(obj2int(args[3]));
-	int csPin = mapDigitalPinNum(obj2int(args[4]));
-	int blPin = mapDigitalPinNum(obj2int(args[5]));
-	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
-	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
-	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
-	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
-	int yOffset = ((argCount > 10) && isInt(args[10])) ? obj2int(args[10]) : 0;
-
-	init_7789(w, h, rotation, dcPin, csPin, blPin, rstPin, invertDisplay, xOffset, yOffset);
-	return falseObj;
-}
-
-static OBJ primInitST7796(int argCount, OBJ *args) {
-	if (argCount < 6) return fail(notEnoughArguments);
-	if (!(isInt(args[0]) && isInt(args[1]) && isInt(args[2]) &&
-		  isInt(args[3]) && isInt(args[4]) && isInt(args[5]))) {
-				return fail(needsIntegerError);
-	}
-	int w = obj2int(args[0]);
-	int h = obj2int(args[1]);
-	int rotation = obj2int(args[2]);
-	if (rotation < 0) rotation = 0;
-	if (rotation > 3) rotation = 3;
-	int dcPin = mapDigitalPinNum(obj2int(args[3]));
-	int csPin = mapDigitalPinNum(obj2int(args[4]));
-	int blPin = mapDigitalPinNum(obj2int(args[5]));
-	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
-	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
-	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
-	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
-	int yOffset = ((argCount > 10) && isInt(args[10])) ? obj2int(args[10]) : 0;
-
-	init_7796(w, h, rotation, dcPin, csPin, blPin, rstPin, invertDisplay, xOffset, yOffset);
-	return falseObj;
-}
-
-static OBJ primInitILI9341(int argCount, OBJ *args) {
-	if (argCount < 4) return fail(notEnoughArguments);
-	if (!(isInt(args[0]) && isInt(args[1]) && isInt(args[2]) && isInt(args[3]))) {
-		return fail(needsIntegerError);
-	}
-	int rotation = obj2int(args[0]);
-	if (rotation < 0) rotation = 0;
-	if (rotation > 3) rotation = 3;
-	int dcPin = mapDigitalPinNum(obj2int(args[1]));
-	int csPin = mapDigitalPinNum(obj2int(args[2]));
-	int blPin = mapDigitalPinNum(obj2int(args[3]));
-	int rstPin = mapDigitalPinNum(((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1);
-	int invertDisplay = ((argCount > 5) && (args[5] == trueObj)) ? true : false;
-
-	init_9341(rotation, dcPin, csPin, blPin, rstPin, invertDisplay);
-	return falseObj;
-}
-
-static OBJ primInitOLED(int argCount, OBJ *args) {
-	if (argCount < 2) return fail(notEnoughArguments);
-	if (!(isInt(args[0]) && isInt(args[1]))) return fail(needsIntegerError);
-	int w = obj2int(args[0]);
-	int h = obj2int(args[1]);
-	int rstPin = mapDigitalPinNum(((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1);
-
-	init_1306(w, h, rstPin);
-	return falseObj;
-}
-
-static OBJ primCloseDisplay(int argCount, OBJ *args) {
-	freeDisplayController();
-	return falseObj;
-}
-
-#endif // HAS_EXTERNAL_DISPLAY_PRIMS
 
 #else // stubs
 
