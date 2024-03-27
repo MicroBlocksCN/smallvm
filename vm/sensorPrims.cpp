@@ -38,15 +38,24 @@
 #elif defined(STICK_HAT)
 	#define PIN_WIRE_SCL 26
 	#define PIN_WIRE_SDA 0
+#elif defined(ARDUINO_M5Stick_C2)
+	#define PIN_WIRE_SCL 33
+	#define PIN_WIRE_SDA 32
 #elif defined(HALOCODE)
 	#define PIN_WIRE_SCL 18
 	#define PIN_WIRE_SDA 19
-#elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)|| defined(M5_DIN_METER)
+#elif defined(ARDUINO_M5Stack_Core_PIANO)
+	#define PIN_WIRE_SCL 5
+	#define PIN_WIRE_SDA 26
+#elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)|| defined(M5_DIN_METER) || defined(M5_ATOMS3LITE)
 	#define PIN_WIRE_SCL 1
 	#define PIN_WIRE_SDA 2
 #elif defined(ARDUINO_M5STACK_CORES3)
 	#define PIN_WIRE_SCL 11
 	#define PIN_WIRE_SDA 12
+#elif defined(ARDUINO_M5STACK_Core2_IN)
+	#define PIN_WIRE_SCL 22
+	#define PIN_WIRE_SDA 21
 #elif defined(CHAONENG)
 	#define PIN_WIRE_SCL 25
 	#define PIN_WIRE_SDA 26
@@ -873,7 +882,7 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
  #define Wire1 Wire
@@ -913,7 +922,11 @@ static void startAccelerometer() {
 	#ifdef ARDUINO_M5Atom_Matrix_ESP32
 		Wire1.begin(25, 21);
 	#else
+		#ifdef ARDUINO_M5Stick_C2
+		Wire1.begin(21, 22);
+		#else
 		Wire1.begin(); // use internal I2C bus with default pins
+		#endif
 	#endif
 
 	Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
@@ -2211,6 +2224,73 @@ static int readDigitalMicrophone() {
 	if (result < -512) result = -512;
 	if (result > 511) result = 511;
 	return result;
+}
+
+#elif defined(M5_CARDPUTER) || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C)
+
+#define USE_DIGITAL_MICROPHONE 1
+
+#include <driver/i2s.h>
+#define I2S_PORT I2S_NUM_0
+
+#if defined(M5_CARDPUTER)
+	#define PIN_CLK  43
+	#define PIN_DATA 46
+#elif defined(FUTURE_LITE)
+	#define PIN_CLK  39
+	#define PIN_DATA 41
+#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) 
+	#define PIN_CLK  0
+	#define PIN_DATA 34
+#endif
+
+// Microphone input buffer (minimum sample count is 8)
+// Use smallest possible buffer to minimize latency
+#define MIC_BUF_LEN 8
+static int16_t micBuffer[MIC_BUF_LEN];
+static int micNextSample = MIC_BUF_LEN;
+
+static int microphoneInitialized = false;
+
+void initI2SMicrophone() {
+	if (microphoneInitialized) return;
+	const i2s_config_t i2s_config = {
+		//| I2S_MODE_PDM
+	.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),
+	.sample_rate = 22050,
+	.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // is fixed at 12bit, stereo, MSB
+	.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
+	.communication_format = I2S_COMM_FORMAT_I2S,
+	.intr_alloc_flags = 0,
+	.dma_buf_count = 2,
+	.dma_buf_len = 8,
+	.use_apll = false
+	};
+	i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+		// configure microphone pins
+	const i2s_pin_config_t pin_config = {
+		.bck_io_num = I2S_PIN_NO_CHANGE,
+		.ws_io_num = PIN_CLK,
+		.data_out_num = I2S_PIN_NO_CHANGE,
+		.data_in_num = PIN_DATA
+	};
+
+	//Serial.println("Init i2s_set_pin");
+    i2s_set_pin(I2S_NUM_0, &pin_config);
+	// start I2S driver
+	// i2s_start(I2S_PORT);
+	microphoneInitialized = true;
+}
+
+static int readDigitalMicrophone() {
+	if (!microphoneInitialized) initI2SMicrophone();
+	if (micNextSample >= MIC_BUF_LEN) {
+		// read another buffer of samples
+		size_t bytesIn = 0;
+		i2s_read(I2S_NUM_0, &micBuffer, sizeof(micBuffer), &bytesIn, 1);
+		micNextSample = 0;
+	}
+	return micBuffer[micNextSample++];
 }
 
 #elif defined(DATABOT)
