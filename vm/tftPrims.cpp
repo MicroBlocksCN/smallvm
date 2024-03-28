@@ -418,6 +418,7 @@ static int deferUpdates = false;
 			}
 		}
 
+
 		void AXP192_begin() {
 			// derived from AXP192.cpp from https://github.com/m5stack/M5Core2
 			Wire1.begin(21, 22);
@@ -491,7 +492,7 @@ static int deferUpdates = false;
 		bool ispressed(){
 			return (digitalRead(TOUCH_CS_PIN) == LOW);
 		}
-		
+
 		static uint8 touchData[11];
 		static int readFT6336Data(int index){
 			if (ispressed()){
@@ -1062,6 +1063,21 @@ void tftSetHugePixelBits(int bits) {
 	UPDATE_DISPLAY();
 }
 
+OBJ primSetVib(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+	#if defined(ARDUINO_M5STACK_Core2)
+		if ((argCount < 1) || !isInt(args[0])) return falseObj;
+			int vib = obj2int(args[0]);
+		(void) (vib); // reference var to suppress compiler warning
+		if(vib) {
+			AXP192_SetLDOEnable(3, true);
+		}else{
+			AXP192_SetLDOEnable(3, false);
+		}
+	#endif
+	return falseObj;
+}
+
 OBJ primSetBacklight(int argCount, OBJ *args) {
 	if (!hasTFT()) return falseObj;
 
@@ -1523,6 +1539,8 @@ static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
+static OBJ primSetVib(int argCount, OBJ *args) { return falseObj; }
+
 #endif
 
 // Primitives
@@ -1550,6 +1568,8 @@ static PrimEntry entries[] = {
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},
 	{"tftTouchPressure", primTftTouchPressure},
+
+	{"setVib",primSetVib},
 };
 
 void addTFTPrims() {
