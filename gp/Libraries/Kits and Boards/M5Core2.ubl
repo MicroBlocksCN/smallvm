@@ -1,14 +1,28 @@
-module M5Core2 Input
+module 'M5Core2v1.0' Input
 author '邵悦'
 version 1 0 
-depends '/Sensing/Touch Screen' 
+depends 'Sensing/Touch Screen' 
 description 'M5core2 touch Screen buttons
+only for core2 1.0 
 '
 
   spec 'r' 'inButtonZone' '_inButtonZone X _ Y _ zone _' 'num num auto' 10 10 '10'
   spec 'r' 'ftfButtonA' 'tftButtonA'
   spec 'r' 'tftButtonB' 'tftButtonB'
   spec 'r' 'tftButtonC' 'tftButtonC'
+  spec ' ' 'core2Vibo' 'core2Vibo _' 'bool' false
+  spec ' ' 'core2buttonVibo' 'core2buttonVibo'
+
+to core2Vibo foo {
+  callCustomCommand '[tft:setVib]' ('[data:makeList]' (ifExpression foo 1 0))
+}
+
+to core2buttonVibo {
+  comment '震动'
+  core2Vibo true
+  waitMillis 40
+  core2Vibo false
+}
 
 to ftfButtonA {
   return (inButtonZone ('[tft:tftTouchX]') ('[tft:tftTouchY]') ('[data:makeList]' 30 70 245 280))
