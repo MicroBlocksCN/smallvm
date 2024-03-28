@@ -505,7 +505,7 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
-#elif defined(ARDUINO_M5Stick_Plus)
+#elif defined(ARDUINO_M5Stick_Plus) || defined(ARDUINO_M5Stick_C2)
 	#define BOARD_TYPE "M5StickC+"
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
@@ -514,7 +514,11 @@ void hardwareInit() {
 	#define PIN_BUTTON_A 37
 	#define PIN_BUTTON_B 39
 	#define DEFAULT_TONE_PIN 2
+	#if defined(ARDUINO_M5Stick_Plus)
 	#define PIN_LED 10
+	#else
+	#define PIN_LED 19
+	#endif
 	#define INVERT_USER_LED true
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
@@ -580,7 +584,7 @@ void hardwareInit() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 0,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ESP32_PICO)
@@ -753,8 +757,71 @@ void hardwareInit() {
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
+#elif defined(M5_ATOMS3LITE)
+	#define BOARD_TYPE "M5-AtomS3Lite"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_LED 35
+	#define PIN_BUTTON_A 42
+
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
 #elif defined(M5_CARDPUTER)
 	#define BOARD_TYPE "M5-CARDPUTER"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED -1
+	#endif
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 0
+		#endif
+	#endif
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
+#elif defined(M5_DIN_METER)
+	#define BOARD_TYPE "M5_DIN_METER"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 3
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED -1
+	#endif
+	#define PIN_BUTTON_A 42
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
+#elif defined(ARDUINO_M5STACK_CORES3)
+	#define BOARD_TYPE "M5-CoreS3"
 	#define DIGITAL_PINS 49
 	#define ANALOG_PINS 20
 	#define TOTAL_PINS 49
@@ -1479,7 +1546,7 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(M5STAMP)
+		#if defined(M5STAMP) || defined(M5_ATOMS3LITE)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 		#else
