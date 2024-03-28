@@ -248,8 +248,8 @@ class UARTServerCallbacks: public BLEServerCallbacks {
 
 class UARTCallbacks: public BLECharacteristicCallbacks {
 	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+		int byteCount = pCharacteristic->getDataLength();
 		const char *rxValue = pCharacteristic->getValue().c_str();
-		int byteCount = strlen(rxValue);
 		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
 		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
 		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
