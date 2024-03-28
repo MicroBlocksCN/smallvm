@@ -63,7 +63,7 @@ int failure() {
 
 // Printing
 
-#define PRINT_BUF_SIZE 800
+#define PRINT_BUF_SIZE 1000
 static char printBuffer[PRINT_BUF_SIZE];
 static int printBufferByteCount = 0;
 
