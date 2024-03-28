@@ -1,0 +1,34 @@
+module M5Core2 Input
+author '邵悦'
+version 1 0 
+depends '/Sensing/Touch Screen' 
+description 'M5core2 touch Screen buttons
+'
+
+  spec 'r' 'inButtonZone' '_inButtonZone X _ Y _ zone _' 'num num auto' 10 10 '10'
+  spec 'r' 'ftfButtonA' 'tftButtonA'
+  spec 'r' 'tftButtonB' 'tftButtonB'
+  spec 'r' 'tftButtonC' 'tftButtonC'
+
+to ftfButtonA {
+  return (inButtonZone ('[tft:tftTouchX]') ('[tft:tftTouchY]') ('[data:makeList]' 30 70 245 280))
+}
+
+to inButtonZone foo bar baz {
+  comment 'A 30,60 245,280
+B  110,140 245,280
+C 230,270  245,280'
+  if (and (isType baz 'list') ((size baz) == 4)) {
+    return (and (and (foo >= (at 1 baz)) (foo <= (at 2 baz))) (and (bar >= (at 3 baz)) (bar <= (at 4 baz))))
+  }
+  return (booleanConstant false)
+}
+
+to tftButtonB {
+  return (inButtonZone ('[tft:tftTouchX]') ('[tft:tftTouchY]') ('[data:makeList]' 110 160 245 280))
+}
+
+to tftButtonC {
+  return (inButtonZone ('[tft:tftTouchX]') ('[tft:tftTouchY]') ('[data:makeList]' 210 270 245 280))
+}
+
