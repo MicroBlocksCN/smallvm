@@ -391,6 +391,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			}
 		}
 
+
 		void AXP192_begin() {
 			// derived from AXP192.cpp from https://github.com/m5stack/M5Core2
 			Wire1.begin(21, 22);
@@ -474,7 +475,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		bool ispressed(){
 			return (digitalRead(TOUCH_CS_PIN) == LOW);
 		}
-		
+
 		static uint8 touchData[11];
 		static int readFT6336Data(int index){
 			if (ispressed()){
@@ -1146,6 +1147,21 @@ void tftSetHugePixelBits(int bits) {
 	UPDATE_DISPLAY();
 }
 
+OBJ primSetVib(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+	#if defined(ARDUINO_M5STACK_Core2)
+		if ((argCount < 1) || !isInt(args[0])) return falseObj;
+			int vib = obj2int(args[0]);
+		(void) (vib); // reference var to suppress compiler warning
+		if(vib) {
+			AXP192_SetLDOEnable(3, true);
+		}else{
+			AXP192_SetLDOEnable(3, false);
+		}
+	#endif
+	return falseObj;
+}
+
 OBJ primSetBacklight(int argCount, OBJ *args) {
 	if (!tft) return falseObj;
 
@@ -1801,8 +1817,12 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
 
-static OBJ primAruco(int argCount, OBJ *args) { return falseObj; }
-static OBJ primAprilTag(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primSetVib(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -1863,18 +1883,7 @@ static PrimEntry entries[] = {
 	{"tftTouchY", primTftTouchY},
 	{"tftTouchPressure", primTftTouchPressure},
 
-	{"aruco", primAruco},
-	{"aprilTag", primAprilTag},
-
-	#if defined(HAS_EXTERNAL_DISPLAY_PRIMS)
-		{"init7735", primInitST7735},
-		{"init7789", primInitST7789},
-		{"init7796", primInitST7796},
-		{"init9341", primInitILI9341},
-		{"initOLED", primInitOLED},
-		{"closeDisplay", primCloseDisplay},
-	#endif
-
+	{"setVib",primSetVib},
 };
 
 void addTFTPrims() {
