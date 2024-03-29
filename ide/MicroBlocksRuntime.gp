@@ -320,13 +320,17 @@ method decompileAllInProject SmallRuntime {
 }
 
 method analyzeAllExamples SmallRuntime {
+    grandTotal = 0
+    projectCount = 0
 	for fn (listEmbeddedFiles) {
 		if (beginsWith fn 'Examples') {
 			print fn
 			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
-			analyzeProject this
+			grandTotal += (analyzeProject this)
+		    projectCount += 1
 		}
 	}
+	print 'Grand total:' grandTotal 'for' projectCount 'projects'
 }
 
 method analyzeProject SmallRuntime {
