@@ -477,8 +477,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 119
 	RESERVED 120
 	RESERVED 121
-	RESERVED 122
-	RESERVED 123
+		commandPrimitive 122
+		reporterPrimitive 123
 		callCustomCommand 124
 		callCustomReporter 125
 		callCommandPrimitive 126
@@ -959,6 +959,38 @@ method primitive SmallCompiler op args isCommand {
 	return result
 }
 
+method primitiveNEW SmallCompiler op args isCommand {
+	result = (list)
+	if ('print' == op) { op = 'printIt' }
+	if (contains opcodes op) {
+		for arg args {
+			addAll result (instructionsForExpression this arg)
+		}
+		add result (array op (count args))
+	} (and (beginsWith op '[') (endsWith op ']')) {
+		// named primitives of the form '[primSetName:primName]'
+		i = (findFirst op ':')
+		if (notNil i) {
+			primSetName = (substring op 2 (i - 1))
+			primName = (substring op (i + 1) ((count op) - 1))
+			for arg args {
+				addAll result (instructionsForExpression this arg)
+			}
+			if isCommand {
+				add result (array 'commandPrimitive' primName primSetName (count args))
+			} else {
+				add result (array 'reporterPrimitive' primName primSetName (count args))
+			}
+		}
+	} else {
+		print 'Skipping unknown op:' op
+		if (not isCommand) {
+			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
+		}
+	}
+	return result
+}
+
 // Variables
 
 method collectVars SmallCompiler cmdOrReporter {
@@ -1064,7 +1096,7 @@ method appendLiterals SmallCompiler instructions {
 	nextOffset = (count instructions)
 	for ip (count instructions) {
 		instr = (at instructions ip)
-		if (and (isClass instr 'Array') ('pushLiteral' == (first instr))) {
+		if (and (isClass instr 'Array') (isOneOf (first instr) 'pushLiteral' 'commandPrimitive' 'reporterPrimitive')) {
 			literal = (at instr 2)
 			litOffset = (at literalOffsets literal)
 			if (isNil litOffset) {
@@ -1074,7 +1106,14 @@ method appendLiterals SmallCompiler instructions {
 				nextOffset += (wordsForLiteral this literal)
 			}
 			atPut instr 2 (litOffset - ip)
-			atPut instructions ip (copyWith instr literal) // retain literal string for use by "show instructions"
+			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
+				primNameLiteralOffset = ((at instr 2) & 511)
+				primSetIndex = ((at primsets (at instr 3)) & 127)
+				argCount = ((at instr 4) & 255)
+				instrArgs = (((primSetIndex << 17) | (primNameLiteralOffset << 8)) | argCount)
+				atPut instr 2 instrArgs
+			}
+			atPut instructions ip (copyWith (at instructions ip) literal) // retain literal string for use by "show instructions"
 		}
 	}
 	addAll instructions literals
