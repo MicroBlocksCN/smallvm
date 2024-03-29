@@ -46,6 +46,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'timer'				'timer')
 		(array ' ' 'resetTimer'			'reset timer')
 		'-'
+		(array 'r' '[misc:seconds]'		'seconds')
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
