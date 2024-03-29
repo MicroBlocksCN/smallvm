@@ -381,7 +381,7 @@ typedef enum {
 	VarPrims,
 	DataPrims,
 	MiscPrims,
-	IOPrims	,
+	IOPrims,
 	SensorPrims,
 	SerialPrims,
 	DisplayPrims,
