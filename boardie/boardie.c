@@ -38,6 +38,16 @@ uint32 millisecs() {
 	return microsecs() / 1000;
 }
 
+uint64 totalMicrosecs() {
+	// Returns a 64-bit integer containing microseconds since start.
+
+	struct timeval now;
+	gettimeofday(&now, NULL);
+
+	uint64 secs = now.tv_sec - startSecs;
+	return (1000000 * secs) + now.tv_usec;
+}
+
 // Communication/System Functions
 
 char BLE_ThreeLetterID[4] = "";
