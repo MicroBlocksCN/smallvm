@@ -931,6 +931,19 @@ void hardwareInit() {
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
+#elif defined(AIRM2MC3)
+	#define BOARD_TYPE "airm2m_core_esp32c3"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 5
+	#define TOTAL_PINS 22
+	static const int analogPin[] = {0, 1, 2, 3, 4};
+	#define PIN_LED 12
+	#define PIN_BUTTON_A 9
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
+		1, 1};
+
 #elif defined(ESP32_C3)
 	#define BOARD_TYPE "ESP32-C3"
 	#define DIGITAL_PINS 20
@@ -1012,19 +1025,6 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
-
-#elif defined(AIRM2MC3)
-	#define BOARD_TYPE "airm2m_core_esp32c3"
-	#define DIGITAL_PINS 22
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 22
-	static const int analogPin[] = {0, 1, 2, 3, 4};
-	#define PIN_LED 12
-	#define PIN_BUTTON_A 9
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
-		1, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
