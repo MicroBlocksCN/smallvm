@@ -15,8 +15,8 @@ pio run -e makerportV2
 python precompiled/uf2conv.py -c .pio/build/makerportV2/firmware.bin -o extraVMs/vm_makerport_v2.uf2
 
 pio run -e esp32-s2
-cp .pio/build/esp32/firmware.bin precompiled/vm_esp32-s2.bin
+cp .pio/build/esp32/firmware.bin extraVMs/vm_esp32-s2.bin
 pio run -e esp32-s3
-cp .pio/build/esp32/firmware.bin precompiled/vm_esp32-s3.bin
+cp .pio/build/esp32/firmware.bin extraVMs/vm_esp32-s3.bin
 pio run -e esp32-c3
-cp .pio/build/esp32/firmware.bin precompiled/vm_esp32-c3.bin
+cp .pio/build/esp32/firmware.bin extraVMs/vm_esp32-c3.bin
