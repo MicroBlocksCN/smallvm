@@ -178,7 +178,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	add result (join '[' (count bytes) ' bytes]' (newline))
 	for i (count bytes) {
 		add result (toString (at bytes i))
-		if (0 == (i % 4)) {
+		if (0 == (i % 2)) {
 			add result (newline)
 		} else {
 			add result ' '

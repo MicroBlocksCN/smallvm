@@ -1162,12 +1162,12 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	if (isNil opcode) { error 'Unknown opcode:' (first instr) }
 	add bytes opcode
 	arg = (at instr 2)
-	if (not (and (-16777216 <= arg) (arg <= 16777215))) {
-		error 'Argument does not fit in 24 bits'
+	if (not (and (-128 <= arg) (arg <= 127))) {
+		error 'Argument does not fit in 8 bits'
 	}
 	add bytes (arg & 255)
-	add bytes ((arg >> 8) & 255)
-	add bytes ((arg >> 16) & 255)
+// 	add bytes ((arg >> 8) & 255)
+// 	add bytes ((arg >> 16) & 255)
 }
 
 method addBytesForIntegerLiteralTo SmallCompiler n bytes {
