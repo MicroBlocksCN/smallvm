@@ -32,7 +32,7 @@ OBJ primMSecsSince(int argCount, OBJ *args) {
 	int startTime = obj2int(args[0]);
 	int endTime = ((argCount > 1) && isInt(args[1])) ?
 		obj2int(args[1]) :
-		((uint32) ((totalMicrosecs() / 1000000))) & 0x3FFFFFFF;
+		((uint32) ((totalMicrosecs() / 1000))) & 0x3FFFFFFF;
 
 	int deltaTime = endTime - startTime;
 	if (deltaTime < 0) deltaTime += 0x40000000;
