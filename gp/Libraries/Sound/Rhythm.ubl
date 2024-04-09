@@ -5,7 +5,7 @@ description 'Keeps time according to a tempo and time signature. Useful to creat
 
 Includes abstractions for note durations, bars and beats.
 '
-variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures 
+variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures _rhy_reference_note
 
   spec ' ' 'rhy_set tempo' 'set tempo to _ bpm at _ / _ signature' 'auto auto auto' 250 4 4
   space
