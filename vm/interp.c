@@ -429,6 +429,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
+	printf("ip %d cmd %d arg %d\n", ip, op, arg); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
@@ -443,7 +444,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 
 static void runTask(Task *task) {
 	register int op;
-	register int *ip;
+	register short int *ip;
 	register OBJ *sp;
 	register OBJ *fp;
 	int arg, tmp;
@@ -599,7 +600,7 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
-		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
+		tmp = ((int)(ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
 		task->status = unusedTask;
 		errorCode = noError; // clear the error
@@ -623,7 +624,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	pushBigImmediate_op:
 		STACK_CHECK(1);
-		*sp++ = (OBJ) *ip++;
+//  xxx fix later		*sp++ = (OBJ) *ip++;
 		DISPATCH();
 	pushLiteral_op:
 		STACK_CHECK(1);
@@ -741,7 +742,7 @@ static void runTask(Task *task) {
 		}
 		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
-		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
+		*sp++ = int2obj(((int)(ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
 		task->currentChunkIndex = tmp; // callee's chunk index (middle byte of arg)
