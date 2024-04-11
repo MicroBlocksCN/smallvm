@@ -429,7 +429,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
-	printf("ip %d cmd %d arg %d\n", ip, op, arg); \
+	printf("ip %d cmd %d arg %d\n", ip, CMD(op), arg); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
@@ -462,13 +462,13 @@ static void runTask(Task *task) {
 		&&incrementVar_op,
 		&&pushArgCount_op,
 		&&pushArg_op,
-		&&storeArg_op,
+		&&storeArg_op, // 10
 		&&incrementArg_op,
 		&&pushLocal_op,
 		&&storeLocal_op,
 		&&incrementLocal_op,
 		&&pop_op,
-		&&jmp_op,
+		&&jmp_op, // 16
 		&&jmpTrue_op,
 		&&jmpFalse_op,
 		&&decrementAndJmp_op,
@@ -573,7 +573,7 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
+		&&shortJmp_op,
 		&&primitiveCommand_op,
 		&&primitiveReporter_op,
 		&&callCustomCommand_op,
@@ -624,7 +624,9 @@ static void runTask(Task *task) {
 		DISPATCH();
 	pushBigImmediate_op:
 		STACK_CHECK(1);
-//  xxx fix later		*sp++ = (OBJ) *ip++;
+		tmp = (unsigned short) *ip++;
+		tmp = tmp | ((unsigned short) *ip++ << 16);
+		*sp++ = (OBJ) tmp;
 		DISPATCH();
 	pushLiteral_op:
 		STACK_CHECK(1);
@@ -689,7 +691,9 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
-		ip += arg;
+		tmp = *ip;
+		tmp |= *(ip + 1) << 8;
+		ip += tmp;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
 #endif
@@ -848,7 +852,7 @@ static void runTask(Task *task) {
 				goto error;
 			}
 		} else { // loop counter <= 0
-			ip++; // skip the following jmp instruction thus ending the loop
+			ip += 2; // skip the following jmp instruction (two words) thus ending the loop
 		}
 		DISPATCH();
 	initLocals_op:
@@ -1260,6 +1264,10 @@ static void runTask(Task *task) {
 	neoPixelSetPin_op:
 		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	shortJmp_op:
+		ip += arg;
 		DISPATCH();
 
 	// new primitive call ops:

@@ -476,7 +476,7 @@ method initOpcodes SmallCompiler {
 	RESERVED 118
 	RESERVED 119
 	RESERVED 120
-	RESERVED 121
+		shortJmp 121
 		commandPrimitive 122
 		reporterPrimitive 123
 		callCustomCommand 124
@@ -614,12 +614,12 @@ method instructionsForWhenCondition SmallCompiler cmdOrReporter {
 	addAll result (instructionsForExpression this 10)
 	add result (array 'waitMillis' 1)
 	addAll result condition
-	add result (array 'jmpFalse' (0 - ((count condition) + 3)))
+	addAll result (instructionsForJump this 'jmpFalse' (0 - ((count condition) + 3)))
 
 	addAll result body
 
 	// loop back to condition test
-	add result (array 'jmp' (0 - ((count result) + 1)))
+	addAll result (instructionsForJump this 'jmp' (0 - ((count result) + 1)))
 	return result
 }
 
@@ -714,13 +714,14 @@ method instructionsForIf SmallCompiler args {
 			addAll result (instructionsForExpression this test)
 			offset = (count body)
 			if (not finalCase) { offset += 1 }
-			add result (array 'jmpFalse' offset)
+			addAll result (instructionsForJump this 'jmpFalse' offset)
 		}
 		addAll result body
 		if (not finalCase) {
 			jumpToEnd = (array 'jmp' (count result)) // jump offset to be fixed later
-			add jumpsToFix jumpToEnd
 			add result jumpToEnd
+			add result (array 'placeholder' 0)  // jmp is always two words
+			add jumpsToFix jumpToEnd
 		}
 		i += 2
 	}
@@ -733,16 +734,16 @@ method instructionsForIf SmallCompiler args {
 
 method instructionsForForever SmallCompiler args {
 	result = (instructionsForCmdList this (at args 1))
-	add result (array 'jmp' (0 - ((count result) + 1)))
+	addAll result (instructionsForJump this 'jmp' (0 - ((count result) + 1)))
 	return result
 }
 
 method instructionsForRepeat SmallCompiler args {
 	result = (instructionsForExpression this (at args 1)) // loop count
 	body = (instructionsForCmdList this (at args 2))
-	add result (array 'jmp' (count body))
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
-	add result (array 'decrementAndJmp' (0 - ((count body) + 1)))
+	addAll result (instructionsForJump this 'decrementAndJmp' (0 - ((count body) + 1)))
 	return result
 }
 
@@ -750,10 +751,10 @@ method instructionsForRepeatUntil SmallCompiler args {
 	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
 	body = (instructionsForCmdList this (at args 2))
-	add result (array 'jmp' (count body))
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result conditionTest
-	add result (array 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
+	addAll result (instructionsForJump this 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
 	return result
 }
 
@@ -771,12 +772,13 @@ method instructionsForForLoop SmallCompiler args {
 	body = (instructionsForCmdList this (at args 3))
 	addAll result (array
 		(array 'pushImmediate' falseObj) // this will be N, the total loop count
-		(array 'pushImmediate' falseObj) // this will be a decrementing loop counter
-		(array 'jmp' (count body)))
+		(array 'pushImmediate' falseObj)) // this will be a decrementing loop counter
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result (array
 		(array 'forLoop' loopVarIndex)
 		(array 'jmp' (0 - ((count body) + 2)))
+		(array 'placeholder' 0) // jmp is always two words
 		(array 'pop' 3))
 	return result
 }
@@ -792,14 +794,19 @@ method instructionsForExpression SmallCompiler expr {
 	} (isNil expr) {
 		return (list (array 'pushImmediate' zeroObj))
 	} (isClass expr 'Integer') {
-		if (and (-4194304 <= expr) (expr <= 4194303)) { // 23-bit encoded as 24 bit int object
-			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
+		if (and (-64 <= expr) (expr <= 63)) { // 7-bit encoded as 8 bit int object
+			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FF')) ))
 		} else {
 			// pushBigImmediate instruction followed by a 4-byte integer object
-			return (list (array 'pushBigImmediate' 0) expr)
+			return (list
+				(array 'pushBigImmediate' ((expr << 1) | 1))
+				(array 'placeholder' 0)
+				(array 'placeholder' 0))
 		}
 	} (isClass expr 'String') {
-		return (list (array 'pushLiteral' expr))
+		return (list
+			(array 'pushLiteral' expr)
+			(array 'placeholder' 0))
 	} (isClass expr 'Float') {
 		error 'Floats are not supported'
 	} (isClass expr 'Color') {
@@ -847,7 +854,7 @@ method instructionsForAnd SmallCompiler args {
 	for i (count tests) {
 		addAll result (at tests i)
 		if (i < (count tests)) {
-			add result (array 'jmpAnd' (totalInstrCount - ((count result) + 1)))
+			addAll result (instructionsForJump this 'jmpAnd' (totalInstrCount - ((count result) + 1)))
 		}
 	}
 	return result
@@ -867,7 +874,7 @@ method instructionsForOr SmallCompiler args {
 	for i (count tests) {
 		addAll result (at tests i)
 		if (i < (count tests)) {
-			add result (array 'jmpOr' (totalInstrCount - ((count result) + 1)))
+			addAll result (instructionsForJump this 'jmpOr' (totalInstrCount - ((count result) + 1)))
 		}
 	}
 	return result
@@ -884,10 +891,10 @@ method instructionsForAndOLD SmallCompiler args { // xxx remove later
 	result = (list)
 	for t tests {
 		addAll result t
-		add result (array 'jmpFalse' (totalInstrCount - ((count result) + 2)))
+		addAll result (instructionsForJump this 'jmpFalse' (totalInstrCount - ((count result) + 2)))
 	}
 	add result (array 'pushImmediate' trueObj) // all conditions were true: push result
-	add result (array 'jmp' 1) // skip over false case
+	add result (array 'shortJmp' 1) // skip over false case
 	add result (array 'pushImmediate' falseObj) // some condition was false: push result
 	return result
 }
@@ -903,10 +910,10 @@ method instructionsForOrOLD SmallCompiler args { // xxx remove later
 	result = (list)
 	for t tests {
 		addAll result t
-		add result (array 'jmpTrue' (totalInstrCount - ((count result) + 2)))
+		addAll result (instructionsForJump this 'jmpTrue' (totalInstrCount - ((count result) + 2)))
 	}
 	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
-	add result (array 'jmp' 1) // skip over true case
+	add result (array 'shortJmp' 1) // skip over true case
 	add result (array 'pushImmediate' trueObj) // some condition was true: push result
 	return result
 }
@@ -914,13 +921,23 @@ method instructionsForOrOLD SmallCompiler args { // xxx remove later
 method instructionsForIfExpression SmallCompiler args {
 	trueCase = (instructionsForExpression this (at args 2))
 	falseCase = (instructionsForExpression this (at args 3))
-	add falseCase (array 'jmp' (count trueCase))
+	addAll falseCase (instructionsForJump this 'jmp' (count trueCase))
 
 	result = (instructionsForExpression this (first args)) // test
-	add result (array 'jmpTrue' (count falseCase))
+	addAll result (instructionsForJump this 'jmpTrue' (count falseCase))
 	addAll result falseCase
 	addAll result trueCase
 	return result
+}
+
+method instructionsForJump SmallCompiler jumpOp offset {
+	if (or (offset < -128) (offset > 127)) { // long jump
+		return (list
+			(array jumpOp offset)
+			(array 'placeholder' 0))
+	}
+	if ('jmp' == jumpOp) { jumpOp = 'shortJmp' }
+	return (list (array jumpOp offset))
 }
 
 // instruction generation utility methods
@@ -1081,6 +1098,7 @@ method instructionsForFunctionCall SmallCompiler op args isCmd {
 		addAll result (instructionsForExpression this arg)
 	}
 	add result (array 'callFunction' (((callee & 255) << 8) | ((count args) & 255)))
+	add result (array 'placeholder' 0) // callFunction is followed by a word with function ID an arg count
 	if isCmd { add result (array 'pop' 1) } // discard the return value
 	return result
 }
@@ -1103,7 +1121,7 @@ method appendLiterals SmallCompiler instructions {
 				litOffset = nextOffset
 				add literals literal
 				atPut literalOffsets literal litOffset
-				nextOffset += (wordsForLiteral this literal)
+				nextOffset += (2 * (wordsForLiteral this literal))
 			}
 			atPut instr 2 (litOffset - ip)
 			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
@@ -1158,26 +1176,46 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 method addBytesForInstructionTo SmallCompiler instr bytes {
 	// Append the bytes for the given instruction to bytes (little endian).
 
-	opcode = (at opcodes (first instr))
-	if (isNil opcode) { error 'Unknown opcode:' (first instr) }
-	add bytes opcode
+	op = (first instr)
 	arg = (at instr 2)
-	if (not (and (-128 <= arg) (arg <= 127))) {
+
+	if ('placeholder' == op) { return } // placeholder; does not generate code
+
+	opcodeByte = (at opcodes op)
+	if (isNil opcodeByte) { error 'Unknown opcode:' op }
+	add bytes opcodeByte
+
+	if (isOneOf op 'jmp' 'pushLiteral' 'callFunction') {
+		// jmp, pushLiteral: arg is offset from instruction pointer
+		// callFunction: arg is chunk ID (high bytes) and arg count (low byte)
+		add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+	} (and (-128 <= arg) (arg <= 127)) {
+		add bytes (arg & 255)
+	} (isOneOf op 'jmpTrue' 'jmpFalse' 'jmpOr'  'jmpAnd' 'decrementAndJmp' 'forLoop') {
+		// arg is signed offset from instruction pointer
+		add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+	} ('pushImmediate' == op) {
+		add bytes arg
+	} ('pushBigImmediate' == op) {
+		add bytes 0 // pushBigImmediate instruction has a zero arg byte
+		addBytesForIntegerLiteralTo this arg bytes
+	} else {
 		error 'Argument does not fit in 8 bits'
 	}
-	add bytes (arg & 255)
-// 	add bytes ((arg >> 8) & 255)
-// 	add bytes ((arg >> 16) & 255)
 }
 
 method addBytesForIntegerLiteralTo SmallCompiler n bytes {
 	// Append the bytes for the given integer to bytes (little endian).
 	// Note: n is converted to a integer object, the equivalent of ((n << 1) | 1)
 
-	add bytes (((n << 1) | 1) & 255)
-	add bytes ((n >> 7) & 255)
-	add bytes ((n >> 15) & 255)
-	add bytes ((n >> 23) & 255)
+	add bytes (n & 255)
+	add bytes ((n >> 8) & 255)
+	add bytes ((n >> 16) & 255)
+	add bytes ((n >> 24) & 255)
 }
 
 method addBytesForStringLiteral SmallCompiler s bytes {

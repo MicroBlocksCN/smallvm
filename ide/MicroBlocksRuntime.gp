@@ -1405,6 +1405,11 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	chunkBytes = (chunkBytesFor this aBlockOrFunction)
+    if (((count chunkBytes) % 4) != 0) {
+        // pad with zeros to make length be a multiple of four
+        addAll chunkBytes (list 0 0)
+    }
+
 	data = (list chunkType)
 	addAll data chunkBytes
 	if ((count data) > 1000) {
