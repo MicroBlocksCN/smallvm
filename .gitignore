@@ -26,6 +26,7 @@ precompiled/node_modules
 precompiled/package-lock.json
 data/*
 BUILD
+WorkInProgress
 *.swp
 *.swo
 *.exe
