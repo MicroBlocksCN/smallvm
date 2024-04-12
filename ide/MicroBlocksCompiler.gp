@@ -942,7 +942,7 @@ method instructionsForJump SmallCompiler jumpOp offset {
 
 // instruction generation utility methods
 
-method primitive SmallCompiler op args isCommand {
+method primitiveOLD SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
 	if (contains opcodes op) {
@@ -976,7 +976,7 @@ method primitive SmallCompiler op args isCommand {
 	return result
 }
 
-method primitiveNEW SmallCompiler op args isCommand {
+method primitive SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
 	if (contains opcodes op) {
@@ -995,8 +995,10 @@ method primitiveNEW SmallCompiler op args isCommand {
 			}
 			if isCommand {
 				add result (array 'commandPrimitive' primName primSetName (count args))
+				add result (array 'placeholder' 0)
 			} else {
 				add result (array 'reporterPrimitive' primName primSetName (count args))
+				add result (array 'placeholder' 0)
 			}
 		}
 	} else {
@@ -1098,7 +1100,7 @@ method instructionsForFunctionCall SmallCompiler op args isCmd {
 		addAll result (instructionsForExpression this arg)
 	}
 	add result (array 'callFunction' (((callee & 255) << 8) | ((count args) & 255)))
-	add result (array 'placeholder' 0) // callFunction is followed by a word with function ID an arg count
+	add result (array 'placeholder' 0) // callFunction is followed by a word with function ID and arg count
 	if isCmd { add result (array 'pop' 1) } // discard the return value
 	return result
 }
@@ -1203,6 +1205,14 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	} ('pushBigImmediate' == op) {
 		add bytes 0 // pushBigImmediate instruction has a zero arg byte
 		addBytesForIntegerLiteralTo this arg bytes
+	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+		add bytes ((arg >> 16) & 255)
+	} ('callFunction' == op) {
+		add bytes 0
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
 	} else {
 		error 'Argument does not fit in 8 bits'
 	}
