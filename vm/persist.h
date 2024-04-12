@@ -14,7 +14,7 @@ extern "C" {
 // Persistent Memory Records
 
 // Records in persistent memory start with two header words. They have the form:
-//	<'R'><record type><id of chunk/variable/comment><extra> (8-bits for each field)
+//	<'R'><record type><id of chunk/variable><extra> (8-bits for each field)
 //	word count (32-bits)
 //	... word count data words ...
 //
