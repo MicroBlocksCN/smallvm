@@ -678,7 +678,6 @@ method instructionsForCmd SmallCompiler cmd {
 		return (primitive this 'sendBroadcast' args true)
 	} ('comment' == op) {
 		// skip comments; do not generate any code
-		// xxx remove this case later to store comments (once the VM supports them)
 	} ('ignoreArgs' == op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
