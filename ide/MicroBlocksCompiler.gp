@@ -577,12 +577,16 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
 				if (isEmpty (argNames func)) {
 					add result (array 'pushLiteral' (functionName func))
+					add result (array 'placeholder' 0)
 					add result (array 'recvBroadcast' 1)
 				}
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
-			add result (array 'pushImmediate' falseObj)
-			add result (array 'returnResult' 0)
+			if ('returnResult' != (first (last result))) {
+				// Add a "return false" if the function body does not end with a return
+				add result (array 'pushImmediate' falseObj)
+				add result (array 'returnResult' 0)
+			}
 		} else {
 			addAll result (instructionsForCmdList this cmdOrReporter)
 			add result (array 'halt' 0)
@@ -712,7 +716,7 @@ method instructionsForIf SmallCompiler args {
 		if (or (true != test) (not finalCase) (i == 1)) {
 			addAll result (instructionsForExpression this test)
 			offset = (count body)
-			if (not finalCase) { offset += 1 }
+			if (not finalCase) { offset += 2 }
 			addAll result (instructionsForJump this 'jmpFalse' offset)
 		}
 		addAll result body

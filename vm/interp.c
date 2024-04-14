@@ -346,10 +346,10 @@ static int functionNameMatches(int chunkIndex, char *functionName) {
 	// by checking the function name in the function's metadata.
 
 	const uint32 META_FLAG = 240;
-	uint32 wordCount = ((uint32 *) chunks[chunkIndex].code)[1];
-	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	uint32 count = 2 * WORDS(chunks[chunkIndex].code);
+	uint16_t *code = (uint16_t *) (chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS);
 	int metaStart = -1;
-	for (int i = 0; i < wordCount; i++) {
+	for (int i = 0; i < count; i++) {
 		if (META_FLAG == code[i]) {
 			metaStart = i;
 			break;
@@ -429,9 +429,8 @@ static int findCallee(char *functionOrPrimitiveName) {
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
-	printf("ip %d cmd %d arg %d\n", ip, CMD(op), arg); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
+	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - (int16 *) task->code), CMD(op), arg, (sp - task->stack)); \
 	goto *jumpTable[CMD(op)]; \
 }
 
@@ -444,7 +443,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 
 static void runTask(Task *task) {
 	register int op;
-	register short int *ip;
+	register int16 *ip;
 	register OBJ *sp;
 	register OBJ *fp;
 	int arg, tmp;
@@ -583,7 +582,7 @@ static void runTask(Task *task) {
 	};
 
 	// Restore task state
-	ip = task->code + task->ip;
+	ip = (int16 *) task->code + task->ip;
 	sp = task->stack + task->sp;
 	fp = task->stack + task->fp;
 
@@ -600,14 +599,14 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
-		tmp = ((int)(ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
+		tmp = ((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
 		task->status = unusedTask;
 		errorCode = noError; // clear the error
 		goto suspend;
 	suspend:
 		// save task state
-		task->ip = ip - task->code;
+		task->ip = ip - (int16 *) task->code;
 		task->sp = sp - task->stack;
 		task->fp = fp - task->stack;
 		return;
@@ -624,13 +623,14 @@ static void runTask(Task *task) {
 		DISPATCH();
 	pushBigImmediate_op:
 		STACK_CHECK(1);
-		tmp = (unsigned short) *ip++;
-		tmp = tmp | ((unsigned short) *ip++ << 16);
+		tmp = (uint16) *ip++; // least significant bits
+		tmp |= (uint16) *ip++ << 16; // most significant bits
 		*sp++ = (OBJ) tmp;
 		DISPATCH();
 	pushLiteral_op:
 		STACK_CHECK(1);
-		*sp++ = (OBJ) (ip + arg); // arg is offset from the current ip to the literal object
+		tmp = *ip; // offset to the literal is the 16-bit word following the instruction
+		*sp++ = (OBJ) (ip++ + tmp);
 		DISPATCH();
 	pushVar_op:
 		STACK_CHECK(1);
@@ -739,6 +739,8 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
+		arg = *ip++;
+	callFunctionByName:
 		tmp = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
 		if (chunks[tmp].chunkType != functionHat) {
 			fail(badChunkIndexError);
@@ -746,12 +748,12 @@ static void runTask(Task *task) {
 		}
 		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
-		*sp++ = int2obj(((int)(ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
+		*sp++ = int2obj(((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
 		task->currentChunkIndex = tmp; // callee's chunk index (middle byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
+		ip = (int16 *) (task->code + PERSISTENT_HEADER_WORDS); // first instruction in callee
 		DISPATCH();
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
@@ -769,7 +771,7 @@ static void runTask(Task *task) {
 		tmp = obj2int(*(fp - 2)); // return address
 		task->currentChunkIndex = tmp & 0xFF;
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + ((tmp >> 8) & 0x3FFFFF); // restore old ip
+		ip = ((int16 *) task->code) + ((tmp >> 8) & 0x3FFFFF); // restore old ip
 		fp = task->stack + obj2int(*(fp - 1)); // restore the old fp
 		DISPATCH();
 	waitMicros_op:
@@ -1272,15 +1274,17 @@ static void runTask(Task *task) {
 
 	// new primitive call ops:
 	primitiveCommand_op:
-		tmp = (arg >> 17) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		tmp = (*ip >> 9) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x1FF)); // primitive name object
+		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	primitiveReporter_op:
-		tmp = (arg >> 17) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		tmp = (*ip >> 9) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x1FF)); // primitive name object
+		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		*(sp - arg) = newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_REPORTER();
@@ -1318,7 +1322,7 @@ static void runTask(Task *task) {
 				task->sp = sp - task->stack; // record the stack pointer in case callee does a GC
 				if ((callee & 0xFFFFFF00) == 0xFFFFFF00) { // callee is a MicroBlocks function (i.e. a chunk index)
 					arg = ((callee & 0xFF) << 8) | paramCount;
-					goto callFunction_op;
+					goto callFunctionByName;
 				} else { // callee is a named primitive (i.e. a pointer to a C function)
 					tmpObj = ((PrimitiveFunction) callee)(paramCount, sp - paramCount); // call the primitive
 					tempGCRoot = NULL; // clear tempGCRoot in case it was used

@@ -90,7 +90,7 @@ typedef struct {
 	uint8 taskChunkIndex; // chunk index of the top-level stack for this task
 	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;
-	short int *code;
+	OBJ code;
 	int ip; // ip offset in code
 	int sp;
 	int fp;
