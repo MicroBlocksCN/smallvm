@@ -883,44 +883,6 @@ method instructionsForOr SmallCompiler args {
 	return result
 }
 
-method instructionsForAndOLD SmallCompiler args { // xxx remove later
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		addAll result (instructionsForJump this 'jmpFalse' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' trueObj) // all conditions were true: push result
-	add result (array 'shortJmp' 1) // skip over false case
-	add result (array 'pushImmediate' falseObj) // some condition was false: push result
-	return result
-}
-
-method instructionsForOrOLD SmallCompiler args { // xxx remove later
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		addAll result (instructionsForJump this 'jmpTrue' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
-	add result (array 'shortJmp' 1) // skip over true case
-	add result (array 'pushImmediate' trueObj) // some condition was true: push result
-	return result
-}
-
 method instructionsForIfExpression SmallCompiler args {
 	trueCase = (instructionsForExpression this (at args 2))
 	falseCase = (instructionsForExpression this (at args 3))
@@ -944,40 +906,6 @@ method instructionsForJump SmallCompiler jumpOp offset {
 }
 
 // instruction generation utility methods
-
-method primitiveOLD SmallCompiler op args isCommand {
-	result = (list)
-	if ('print' == op) { op = 'printIt' }
-	if (contains opcodes op) {
-		for arg args {
-			addAll result (instructionsForExpression this arg)
-		}
-		add result (array op (count args))
-	} (and (beginsWith op '[') (endsWith op ']')) {
-		// named primitives of the form '[primSetName:primName]'
-		i = (findFirst op ':')
-		if (notNil i) {
-			primSetName = (substring op 2 (i - 1))
-			primName = (substring op (i + 1) ((count op) - 1))
-			add result (array 'pushLiteral' primSetName)
-			add result (array 'pushLiteral' primName)
-			for arg args {
-				addAll result (instructionsForExpression this arg)
-			}
-			if isCommand {
-				add result (array 'callCommandPrimitive' ((count args) + 2))
-			} else {
-				add result (array 'callReporterPrimitive' ((count args) + 2))
-			}
-		}
-	} else {
-		print 'Skipping unknown op:' op
-		if (not isCommand) {
-			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
-		}
-	}
-	return result
-}
 
 method primitive SmallCompiler op args isCommand {
 	result = (list)
