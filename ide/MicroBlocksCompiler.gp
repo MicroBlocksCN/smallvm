@@ -357,8 +357,8 @@ method initOpcodes SmallCompiler {
 	opcodeDefinitions = '
 		halt 0
 		noop 1
-		pushImmediate 2		// true, false, and ints that fit in 24 bits
-		pushBigImmediate 3	// ints that do not fit in 24 bits
+		pushImmediate 2		// true, false, and ints that fit in 8 bits
+		pushLargeInteger 3	// ints that fit in 24 bits
 		pushLiteral 4		// string or array constant from literals frame
 		pushVar 5
 		storeVar 6
@@ -475,8 +475,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 117
 	RESERVED 118
 	RESERVED 119
-	RESERVED 120
-		shortJmp 121
+		pushHugeInteger 120
+		longJmp 121
 		commandPrimitive 122
 		reporterPrimitive 123
 		callCustomCommand 124
@@ -721,9 +721,9 @@ method instructionsForIf SmallCompiler args {
 		}
 		addAll result body
 		if (not finalCase) {
-			jumpToEnd = (array 'jmp' (count result)) // jump offset to be fixed later
+			jumpToEnd = (array 'longJmp' (count result)) // jump offset to be fixed later
 			add result jumpToEnd
-			add result (array 'placeholder' 0)  // jmp is always two words
+			add result (array 'placeholder' 0)  // longJmp is always two words
 			add jumpsToFix jumpToEnd
 		}
 		i += 2
@@ -780,8 +780,8 @@ method instructionsForForLoop SmallCompiler args {
 	addAll result body
 	addAll result (array
 		(array 'forLoop' loopVarIndex)
-		(array 'jmp' (0 - ((count body) + 2)))
-		(array 'placeholder' 0) // jmp is always two words
+		(array 'longJmp' (0 - ((count body) + 2)))
+		(array 'placeholder' 0) // longJmp is always two words (forLoop skips over it at and of loop)
 		(array 'pop' 3))
 	return result
 }
@@ -799,10 +799,15 @@ method instructionsForExpression SmallCompiler expr {
 	} (isClass expr 'Integer') {
 		if (and (-64 <= expr) (expr <= 63)) { // 7-bit encoded as 8 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FF')) ))
-		} else {
-			// pushBigImmediate instruction followed by a 4-byte integer object
+		} (and (-4194304 <= expr) (expr <= 4194303)) { // int object fits in 24-bits
 			return (list
-				(array 'pushBigImmediate' ((expr << 1) | 1))
+				(array 'pushLargeInteger' ((expr << 1) | 1))
+				(array 'placeholder' 0))
+
+		} else {
+			// pushHugeInteger instruction followed by a 4-byte integer object
+			return (list
+				(array 'pushHugeInteger' ((expr << 1) | 1))
 				(array 'placeholder' 0)
 				(array 'placeholder' 0))
 		}
@@ -896,13 +901,12 @@ method instructionsForIfExpression SmallCompiler args {
 }
 
 method instructionsForJump SmallCompiler jumpOp offset {
-	if (or (offset < -128) (offset > 127)) { // long jump
+	if (or (offset < -128) (offset > 127)) { // extended jump: offset is in the next word
 		return (list
 			(array jumpOp offset)
 			(array 'placeholder' 0))
 	}
-	if ('jmp' == jumpOp) { jumpOp = 'shortJmp' }
-	return (list (array jumpOp offset))
+	return (list (array jumpOp offset)) // jump offset fits in the 8 bit arg field
 }
 
 // instruction generation utility methods
@@ -1118,36 +1122,47 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	if (isNil opcodeByte) { error 'Unknown opcode:' op }
 	add bytes opcodeByte
 
-	if (isOneOf op 'jmp' 'pushLiteral' 'callFunction') {
-		// jmp, pushLiteral: arg is offset from instruction pointer
-		// callFunction: arg is chunk ID (high bytes) and arg count (low byte)
-		add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
+	if ('pushImmediate' == op) {
+		// immedate object (integer or boolean) fits into the 8 bit arg byte
 		add bytes (arg & 255)
+	} ('pushLargeInteger' == op) {
+		// append a large integer value (little endian); arg is already an integer object
+		add bytes (arg & 255) // arg byte is low bits, including the integer tag bit
 		add bytes ((arg >> 8) & 255)
-	} (and (-128 <= arg) (arg <= 127)) {
-		add bytes (arg & 255)
-	} (isOneOf op 'jmpTrue' 'jmpFalse' 'jmpOr'  'jmpAnd' 'decrementAndJmp' 'forLoop') {
-		// arg is signed offset from instruction pointer
-		add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
-		add bytes (arg & 255)
-		add bytes ((arg >> 8) & 255)
-	} ('pushImmediate' == op) {
-		add bytes arg
-	} ('pushBigImmediate' == op) {
-		add bytes 0 // pushBigImmediate instruction has a zero arg byte
-		// Append the bytes for large integer value (n is already an integer object).
+		add bytes ((arg >> 16) & 255)
+	} ('pushHugeInteger' == op) {
+		add bytes 0 // arg byte (unused)
+		// append a large integer value (little endian); arg is already an integer object
 		add bytes (arg & 255)
 		add bytes ((arg >> 8) & 255)
 		add bytes ((arg >> 16) & 255)
 		add bytes ((arg >> 24) & 255)
+	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
+		// arg is the signed offset from instruction pointer
+		if (and (-128 < arg) (arg < 127)) { // offset fits into 8 bits
+			add bytes arg
+		} else {
+			add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
+			add bytes (arg & 255)
+			add bytes ((arg >> 8) & 255)
+		}
+	} (isOneOf op 'longJmp' 'pushLiteral') {
+		add bytes 0 // zero arg byte
+		// append 16-bit signed offset from instruction pointer (little endian)
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+	} ('callFunction' == op) {
+		// callFunction: arg is chunk ID (high bytes) and arg count (low byte)
+		add bytes 0
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
 	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
 		add bytes (arg & 255)
 		add bytes ((arg >> 8) & 255)
 		add bytes ((arg >> 16) & 255)
-	} ('callFunction' == op) {
-		add bytes 0
+	} (and (-128 <= arg) (arg <= 127)) {
+		// 8-bit arg for all other instructions
 		add bytes (arg & 255)
-		add bytes ((arg >> 8) & 255)
 	} else {
 		error 'Argument does not fit in 8 bits'
 	}
