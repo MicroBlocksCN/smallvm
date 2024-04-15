@@ -1274,16 +1274,16 @@ static void runTask(Task *task) {
 
 	// new primitive call ops:
 	primitiveCommand_op:
-		tmp = (*ip >> 9) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + (*ip & 0x1FF)); // primitive name object
+		tmp = (*ip >> 10) & 0x3F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
 		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	primitiveReporter_op:
-		tmp = (*ip >> 9) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + (*ip & 0x1FF)); // primitive name object
+		tmp = (*ip >> 10) & 0x3F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
 		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		*(sp - arg) = newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);

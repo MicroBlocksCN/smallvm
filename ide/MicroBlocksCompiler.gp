@@ -1058,10 +1058,10 @@ method appendLiterals SmallCompiler instructions {
 			}
 			atPut instr 2 (litOffset - ip)
 			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
-				primNameLiteralOffset = ((at instr 2) & 511)
-				primSetIndex = ((at primsets (at instr 3)) & 127)
+				primSetIndex = ((at primsets (at instr 3)) & 63) // 6 bits
+				primNameLiteralOffset = ((at instr 2) & 1023) // 10 bits
 				argCount = ((at instr 4) & 255)
-				instrArgs = (((primSetIndex << 17) | (primNameLiteralOffset << 8)) | argCount)
+				instrArgs = (((primSetIndex << 18) | (primNameLiteralOffset << 8)) | argCount)
 				atPut instr 2 instrArgs
 			}
 			atPut instructions ip (copyWith (at instructions ip) literal) // retain literal string for use by "show instructions"
@@ -1135,7 +1135,11 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 		add bytes arg
 	} ('pushBigImmediate' == op) {
 		add bytes 0 // pushBigImmediate instruction has a zero arg byte
-		addBytesForIntegerLiteralTo this arg bytes
+		// Append the bytes for large integer value (n is already an integer object).
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+		add bytes ((arg >> 16) & 255)
+		add bytes ((arg >> 24) & 255)
 	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
 		add bytes (arg & 255)
 		add bytes ((arg >> 8) & 255)
@@ -1147,16 +1151,6 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	} else {
 		error 'Argument does not fit in 8 bits'
 	}
-}
-
-method addBytesForIntegerLiteralTo SmallCompiler n bytes {
-	// Append the bytes for the given integer to bytes (little endian).
-	// Note: n is converted to a integer object, the equivalent of ((n << 1) | 1)
-
-	add bytes (n & 255)
-	add bytes ((n >> 8) & 255)
-	add bytes ((n >> 16) & 255)
-	add bytes ((n >> 24) & 255)
 }
 
 method addBytesForStringLiteral SmallCompiler s bytes {
