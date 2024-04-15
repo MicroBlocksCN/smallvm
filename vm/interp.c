@@ -454,7 +454,7 @@ static void runTask(Task *task) {
 		&&halt_op,
 		&&noop_op,
 		&&pushImmediate_op,
-		&&pushBigImmediate_op,
+		&&pushLargeInteger_op,
 		&&pushLiteral_op,
 		&&pushVar_op,
 		&&storeVar_op,
@@ -571,8 +571,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&shortJmp_op,
+		&&pushHugeInteger_op,
+		&&longJmp_op,
 		&&primitiveCommand_op,
 		&&primitiveReporter_op,
 		&&callCustomCommand_op,
@@ -621,15 +621,15 @@ static void runTask(Task *task) {
 		STACK_CHECK(1);
 		*sp++ = (OBJ) arg;
 		DISPATCH();
-	pushBigImmediate_op:
+	pushLargeInteger_op:
+		// push an integer object that fits into 24 bits
 		STACK_CHECK(1);
-		tmp = (uint16) *ip++; // least significant bits
-		tmp |= (uint16) *ip++ << 16; // most significant bits
+		tmp = (*ip++ << 8) | arg; // most significant bits are in the following 16-bit word
 		*sp++ = (OBJ) tmp;
 		DISPATCH();
 	pushLiteral_op:
 		STACK_CHECK(1);
-		tmp = *ip; // offset to the literal is the 16-bit word following the instruction
+		tmp = *ip; // offset to the literal is in the following 16-bit word
 		*sp++ = (OBJ) (ip++ + tmp);
 		DISPATCH();
 	pushVar_op:
@@ -691,9 +691,8 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
-		tmp = *ip;
-		tmp |= *(ip + 1) << 8;
-		ip += tmp;
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
+		ip += arg;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
 #endif
@@ -854,7 +853,7 @@ static void runTask(Task *task) {
 				goto error;
 			}
 		} else { // loop counter <= 0
-			ip += 2; // skip the following jmp instruction (two words) thus ending the loop
+			ip += 2; // skip the following longJmp instruction (two words) thus ending the loop
 		}
 		DISPATCH();
 	initLocals_op:
@@ -1268,8 +1267,17 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 
-	shortJmp_op:
-		ip += arg;
+	pushHugeInteger_op:
+		// push integer object that requires 32 bits
+		STACK_CHECK(1);
+		tmp = (uint16) *ip++; // least significant bits
+		tmp |= (uint16) *ip++ << 16; // most significant bits
+		*sp++ = (OBJ) tmp;
+		DISPATCH();
+
+	longJmp_op:
+		tmp = ip++; // offset is always in the following word
+		ip += tmp;
 		DISPATCH();
 
 	// new primitive call ops:
