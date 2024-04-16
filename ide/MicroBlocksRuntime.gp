@@ -133,9 +133,12 @@ method showInstructions SmallRuntime aBlock {
 			} (4 == arg) {
 				arg = true
 			}
-			addWithLineNum this result (join 'pushImmediate ' arg)
-		} ('pushBigImmediate' == (first item)) {
-			addWithLineNum this result 'pushBigImmediate' // don't show arg count; could be confusing
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr arg)
+		} (isOneOf (first item) 'pushLargeInteger' 'pushHugeInteger') {
+			arg = (at item 2)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ' arg)
+			addWithLineNum this result instr
 		} ('callFunction' == (first item)) {
 			arg = (at item 2)
 			calledChunkID = ((arg >> 8) & 255)
