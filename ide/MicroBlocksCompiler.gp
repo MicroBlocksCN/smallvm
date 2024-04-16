@@ -799,15 +799,14 @@ method instructionsForExpression SmallCompiler expr {
 	} (isClass expr 'Integer') {
 		if (and (-64 <= expr) (expr <= 63)) { // 7-bit encoded as 8 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FF')) ))
-		} (and (-4194304 <= expr) (expr <= 4194303)) { // int object fits in 24-bits
+		} (and (-4194304 <= expr) (expr <= 4194303)) { // int object fits in 3 bytes
 			return (list
-				(array 'pushLargeInteger' ((expr << 1) | 1))
+				(array 'pushLargeInteger' expr) // not yet encoded as an integer
 				(array 'placeholder' 0))
 
-		} else {
-			// pushHugeInteger instruction followed by a 4-byte integer object
+		} else { // int object requires 4 bytes
 			return (list
-				(array 'pushHugeInteger' ((expr << 1) | 1))
+				(array 'pushHugeInteger' expr) // not yet encoded as an integer
 				(array 'placeholder' 0)
 				(array 'placeholder' 0))
 		}
@@ -1110,6 +1109,10 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 
 // binary code generation
 
+method opcodeForInstr SmallCompiler op {
+	return (at opcodes op)
+}
+
 method addBytesForInstructionTo SmallCompiler instr bytes {
 	// Append the bytes for the given instruction to bytes (little endian).
 
@@ -1126,17 +1129,17 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 		// immedate object (integer or boolean) fits into the 8 bit arg byte
 		add bytes (arg & 255)
 	} ('pushLargeInteger' == op) {
-		// append a large integer value (little endian); arg is already an integer object
-		add bytes (arg & 255) // arg byte is low bits, including the integer tag bit
-		add bytes ((arg >> 8) & 255)
-		add bytes ((arg >> 16) & 255)
+		// append a 24-bit integer object (little endian)
+		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
+		add bytes ((arg >> 7) & 255)
+		add bytes ((arg >> 15) & 255)
 	} ('pushHugeInteger' == op) {
 		add bytes 0 // arg byte (unused)
-		// append a large integer value (little endian); arg is already an integer object
-		add bytes (arg & 255)
-		add bytes ((arg >> 8) & 255)
-		add bytes ((arg >> 16) & 255)
-		add bytes ((arg >> 24) & 255)
+		// append a 32-bit integer object (little endian)
+		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
+		add bytes ((arg >> 7) & 255)
+		add bytes ((arg >> 15) & 255)
+		add bytes ((arg >> 23) & 255)
 	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
 		// arg is the signed offset from instruction pointer
 		if (and (-128 < arg) (arg < 127)) { // offset fits into 8 bits
