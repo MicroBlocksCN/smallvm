@@ -594,14 +594,6 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 	} else {
 		addAll result (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
 	}
-	if (and
-		((count result) == 2)
-		(isOneOf (first (first result)) 'halt' 'stopAll')) {
-			// In general, just looking at the final instructon isn't enough because
-			// it could just be the end of a conditional body that is jumped
-			// over; in that case, we need the final halt as the jump target.
-			removeLast result // remove the final halt
-	}
 	appendLiterals this result
 	appendDecompilerMetadata this aBlockOrFunction result
 	return result
