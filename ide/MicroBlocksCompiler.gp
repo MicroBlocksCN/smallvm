@@ -1143,13 +1143,17 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
 		// arg is the signed offset from instruction pointer
 		if (and (-128 < arg) (arg < 127)) { // offset fits into 8 bits
-			add bytes arg
+			add bytes (arg & 255)
 		} else {
 			add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
 			add bytes (arg & 255)
 			add bytes ((arg >> 8) & 255)
 		}
 	} (isOneOf op 'longJmp' 'pushLiteral') {
+		if ('longJmp' == op) {
+			// replace longJmp with jmp opcode but use two words regardless of offset
+			atPut bytes (count bytes) (at opcodes 'jmp')
+		}
 		add bytes 0 // zero arg byte
 		// append 16-bit signed offset from instruction pointer (little endian)
 		add bytes (arg & 255)
