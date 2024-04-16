@@ -572,7 +572,7 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&pushHugeInteger_op,
-		&&longJmp_op,
+		&&RESERVED_op,
 		&&primitiveCommand_op,
 		&&primitiveReporter_op,
 		&&callCustomCommand_op,
@@ -1278,11 +1278,6 @@ static void runTask(Task *task) {
 		tmp = (uint16) *ip++; // least significant bits
 		tmp |= (uint16) *ip++ << 16; // most significant bits
 		*sp++ = (OBJ) tmp;
-		DISPATCH();
-
-	longJmp_op:
-		tmp = *ip; // offset is always in the following word
-		ip += tmp;
 		DISPATCH();
 
 	// new primitive call ops:
