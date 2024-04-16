@@ -1031,14 +1031,18 @@ method instructionsForFunctionCall SmallCompiler op args isCmd {
 	return result
 }
 
-// literal values (strings and large integers )
+// literal values
 
 method appendLiterals SmallCompiler instructions {
-	// For now, strings and integers too large for pushImmediate are the only literals.
-	// Perhaps add support for constant literal arrays later.
+	// For now, strings are the only literals. Support for list literals could be added later.
 
 	literals = (list)
 	literalOffsets = (dictionary)
+	if (((count instructions) % 2) == 1) {
+		// ensure that there are an even number of instructions so that the first literal
+		// starts on a 32-bit word address when stored in Flash memory
+		add instructions (array 'halt' 0)
+	}
 	nextOffset = (count instructions)
 	for ip (count instructions) {
 		instr = (at instructions ip)
