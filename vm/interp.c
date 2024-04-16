@@ -624,7 +624,7 @@ static void runTask(Task *task) {
 	pushLargeInteger_op:
 		// push an integer object that fits into 24 bits
 		STACK_CHECK(1);
-		tmp = (*ip++ << 8) | arg; // most significant bits are in the following 16-bit word
+		tmp = (*ip++ << 8) | (arg & 0xFF); // most significant bits are in the following 16-bit word
 		*sp++ = (OBJ) tmp;
 		DISPATCH();
 	pushLiteral_op:
@@ -691,7 +691,7 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
-		if (!arg) arg = *ip++; // zero arg means offset is in the next word
+		if (!arg) arg = *ip; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
@@ -1281,7 +1281,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 
 	longJmp_op:
-		tmp = ip++; // offset is always in the following word
+		tmp = *ip; // offset is always in the following word
 		ip += tmp;
 		DISPATCH();
 
