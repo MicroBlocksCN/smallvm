@@ -120,7 +120,8 @@ method showInstructions SmallRuntime aBlock {
 				add result '--------'
 			}
 		} ('pushLiteral' == (first item)) {
-			instr = (join (at item 1) ' ' (at item 2) ' ("' (at item 3) '")')
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			instr = (join instr (at item 2) ' ("' (at item 3) '")')
 			addWithLineNum this result instr
 		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
@@ -139,12 +140,15 @@ method showInstructions SmallRuntime aBlock {
 			arg = (at item 2)
 			calledChunkID = ((arg >> 8) & 255)
 			argCount = (arg & 255)
-			addWithLineNum this result (join 'callFunction ' calledChunkID ' ' argCount)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr calledChunkID ' ' argCount)
 		} (not (isLetter (at (first item) 1))) { // operator; don't show arg count
 			addWithLineNum this result (toString (first item))
+		} ('placeholder' == (first item)) {
+			addWithLineNum this result '<data>'
 		} else {
 			// instruction (an array of form <cmd> <args...>)
-			instr = ''
+			instr = (join '[' (opcodeForInstr compiler (at item 1)) '] ')
 			for s item { instr = (join instr s ' ') }
 			addWithLineNum this result instr item
 		}
@@ -162,8 +166,7 @@ method addWithLineNum SmallRuntime aList instruction items {
 	if (and
 		(notNil items)
 		(isOneOf (first items)
-			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse'
-			'decrementAndJmp' 'callFunction' 'forLoop')) {
+			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
 		offset = (toInteger (last items))
 		targetLine = (join ' (line ' (+ currentLine 1 offset) ')')
 	}
