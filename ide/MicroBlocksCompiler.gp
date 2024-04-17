@@ -1080,30 +1080,6 @@ method wordsForLiteral SmallCompiler literal {
 // metadata for the deompiler
 
 method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
-	// Append a tab-delimited list of local variables to instructionList.
-	// This string is part of the optional metadata used by the decompiler.
-
-	// the 'metadata' pseudo instruction marks the start of the decompiler meta data
-	add instructionList (array 'metadata' 0)
-
-	// add local variable names
-	varNames = (list)
-	for pair (sortedPairs localVars) {
-		add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
-	}
-	add instructionList (joinStrings varNames (string 9)) // tab delimited string
-
-	// add function info
-	if (isClass aBlockOrFunction 'Function') {
-		add instructionList (metaInfoForFunction (project (scripter (smallRuntime))) aBlockOrFunction)
-		argNames = (argNames aBlockOrFunction)
-		if (notEmpty argNames) {
-			add instructionList (joinStrings argNames (string 9)) // tab delimited string
-		}
-	}
-}
-
-method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// Append metadata used by the decompiler.
 	// The function name is also used by the "call" blocks.
 
