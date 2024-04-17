@@ -343,38 +343,27 @@ static OBJ argOrDefault(OBJ *fp, int argNum, OBJ defaultValue) {
 
 static int functionNameMatches(int chunkIndex, char *functionName) {
 	// Return true if given chunk is the function with the given function name.
-	// by checking the function name in the function's metadata.
+	// Use the function name in the function's metadata.
+	// Scan backwards from the end of the chunk to avoid possible
+	// matches of the meta flag with offsets in instructions.
+	// Note: 248 (0xF8) is not a valid byte in UTF-8 encoding
 
-	const uint32 META_FLAG = 240;
-	uint32 count = 2 * WORDS(chunks[chunkIndex].code);
-	uint16_t *code = (uint16_t *) (chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS);
-	int metaStart = -1;
-	for (int i = 0; i < count; i++) {
-		if (META_FLAG == code[i]) {
-			metaStart = i;
+	const uint8 META_FLAG = 248;
+	char *metaData = NULL;
+	uint32 *code = (uint32 *) chunks[chunkIndex].code;
+	uint8 *chunkStart = (uint8 *) (code + PERSISTENT_HEADER_WORDS);
+	uint8 *src = chunkStart + (4 * code[1]) - 1; // start at last byte
+	while (src > chunkStart) {
+		if (META_FLAG == *src) {
+			metaData = (char *) src + 1;
 			break;
 		}
+		src--; // scan backwards to find start of metadata
 	}
-	if (metaStart < 0) return false; // no metadata
+	if (!metaData) return false; // no metadata
 
-	OBJ meta = (OBJ) &code[metaStart + 1];
-	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
-	meta += HEADER_WORDS + WORDS(meta); // skip var names string
-	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
-
-	// s is a tab-delimited string with meta information about the function:
-	//	libraryName libraryCategory blockType funcName specString argTypes
-	char *s = obj2str(meta);
-
-	// skip the first three tab-delimited fields (libraryName libraryCategory blockType)
-	for (int i = 0; i < 3; i++) {
-		s = strchr(s, '\t'); // find next tab
-		if (!s) return false; // tab not found; should not happen
-		s += 1;
-	}
-
-	// return true if s begins with the given function name
-	return (strstr(s, functionName) == s);
+	// return true if metaDat starts with the given function name
+	return (strstr(metaData, functionName) == metaData);
 }
 
 static int chunkIndexForFunction(char *functionName) {
@@ -430,7 +419,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	op = *ip++; \
 	arg = ARG(op); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
-	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - (int16 *) task->code), CMD(op), arg, (sp - task->stack)); \
+	/* printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - (int16 *) task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
