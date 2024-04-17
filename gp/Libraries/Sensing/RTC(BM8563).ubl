@@ -1,0 +1,54 @@
+module 'RTC(BM8563)'
+author '邵悦'
+version 1 0 
+description 'BM8563 I2C
+设置的年份要大于2000
+'
+
+  spec 'r' 'rtcByte2BCD' 'rtcByteToBCD2 _' 'num' 10
+  spec 'r' 'bcd2ToByte' 'rtcBCD2ToByte _' 'auto' '10'
+  spec 'r' 'getRTCTime' 'getRTCTime'
+  spec ' ' 'setRTCTime' 'setRTCTime HH _ mm _ ss _' 'auto auto auto' '10' '10' '10'
+  spec 'r' 'getRTCDate' 'getRTCDate'
+  spec ' ' 'setRTCDate' 'setRTCDate yyyy _ MM _ DD _ weekday _' 'auto auto auto auto' 2024 '10' '10' '10'
+
+to bcd2ToByte foo {
+  return ((((foo & (hexToInt 'F0')) >> 4) * 10) + (foo & (hexToInt '0F')))
+}
+
+to getRTCDate {
+  '[sensors:i2cWrite]' (hexToInt '51') (hexToInt '05')
+  local 'var' (newList 4)
+  '[sensors:i2cRead]' (hexToInt '51') var
+  var = (list_map 'bcd2ToByte' var)
+  sayIt ('[data:joinStrings]' var ',')
+  return ('[data:makeList]' (at 4 var) (at 3 var) (at 1 var) (at 2 var))
+}
+
+to getRTCTime {
+  comment 'list: HH mm ss'
+  '[sensors:i2cWrite]' (hexToInt '51') (hexToInt '02')
+  local 'var' (newList 3)
+  '[sensors:i2cRead]' (hexToInt '51') var
+  var = (list_map 'bcd2ToByte' var)
+  list_reverse var
+  return var
+}
+
+to rtcByte2BCD foo {
+  local 'var' 0
+  repeatUntil (foo < 10) {
+    var += 1
+    foo += -10
+  }
+  return ((var << 4) | foo)
+}
+
+to setRTCDate year month date weekday {
+  '[sensors:i2cWrite]' (hexToInt '51') ('[data:join]' ('[data:makeList]' (hexToInt '05')) (list_map 'rtcByte2BCD' ('[data:makeList]' date weekday month (year % 100))))
+}
+
+to setRTCTime hour minute second {
+  '[sensors:i2cWrite]' (hexToInt '51') ('[data:join]' ('[data:makeList]' (hexToInt '02')) (list_map 'rtcByte2BCD' ('[data:makeList]' second minute hour)))
+}
+
