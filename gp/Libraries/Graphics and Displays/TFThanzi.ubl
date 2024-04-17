@@ -1,8 +1,9 @@
-module TFThanzi
+module 'TFThanzi'
 author 'Patch & Rang'
-version 1 1
-depends TFT
+version 1 2
+depends TFT Files
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.2 增加了通过文件保存和提取字模的功能
 v1.1 增加了颜色设置，增加了几个汉字和数字示例
 -------
 取模工具：
@@ -11,22 +12,28 @@ https://create.codelab.club/projects/53122
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/'
 
-  spec ' ' 'draw' 'draw _ x _ y _ size _ _' 'str num num num color' 'text code' 0 0 3
-  spec 'r' 'numbers' 'numbers'
-  spec 'r' 'digit' 'digit _' 'auto' '9'
-  spec ' ' 'drawNumber' 'drawNumber _ x _ y _ size _ _' 'auto auto auto auto color' '123' '0' '0' '3'
-  spec ' ' 'drawSample x' 'drawSample x _ y _ size _ _' 'auto auto auto color' '0' '0' '3'
-  spec 'r' 'sample' 'sample'
+  spec ' ' 'draw' 'draw _ x _ y _ size _ _' 'str num num num color' 'data' 0 0 1
+  spec ' ' 'drawNumber' 'drawNumber _ x _ y _ size _ _' 'num num num num color' 112358 0 0 1
+  spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
+  spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
+  spec ' ' 'showChinese' 'showChinese _ x _ y _ size _ color _' 'str num num num color' 'text' 0 0 1
+  space
+  spec 'r' '_numbers' 'numbers'
+  spec 'r' '_digit' 'digit _' 'num' 0
+  spec 'r' '_sample'  'sample'
+  spec 'r' '_getCodeFromFile' 'getCodeFromFile _' 'str' 'fileName'
 
-to digit foo {
+to _digit foo {
+  comment '获得0-9数字的字模'
   local 'var' ('[data:convertType]' foo 'number')
   if (var == 0) {
-    return (at 10 (numbers))
+    return (at 10 (_numbers))
   }
-  return (at var (numbers))
+  return (at var (_numbers))
 }
 
 to draw data x y size color {
+  comment '本库核心的汉字显示方法，用法参看drawSample函数'
   local 'xx' 0
   local 'yy' -1
   local 'fbl' (hexToInt ('[data:join]' (at 1 data) (at 2 data)))
@@ -47,25 +54,64 @@ to draw data x y size color {
 }
 
 to drawNumber number x y size color {
+  comment '以本库设计的数字字体显示数字'
   local 'var' ('[data:convertType]' number 'string')
   for i (size var) {
     '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
-    draw (digit (at i var)) (x + ((i - 1) * (size * 16))) y size color
+    draw (_digit (at i var)) (x + ((i - 1) * (size * 16))) y size color
   }
 }
 
-to 'drawSample x' x y size color {
-  local 'var' ('[data:convertType]' number 'string')
-  for i (size (sample)) {
-    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
-    draw (at i (sample)) (x + ((i - 1) * (size * 16))) y size color
+to drawSample x y size color {
+  comment '自带两个汉字的显示示例'
+  for i (size (_sample)) {
+    '[tft:rect]' (x + ((i - 1) * (size * 32))) y (size * 32) (size * 32) (colorSwatch 0 0 0 255)
+    draw (at i (_sample)) (x + ((i - 1) * (size * 32))) y size color
   }
 }
 
-to numbers {
-  return ('[data:makeList]' '10100000000000000202FEFE00000000000000000000004040407F7F404000000000' '1010000000000202020202020202827C000000007C42414141414141414140000000' '101000000804020202020202828244380000000010204040404040404040211E0000' '10100000000080402010080402FEFE000000000C0A09080808080808087F7F080800' '10100000FE82828282828282828202000000000010204040404040404040211E0000' '10100000000000804020100804020000000000001C224141414141414141221C0000' '10100000020202020202020282C2E27E0000000000000070381C0E07030100000000' '10100000FC02020202020202020202FC000000003D424242424242424242423D0000' '10100000FC02020202020202020202FC0000000001424242424242424242423F0000' '10100000FC02020202020202020202FC000000003F404040404040404040403F0000')
+to _getCodeFromFile file {
+  comment '从文件读取字模，文件以要显示的汉字命名'
+  '[file:open]' file
+  local 'var' ('[file:readLine]' file)
+  '[file:close]' file
+  return var
 }
 
-to sample {
-  return ('[data:makeList]' '101020F02824F62D24E00808C83E0808F8000041310D033F41414443485048463100' '101000001010101010907E1010101010F000000040201008060100102040300E0100' '10100002F2121212F21A1612F2121212E20000003F0000000F0000000F0020403F00' '10100000202022242820E03826202020E0000000004020100C030010214220100F00')
+to _numbers {
+  comment '本库设计独特的16点阵数字字体'
+  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F8040202020202020202020200F800001F0040404040404040404040201F00')
+}
+
+to _sample {
+  comment '两个示例汉字的32点阵字模'
+  return ('[data:makeList]' '20200000000000000000c0c0808080f0fc989880808080c0c08000000000000000000000000000000000ffffff101010101010101010ffffff0000000000000000000000000000000000ffffff828282828282828282ffffff0000000000000000000000000000000000030303000000000000000000030303000000000000000000' '2020000000000000008000000000000000f8f818000000000080000000000000000000000000000000ffffff8383838383ffff838383838383ffff0300000000000000000000000000ffffff8181818181ffff818181818181ffff000000000000000000000000000007070300000000000000000000000000070300000000000000')
+}
+
+to saveFile fileName code {
+  comment 'fileName是文件名，每个汉字对应一个以这个汉字命名的字模文件'
+  '[file:delete]' fileName
+  '[file:open]' fileName
+  '[file:appendLine]' code fileName
+  '[file:close]' fileName
+}
+
+to showChinese text x y size color {
+  comment '通过文件获取字模显示汉字的方法'
+  local 'var' 0
+  local 'dz' 0
+  for i (size text) {
+    var = (_getCodeFromFile (at i text))
+    if ((size var) > 0) {
+      if ((size var) == 260) {
+        dz = 32
+      } else {
+        dz = 16
+      }
+      '[tft:rect]' (x + ((i - 1) * (dz * size))) y (dz * size) (dz * size) (colorSwatch 0 0 0 255)
+      draw var (x + ((i - 1) * (dz * size))) y size color
+    } else {
+      sayIt (at i text) '字不存在,请先用saveFile保存字模到文件'
+    }
+  }
 }
