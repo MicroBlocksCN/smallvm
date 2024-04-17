@@ -1,0 +1,30 @@
+module Log4M
+author '邵悦'
+version 1 1 
+description '简单的调试信息记录和显示功能
+'
+variables XGO_loginfo 
+
+  spec ' ' 'logInfo' 'XGO_logInfo _' 'str' 'text'
+  spec ' ' 'showLog' 'XGO_showLog last _' 'auto' '10'
+
+to logInfo foo {
+  comment '最多纪录200条日志，超过会清空重来'
+  if (or (not (isType XGO_loginfo 'list')) ((size XGO_loginfo) > 200)) {
+    XGO_loginfo = (newList 0)
+  }
+  '[data:addLast]' foo XGO_loginfo
+}
+
+to showLog foo {
+  local 'var' ('[data:join]' 'log new to old' ('[data:unicodeString]' 10))
+  local 'pos' 1
+  if (foo > 0) {
+    pos = (maximum ((size XGO_loginfo) - foo) 1)
+  }
+  for i ('[data:range]' (size XGO_loginfo) pos) {
+    var = ('[data:join]' var i ':  ' (at i XGO_loginfo) ('[data:unicodeString]' 10))
+  }
+  sayIt var
+}
+
