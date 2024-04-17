@@ -483,7 +483,7 @@ method initOpcodes SmallCompiler {
 		callCustomReporter 125
 		callCommandPrimitive 126
 		callReporterPrimitive 127
-		metadata 240'
+		metadata 248'
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
 		words = (words line)
@@ -1103,6 +1103,47 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	}
 }
 
+method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
+	// Append metadata used by the decompiler.
+	// The function name is also used by the "call" blocks.
+
+	// collect local variable names
+	localVarAndArgNames = (list)
+	for pair (sortedPairs localVars) {
+		add localVarAndArgNames (last pair)
+	}
+
+	// defaults (empty for non-functions)
+	functionName = ''
+	functionLibrary = ''
+	functionMetadata = ''
+
+	// if aBlockOrFunction is a function, collect function info strings
+	if (isClass aBlockOrFunction 'Function') {
+		project = (project (scripter (smallRuntime)))
+		functionName = (functionName aBlockOrFunction)
+		functionLibrary = (libForFunction project aBlockOrFunction)
+		if (isEmpty functionLibrary) {
+			functionMetadata = (metaInfoForFunction project aBlockOrFunction)
+		}
+		addAll localVarAndArgNames (argNames aBlockOrFunction) // add function arg names
+	}
+
+	// create varNames string
+	varNames = ''
+	if (not (isEmpty localVarAndArgNames)) {
+		 // replace any tabs in var names with spaces so we can safely use tab as a delimiter
+		for i (count localVarAndArgNames) {
+			s = (copyReplacing (at localVarAndArgNames i) (string 9) ' ')
+			atPut localVarAndArgNames i s
+		}
+		varNames = (joinStrings localVarAndArgNames (string 9)) // tab delimited string of var names
+	}
+
+	// add 'metadata' pseudo instruction
+	add instructionList (array 'metadata' functionName functionLibrary functionMetadata varNames)
+}
+
 // binary code generation
 
 method opcodeForInstr SmallCompiler op {
@@ -1166,6 +1207,16 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 	} (and (-128 <= arg) (arg <= 127)) {
 		// 8-bit arg for all other instructions
 		add bytes (arg & 255)
+	} ('metadata' == op) {
+		// metadata should be the last instruction, following the literals
+ 		addAll bytes (toArray (toBinaryData (at instr 2))) // function name
+ 		add bytes 0 // null terminator
+  		addAll bytes (toArray (toBinaryData (at instr 3))) // function library
+ 		add bytes 0 // null terminator
+		addAll bytes (toArray (toBinaryData (at instr 4))) // function metadata
+ 		add bytes 0 // null terminator
+ 		addAll bytes (toArray (toBinaryData (at instr 5))) // local var and arg names
+ 		add bytes 0 // null terminator
 	} else {
 		error 'Argument does not fit in 8 bits'
 	}

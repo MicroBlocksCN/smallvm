@@ -181,21 +181,30 @@ method functionNamed MicroBlocksProject functionName {
 	return nil
 }
 
+method libForFunction MicroBlocksProject aFunc {
+	funcName = (functionName aFunc)
+	for lib (values libraries) {
+		if (notNil (functionNamed lib funcName)) {
+			return (moduleName lib)
+		}
+	}
+	return ''
+}
+
 method metaInfoForFunction MicroBlocksProject aFunc {
-	// Return a tab-delimited string with meta information about the given function:
-	//	libraryName libraryCategory blockType funcName specString argTypes
-	// Return the empty string if the function doesn't have a block spec (shouldn't happen).
+	// Return a tab-delimited block spec string for the given function:
+	//	blockType funcName specString argTypes
 
 	funcName = (functionName aFunc)
 	spec = (at blockSpecs funcName)
-	if (isNil spec) { // no spec, so create one
+	if (isNil spec) { // no spec (very unlikely), so create one
 		specString = funcName
 		typeString = ''
-		defaults = (list)
 		for argName (argNames aFunc) {
 			specString = (join specString ' _')
 			typeString = (join typeString ' auto')
 		}
+		defaults = (list)
 		spec = (blockSpecFromStrings funcName ' ' specString typeString defaults)
 	}
 
@@ -203,19 +212,9 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 	if ((count parts) < 4) {
 		add parts '' // add empty arg types string for a parmeterless function
 	} else {
-		parts = (copyFromTo parts 1 4) // remove default arg values
+		parts = (copyFromTo parts 1 4) // remove any default arg values
 	}
 
-	libName = ''
-	libCat = ''
-	for pair (sortedPairs libraries) {
-		lib = (first pair)
-		if (notNil (functionNamed lib funcName)) {
-			libName = (last pair)
-			libCat = (moduleCategory lib)
-		}
-	}
-	parts = (join (list libName libCat) parts)
 	return (joinStrings parts (string 9)) // join fields with tab delimiter
 }
 
