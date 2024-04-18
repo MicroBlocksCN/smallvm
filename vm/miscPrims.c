@@ -17,35 +17,6 @@
 #include "tinyJSON.h"
 #include "version.h"
 
-OBJ primUSecsSince(int argCount, OBJ *args) {
-	int startTime = obj2int(args[0]);
-	int endTime = ((argCount > 1) && isInt(args[1])) ?
-		obj2int(args[1]) :
-		microsecs() & 0x3FFFFFFF;
-
-	int deltaTime = endTime - startTime;
-	if (deltaTime < 0) deltaTime += 0x40000000;
-	return int2obj(deltaTime);
-}
-
-OBJ primMSecsSince(int argCount, OBJ *args) {
-	int startTime = obj2int(args[0]);
-	int endTime = ((argCount > 1) && isInt(args[1])) ?
-		obj2int(args[1]) :
-		((uint32) ((totalMicrosecs() / 1000))) & 0x3FFFFFFF;
-
-	int deltaTime = endTime - startTime;
-	if (deltaTime < 0) deltaTime += 0x40000000;
-	return int2obj(deltaTime);
-}
-
-OBJ primSeconds(int argCount, OBJ *args) {
-	// Seconds since start. Wraps at 1073741823 seconds (34 years).
-
-	uint32 secs = ((uint32) ((totalMicrosecs() / 1000000))) &  0x3FFFFFFF;
-	return int2obj(secs);
-}
-
 OBJ primVersion(int argCount, OBJ *args) {
 	int result = atoi(&VM_VERSION[1]); // skip initial "v"
 	return int2obj(result);
@@ -369,9 +340,6 @@ static OBJ primBMP680GasResistance(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	{"usecsSince", primUSecsSince},
-	{"msecsSince", primMSecsSince},
-	{"seconds", primSeconds},
 	{"version", primVersion},
 	{"bleID", primBLE_ID},
 	{"hexToInt", primHexToInt},
