@@ -1,29 +1,68 @@
 module Log4M
 author '邵悦'
-version 1 1 
+version 1 2 
 description '简单的调试信息记录和显示功能
+可以正序或者逆序显示
+日志记录的时候可以选择是否添加时间戳
 '
-variables XGO_loginfo 
+variables XGO_loginfo var 
 
-  spec ' ' 'logInfo' 'XGO_logInfo _' 'str' 'text'
-  spec ' ' 'showLog' 'XGO_showLog last _' 'auto' '10'
+  spec ' ' 'logInfo' 'XGO_logInfo _ timestamp _' 'str bool' 'text' false
+  spec ' ' 'showLog' 'XGO_showLog _ row reverse _' 'auto bool' '10' true
+  spec ' ' 'XGO_logClear' 'XGO_logClear'
+  spec ' ' 'XGO_logReplay' 'XGO_logReplay'
 
-to logInfo foo {
-  comment '最多纪录200条日志，超过会清空重来'
-  if (or (not (isType XGO_loginfo 'list')) ((size XGO_loginfo) > 200)) {
-    XGO_loginfo = (newList 0)
-  }
-  '[data:addLast]' foo XGO_loginfo
+to XGO_logClear {
+  XGO_loginfo = (newList 0)
 }
 
-to showLog foo {
-  local 'var' ('[data:join]' 'log new to old' ('[data:unicodeString]' 10))
-  local 'pos' 1
-  if (foo > 0) {
-    pos = (maximum ((size XGO_loginfo) - foo) 1)
+to XGO_logReplay {
+  for i (size XGO_loginfo) {
+    var = ('[data:join]' var '：' (at i XGO_loginfo))
+    sayIt ('[data:join]' i '：' (at i XGO_loginfo))
+    waitMillis 500
   }
-  for i ('[data:range]' (size XGO_loginfo) pos) {
-    var = ('[data:join]' var i ':  ' (at i XGO_loginfo) ('[data:unicodeString]' 10))
+}
+
+to logInfo foo bar {
+  if (and ('[misc:connectedToIDE]') (booleanConstant true)) {
+    comment '最多纪录200条日志，超过会清空重来'
+    comment '时间戳的单位是1000/256，大概0.3秒'
+    if (or (not (isType XGO_loginfo 'list')) ((size XGO_loginfo) > 200)) {
+      XGO_loginfo = (newList 0)
+    }
+    if bar {
+      '[data:addLast]' ('[data:join]' '[' ((millisOp) >> 8) ']' ':' foo) XGO_loginfo
+    } else {
+      '[data:addLast]' foo XGO_loginfo
+    }
+    comment 'trig log fresh'
+    sendBroadcast 'showlog'
+  }
+}
+
+to showLog foo bar {
+  if ((size XGO_loginfo) == 0) {return 0}
+  local 'var' ('[data:join]' '+ log reverse +' ('[data:unicodeString]' 10))
+  if bar {
+    var = ('[data:join]' var '------------------' ('[data:unicodeString]' 10))
+    comment 'new to old'
+    local 'pos' 1
+    if (foo > 0) {
+      foo = (minimum 15 foo)
+      pos = (maximum ((size XGO_loginfo) - foo) 1)
+    }
+    for i ('[data:range]' (size XGO_loginfo) pos) {
+      var = ('[data:join]' var i ':' (at i XGO_loginfo) ('[data:unicodeString]' 10))
+    }
+  } else {
+    var = ('[data:join]' '+ log item +' ('[data:unicodeString]' 10))
+    var = ('[data:join]' var '------------------' ('[data:unicodeString]' 10))
+    if (foo > 0) {
+      for i (minimum foo (size XGO_loginfo)) {
+        var = ('[data:join]' var i ':' (at i XGO_loginfo) ('[data:unicodeString]' 10))
+      }
+    }
   }
   sayIt var
 }
