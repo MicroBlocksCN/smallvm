@@ -156,12 +156,20 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	// number of bytes read. The list size determines the number of bytes to read (up to a
 	// max of 32). This operation is usually preceded by an I2C write to request some data.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ obj = args[1];
-	if (!IS_TYPE(obj, ListType)) return int2obj(0);
+	int count = 0;
+	uint8 *bytes = NULL; // will point to byte array bytes if obj is a byte array
 
-	int count = obj2int(FIELD(obj, 0));
+	if (IS_TYPE(obj, ListType)) {
+		count = obj2int(FIELD(obj, 0));
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		count = BYTES(obj);
+		bytes = (uint8 *) &FIELD(obj, 0);
+	} else {
+		return fail(needsByteArray);
+	}
 	if (count <= 0) return zeroObj;
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
@@ -178,8 +186,12 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	#endif
 
 	for (int i = 0; i < count; i++) {
-		int byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
-		FIELD(obj, i + 1) = int2obj(byte);
+		uint8 byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
+		if (bytes) {
+			bytes[i] = byte;
+		} else {
+			FIELD(obj, i + 1) = int2obj(byte);
+		}
 	}
 	return int2obj(count);
 }
@@ -189,7 +201,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// integer, write it as a single byte. If it is a byte array or list of bytes, write them.
 	// The list should contain integers in the range 0..255.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ data = args[1];
 	int stop = ((argCount < 3) || (trueObj == args[2]));
@@ -1582,7 +1594,7 @@ static OBJ primTouchRead(int argCount, OBJ *args) {
 
 #else // stubs for non-ESP32 boards
 
-static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primTouchRead(int argCount, OBJ *args) { return zeroObj; }
 
 #endif // Capacitive Touch Primitives
 
