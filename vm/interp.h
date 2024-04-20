@@ -365,9 +365,6 @@ void BLE_stop();
 void BLE_pauseAdvertising();
 void BLE_resumeAdvertising();
 
-void BLE_suspendIDEService();
-void BLE_resumeIDEService();
-
 void BLE_setEnabled(int enableFlag);
 int BLE_isEnabled();
 

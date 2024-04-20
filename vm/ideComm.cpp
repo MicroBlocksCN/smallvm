@@ -32,6 +32,7 @@ extern uint32 lastRcvTime;
 
 static BLEServer *pServer = NULL;
 static BLEService *pService = NULL;
+static BLEService *pUARTService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
 static char uniqueName[32];
@@ -211,6 +212,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // Start/Stop BLE
 
+BLEService * BLE_createUARTService(); // imported from blePrims.cpp
+
 void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
@@ -222,17 +225,20 @@ void BLE_start() {
 	pServer = BLEDevice::createServer();
 	pServer->setCallbacks(new MyServerCallbacks());
 
-	// Create BLE Service
+	// Create IDE Service
 	pService = pServer->createService(MB_SERVICE_UUID);
-
-	// Create BLE Characteristics
 	pTxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
 	pTxCharacteristic->setCallbacks(new MyCallbacks());
 	pRxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
 	pRxCharacteristic->setCallbacks(new MyCallbacks());
 
-	// Start the service
+	// Create UART Service
+	pUARTService = BLE_createUARTService();
+
+	// Start Services
 	pService->start();
+	pUARTService->start();
+
 	serviceOnline = true;
 	bleRunning = true;
 
@@ -280,20 +286,6 @@ void BLE_resumeAdvertising() {
 	pAdvertising->setMinInterval(100);
 	pAdvertising->setMaxInterval(200);
 	if (serviceOnline) pAdvertising->start();
-}
-
-// Stop and resume IDE service (used by BLE UART
-
-void BLE_suspendIDEService() {
-	pServer->removeService(pService);
-	pServer->setCallbacks(NULL);
-}
-
-void BLE_resumeIDEService() {
-	pServer->addService(pService);
-	pServer->setCallbacks(new MyServerCallbacks());
-	pService->start();
-	BLE_resumeAdvertising();
 }
 
 // IDE receive and send
