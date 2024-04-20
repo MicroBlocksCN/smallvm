@@ -22,6 +22,8 @@
 //		void flashWriteData(int *dst, int wordCount, uint8 *src)
 //		void flashWriteWord(int *addr, int value)
 
+#include <Arduino.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
