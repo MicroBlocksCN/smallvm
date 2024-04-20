@@ -800,7 +800,7 @@ static void runTask(Task *task) {
 			DISPATCH();
 		}
 		task->status = waiting_micros;
-		task->wakeTime = (microsecs() + tmp) - 10; // adjusted for approximate scheduler overhead
+		task->wakeTime = (microsecs() + tmp) - 7; // adjusted for approximate scheduler overhead
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
@@ -811,7 +811,7 @@ static void runTask(Task *task) {
 	 		goto error;
 	 	}
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + ((1000 * tmp) - 10);
+		task->wakeTime = microsecs() + ((1000 * tmp) - 7);
 		goto suspend;
 	sendBroadcast_op:
 		primSendBroadcast(arg, sp - arg);
