@@ -51,15 +51,15 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
 		(array 'r' 'boardType'			'board type')
+		(array 'r' '[misc:version]'		'version')
 		'-'
 		(array 'r' '[misc:bleID]'		'BLE id')
-		(array 'r' '[misc:version]'		'version')
+		(array 'r' '[ble:bleConnected]' 'BLE connected')
 	'Input-Advanced'
 		(array 'r' 'millisSince'		'milliseconds since _ : end time _' 'num auto' 0 'now')
 		(array 'r' 'microsSince'		'microseconds since _ : end time _' 'num auto' 0 'now')
 		'-'
 		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
-
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
