@@ -1,6 +1,6 @@
 module 'Cutebot Pro' Output
 author MicroBlocks
-version 0 4 
+version 0 7 
 depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
 choices wheelMenu left right both 
 choices leftRightMenu left right 
@@ -56,7 +56,6 @@ I2C Commands:
 0x15 - read version
 0x16 - read wheel counts
 0x17 (23) - PID turn by a specific angle (use one or both wheels)
-
 '
 variables _cbpro_leftCount _cbpro_rightCount 
 
@@ -147,7 +146,7 @@ FORWARD: POSITIVE values
 On rescale, min power is set to +/-10 since any less number does not
 move car.
 '
-  wheels = (ifExpression ('right' == wheels) 1 (ifExpression ('left' == wheels) 2 3))
+  wheels = (ifExpression ('left' == wheels) 1 (ifExpression ('right' == wheels) 2 3))
   if (0 == power) {
     cbpro_stopWheel wheels
   } else {
