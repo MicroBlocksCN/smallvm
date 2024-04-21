@@ -57,7 +57,7 @@ I2C Commands:
 0x16 - read wheel counts
 0x17 (23) - PID turn by a specific angle (use one or both wheels)
 '
-variables _cbpro_leftCount _cbpro_rightCount 
+variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
 
   spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (10 to 60 cm/s)' 'num num' 60 60
   spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
@@ -65,7 +65,7 @@ variables _cbpro_leftCount _cbpro_rightCount
   spec ' ' 'cbpro_stopAll' 'CBPro stop all'
   space
   spec ' ' 'cbpro_moveDistance' 'CBPro move _ by _ (0 to 255 cm)' 'menu.directionMenu num' 'forward' 5
-  spec ' ' 'cbpro_turn' 'CBPro turn _ by _ degrees' 'menu.turnTypeMenu menu.turnAngleMenu' 'left' '45 degrees'
+  spec ' ' 'cbpro_turn' 'CBPro turn _ degrees' 'num' 90
   space
   spec ' ' 'cbpro_setHeadlight' 'CBPro set headlight _ to _' 'menu.wheelMenu color' 'both'
   spec ' ' 'cbpro_setNeopixels' 'CBPro set NeoPixel _ to _' 'menu.wheelMenu color' 'both'
@@ -88,26 +88,24 @@ variables _cbpro_leftCount _cbpro_rightCount
   spec 'r' 'cbpro_getVersion' 'CBPro version'
   space
   spec ' ' '_cbpro_setWheelPower' '_cbpro_setWheel _ power _ (-100 to 100)' 'menu.wheelMenu num' 'both' 100
-  spec 'r' '_cbpro_getRotationDegrees' '_cbpro_getRotationDegrees _' 'menu.leftRightMenu' 'left'
-  spec ' ' '_cbpro_readWheelCounts' '_cbpro_readWheelCounts'
-  spec ' ' '_cbpro_clearWheelCounts' '_cbpro_clearWheelCounts'
+  spec ' ' '_cbpro_clearEncodersAndOrientation' '_cbpro_clearEncodersAndOrientation'
+  spec 'r' '_cbpro_getOrientation' '_cbpro_getOrientation'
+  spec ' ' '_cbpro_readEncoders' '_cbpro_readEncoders'
   spec ' ' '_cbpro_writeCmd' '_cbpro_writeCmd _ args _ _ _ _' 'num num num num num' 9 3 0 0 0
   spec 'r' '_cbpro_readByte' '_cbpro_readByte'
+  spec ' ' 'turn' 'turn _' 'auto' '10'
 
-to '_cbpro_clearWheelCounts' {
-  comment 'Clear wheel counts.'
+to '_cbpro_clearEncodersAndOrientation' {
+  comment 'Clear wheel counts and orientation.'
   '_cbpro_writeCmd' (hexToInt '0A') 3 0 0 0
   _cbpro_leftCount = 0
   _cbpro_rightCount = 0
+  _cppro_orientation = 0
 }
 
-to '_cbpro_getRotationDegrees' wheel {
-  comment 'Get the rotation degrees of the either wheel.
-Rotation is calculated from the wheel count. There 1428 counts per revolution, or 0.252 degrees per count.
-The result may be over 360 degrees (e.g. 720 degrees would be two complete revolutions).'
-  '_cbpro_readWheelCounts'
-  count = (ifExpression ('left' == wheel) _cbpro_leftCount _cbpro_rightCount)
-  return ((360 * count) / 1428)
+to '_cbpro_getOrientation' wheel {
+  comment 'Get the approximate robot orientation based on the turns it has made.'
+  return _cppro_orientation
 }
 
 to '_cbpro_readByte' {
@@ -116,8 +114,8 @@ to '_cbpro_readByte' {
   return (at 1 data)
 }
 
-to '_cbpro_readWheelCounts' {
-  comment 'Read the counts for both wheels into:
+to '_cbpro_readEncoders' {
+  comment 'Read the wheel encoder counts into:
   _cbpro_leftCount
   _cbpro_rightCount
 negative means = reverse'
@@ -211,14 +209,15 @@ to cbpro_moveDistance dir dist {
   comment 'Move in direction specified distance, FWD: dir = 1, BWD: dir = 0
 Distance range: 0 - 255 cm'
   cbpro_setWheelSpeed 0 0
-  '_cbpro_clearWheelCounts'
   dir = (ifExpression ('forward' == dir) 1 0)
   if (dist > 3) {
     dist = (dist - ((dist / 50) + 1))
   }
   '_cbpro_writeCmd' (hexToInt '3') dir dist 0 0
-  waitMillis 10
-  waitUntil (and (0 == (cbpro_wheelSpeed 1)) (0 == (cbpro_wheelSpeed 2)))
+  comment 'Leave time for wheels to start turning'
+  waitMillis 400
+  waitUntil (and (0 == (cbpro_wheelSpeed 'left')) (0 == (cbpro_wheelSpeed 'right')))
+  waitMillis 250
 }
 
 to cbpro_setHeadlight led color {
@@ -309,34 +308,26 @@ A TRUE argument indicates the corresponding sensor light is ON.'
   return (stateQuery == (cbpro_getTrackingState))
 }
 
-to cbpro_turn turnType angle {
-  comment 'Turn LEFT: turnType=0, RIGHT: turnType=1, LEFTinPLACE: turnType=2, RIGHTinPLACE: turnType=3
-Angle ranges: 45 degrees: angle=0, 90 degrees: angle=1, 135 degrees: angle=2, 180 degrees: angle=3'
-  cbpro_setWheelSpeed 0 0
-  '_cbpro_clearWheelCounts'
-  local 'turns' ('[data:makeList]' 'left' 'right' 'left-in-place' 'right-in-place')
-  local 'degrees' ('[data:makeList]' '45 degrees' '90 degrees' '135 degrees' '180 degrees')
-  turnType = (('[data:find]' turnType turns) - 1)
-  local 'tempAngle' (at ('[data:find]' angle degrees) ('[data:makeList]' 150 316 450 630))
-  local 'wheels' 0
-  local 'cmd' 0
-  if (0 == turnType) {
-    comment 'Left turn'
-    wheels = 2
-    cmd = 4
-  } (1 == turnType) {
-    comment 'Right turn'
-    wheels = 1
-    cmd = 4
-  } else {
-    comment 'In-place turns'
-    wheels = 3
-    cmd = (hexToInt '17')
-    tempAngle += 4
+to cbpro_turn angle {
+  comment 'Do an in-place turn of the given number of degrees. Negative angles turn counter-clockwise.
+Note: Small angles (under 5 degrees are less accurate).'
+  _cppro_orientation += angle
+  local 'dir' (ifExpression (angle > 0) 0 1)
+  angle = (absoluteValue angle)
+  local 'turnAmount' (((angle * 1324) + 180) / 360)
+  if (angle < 15) {
+    comment 'Adjust turn amount for small angles.
+Min turn amount is 4.'
+    turnAmount = (maximum 4 (turnAmount - 5))
   }
-  '_cbpro_writeCmd' cmd wheels ((tempAngle >> 8) & (hexToInt 'FF')) ((tempAngle >> 0) & (hexToInt 'FF')) (ifExpression (3 == turnType) 0 1)
-  waitMillis 10
-  waitUntil (and (0 == (cbpro_wheelSpeed 1)) (0 == (cbpro_wheelSpeed 2)))
+  comment 'In-place turn'
+  cbpro_setWheelSpeed 0 0
+  '_cbpro_writeCmd' 23 3 ((turnAmount >> 8) & (hexToInt 'FF')) ((turnAmount >> 0) & (hexToInt 'FF')) dir
+  comment 'Leave time for wheels to start turning'
+  waitMillis 50
+  waitUntil (and (0 == (cbpro_wheelSpeed 'left')) (0 == (cbpro_wheelSpeed 'right')))
+  comment 'Leave time for robot to stop moving'
+  waitMillis 250
 }
 
 to cbpro_wheelSpeed wheel {
