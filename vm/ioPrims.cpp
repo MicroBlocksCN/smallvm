@@ -552,10 +552,11 @@ void hardwareInit() {
 	#define DEFAULT_TONE_PIN 2
 	#if defined(ARDUINO_M5Stick_Plus)
 	#define PIN_LED 10
+	#define INVERT_USER_LED true
 	#else
 	#define PIN_LED 19
 	#endif
-	#define INVERT_USER_LED true
+	
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
