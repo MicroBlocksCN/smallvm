@@ -991,6 +991,92 @@ static int readTemperature() {
 	return temp;
 }
 
+#ifdef BM8563_RTC //RTC
+#define RTC8563_ADDR	0x51
+
+static uint8_t bcd2ToByte(uint8_t value) {
+	uint8_t tmp = 0;
+	tmp = ((uint8_t)(value & (uint8_t)0xF0) >> (uint8_t)0x4) * 10;
+	return (tmp + (value & (uint8_t)0x0F));
+}
+static uint8_t byteToBcd2(uint8_t value) {
+	uint8_t bcdhigh = 0;
+	while (value >= 10) {
+		bcdhigh++;
+		value -= 10;
+	}
+	return ((uint8_t)(bcdhigh << 4) | value);
+}
+
+static OBJ primRTCSetDate(int argCount, OBJ *args) {
+	//yyyy,MM,dd,dayofweek
+	Wire1.begin(21, 22);
+	Wire1.setClock(400000);
+	Wire1.beginTransmission(RTC8563_ADDR);
+	Wire1.write(0x05);
+	Wire1.write(byteToBcd2(obj2int(args[2])));
+	Wire1.write(byteToBcd2(obj2int(args[3])));
+	Wire1.write(byteToBcd2(obj2int(args[1])));
+	Wire1.write(byteToBcd2(obj2int(args[0]) % 100));
+	Wire1.endTransmission();
+	return falseObj;
+}
+
+static OBJ primRTCSetTime(int argCount, OBJ *args) {
+	Wire1.begin(21, 22);
+	Wire1.setClock(400000);
+	Wire1.beginTransmission(RTC8563_ADDR);
+	Wire1.write(0x02);
+	Wire1.write(byteToBcd2(obj2int(args[0])));
+	Wire1.write(byteToBcd2(obj2int(args[1])));
+	Wire1.write(byteToBcd2(obj2int(args[2])));
+	Wire1.endTransmission();
+	return falseObj;
+}
+
+static OBJ primRTCReadDate(int argCount, OBJ *args) {
+	OBJ result = newObj(ListType, 5, zeroObj);
+	if (!result) return falseObj; // allocation failed
+	uint8_t buf[4] = {0};
+	Wire1.begin(21, 22);
+	// Wire1.setClock(400000);
+	Wire1.beginTransmission(RTC8563_ADDR);
+	Wire1.write(0x05);
+	Wire1.endTransmission();
+	Wire1.requestFrom(RTC8563_ADDR, 4);
+	for (int i = 0; i < 4; i++) {
+		buf[i] = Wire1.available() ? Wire1.read() : 0;
+	}
+	FIELD(result, 0) = int2obj(4);
+	FIELD(result, 1) = int2obj(2000 + bcd2ToByte(buf[3] & 0xff));
+	FIELD(result, 2) = int2obj(bcd2ToByte(buf[2] & 0x1f));
+	FIELD(result, 3) = int2obj(bcd2ToByte(buf[0] & 0x3f));
+	FIELD(result, 4) = int2obj(bcd2ToByte(buf[1] & 0x07));
+	return result;
+}
+
+static OBJ primRTCReadTime(int argCount, OBJ *args) {
+	OBJ result = newObj(ListType, 4, zeroObj);
+	if (!result) return falseObj; // allocation failed
+	uint8_t buf[3] = {0};
+	Wire1.begin(21, 22);
+	// Wire1.setClock(400000);
+	Wire1.beginTransmission(RTC8563_ADDR);
+	Wire1.write(0x02);
+	Wire1.endTransmission();
+	Wire1.requestFrom(RTC8563_ADDR, 3);
+	for (int i = 0; i < 3; i++) {
+		buf[i] = Wire1.available() ? Wire1.read() : 0;
+	}
+	FIELD(result, 0) = int2obj(3);
+	FIELD(result, 3) = int2obj(bcd2ToByte(buf[0] & 0x7f));
+	FIELD(result, 2) = int2obj(bcd2ToByte(buf[1] & 0x7f));
+	FIELD(result, 1) = int2obj(bcd2ToByte(buf[2] & 0x3f));
+	return result;
+}
+
+#endif
+
 #elif defined(ARDUINO_CITILAB_ED1)
 
 typedef enum {
@@ -1085,6 +1171,7 @@ static int readTemperature() {
 	}
 	return val;
 }
+
 
 #elif defined(ARDUINO_Mbits)
 
@@ -2544,6 +2631,12 @@ static PrimEntry entries[] = {
 	
 	#if defined(COCOROBO)
 	{"Humidity", primHumidity},		
+  	#endif
+	#if defined(BM8563_RTC)
+	{"setDate", primRTCSetDate},	
+	{"setTime", primRTCSetTime},
+	{"readDate", primRTCReadDate},	
+	{"readTime", primRTCReadTime},	
   	#endif
 };
 
