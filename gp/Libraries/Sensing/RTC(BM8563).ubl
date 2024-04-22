@@ -1,6 +1,7 @@
 module 'RTC(BM8563)'
 author '邵悦'
-version 1 0 
+version 1 1 
+depends 'Other/Lists' 
 description 'BM8563 I2C
 设置的年份要大于2000
 '
