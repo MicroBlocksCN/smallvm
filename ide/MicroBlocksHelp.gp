@@ -7,6 +7,8 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
+// TG edited on 2024-APR-03 based on Pilot FW v233
+
 defineClass MicroBlocksHelp opDict
 
 method initialize MicroBlocksHelp {
@@ -23,9 +25,17 @@ method initialize MicroBlocksHelp {
 		(array 'buttonB' 'input#button-b' 'Report the state of button B ( (-o) or (o-) ).')
 		(array 'timer' 'input#timer' 'Report the milliseconds since the timer was last reset.')
 		(array 'resetTimer' 'input#reset-timer' 'Reset the timer.')
+		(array 'secsOp' 'input#seconds' 'Report the seconds since power up.')
 		(array 'millisOp' 'input#milliseconds' 'Report the milliseconds since power up.')
 		(array 'microsOp' 'input#microseconds' 'Report the microseconds since power up.')
 		(array 'boardType' 'input#board-type' 'Report the board type.')
+		(array '[misc:version]' 'input#version' 'Reports firmware version loaded on the board.')
+		(array '[misc:bleID]' 'input#BLE-Id' 'Reports the three-letter BLE ID of the board if it supports BLE.')
+		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.'))
+
+		(array '[misc:msecsSince]' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
+		(array '[misc:usecsSince]' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
+		(array '[misc:connectedToIDE]' 'input#Connected-to-IDE' 'Reports (-o) if the board is connected to IDE.')
 
 		// PINS
 		(array 'digitalReadOp' 'pins#read-digital' 'Report the electrical logic level on a digital pin ( (-o) or (o-) ).')
@@ -48,6 +58,8 @@ method initialize MicroBlocksHelp {
 		(array '[serial:close]' 'comm#serial-close' 'Close the serial port.')
 		(array '[serial:read]' 'comm#serial-read' 'Report data received from the serial port (a byte array).')
 		(array '[serial:write]' 'comm#serial-write' 'Send a byte array to the serial port.')
+		(array '[serial:writeBytes]' 'comm#serial-write-starting-at' 'Send a byte array to the serial port, starting at the given byte.')
+		(array '[io:softWriteByte]' 'comm#soft-serial-write' 'Write a byte to the pin at the specified baud rate.')
 
 		// CONTROL
 		(array 'whenStarted' 'control#when-started' 'Run when the board powers up or when the IDE start button is clicked.')
@@ -59,39 +71,44 @@ method initialize MicroBlocksHelp {
 		(array 'whenCondition' 'control#when' 'Run when the condition becomes (-o) .')
 		(array 'waitUntil' 'control#wait-until' 'Wait until the condition becomes (-o) .')
 		(array 'return' 'control#return' 'Return (report) the given value from a function or script.')
-		(array 'whenBroadcastReceived' 'control#when-received' 'Run when the given message is broadcast.')
+		(array 'whenBroadcastReceived' 'control#when-received' 'Run when the given message is received as a broadcast.')
 		(array 'sendBroadcast' 'control#broadcast' 'Broadcast the given message.')
 		(array 'comment' 'control#comment' 'Do nothing. Used to add notes and documentation.')
+		(array 'range' 'control#range' 'Report a list containing the given range of numbers (with optional increment). Useful in "for" loops.')
 		(array 'for' 'control#for' 'Repeat the enclosed blocks with the variable set to the current iteration number or item.')
 		(array 'repeatUntil' 'control#repeat-until' 'Repeat the enclosed blocks until the condition becomes (-o) .')
 		(array 'stopTask' 'control#stop-this-task' 'Stop this task.')
 		(array 'stopAll' 'control#stop-other-tasks' 'Stop all tasks except this one.')
 		(array 'waitMicros' 'control#wait-microsecs' 'Wait the given number of microseconds.')
 		(array 'getLastBroadcast' 'control#last-message' 'Report the last broadcast message received.')
-		(array 'callCustomCommand' 'control#xxx' 'Call the function with the given name and optional parameter list.')
-		(array 'callCustomReporter' 'control#xxx' 'Call the function with the given name and optional parameter list and report its return value.')
+		(array 'argOrDefault' 'control#arg' 'Report the given argument or defaultValue if the argument was not supplied by the caller.')
+		(array 'callCustomCommand' 'control#call-custom-command' 'Call the function with the given name and optional parameter list.')
+		(array 'callCustomReporter' 'control#call-custom-reporter' 'Call the function with the given name and optional parameter list and report its return value.')
 
 		// OPERATORS
-		(array '+' 'operators#' 'Report the sum of the given numbers.')
-		(array '-' 'operators#' 'Report the first number minus the second.')
-		(array '*' 'operators#' 'Report the product of the given numbers.')
-		(array '/' 'operators#' 'Report the first number divided by the second.')
+		(array '+' 'operators#plus' 'Report the sum of the given numbers.')
+		(array '-' 'operators#minus' 'Report the first number minus the second.')
+		(array '*' 'operators#multiply' 'Report the product of the given numbers.')
+		(array '/' 'operators#divide' 'Report the first number divided by the second.')
 		(array '%' 'operators#modulus' 'Report the remainder of dividing the first number by the second.')
-		(array 'absoluteValue' 'operators#' 'Report the absolute value of the given number (always >= 0).')
-		(array 'minimum' 'operators#' 'Report the minimum of the values.')
-		(array 'maximum' 'operators#' 'Report the maximum of the values.')
+		(array 'absoluteValue' 'operators#abs' 'Report the absolute value of the given number (always >= 0).')
+		(array 'minimum' 'operators#min' 'Report the minimum of the values.')
+		(array 'maximum' 'operators#max' 'Report the maximum of the values.')
 		(array 'random' 'operators#random' 'Report a randomly chosen number in the given range.')
-		(array '<' 'operators#' 'Report (-o) if the first value is less than the second one.')
-		(array '<=' 'operators#' 'Report (-o) if the first value is less than or equal to the second one.')
-		(array '==' 'operators#' 'Report (-o) if the two values are equal.')
-		(array '!=' 'operators#' 'Report (-o) if the two values are not equal.')
-		(array '>=' 'operators#' 'Report (-o) if the first value is greater than or equal to the second one.')
-		(array '>' 'operators#' 'Report (-o) if the first value is greater than the second one.')
+		(array '<' 'operators#less-than' 'Report (-o) if the first value is less than the second one.')
+		(array '<=' 'operators#less-than-or-equal' 'Report (-o) if the first value is less than or equal to the second one.')
+		(array '==' 'operators#equal' 'Report (-o) if the two values are equal.')
+		(array '!=' 'operators#not-equal' 'Report (-o) if the two values are not equal.')
+		(array '>=' 'operators#greater-than-or-equal' 'Report (-o) if the first value is greater than or equal to the second one.')
+		(array '>' 'operators#greater-than' 'Report (-o) if the first value is greater than the second one.')
 		(array 'booleanConstant' 'operators#boolean-true/false' 'Boolean constant ( (-o) or (o-) ).')
 		(array 'not' 'operators#boolean-not' 'Report the logical inverse of a Boolean ( (-o) or (o-) ) value.')
 		(array 'and' 'operators#boolean-and' 'Report (-o) if both values are (-o)')
 		(array 'or' 'operators#boolean-or' 'Report (-o) if either value is (-o)')
 		(array 'isType' 'operators#is-type' 'Report (-o) if first input is a value of the given data type.')
+		(array '[data:convert]' 'operators#convert' 'Convert a value to the given data type.')
+		(array 'ifExpression' 'operators#ternary-if' 'If the condition is (-o) report the first alternative otherwise report the second alternative.')
+		(array 'rescale' 'operators#rescale' 'Map a value in the "from" range to the corresponding value in the "to" range.')
 		(array 'hexToInt' 'operators#hex' 'Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)')
 		(array '&' 'operators#bitwise-and' 'Report bitwise AND of two numbers.')
 		(array '|' 'operators#bitwise-or' 'Report bitwise OR of two numbers.')
