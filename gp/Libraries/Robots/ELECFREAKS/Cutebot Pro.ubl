@@ -1,13 +1,13 @@
 module 'Cutebot Pro' Output
 author MicroBlocks
-version 0 7 
-depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
-choices wheelMenu left right both 
-choices leftRightMenu left right 
-choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees' 
-choices directionMenu forward backward 
-choices servoTypeMenu '180 degree' '270 degree' '360 degree' 
-choices turnTypeMenu left right 'left-in-place' 'right-in-place' 
+version 0 8
+depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel
+choices wheelMenu left right both
+choices leftRightMenu left right
+choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees'
+choices directionMenu forward backward
+choices servoTypeMenu '180 degree' '270 degree' '360 degree'
+choices turnTypeMenu left right 'left-in-place' 'right-in-place'
 description 'The ELECFREAKS Cutebot Pro features:
 - 2 x Encoder Motors
 - HC-SR04 Distance Sensor (pins 8 and 12)
@@ -57,14 +57,14 @@ I2C Commands:
 0x16 - read wheel counts
 0x17 (23) - PID turn by a specific angle (use one or both wheels)
 '
-variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
+variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation
 
   spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (10 to 60 cm/s)' 'num num' 60 60
   spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
   spec ' ' 'cbpro_stopWheel' 'CBPro stop wheel _' 'menu.wheelMenu' 'both'
   spec ' ' 'cbpro_stopAll' 'CBPro stop all'
   space
-  spec ' ' 'cbpro_moveDistance' 'CBPro move _ by _ (0 to 255 cm)' 'menu.directionMenu num' 'forward' 5
+  spec ' ' 'cbpro_move' 'CBPro move _ (-255 to 255 cm)' 'num' 10
   spec ' ' 'cbpro_turn' 'CBPro turn _ degrees' 'num' 90
   space
   spec ' ' 'cbpro_setHeadlight' 'CBPro set headlight _ to _' 'menu.wheelMenu color' 'both'
@@ -93,7 +93,7 @@ variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation
   spec ' ' '_cbpro_readEncoders' '_cbpro_readEncoders'
   spec ' ' '_cbpro_writeCmd' '_cbpro_writeCmd _ args _ _ _ _' 'num num num num num' 9 3 0 0 0
   spec 'r' '_cbpro_readByte' '_cbpro_readByte'
-  spec ' ' 'turn' 'turn _' 'auto' '10'
+  spec 'r' '_cbpro_wheelsMoving' '_cbpro_wheelsMoving'
 
 to '_cbpro_clearEncodersAndOrientation' {
   comment 'Clear wheel counts and orientation.'
@@ -155,6 +155,10 @@ move car.
   }
 }
 
+to '_cbpro_wheelsMoving' {
+  return (or ((cbpro_wheelSpeed 'left') > 0) ((cbpro_wheelSpeed 'right') > 0))
+}
+
 to '_cbpro_writeCmd' cmd arg1 arg2 arg3 arg4 {
   '[sensors:i2cWrite]' 16 ('[data:makeList]' (hexToInt '99') cmd arg1 arg2 arg3 arg4 (hexToInt '88'))
 }
@@ -205,18 +209,25 @@ to cbpro_irCodeReceived {
   return (ir_code_received)
 }
 
-to cbpro_moveDistance dir dist {
+to cbpro_move dist {
   comment 'Move in direction specified distance, FWD: dir = 1, BWD: dir = 0
 Distance range: 0 - 255 cm'
   cbpro_setWheelSpeed 0 0
-  dir = (ifExpression ('forward' == dir) 1 0)
+  local 'dir' 1
+  if (dist == 0) {
+    return 0
+  } (dist < 0) {
+    dir = 0
+    dist = (absoluteValue dist)
+  }
   if (dist > 3) {
     dist = (dist - ((dist / 50) + 1))
   }
   '_cbpro_writeCmd' (hexToInt '3') dir dist 0 0
-  comment 'Leave time for wheels to start turning'
-  waitMillis 400
-  waitUntil (and (0 == (cbpro_wheelSpeed 'left')) (0 == (cbpro_wheelSpeed 'right')))
+  comment 'Wait for motors to start and then stop'
+  waitUntil ('_cbpro_wheelsMoving')
+  waitUntil (not ('_cbpro_wheelsMoving'))
+  comment 'Leave time for robot to stop moving'
   waitMillis 250
 }
 
@@ -323,9 +334,9 @@ Min turn amount is 4.'
   comment 'In-place turn'
   cbpro_setWheelSpeed 0 0
   '_cbpro_writeCmd' 23 3 ((turnAmount >> 8) & (hexToInt 'FF')) ((turnAmount >> 0) & (hexToInt 'FF')) dir
-  comment 'Leave time for wheels to start turning'
-  waitMillis 50
-  waitUntil (and (0 == (cbpro_wheelSpeed 'left')) (0 == (cbpro_wheelSpeed 'right')))
+  comment 'Wait for motors to start and then stop'
+  waitUntil ('_cbpro_wheelsMoving')
+  waitUntil (not ('_cbpro_wheelsMoving'))
   comment 'Leave time for robot to stop moving'
   waitMillis 250
 }
