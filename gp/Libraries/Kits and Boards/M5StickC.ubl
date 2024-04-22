@@ -1,0 +1,26 @@
+module M5StickC
+author '邵悦'
+version 1 0 
+description 'RTC时间设定和读取'
+
+  spec ' ' 'M5PlusC_setRTCTime' 'M5PlusC_setRTCTime HH _ mm _ ss _' 'auto auto auto' 20 '10' '10'
+  spec ' ' 'M5PlusC_setRTCdate' 'M5PlusC_setRTCdate yyyy _ MM _ dd _ weekday _' 'auto auto auto auto' 2024 4 '10' 5
+  spec 'r' 'M5PlusC_readRTCTime' 'M5PlusC_readRTCTime'
+  spec 'r' 'M5PlusC_readRTCDate' 'M5PlusC_readRTCDate'
+
+to M5PlusC_readRTCDate {
+  return (callCustomReporter '[sensors:readDate]')
+}
+
+to M5PlusC_readRTCTime {
+  return (callCustomReporter '[sensors:readTime]')
+}
+
+to M5PlusC_setRTCTime HH mm ss {
+  callCustomCommand '[sensors:setTime]' ('[data:makeList]' HH mm ss)
+}
+
+to M5PlusC_setRTCdate yyyy MM dd weekday {
+  callCustomCommand '[sensors:setDate]' ('[data:makeList]' yyyy MM dd weekday)
+}
+
