@@ -1027,9 +1027,9 @@ static OBJ primRTCSetTime(int argCount, OBJ *args) {
 	Wire1.setClock(400000);
 	Wire1.beginTransmission(RTC8563_ADDR);
 	Wire1.write(0x02);
-	Wire1.write(byteToBcd2(obj2int(args[0])));
-	Wire1.write(byteToBcd2(obj2int(args[1])));
 	Wire1.write(byteToBcd2(obj2int(args[2])));
+	Wire1.write(byteToBcd2(obj2int(args[1])));
+	Wire1.write(byteToBcd2(obj2int(args[0])));
 	Wire1.endTransmission();
 	return falseObj;
 }
