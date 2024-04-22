@@ -1,13 +1,13 @@
 module 'Cutebot Pro' Output
 author MicroBlocks
-version 0 8
-depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel
-choices wheelMenu left right both
-choices leftRightMenu left right
-choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees'
-choices directionMenu forward backward
-choices servoTypeMenu '180 degree' '270 degree' '360 degree'
-choices turnTypeMenu left right 'left-in-place' 'right-in-place'
+version 0 8 
+depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
+choices wheelMenu left right both 
+choices leftRightMenu left right 
+choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees' 
+choices directionMenu forward backward 
+choices servoTypeMenu '180 degree' '270 degree' '360 degree' 
+choices turnTypeMenu left right 'left-in-place' 'right-in-place' 
 description 'The ELECFREAKS Cutebot Pro features:
 - 2 x Encoder Motors
 - HC-SR04 Distance Sensor (pins 8 and 12)
@@ -57,7 +57,7 @@ I2C Commands:
 0x16 - read wheel counts
 0x17 (23) - PID turn by a specific angle (use one or both wheels)
 '
-variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation
+variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
 
   spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (10 to 60 cm/s)' 'num num' 60 60
   spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
