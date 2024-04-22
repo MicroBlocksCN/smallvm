@@ -188,6 +188,9 @@ static int deferUpdates = false;
 		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 		
 		void tftInit() {
+			//hold pin 4 set to high to power on
+			pinMode(4, OUTPUT);
+			digitalWrite(4, HIGH);
 			tft.init(TFT_HEIGHT, TFT_WIDTH);
 			tft.setRotation(3);
 			pinMode(TFT_BL, OUTPUT);
@@ -1095,8 +1098,10 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		pinMode(32, OUTPUT);
 		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
 	#elif defined(ARDUINO_M5Stick_C2)
-		pinMode(19, OUTPUT);
-		digitalWrite(19, (brightness > 0) ? HIGH : LOW);
+		pinMode(TFT_BL, OUTPUT);
+		if (brightness < 0) brightness = 0;
+		if (brightness > 10) brightness = 10;
+		analogWrite(TFT_BL, brightness * 25);
 	#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_Plus)
 		brightness = (brightness <= 0) ? 0 : brightness + 7; // 8 is lowest setting that turns on backlight
 		if (brightness > 15) brightness = 15;
