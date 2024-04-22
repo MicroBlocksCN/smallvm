@@ -31,7 +31,7 @@ method initialize MicroBlocksHelp {
 		(array 'boardType' 'input#board-type' 'Report the board type.')
 		(array '[misc:version]' 'input#version' 'Reports firmware version loaded on the board.')
 		(array '[misc:bleID]' 'input#BLE-Id' 'Reports the three-letter BLE ID of the board if it supports BLE.')
-		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.'))
+		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.')
 
 		(array '[misc:msecsSince]' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
 		(array '[misc:usecsSince]' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
