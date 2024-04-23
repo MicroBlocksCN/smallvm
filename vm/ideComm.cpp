@@ -17,6 +17,21 @@ char BLE_ThreeLetterID[4];
 int BLE_connected_to_IDE = false;
 int USB_connected_to_IDE = false;
 
+// Helper function (works on all boards)
+
+void BLE_initThreeLetterID() {
+	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+	getMACAddress(mac);
+	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
+
+	BLE_ThreeLetterID[0] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[1] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[2] = 65 + (machineNum % 26);
+	BLE_ThreeLetterID[3] = 0;
+}
+
 #if defined(BLE_IDE)
 
 // BLE Communications
@@ -69,21 +84,6 @@ static void flashUserLED() {
 	delay(10);
 	primSetUserLED(&off);
 	updateMicrobitDisplay();
-}
-
-void BLE_initThreeLetterID() {
-	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
-	getMACAddress(mac);
-	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
-
-	BLE_ThreeLetterID[0] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	BLE_ThreeLetterID[1] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	BLE_ThreeLetterID[2] = 65 + (machineNum % 26);
-	BLE_ThreeLetterID[3] = 0;
-
-	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
 }
 
 static void displayFor(int msecs) {
@@ -219,6 +219,7 @@ void BLE_start() {
 
 	// Create BLE Device
 	BLE_initThreeLetterID();
+	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
 	BLEDevice::init(uniqueName);
 
 	// Create BLE Server
@@ -377,7 +378,6 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
-void BLE_initThreeLetterID() { BLE_ThreeLetterID[0] = 0; }
 void BLE_start() { }
 void BLE_stop() { }
 void BLE_pauseAdvertising() { }
