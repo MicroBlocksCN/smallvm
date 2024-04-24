@@ -998,6 +998,9 @@ barreja _
 sort _
 ordena _
 
+unique _
+elimina duplicats de _
+
 shuffled _
 _ barrejada
 
@@ -1006,6 +1009,22 @@ _ invertida
 
 sorted _
 _ ordenada
+
+uniqued _
+_ sense duplicats
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudo-aleatorietat
+
+pseudorandom _ to _ with seed _
+nombre pseudo-aleatori entre _ i _ amb llavor _
+
+_ pseudorandom numbers _ to _ with seed _
+_ nombres pseudo-aleatoris entre _ i _ amb llavor _
 
 ####
 # BLE Keyboard library
@@ -1356,7 +1375,7 @@ Rhythm
 Ritme
 
 set tempo to _ bpm at _ / _ signature
-fixa tempo a _ bmp i compàs a _ / _
+fixa tempo a _ bpm i compàs a _ / _
 
 set pattern to _ bars
 fixa el patró a _ compassos
@@ -1374,7 +1393,7 @@ wait until beat _
 espera fins al temps _
 
 wait until bar _
-esperà fins al compàs _
+espera fins al compàs _
 
 ####
 # MIDI
