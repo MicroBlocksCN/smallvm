@@ -216,7 +216,7 @@ string
 texto
 
 list
-listas
+lista
 
 byte array
 lista de bytes
@@ -259,7 +259,7 @@ Data
 Datos
 
 list
-listas
+lista
 
 cat
 gato
@@ -1809,7 +1809,7 @@ _ scale root _
 escala _ con raíz _
 
 steps _
-y _ grdos
+y _ grados
 
 pentatonic _ scale root _
 escala pentatónica _ con raíz _
