@@ -852,6 +852,9 @@ void hardwareInit() {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0};
 	#else
+		#if defined(XRP)
+			#define PIN_BUTTON_A 22
+		#endif
 		#define DEFAULT_TONE_PIN 20 // speaker pin on PicoBricks board
 		static const char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
