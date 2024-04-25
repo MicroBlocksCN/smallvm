@@ -682,11 +682,25 @@ shuffle _
 
 sort _
 
+unique _
+
 shuffled _
 
 reversed _
 
 sorted _
+
+uniqued _
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+
+pseudorandom _ to _ with seed _
+
+_ pseudorandom numbers _ to _ with seed _
 
 ####
 # BLE Keyboard library

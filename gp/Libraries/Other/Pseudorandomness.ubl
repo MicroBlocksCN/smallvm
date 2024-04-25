@@ -8,7 +8,7 @@ The pseudorandom number generator is based on the xorshift algorithm.
 '
 
   spec 'r' 'pseudorand number' 'pseudorandom _ to _ with seed _' 'auto auto auto' 1 '10' 1312
-  spec 'r' 'pseudorand list' '_ pseudo random numbers _ to _ with seed _' 'auto auto auto auto' '10' 1 '10' 672142
+  spec 'r' 'pseudorand list' '_ pseudorandom numbers _ to _ with seed _' 'auto auto auto auto' '10' 1 '10' 672142
 
 to 'pseudorand list' count low high seed {
   local 'numbers' (newList count)

@@ -42,7 +42,7 @@ board type
 tipo de placa
 
 connected to IDE
---MISSING--
+conectado a la IDE
 
 Pins
 Pines
@@ -126,10 +126,10 @@ How this works...
 Así funciona...
 
 range _ to _
---MISSING--
+números de _ a _
 
 by _
---MISSING--
+en incrementos de _
 
 for _ in _ _
 por cada _ en _ _
@@ -216,7 +216,7 @@ string
 texto
 
 list
-listas
+lista
 
 byte array
 lista de bytes
@@ -259,7 +259,7 @@ Data
 Datos
 
 list
-listas
+lista
 
 cat
 gato
@@ -957,55 +957,74 @@ suelta los botones del ratón
 # Extra utilities for list manipulation and access
 
 Lists
---MISSING--
+Listas
 
 list _ contains _
---MISSING--
+la lista _ contiene _
 
 circular item _ of _
---MISSING--
+elemento circular _ de _
 
 aListOrString
---MISSING--
+unaListaOTexto
 
 map _ over _
---MISSING--
+aplica _ sobre _
 
 aFunction
---MISSING--
+unaFunción
 
 filter _ with _
---MISSING--
+filtra _ utilizando _
 
 pick _ from _
---MISSING--
+escoge _ elementos de _
 
 a few
---MISSING--
+unos pocos
 
 some
---MISSING--
+unos cuantos
 
 most
---MISSING--
+la mayoría de
 
 reverse _
---MISSING--
+invierte _
 
 shuffle _
---MISSING--
+mezcla _
 
 sort _
---MISSING--
+ordena _
+
+unique _
+elimina duplicados de _
 
 shuffled _
---MISSING--
+_ mezclada
 
 reversed _
---MISSING--
+_ invertida
 
 sorted _
---MISSING--
+_ ordenada
+
+uniqued _
+_ sin duplicados
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudoaleatoriedad
+
+pseudorandom _ to _ with seed _
+número pseudoaleatorio entre _ y _ con semilla _
+
+_ pseudorandom numbers _ to _ with seed _
+_ números pseudoaleatorios entre _ y _ con semilla _
 
 ####
 # BLE Keyboard library
@@ -1353,25 +1372,28 @@ nombre de archivo
 # Useful to create musical patterns
 
 Rhythm
---MISSING--
+Ritmo
 
 set tempo to _ bpm at _ / _ signature
---MISSING--
+fija tempo a _ bpm y compás a _ / _
 
-start counting _ bars
---MISSING--
-
-stop counting
---MISSING--
-
-wait until next _
---MISSING--
+set pattern to _ bars
+fija el patrón a _ compases
 
 current beat
---MISSING--
+tiempo actual
 
 current bar
---MISSING--
+compás actual
+
+wait until next _ duration
+espera hasta la próxima duración _
+
+wait until beat _
+espera hasta el tiempo _
+
+wait until bar _
+espera hasta el compás _
 
 ####
 # MIDI
@@ -1380,441 +1402,444 @@ current bar
 # General MIDI drum instrument names
 
 Acoustic Bass Drum
---MISSING--
+Bombo acústico
 
 Bass Drum 1
---MISSING--
+Bombo 1
 
 Side Stick
---MISSING--
+Aro de caja
 
 Acoustic Snare
---MISSING--
+Caja acústica
 
 Hand Clap
---MISSING--
+Palmada
 
 Electric Snare
---MISSING--
+Caja eléctrica
 
 Low Floor Tom
---MISSING--
+Goliat grave
 
 Closed Hi-Hat
---MISSING--
+Charles cerrado
 
 High Floor Tom
---MISSING--
+Goliat agudo
 
 Pedal Hi-Hat
---MISSING--
+Charles (pedal)
 
 Low Tom
---MISSING--
+Tom-tom grave
 
 Open Hi-Hat
---MISSING--
+Charles abierto
 
 Low-Mid Tom
---MISSING--
+Tom-tom medio-grave
 
 Hi-Mid Tom
---MISSING--
+Tom-tom medio-agudo
 
 Crash Cymbal 1
---MISSING--
+Plato de acentos (crash) 1
 
 High Tom
---MISSING--
+Tom-tom agudo
 
 Ride Cymbal 1
---MISSING--
+Plato de ritmo (ride) 1
 
 Chinese Cymbal
---MISSING--
+Plato chino
 
 Ride Bell
---MISSING--
+Campana
 
 Tambourine 
---MISSING--
+Pandereta
 
 Splash Cymbal
---MISSING--
+Plato splash
 
 Cowbell 
---MISSING--
+Cencerro
 
 Crash Cymbal 2
---MISSING--
+Plato de acentos (crash) 2
 
 Vibraslap 
---MISSING--
+Vibraslap 
 
 Ride Cymbal 2
---MISSING--
+Plato de ritmo (ride) 2
 
 Hi Bongo
---MISSING--
+Bongo agudo
 
 Low Bongo
---MISSING--
+Bongo grave
 
 Mute Hi Conga
---MISSING--
+Conga aguda sorda
 
 Open Hi Conga
---MISSING--
+Conga aguda abierta
 
 Low Conga
---MISSING--
+Conga grave
 
 High Timbale
---MISSING--
+Timbal agudo
 
 Low Timbale
---MISSING--
+Timbal grave
 
 High Agogo
---MISSING--
+Agogô agudo
 
 Low Agogo
---MISSING--
+Agogô grave
 
 Cabasa
---MISSING--
+Cabasa
 
 Maracas 
---MISSING--
+Maracas
 
 Short Whistle
---MISSING--
+Silbato corto
 
 Long Whistle
---MISSING--
+Silbato largo
 
 Short Guiro
---MISSING--
+Güiro corto
 
 Long Guiro
---MISSING--
+Güiro largo
 
 Claves 
---MISSING--
+Clave
 
 Hi Wood Block
---MISSING--
+Caja china aguda
 
 Low Wood Block
---MISSING--
+Caja china grave
 
 Mute Cuica
---MISSING--
+Cuica sorda
 
 Open Cuica
---MISSING--
+Cuica abierta
 
 Mute Triangle
---MISSING--
+Triángulo sordo
 
 Open Triangle
---MISSING--
+Triángulo abierto
 
 # General MIDI instrument categories
 
 piano 
---MISSING--
+piano
 
 chromatic percussion
---MISSING--
+percusión cromática
 
 organ
---MISSING--
+órgano
 
 guitar
---MISSING--
+guitarra
 
 bass
---MISSING--
+bajo
 
 strings
---MISSING--
+sección de cuerdas
 
 ensemble
---MISSING--
+ensemble
 
 brass
---MISSING--
+viento metal
 
 reed
---MISSING--
+viento caña
 
 pipe 
---MISSING--
+viento fusta
 
 synth lead
---MISSING--
+sintetizador solista
 
 synth pad
---MISSING--
+sintetizador ambiente
 
 synth SFX
---MISSING--
+efectos sintetizados
 
 ethnic
---MISSING--
+étnico
 
 percussive
---MISSING--
+percusión
 
 SFX 
---MISSING--
+efectos especiales
 
 # General MIDI drum sets
 
 standard
---MISSING--
+estándar
 
 room
---MISSING--
+estudio
 
 power
---MISSING--
+potente
 
 electronic 
---MISSING--
+electrónica
 
 TR-808
---MISSING--
+TR-808
 
 jazz
---MISSING--
+jazz
 
 brush
---MISSING--
+escobillas
 
 orchestra
---MISSING--
+orquesta
 
 SFX 
---MISSING--
+efectos especiales
 
 CM-64/CM-32L
---MISSING--
+CM-64/CM-32L
 
 # General MIDI control changes
 
 bank select 1
---MISSING--
+selección de banco 1
 
 bank select 2
---MISSING--
+selección de banco 2
 
 modulation 
---MISSING--
+modulación
 
 portamento time
---MISSING--
+tiempo de portamento
 
 volume
---MISSING--
+volumen
 
 pan
---MISSING--
+panning
 
 expression
---MISSING--
+expresión
 
 hold
---MISSING--
+tiempo de sostenido
 
 portamento
---MISSING--
+portamento
 
 sostenuto
---MISSING--
+sostenuto
 
 soft
---MISSING--
+suave
 
 resonance 
---MISSING--
+resonancia
 
 release time
---MISSING--
+tiempo de extinción
 
 attack time
---MISSING--
+tiempo de ataque
 
 cutoff 
---MISSING--
+filtro de frecuencia
 
 decay time
---MISSING--
+tiempo de decaimiento
 
 vibrato rate
---MISSING--
+frecuencia del vibrato
 
 vibrato depth
---MISSING--
+intensidad del vibrato
 
 vibrato delay
---MISSING--
+retraso del vibrato
 
 portamento control
---MISSING--
+control del portamento
 
 effect 1
---MISSING--
+efecto 1
 
 effect 2
---MISSING--
+efecto 2
 
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
---MISSING--
+toca nota MIDI _ durante _ ms en el canal _ volum _
 
 set MIDI note _ to _ on channel _ volume _
---MISSING--
+pon la nota MIDI _ a _ en el canal _ volum _
 
 note _ octave _ to MIDI key
---MISSING--
+nota _ octava _ a tecla MIDI
 
 select MIDI instrument _ for channel _
---MISSING--
+selecciona instrumento MIDI _ para el canal _
 
 instrument _ number _
---MISSING--
+instrumento _ número _
 
 select MIDI drum kit _
---MISSING--
+selecciona batería MIDI _
 
 play MIDI drum _ for _ ms volume _
---MISSING--
+toca percusión MIDI _ durante _ ms volumen _
 
 drum _
---MISSING--
+percusión _
 
 change MIDI control _ on channel _ to _
---MISSING--
+pon control MIDI _ del canal _ a _
 
 pitch bend MIDI channel _ to _ %
---MISSING--
+modula canal MIDI _ en un _ %
 
 send MIDI reset
---MISSING--
+reinicializa MIDI
 
 send MIDI start playing
---MISSING--
+inicia secuenciador MIDI
 
 send MIDI stop playing
---MISSING--
+pausa secuenciador MIDI
 
 send MIDI continue playing
---MISSING--
+reanuda secuenciador MIDI
 
 set MIDI signal to pin _
---MISSING--
+configura MIDI al pin _
 
 ####
 # Scales & Chords
 # Abstractions for musical theory
 
 Scales & Chords
---MISSING--
+Escalas y acordes
 
 # scale names
 
 ionian
---MISSING--
+jónica
 
 dorian
---MISSING--
+dórica
 
 phrygian
---MISSING--
+frigia
 
 lydian
---MISSING--
+lidia
 
 mixolydian
---MISSING--
+mixolidia
 
 aeolian
---MISSING--
+eólica
 
 locrian
---MISSING--
+locria
 
 major
---MISSING--
+mayor
 
 minor 
---MISSING--
+menor
 
 # chord types
 
 major
---MISSING--
+mayor
 
 minor
---MISSING--
+menor
 
 diminished
---MISSING--
+disminuida
 
 major 7th
---MISSING--
+7ª mayor
 
 minor 7th
---MISSING--
+7ª menor
 
 Maj7 
---MISSING--
+Maj7
 
 # sound destinations for arpeggiate block
 
 MIDI channel
---MISSING--
+canal MIDI
 
 tone pin 
---MISSING--
+pin de zumbador
 
 # library blocks
 
 _ scale root _
---MISSING--
+escala _ con raíz _
 
 steps _
---MISSING--
+y _ grados
 
 pentatonic _ scale root _
---MISSING--
+escala pentatónica _ con raíz _
 
 _ chord root _
---MISSING--
+acorde _ con raíz _
 
 _ chord for root _
---MISSING--
+acorde _ para raíz _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
---MISSING--
+arpegia _ en orden _ duración _ y volumen _ en el _ _
+
+improvised arpeggio over _ for _ bars with durations _
+arpegio improvisado sobre _ durante _ compases con duraciones _
 
 improvise over _ for _ bars with durations _ on _ _ volume _
---MISSING--
+improvisa sobre _ durante _ compases con duraciones _ en el _ _ volumen _
 
 _ transposed _ semitones
---MISSING--
+_ transportado _ semitonos
 
 chord progression _ with root _
---MISSING--
+progresión de acordes _ con raíz _
 
 and _ steps per chord
---MISSING--
+y _ grados por acorde
 
 rotation _ of circle of 5ths _ M _ m _ º
---MISSING--
+rotación _ del círculo de quintas _ M _ m _ º
 
 ####
 # Chiptune
