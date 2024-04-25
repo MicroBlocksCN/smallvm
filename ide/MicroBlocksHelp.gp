@@ -33,8 +33,8 @@ method initialize MicroBlocksHelp {
 		(array '[misc:bleID]' 'input#BLE-Id' 'Reports the three-letter BLE ID of the board if it supports BLE.')
 		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.')
 
-		(array '[misc:msecsSince]' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
-		(array '[misc:usecsSince]' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
+		(array '[millisSince]' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
+		(array '[microsSince]' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
 		(array '[misc:connectedToIDE]' 'input#Connected-to-IDE' 'Reports (-o) if the board is connected to IDE.')
 
 		// PINS
@@ -74,7 +74,7 @@ method initialize MicroBlocksHelp {
 		(array 'whenBroadcastReceived' 'control#when-received' 'Run when the given message is received as a broadcast.')
 		(array 'sendBroadcast' 'control#broadcast' 'Broadcast the given message.')
 		(array 'comment' 'control#comment' 'Do nothing. Used to add notes and documentation.')
-		(array 'range' 'control#range' 'Report a list containing the given range of numbers (with optional increment). Useful in "for" loops.')
+		(array '[data:range]' 'control#range' 'Report a list containing the given range of numbers (with optional increment). Useful in "for" loops.')
 		(array 'for' 'control#for' 'Repeat the enclosed blocks with the variable set to the current iteration number or item.')
 		(array 'repeatUntil' 'control#repeat-until' 'Repeat the enclosed blocks until the condition becomes (-o) .')
 		(array 'stopTask' 'control#stop-this-task' 'Stop this task.')
@@ -108,7 +108,7 @@ method initialize MicroBlocksHelp {
 		(array 'isType' 'operators#is-type' 'Report (-o) if first input is a value of the given data type.')
 		(array '[data:convert]' 'operators#convert' 'Convert a value to the given data type.')
 		(array 'ifExpression' 'operators#ternary-if' 'If the condition is (-o) report the first alternative otherwise report the second alternative.')
-		(array 'rescale' 'operators#rescale' 'Map a value in the "from" range to the corresponding value in the "to" range.')
+		(array '[misc:rescale]' 'operators#rescale' 'Map a value in the "from" range to the corresponding value in the "to" range.')
 		(array 'hexToInt' 'operators#hex' 'Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)')
 		(array '&' 'operators#bitwise-and' 'Report bitwise AND of two numbers.')
 		(array '|' 'operators#bitwise-or' 'Report bitwise OR of two numbers.')
