@@ -630,9 +630,16 @@ static void setAccelRange(int range) {
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_V2)
 
 #define LIS3DH_ID 25
+
+#if defined(MAKERPORT_V2)
+  // use Wire on MakerPort_v2
+  #define Wire1 Wire
+  #undef LIS3DH_ID
+  #define LIS3DH_ID 24
+#endif
 
 static void setAccelRange(int range); // forward reference
 
@@ -644,23 +651,22 @@ static int readAcceleration(int registerID) {
 		// turn on the accelerometer
 		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
-		Wire1.write(0x8F); // 1600 Hz sampling rate, Low Power, Enable x/y/z
+		Wire1.write(0x77); // 400 Hz sampling rate, 10-bit resolution, enable x/y/z
 		Wire1.endTransmission();
 		delay(2);
 		setAccelRange(0); // also disable block data update
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
-	Wire1.write(0x28 + registerID);
+	Wire1.write((0x28 + registerID) | 0x80); // address + auto-increment flag
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
-	Wire1.requestFrom(LIS3DH_ID, 1);
-	int val = Wire1.available() ? Wire1.read() : 0;
-
-	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
-	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 200) / 127); // scale to range 0-200
+	Wire1.requestFrom(LIS3DH_ID, 2);
+	signed char highBits = Wire1.available() ? Wire1.read() : 0;
+	signed char lowBits = Wire1.available() ? Wire1.read() : 0;
+	int val =  (highBits << 2) | ((lowBits >> 6) & 3);
+	val = (200 * val) >> 9;
 	if (1 == registerID) val = -val; // invert sign for x axis
 	return val;
 }
@@ -678,10 +684,15 @@ static void setAccelRange(int range) {
 static int readTemperature() {
 	// Return the temperature in Celcius
 
-	setPinMode(A9, INPUT);
-	int adc = analogRead(A9);
+	int adc = 0;
 
-	return ((int) (0.116 * adc)) - 37; // linear approximation
+	#if defined(MAKERPORT_V2)
+		return 0;
+	#else
+		setPinMode(A9, INPUT);
+		adc = analogRead(A9);
+		return ((int) (0.116 * adc)) - 37; // linear approximation
+	#endif
 
 	// The following unused code does not seem as accurate as the linear approximation
 	// above (based on comparing the thermistor to a household digital thermometer).
@@ -885,7 +896,6 @@ static void startAccelerometer() {
 	delay(2);
 	accelStarted = true;
 }
-
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) startAccelerometer();
