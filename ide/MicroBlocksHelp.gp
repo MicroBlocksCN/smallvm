@@ -33,8 +33,8 @@ method initialize MicroBlocksHelp {
 		(array '[misc:bleID]' 'input#BLE-Id' 'Reports the three-letter BLE ID of the board if it supports BLE.')
 		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.')
 
-		(array '[millisSince]' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
-		(array '[microsSince]' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
+	    (array 'millisSince' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
+		(array 'microsSince' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
 		(array '[misc:connectedToIDE]' 'input#Connected-to-IDE' 'Reports (-o) if the board is connected to IDE.')
 
 		// PINS
@@ -106,7 +106,7 @@ method initialize MicroBlocksHelp {
 		(array 'and' 'operators#boolean-and' 'Report (-o) if both values are (-o)')
 		(array 'or' 'operators#boolean-or' 'Report (-o) if either value is (-o)')
 		(array 'isType' 'operators#is-type' 'Report (-o) if first input is a value of the given data type.')
-		(array '[data:convert]' 'operators#convert' 'Convert a value to the given data type.')
+		(array '[data:convertType]' 'operators#convert' 'Convert a value to the given data type.')
 		(array 'ifExpression' 'operators#ternary-if' 'If the condition is (-o) report the first alternative otherwise report the second alternative.')
 		(array '[misc:rescale]' 'operators#rescale' 'Map a value in the "from" range to the corresponding value in the "to" range.')
 		(array 'hexToInt' 'operators#hex' 'Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)')
@@ -154,6 +154,7 @@ method initialize MicroBlocksHelp {
 
 		// LED DISPLAY LIBRARY
 		(array '[display:mbDisplay]' '/libraries#display' 'Display a 5x5 image on the LED display.')
+        (array 'led_displayImage' '/libraries' 'Choose an image to show on the LED display')
 		(array '[display:mbDisplayOff]' '/libraries#clear-display' 'Clear the LED display (all pixels off).')
 		(array '[display:mbPlot]' '/libraries#plot-x-y' 'Turn on the LED at the given row and column (1-5).')
 		(array '[display:mbUnplot]' '/libraries#unplot-x-y' 'Turn off the LED at the given row and column (1-5).')
@@ -170,6 +171,8 @@ method initialize MicroBlocksHelp {
 		(array 'rotateNeoPixelsBy' '/libraries#rotate-neopixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
 		(array 'colorFromRGB' '/libraries#color-r-g-b' 'Return a color defined by values of R G B (0-255).')
 		(array 'randomColor' '/libraries#random-color' 'Return a random color.')
+        (array 'NeoPixel_brighten' '/libraries' 'Brighten a single NeoPixel.')
+        (array 'NeoPixel_brighten_all' '/libraries' 'Brighten all NeoPixels.')
 
 		// RADIO
 		(array '[radio:sendInteger]' '/libraries#radio-send-number' 'Send a numerical message.')
@@ -194,8 +197,8 @@ method initialize MicroBlocksHelp {
 		(array 'play tone' '/libraries#play-note' 'Play the given note in the given octave for milliseconds.')
 		(array 'playMIDIKey' '/libraries#play-midi' 'Play the given piano key (0-127) for milliseconds. Middle C is 60.')
 		(array 'play frequency' '/libraries#play-frequency' 'Play a note specified in Hertz (Hz). Middle C is ~261 Hz.')
-		(array 'start tone' '/libraries#start-tone' 'Starts playing a tone specified in Hertz (Hz).')
-		(array 'stop tone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
+		(array 'startTone' '/libraries#start-tone' 'Starts playing a tone specified in Hertz (Hz).')
+		(array 'stopTone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
 		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
 
 		// IR Remote
@@ -267,11 +270,55 @@ method initialize MicroBlocksHelp {
 
 		// WEBSOCKET SERVER
 		(array 'start WebSocket server' '/network_libraries/websocket-server#start-websocket-server' 'Start running the WebSocket server.')
-		(array '[net:webSocketLastEvent]' '/network_libraries/websocket-server#last-websocket-event' 'Return the last protocol message received.')
-		(array 'ws client id' '/network_libraries/websocket-server#client-id-for-websocket-event' 'Return the WebSocket client ID (0-4).')
-		(array 'ws event payload' '/network_libraries/websocket-server#payload-for-websocket-event' 'Return the content of the message received.')
-		(array 'ws event type' '/network_libraries/websocket-server#type-of-websocket-event' 'Return the WebSocket event type.')
+		(array '[net:webSocketLastEvent]' '/network_libraries/websocket-server#last-websocket-event' 'Report the last protocol message received.')
+		(array 'ws client id' '/network_libraries/websocket-server#client-id-for-websocket-event' 'Report the WebSocket client ID (0-4).')
+		(array 'ws event payload' '/network_libraries/websocket-server#payload-for-websocket-event' 'Report the content of the message received.')
+		(array 'ws event type' '/network_libraries/websocket-server#type-of-websocket-event' 'Report the WebSocket event type.')
 		(array '[net:webSocketSendToClient]' '/network_libraries/websocket-server#send-to-websocket-client'	'Send a message to any client using its client id.')
+
+        // OCTOSTUDIO
+        (array 'octoSendBeam' '/network_libraries/' 'Choose a shape that is send to the connected phone(s).')
+        (array 'octoBeamReceived' '/network_libraries/' 'Report (-o) if a new beam has been received. Use "Octo last beam" to get its value.')
+        (array 'octoLastBeam' '/network_libraries/' 'Report the name of the last shape received.')
+        (array 'octoReceiveBeam' '/network_libraries/' 'Report the shape if a new beam has been received.')
+
+        // BLE SCANNER
+        (array 'bleScan_scanReceived' '/network_libraries/ble-scanner#scan-received' 'Report (-o) when a BLE scan is detected.')
+        (array 'bleScan_RSSI' '/network_libraries/ble-scanner#rssi' 'Report RSSI, ranges from -26 (a few inches) to -100 (40-50 m distance).')
+        (array 'bleScan_address' '/network_libraries/ble-scanner#address' 'Report MAC address, a unique 48-bit identifier.')
+        (array 'bleScan_addressType' '/network_libraries/ble-scanner#address-type' 'Report address type.')
+        (array 'bleScan_deviceName' '/network_libraries/ble-scanner#device-name' 'Report device name.')
+        (array 'bleScan_hasType' '/network_libraries/ble-scanner#hastype' 'Report (-o) if device name is type 8 or 9.')
+
+        // BLE SERIAL
+        (array '[ble:uartConnected]' '/network_libraries/' 'Report (-o) if BLE serial is connected')
+        (array 'bleSerial_readString' '/network_libraries/' '')
+        (array 'bleSerial_readBytes' '/network_libraries/' '')
+        (array 'bleSerial_write' '/network_libraries/' '')
+
+        // UDP
+        (array '[net:udpStart]' '/network_libraries/' '')
+        (array '[net:udpStop]' '/network_libraries/' '')
+        (array '[net:udpSendPacket]' '/network_libraries/' '')
+        (array '[net:udpReceivePacket]' '/network_libraries/' '')
+        (array '[net:udpRemoteIPAddress]' '/network_libraries/' '')
+        (array '[net:udpRemotePort]' '/network_libraries/' '')
+
+        // WIFI
+        (array 'wifiConnect' '/network_libraries/wifi#wifi-connect-to' 'Connect to the local IP network.')
+        (array 'wifiCreateHotspot' '/network_libraries/wifi#wifi-create-hotspot' 'Create a hotspot with given credentials.')
+        (array 'getIPAddress' '/network_libraries/wifi#ip-address' 'Report acquired IP address.')
+        (array '[net:myMAC]' '/network_libraries/wifi#mac-address' 'Report MAC address of the WIFI device.')
+        (array '[net:allowWiFiAndBLE]' '/network_libraries/wifi#allow-wifi-while-using-ble' 'Enable simultaneous WIFI & BLE use.')
+
+        //WIFI RADIO
+        (array 'wifiRadio_sendNumber' '/network_libraries/wifi-radio#wifi-send-number' 'Send a message containing a number.')
+        (array 'wifiRadio_sendString' '/network_libraries/wifi-radio#wifi-send-string' 'Send a text string (up to approx. 800 bytes).')
+        (array 'wifiRadio_sendPair' '/network_libraries/wifi-radio#wifi-send-pair' 'Send a message containing both short text string and a number. ')
+        (array 'wifiRadio_messageReceived' '/network_libraries/wifi-radio#wifi-message-received' 'Report (-o) when a new wifi message is received.')
+        (array 'wifiRadio_receivedInteger' '/network_libraries/wifi-radio#wifi-last-number' 'Report the number part of the last wifi message received. Return zero if the message did not contain a number.')
+        (array 'wifiRadio_receivedString' '/network_libraries/wifi-radio#wifi-last-string' 'Report the string part of the last wifi message received. Return the empty string if the message did not contain a string.')
+        (array 'wifiRadio_setGroup' '/network_libraries/wifi-radio#wifi-set-group' 'Set the group number (0-255) used to send and receive messages.')
 
 	)
 
