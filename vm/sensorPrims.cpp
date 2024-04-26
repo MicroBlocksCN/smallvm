@@ -654,7 +654,10 @@ static int readAcceleration(int registerID) {
 		Wire1.write(0x77); // 400 Hz sampling rate, 10-bit resolution, enable x/y/z
 		Wire1.endTransmission();
 		delay(2);
-		setAccelRange(0); // also disable block data update
+		setAccelRange(0); // also disables block data update
+		#if defined(MAKERPORT_V2)
+			writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		#endif
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
@@ -687,7 +690,18 @@ static int readTemperature() {
 	int adc = 0;
 
 	#if defined(MAKERPORT_V2)
-		return 0;
+		int degreesC = 0;
+		uint8 regValue = readI2CReg(LIS3DH_ID, 0x23);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue | 0x80); // enable block data update (needed for temperature)
+		uint8 hiByte = readI2CReg(LIS3DH_ID, 0x0D);
+		uint8 lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue); // disable block data update
+		if (hiByte <= 127) { // positive offset
+			degreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
+		} else { // negative offset
+			degreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+		}
+		return  20 + degreesC; // adjusted temperature
 	#else
 		setPinMode(A9, INPUT);
 		adc = analogRead(A9);
