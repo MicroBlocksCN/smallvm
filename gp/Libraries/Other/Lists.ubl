@@ -1,6 +1,6 @@
 module Lists Data
 author MicroBlocks
-version 1 5 
+version 1 6 
 choices pick 'a few' some most 
 description 'Useful functions for working with lists.
 '
@@ -145,7 +145,7 @@ to list_sorted list {
 
 to list_unique list {
   local 'idx' 1
-  repeatUntil (idx == (size list)) {
+  repeatUntil (idx >= (size list)) {
     local 'item' (at idx list)
     local 'found' ('[data:find]' item list (idx + 1))
     repeatUntil (or (found == -1) (idx == found)) {
