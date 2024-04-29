@@ -537,7 +537,7 @@ tilt z
 inclinación z
 
 acceleration
-acceleración
+aceleración
 
 light level
 nivel de luz
