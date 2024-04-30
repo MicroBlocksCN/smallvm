@@ -1695,10 +1695,10 @@ efecto 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
-toca nota MIDI _ durante _ ms en el canal _ volum _
+toca nota MIDI _ durante _ ms en el canal _ volumen _
 
 set MIDI note _ to _ on channel _ volume _
-pon la nota MIDI _ a _ en el canal _ volum _
+pon la nota MIDI _ a _ en el canal _ volumen _
 
 note _ octave _ to MIDI key
 nota _ octava _ a tecla MIDI
