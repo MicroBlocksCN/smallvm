@@ -573,7 +573,7 @@ rotate NeoPixels by _
 rota NeoPíxels en _
 
 brighten NeoPixel _ by _
-il·luminar NeoPíxel _ en _ 
+il·luminar NeoPíxel _ en _
 
 brighten all NeoPixels by _
 il·luminar tots els NeoPíxels en _
@@ -877,8 +877,8 @@ Alt / ⌥
 Logo / ⌘
 Logo / ⌘
 
-AltGr 
-AltGr 
+AltGr
+AltGr
 
 enter
 intro
@@ -1111,7 +1111,7 @@ mostra caràcter _
 
 # Image names for the "display image" block
 
-heart 
+heart
 cor
 
 small heart
@@ -1216,13 +1216,13 @@ triangle rectangle
 chess board
 escacs
 
-diamond 
+diamond
 diamant
 
 small diamond
 diamant petit
 
-square 
+square
 quadrat
 
 small square
@@ -1583,20 +1583,20 @@ Plat xinès
 Ride Bell
 Campana
 
-Tambourine 
+Tambourine
 Pandereta
 
 Splash Cymbal
 Plat splash
 
-Cowbell 
+Cowbell
 Esquellot
 
 Crash Cymbal 2
 Plat d'accents (crash) 2
 
-Vibraslap 
-Vibraslap 
+Vibraslap
+Vibraslap
 
 Ride Cymbal 2
 Plat de ritme (ride) 2
@@ -1631,7 +1631,7 @@ Agogó greu
 Cabasa
 Cabassa
 
-Maracas 
+Maracas
 Maraques
 
 Short Whistle
@@ -1646,7 +1646,7 @@ Güiro curt
 Long Guiro
 Güiro llarg
 
-Claves 
+Claves
 Bastons
 
 Hi Wood Block
@@ -1669,7 +1669,7 @@ Triangle obert
 
 # General MIDI instrument categories
 
-piano 
+piano
 piano
 
 chromatic percussion
@@ -1696,7 +1696,7 @@ vent metall
 reed
 vent de canya
 
-pipe 
+pipe
 vent fusta
 
 synth lead
@@ -1714,7 +1714,7 @@ ethnic
 percussive
 percussió
 
-SFX 
+SFX
 efectes especials
 
 # General MIDI drum sets
@@ -1728,7 +1728,7 @@ estudi
 power
 potent
 
-electronic 
+electronic
 electrònica
 
 TR-808
@@ -1743,7 +1743,7 @@ escombretes
 orchestra
 orquèstra
 
-SFX 
+SFX
 efectes especials
 
 CM-64/CM-32L
@@ -1757,7 +1757,7 @@ selecció de banc 1
 bank select 2
 selecció de banc 2
 
-modulation 
+modulation
 modulació
 
 portamento time
@@ -1784,7 +1784,7 @@ sostenuto
 soft
 suau
 
-resonance 
+resonance
 ressonància
 
 release time
@@ -1793,7 +1793,7 @@ temps d'extinció
 attack time
 temps d'atac
 
-cutoff 
+cutoff
 filtre de freqüència
 
 decay time
@@ -1897,7 +1897,7 @@ lòcria
 major
 major
 
-minor 
+minor
 menor
 
 # chord types
@@ -1917,7 +1917,7 @@ major 7th
 minor 7th
 7ª menor
 
-Maj7 
+Maj7
 Maj7
 
 # sound destinations for arpeggiate block
@@ -1925,7 +1925,7 @@ Maj7
 MIDI channel
 canal MIDI
 
-tone pin 
+tone pin
 pin de brunzidor
 
 # library blocks
@@ -3097,7 +3097,7 @@ Loading project...
 Carregant projecte...
 
 Found a newer version of
-S'ha trobat una nova versió de 
+S'ha trobat una nova versió de
 
 Do you want me to update the one in the project?
 Vols actualitzar el projecte amb aquesta nova versió?
@@ -3339,7 +3339,7 @@ erase flash and update firmware on ESP board
 esborra i reparticiona el firmware en placa ESP
 
 install ESP firmware from URL
-instal·lar firmware ESP des de l'URL 
+instal·lar firmware ESP des de l'URL
 
 Use board type
 La placa connectada és de tipus
