@@ -752,6 +752,8 @@ LED Display
 
 display _
 
+display image _
+
 clear display
 
 set display color _
@@ -761,6 +763,89 @@ plot x _ y _
 unplot x _ y _
 
 display character _
+
+# Image names for the "display image" block
+
+heart 
+
+small heart
+
+yes
+
+no
+
+happy
+
+sad
+
+confused
+
+angry
+
+asleep
+
+surprised
+
+silly
+
+fabulous
+
+meh
+
+t-shirt
+
+roller skate
+
+duck
+
+house
+
+tortoise
+
+butterfly
+
+stick figure
+
+ghost
+
+sword
+
+giraffe
+
+skull
+
+umbrella
+
+snake
+
+rabbit
+
+cow
+
+quarter note
+
+eight note
+
+pitchfork
+
+target
+
+triangle
+
+left triangle
+
+chess board
+
+diamond 
+
+small diamond
+
+square 
+
+small square
+
+scissors
+
 
 ####
 # OLED Graphics library

@@ -416,13 +416,13 @@ serial write _
 escriu _ al port sèrie
 
 anIntegerStringListOrByteArray
---MISSING--
+unEnterTextLlistaOllistaDeBytes
 
 serial write _ starting at _
 escriu _ al port sèrie començant per _
 
 aStringListOrByteArray
---MISSING--
+unTextLlistaOllistaDeBytes
 
 soft serial write byte _ pin _ baud _
 escriu byte _ al port sèrie virtual al pin _ a _ bauds
@@ -1091,6 +1091,9 @@ Pantalla LED
 display _
 pantalla _
 
+display image _
+mostra imatge _
+
 clear display
 neteja pantalla
 
@@ -1105,6 +1108,128 @@ apaga x _ y _
 
 display character _
 mostra caràcter _
+
+# Image names for the "display image" block
+
+heart 
+cor
+
+small heart
+cor petit
+
+yes
+sí
+
+no
+no
+
+happy
+feliç
+
+sad
+trist
+
+confused
+confós
+
+angry
+enfadat
+
+asleep
+adormit
+
+surprised
+sorprès
+
+silly
+esbojarrat
+
+fabulous
+genial
+
+meh
+apàtic
+
+t-shirt
+samarreta
+
+roller skate
+patí
+
+duck
+aneguet
+
+house
+casa
+
+tortoise
+tortuga
+
+butterfly
+papallona
+
+stick figure
+persona
+
+ghost
+fantasma
+
+sword
+espasa
+
+giraffe
+girafa
+
+skull
+calavera
+
+umbrella
+paraigua
+
+snake
+serp
+
+rabbit
+conill
+
+cow
+vaca
+
+quarter note
+nota
+
+eight note
+corxera
+
+pitchfork
+forca
+
+target
+diana
+
+triangle
+triangle
+
+left triangle
+triangle rectangle
+
+chess board
+escacs
+
+diamond 
+diamant
+
+small diamond
+diamant petit
+
+square 
+quadrat
+
+small square
+quadrat petit
+
+scissors
+tisores
 
 ####
 # OLED Graphics library
@@ -2507,10 +2632,10 @@ TdR clear RGB LED
 TdR apaga el led RGB
 
 TdR LM35 temperature ºC
---MISSING--
+TdR LM35 temperatura en ºC
 
 TdR DHT11 temperature ºC
---MISSING--
+TdR DHT11 temperatura en ºC
 
 TdR DHT11 humidity
 TdR DHT11 humitat
@@ -3181,7 +3306,7 @@ disable autoloading board libraries
 no carreguis llibreries de placa automàticament
 
 compact code store
---MISSING--
+compacta el codi emmagatzemat
 
 enable autoloading board libraries
 carrega llibreries de placa automàticament
