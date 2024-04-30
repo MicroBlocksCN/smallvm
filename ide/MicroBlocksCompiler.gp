@@ -46,14 +46,20 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'timer'				'timer')
 		(array ' ' 'resetTimer'			'reset timer')
 		'-'
+		(array 'r' 'secsOp'				'seconds')
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
-		(array 'r' 'boardType'				'board type')
-		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
-		'-'
+		(array 'r' 'boardType'			'board type')
 		(array 'r' '[misc:version]'		'version')
+		'-'
 		(array 'r' '[misc:bleID]'		'BLE id')
+		(array 'r' '[ble:bleConnected]' 'BLE connected')
+	'Input-Advanced'
+		(array 'r' 'millisSince'		'milliseconds since _ : end time _' 'num auto' 0 'now')
+		(array 'r' 'microsSince'		'microseconds since _ : end time _' 'num auto' 0 'now')
+		'-'
+		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
@@ -451,9 +457,9 @@ method initOpcodes SmallCompiler {
 		spiRecv 94
 	RESERVED 95
 	RESERVED 96
-	RESERVED 97
-	RESERVED 98
-	RESERVED 99
+		secsOp 97
+		millisSince 98
+		microsSince 99
 	RESERVED 100
 	RESERVED 101
 	RESERVED 102
@@ -476,8 +482,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 119
 	RESERVED 120
 	RESERVED 121
-	RESERVED 122
-	RESERVED 123
+		commandPrimitive 122
+		reporterPrimitive 123
 		callCustomCommand 124
 		callCustomReporter 125
 		callCommandPrimitive 126
@@ -958,6 +964,38 @@ method primitive SmallCompiler op args isCommand {
 	return result
 }
 
+method primitiveNEW SmallCompiler op args isCommand {
+	result = (list)
+	if ('print' == op) { op = 'printIt' }
+	if (contains opcodes op) {
+		for arg args {
+			addAll result (instructionsForExpression this arg)
+		}
+		add result (array op (count args))
+	} (and (beginsWith op '[') (endsWith op ']')) {
+		// named primitives of the form '[primSetName:primName]'
+		i = (findFirst op ':')
+		if (notNil i) {
+			primSetName = (substring op 2 (i - 1))
+			primName = (substring op (i + 1) ((count op) - 1))
+			for arg args {
+				addAll result (instructionsForExpression this arg)
+			}
+			if isCommand {
+				add result (array 'commandPrimitive' primName primSetName (count args))
+			} else {
+				add result (array 'reporterPrimitive' primName primSetName (count args))
+			}
+		}
+	} else {
+		print 'Skipping unknown op:' op
+		if (not isCommand) {
+			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
+		}
+	}
+	return result
+}
+
 // Variables
 
 method collectVars SmallCompiler cmdOrReporter {
@@ -1063,7 +1101,7 @@ method appendLiterals SmallCompiler instructions {
 	nextOffset = (count instructions)
 	for ip (count instructions) {
 		instr = (at instructions ip)
-		if (and (isClass instr 'Array') ('pushLiteral' == (first instr))) {
+		if (and (isClass instr 'Array') (isOneOf (first instr) 'pushLiteral' 'commandPrimitive' 'reporterPrimitive')) {
 			literal = (at instr 2)
 			litOffset = (at literalOffsets literal)
 			if (isNil litOffset) {
@@ -1073,7 +1111,14 @@ method appendLiterals SmallCompiler instructions {
 				nextOffset += (wordsForLiteral this literal)
 			}
 			atPut instr 2 (litOffset - ip)
-			atPut instructions ip (copyWith instr literal) // retain literal string for use by "show instructions"
+			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
+				primNameLiteralOffset = ((at instr 2) & 511)
+				primSetIndex = ((at primsets (at instr 3)) & 127)
+				argCount = ((at instr 4) & 255)
+				instrArgs = (((primSetIndex << 17) | (primNameLiteralOffset << 8)) | argCount)
+				atPut instr 2 instrArgs
+			}
+			atPut instructions ip (copyWith (at instructions ip) literal) // retain literal string for use by "show instructions"
 		}
 	}
 	addAll instructions literals

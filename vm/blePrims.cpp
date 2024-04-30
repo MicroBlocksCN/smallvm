@@ -6,6 +6,7 @@
 
 // blePrims.cpp - MicroBlocks Bluetooth Low Energy (BLE) primitives
 // Wenjie Wu, December 2023
+// Modified by John Maloney, April 2024
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,13 @@
 	#define BLE_OCTO 1
 	#define BLE_UART 1
 #endif
+
+static OBJ primBLE_connected(int argCount, OBJ *args) {
+	// BLE_connected_to_IDE is true if *any* BLE client is connected to the board,
+	// regardless of which service they are using.
+
+	return BLE_connected_to_IDE ? trueObj : falseObj;
+}
 
 #if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
 
@@ -218,11 +226,8 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 
 #include <NimBLEDevice.h>
 
-static BLEService *pUARTService = NULL;
 static BLECharacteristic * pUARTTxCharacteristic;
 static BLECharacteristic * pUARTRxCharacteristic;
-static int uartConnectionID = -1;
-static bool bleUARTStarted = false;
 
 // Empty byte array and string constants
 static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
@@ -237,19 +242,10 @@ static int uartBytesReceived = 0;
 #define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
-class UARTServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* server, ble_gap_conn_desc* desc) {
-		uartConnectionID = desc->conn_handle;
-	}
-	void onDisconnect(BLEServer* server) {
-		uartConnectionID = -1;
-	}
-};
-
 class UARTCallbacks: public BLECharacteristicCallbacks {
 	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+		int byteCount = pCharacteristic->getDataLength();
 		const char *rxValue = pCharacteristic->getValue().c_str();
-		int byteCount = strlen(rxValue);
 		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
 		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
 		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
@@ -260,66 +256,22 @@ class UARTCallbacks: public BLECharacteristicCallbacks {
 	}
 };
 
-static OBJ primUART_start(int argCount, OBJ *args) {
-	if (BLE_connected_to_IDE) return fail(cannotUseWithBLE);
+BLEService * BLE_createUARTService() {
+	// Called by BLE_start() to add UART service.
 
-	if (bleUARTStarted) return falseObj;
-	bleUARTStarted = true;
-	BLEServer *pServer = BLEDevice::getServer();
-
-	// Workaround: Stop the scanner, if running, to avoid a fatal NimBLE error
-	stopBLEScanner();
-
-	BLE_suspendIDEService();
-
-	if (!pUARTService) {
-		// Create UART service (first time only)
-		pUARTService = pServer->createService(UART_SERVICE_UUID);
-		pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
-		pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
-		pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
-		pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
-	} else {
-		// Add existing UART service
-		pServer->addService(pUARTService);
-	}
-
-	pServer->setCallbacks(new UARTServerCallbacks());
-	pUARTService->start();
-	BLEDevice::getAdvertising()->addServiceUUID(UART_SERVICE_UUID);
- 	BLEDevice::startAdvertising();
-
-	return falseObj;
-}
-
-static OBJ primUART_stop(int argCount, OBJ *args) {
-	if (bleUARTStarted) {
-		bleUARTStarted = false;
-		BLEServer *pServer = BLEDevice::getServer();
-
-		// Workaround: Stop the scanner, if running, to avoid a NimBLE assertion failure
-		stopBLEScanner();
-
-		if (uartConnectionID != -1) {
-			// disconnect UART connection
-			pServer->disconnect(uartConnectionID);
-			uartConnectionID = -1;
-		}
-
-		pServer->removeService(pUARTService); // remove but don't deallocate
-		BLE_resumeIDEService();
-	}
-	return falseObj;
-}
-
-static OBJ primUART_connected(int argCount, OBJ *args) {
-	return (uartConnectionID != -1) ? trueObj : falseObj;
+	BLEService *pUARTService = BLEDevice::getServer()->createService(UART_SERVICE_UUID);
+	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
+	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
+	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
+	return pUARTService;
 }
 
 static OBJ primUART_read(int argCount, OBJ *args) {
 	// If optional argument is true, return a byte array. Otherwise, return a string.
 
-	if (uartConnectionID == -1) uartBytesReceived = 0;
+	if (!BLE_connected_to_IDE) uartBytesReceived = 0;
+
 	int returnBytes = (argCount > 0) && (trueObj == args[0]);
 	if (uartBytesReceived <= 0) return (returnBytes ? (OBJ) &emptyByteArray : (OBJ) &emptyMBString);
 
@@ -343,7 +295,7 @@ static OBJ primUART_write(int argCount, OBJ *args) {
 	OBJ arg = args[0];
 	int startIndex = 0;
 
-	if (uartConnectionID == -1) return zeroObj;
+	if (!BLE_connected_to_IDE) return zeroObj;
 
 	if ((argCount > 1) && isInt(args[1])) { // optional second argument: startIndex
 		startIndex = obj2int(args[1]) - 1; // convert to zero based index
@@ -532,6 +484,8 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 
+	{"bleConnected", primBLE_connected},
+
 	#if defined(BLE_OCTO)
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
@@ -540,9 +494,7 @@ static PrimEntry entries[] = {
 	#endif
 
 	#if defined(BLE_UART)
-		{"uartStart", primUART_start},
-		{"uartStop", primUART_stop},
-		{"uartConnected", primUART_connected},
+		{"uartConnected", primBLE_connected},
 		{"uartRead", primUART_read},
 		{"uartWrite", primUART_write},
 	#endif

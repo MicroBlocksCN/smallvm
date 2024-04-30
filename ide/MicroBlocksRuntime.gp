@@ -320,13 +320,17 @@ method decompileAllInProject SmallRuntime {
 }
 
 method analyzeAllExamples SmallRuntime {
+    grandTotal = 0
+    projectCount = 0
 	for fn (listEmbeddedFiles) {
 		if (beginsWith fn 'Examples') {
 			print fn
 			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
-			analyzeProject this
+			grandTotal += (analyzeProject this)
+		    projectCount += 1
 		}
 	}
+	print 'Grand total:' grandTotal 'for' projectCount 'projects'
 }
 
 method analyzeProject SmallRuntime {
@@ -1982,7 +1986,7 @@ method waitForResponse SmallRuntime {
 			recvBuf = (join recvBuf s)
 			return true
 		}
-		if ((iter % 20) == 0) { sendMsg this 'pingMsg' }
+		if ((iter % 50) == 0) { sendMsg this 'pingMsg' }
 		iter += 1
 		waitMSecs 5
 	}
@@ -2354,6 +2358,7 @@ method sendFileData SmallRuntime fileName fileData {
 			fileTransferProgress = (round (100 * (bytesSent / totalBytes)))
 			doOneCycle (global 'page')
 		}
+		processMessages this
 	}
 	// final (empty) chunk
 	msg = (list)

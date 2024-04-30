@@ -156,12 +156,20 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	// number of bytes read. The list size determines the number of bytes to read (up to a
 	// max of 32). This operation is usually preceded by an I2C write to request some data.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ obj = args[1];
-	if (!IS_TYPE(obj, ListType)) return int2obj(0);
+	int count = 0;
+	uint8 *bytes = NULL; // will point to byte array bytes if obj is a byte array
 
-	int count = obj2int(FIELD(obj, 0));
+	if (IS_TYPE(obj, ListType)) {
+		count = obj2int(FIELD(obj, 0));
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		count = BYTES(obj);
+		bytes = (uint8 *) &FIELD(obj, 0);
+	} else {
+		return fail(needsByteArray);
+	}
 	if (count <= 0) return zeroObj;
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
@@ -178,8 +186,12 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	#endif
 
 	for (int i = 0; i < count; i++) {
-		int byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
-		FIELD(obj, i + 1) = int2obj(byte);
+		uint8 byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
+		if (bytes) {
+			bytes[i] = byte;
+		} else {
+			FIELD(obj, i + 1) = int2obj(byte);
+		}
 	}
 	return int2obj(count);
 }
@@ -189,7 +201,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// integer, write it as a single byte. If it is a byte array or list of bytes, write them.
 	// The list should contain integers in the range 0..255.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ data = args[1];
 	int stop = ((argCount < 3) || (trueObj == args[2]));
@@ -618,9 +630,16 @@ static void setAccelRange(int range) {
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_V2)
 
 #define LIS3DH_ID 25
+
+#if defined(MAKERPORT_V2)
+  // use Wire on MakerPort_v2
+  #define Wire1 Wire
+  #undef LIS3DH_ID
+  #define LIS3DH_ID 24
+#endif
 
 static void setAccelRange(int range); // forward reference
 
@@ -632,23 +651,25 @@ static int readAcceleration(int registerID) {
 		// turn on the accelerometer
 		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
-		Wire1.write(0x8F); // 1600 Hz sampling rate, Low Power, Enable x/y/z
+		Wire1.write(0x77); // 400 Hz sampling rate, 10-bit resolution, enable x/y/z
 		Wire1.endTransmission();
 		delay(2);
-		setAccelRange(0); // also disable block data update
+		setAccelRange(0); // also disables block data update
+		#if defined(MAKERPORT_V2)
+			writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		#endif
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
-	Wire1.write(0x28 + registerID);
+	Wire1.write((0x28 + registerID) | 0x80); // address + auto-increment flag
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
-	Wire1.requestFrom(LIS3DH_ID, 1);
-	int val = Wire1.available() ? Wire1.read() : 0;
-
-	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
-	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 200) / 127); // scale to range 0-200
+	Wire1.requestFrom(LIS3DH_ID, 2);
+	signed char highBits = Wire1.available() ? Wire1.read() : 0;
+	signed char lowBits = Wire1.available() ? Wire1.read() : 0;
+	int val =  (highBits << 2) | ((lowBits >> 6) & 3);
+	val = (200 * val) >> 9;
 	if (1 == registerID) val = -val; // invert sign for x axis
 	return val;
 }
@@ -666,10 +687,26 @@ static void setAccelRange(int range) {
 static int readTemperature() {
 	// Return the temperature in Celcius
 
-	setPinMode(A9, INPUT);
-	int adc = analogRead(A9);
+	int adc = 0;
 
-	return ((int) (0.116 * adc)) - 37; // linear approximation
+	#if defined(MAKERPORT_V2)
+		int degreesC = 0;
+		uint8 regValue = readI2CReg(LIS3DH_ID, 0x23);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue | 0x80); // enable block data update (needed for temperature)
+		uint8 hiByte = readI2CReg(LIS3DH_ID, 0x0D);
+		uint8 lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue); // disable block data update
+		if (hiByte <= 127) { // positive offset
+			degreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
+		} else { // negative offset
+			degreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+		}
+		return  20 + degreesC; // adjusted temperature
+	#else
+		setPinMode(A9, INPUT);
+		adc = analogRead(A9);
+		return ((int) (0.116 * adc)) - 37; // linear approximation
+	#endif
 
 	// The following unused code does not seem as accurate as the linear approximation
 	// above (based on comparing the thermistor to a household digital thermometer).
@@ -873,7 +910,6 @@ static void startAccelerometer() {
 	delay(2);
 	accelStarted = true;
 }
-
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) startAccelerometer();
@@ -1582,7 +1618,7 @@ static OBJ primTouchRead(int argCount, OBJ *args) {
 
 #else // stubs for non-ESP32 boards
 
-static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primTouchRead(int argCount, OBJ *args) { return zeroObj; }
 
 #endif // Capacitive Touch Primitives
 

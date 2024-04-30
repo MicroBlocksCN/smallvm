@@ -260,8 +260,11 @@ void outputRecordHeaders();
 
 // Platform Specific Operations
 
+uint64 totalMicrosecs();
 uint32 microsecs(void);
 uint32 millisecs(void);
+uint32 seconds();
+void handleMicosecondClockWrap();
 
 int ideConnected();
 int recvBytes(uint8 *buf, int count);
@@ -362,9 +365,6 @@ void BLE_stop();
 void BLE_pauseAdvertising();
 void BLE_resumeAdvertising();
 
-void BLE_suspendIDEService();
-void BLE_resumeIDEService();
-
 void BLE_setEnabled(int enableFlag);
 int BLE_isEnabled();
 
@@ -378,7 +378,7 @@ typedef enum {
 	VarPrims,
 	DataPrims,
 	MiscPrims,
-	IOPrims	,
+	IOPrims,
 	SensorPrims,
 	SerialPrims,
 	DisplayPrims,
@@ -420,6 +420,7 @@ typedef const struct {
 
 void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
+OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args);
 void primsInit();
 
 #ifdef __cplusplus

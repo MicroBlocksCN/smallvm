@@ -60,7 +60,6 @@ typedef struct {
 } PrimitiveSet;
 
 PrimitiveSet primSets[PrimitiveSetCount];
-int primSetCount = 0;
 
 void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries) {
 	primSets[primSetIndex].setName = setName;
@@ -93,7 +92,7 @@ PrimitiveFunction findPrimitive(char *primName) {
 	strncpy(opName, colon + 1, count);
 	opName[count] = 0;
 
-	for (int i = 0; i < primSetCount; i++) {
+	for (int i = 0; i < PrimitiveSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
 			PrimEntry *entries = primSets[i].entries;
 			int entryCount = primSets[i].entryCount;
@@ -105,6 +104,27 @@ PrimitiveFunction findPrimitive(char *primName) {
 		}
 	}
 	return NULL;
+}
+
+OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args) {
+	// Call a named primitive with the given primitive set index and name.
+
+	PrimEntry *entries = primSets[setIndex].entries;
+	int entryCount = primSets[setIndex].entryCount;
+	for (int i = 0; i < entryCount; i++) {
+		if (0 == strcmp(entries[i].primName, primName)) {
+			OBJ result = (entries[i].primFunc)(argCount, args); // call the primitive
+			tempGCRoot = NULL; // clear tempGCRoot in case it was used
+			return result;
+		}
+	}
+
+	char s[200];
+	snprintf(s, sizeof(s), "Unknown primitive [%s:%s]", primSets[setIndex].setName, primName);
+	outputString(s);
+	return fail(primitiveNotImplemented);
+
+	return falseObj;
 }
 
 OBJ callPrimitive(int argCount, OBJ *args) {
@@ -121,7 +141,7 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 	char *setName = IS_TYPE(args[0], StringType) ? obj2str(args[0]) : (char *) "";
 	char *primName = IS_TYPE(args[1], StringType) ? obj2str(args[1]) : (char *) "";
 
-	for (int i = 0; i < primSetCount; i++) {
+	for (int i = 0; i < PrimitiveSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
 			PrimEntry *entries = primSets[i].entries;
 			int entryCount = primSets[i].entryCount;
@@ -1127,6 +1147,7 @@ static void processShortMessage() {
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
 			processFileMessage(cmd, 0, NULL);
+			sendData();
 		}
 	}
 	skipToStartByteAfter(3);
@@ -1176,6 +1197,7 @@ static void processLongMessage() {
 	default:
 		if ((200 <= cmd) && (cmd <= 205)) {
 			processFileMessage(cmd, bodyBytes, (char *) &rcvBuf[5]);
+			sendData();
 		}
 	}
 	skipToStartByteAfter(5 + msgLength);

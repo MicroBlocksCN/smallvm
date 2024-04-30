@@ -1,6 +1,6 @@
 module Lists Data
 author MicroBlocks
-version 1 4 
+version 1 6 
 choices pick 'a few' some most 
 description 'Useful functions for working with lists.
 '
@@ -16,10 +16,12 @@ description 'Useful functions for working with lists.
   spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
   spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
   spec ' ' 'list_mergesort' 'sort _' 'auto' 'aList'
+  spec ' ' 'list_unique' 'unique _' 'auto' 'aList'
   space
   spec 'r' 'list_shuffled' 'shuffled _' 'auto' 'aList'
   spec 'r' 'list_reversed' 'reversed _' 'auto' 'aList'
   spec 'r' 'list_sorted' 'sorted _' 'auto' 'aList'
+  spec 'r' 'list_uniqued' 'uniqued _' 'auto' 'aList'
   space
   spec ' ' '_list_mergeStep' '_mergeStep _ _ _ _ _' 'auto num num num auto' 'srcList' 1 2 3 'dstList'
 
@@ -139,5 +141,24 @@ to list_sorted list {
   local 'new list' ('[data:copyFromTo]' list 1)
   list_mergesort (v 'new list')
   return (v 'new list')
+}
+
+to list_unique list {
+  local 'idx' 1
+  repeatUntil (idx >= (size list)) {
+    local 'item' (at idx list)
+    local 'found' ('[data:find]' item list (idx + 1))
+    repeatUntil (or (found == -1) (idx == found)) {
+      '[data:delete]' found list
+      found = ('[data:find]' item list (idx + 1))
+    }
+    idx += 1
+  }
+}
+
+to list_uniqued list {
+  local 'unique' ('[data:copyFromTo]' list 1)
+  list_unique unique
+  return unique
 }
 

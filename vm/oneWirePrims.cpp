@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 
 #include <OneWire.h>
 

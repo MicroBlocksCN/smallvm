@@ -998,6 +998,9 @@ barreja _
 sort _
 ordena _
 
+unique _
+elimina duplicats de _
+
 shuffled _
 _ barrejada
 
@@ -1006,6 +1009,22 @@ _ invertida
 
 sorted _
 _ ordenada
+
+uniqued _
+_ sense duplicats
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudo-aleatorietat
+
+pseudorandom _ to _ with seed _
+nombre pseudo-aleatori entre _ i _ amb llavor _
+
+_ pseudorandom numbers _ to _ with seed _
+_ nombres pseudo-aleatoris entre _ i _ amb llavor _
 
 ####
 # BLE Keyboard library
@@ -1356,22 +1375,25 @@ Rhythm
 Ritme
 
 set tempo to _ bpm at _ / _ signature
-fixa tempo a _ bmp i compàs a _ / _
+fixa tempo a _ bpm i compàs a _ / _
 
-start counting _ bars
-comença a comptar a _ compassos
-
-stop counting
-deixa de comptar
-
-wait until next _
-espera fins el proper _
+set pattern to _ bars
+fixa el patró a _ compassos
 
 current beat
 temps actual
 
 current bar
 compàs actual
+
+wait until next _ duration
+espera fins la propera durada _
+
+wait until beat _
+espera fins al temps _
+
+wait until bar _
+espera fins al compàs _
 
 ####
 # MIDI
@@ -1380,145 +1402,145 @@ compàs actual
 # General MIDI drum instrument names
 
 Acoustic Bass Drum
---MISSING--
+Bombo acústic
 
 Bass Drum 1
---MISSING--
+Bombo 1
 
 Side Stick
---MISSING--
+Vora de caixa
 
 Acoustic Snare
---MISSING--
+Caixa acústica
 
 Hand Clap
---MISSING--
+Aplaudiment
 
 Electric Snare
---MISSING--
+Caixa elèctrica
 
 Low Floor Tom
---MISSING--
+Goliat greu
 
 Closed Hi-Hat
---MISSING--
+Xarles tancat
 
 High Floor Tom
---MISSING--
+Goliat agut
 
 Pedal Hi-Hat
---MISSING--
+Xarles (pedal)
 
 Low Tom
---MISSING--
+Tom-tom greu
 
 Open Hi-Hat
---MISSING--
+Xarles obert
 
 Low-Mid Tom
---MISSING--
+Tom-tom mig-greu
 
 Hi-Mid Tom
---MISSING--
+Tom-tom mig-agut
 
 Crash Cymbal 1
---MISSING--
+Plat d'accents (crash) 1
 
 High Tom
---MISSING--
+Tom-tom agut
 
 Ride Cymbal 1
---MISSING--
+Plat de ritme (ride) 1
 
 Chinese Cymbal
---MISSING--
+Plat xinès
 
 Ride Bell
---MISSING--
+Campana
 
 Tambourine 
---MISSING--
+Pandereta
 
 Splash Cymbal
---MISSING--
+Plat splash
 
 Cowbell 
---MISSING--
+Esquellot
 
 Crash Cymbal 2
---MISSING--
+Plat d'accents (crash) 2
 
 Vibraslap 
---MISSING--
+Vibraslap 
 
 Ride Cymbal 2
---MISSING--
+Plat de ritme (ride) 2
 
 Hi Bongo
---MISSING--
+Bongo agut
 
 Low Bongo
---MISSING--
+Bongo greu
 
 Mute Hi Conga
---MISSING--
+Conga aguda sorda
 
 Open Hi Conga
---MISSING--
+Conga aguda oberta
 
 Low Conga
---MISSING--
+Conga greu
 
 High Timbale
---MISSING--
+Timbala aguda
 
 Low Timbale
---MISSING--
+Timbala greu
 
 High Agogo
---MISSING--
+Agogó agut
 
 Low Agogo
---MISSING--
+Agogó greu
 
 Cabasa
---MISSING--
+Cabassa
 
 Maracas 
---MISSING--
+Maraques
 
 Short Whistle
---MISSING--
+Xiulet curt
 
 Long Whistle
---MISSING--
+Xiulet llarg
 
 Short Guiro
---MISSING--
+Güiro curt
 
 Long Guiro
---MISSING--
+Güiro llarg
 
 Claves 
---MISSING--
+Bastons
 
 Hi Wood Block
---MISSING--
+Caixa xinesa aguda
 
 Low Wood Block
---MISSING--
+Caixa xinesa greu
 
 Mute Cuica
---MISSING--
+Cuica sorda
 
 Open Cuica
---MISSING--
+Cuica oberta
 
 Mute Triangle
---MISSING--
+Triangle sord
 
 Open Triangle
---MISSING--
+Triangle obert
 
 # General MIDI instrument categories
 
@@ -1541,7 +1563,7 @@ strings
 secció de cordes
 
 ensemble
-secció de vents
+cors
 
 brass
 vent metall
@@ -1550,7 +1572,7 @@ reed
 vent de canya
 
 pipe 
-flauta
+vent fusta
 
 synth lead
 sintetitzador solista
@@ -1559,116 +1581,116 @@ synth pad
 sintetitzador ambient
 
 synth SFX
-efecte de sintetitzador
+efectes sintetitzats
 
 ethnic
 ètnic
 
 percussive
-percussiu
+percussió
 
 SFX 
---MISSING--
+efectes especials
 
 # General MIDI drum sets
 
 standard
---MISSING--
+estàndard
 
 room
---MISSING--
+estudi
 
 power
---MISSING--
+potent
 
 electronic 
---MISSING--
+electrònica
 
 TR-808
---MISSING--
+TR-808
 
 jazz
---MISSING--
+jazz
 
 brush
---MISSING--
+escombretes
 
 orchestra
---MISSING--
+orquèstra
 
 SFX 
---MISSING--
+efectes especials
 
 CM-64/CM-32L
---MISSING--
+CM-64/CM-32L
 
 # General MIDI control changes
 
 bank select 1
---MISSING--
+selecció de banc 1
 
 bank select 2
---MISSING--
+selecció de banc 2
 
 modulation 
---MISSING--
+modulació
 
 portamento time
---MISSING--
+temps de portamento
 
 volume
---MISSING--
+volum
 
 pan
---MISSING--
+panning
 
 expression
---MISSING--
+expressió
 
 hold
---MISSING--
+temps de sosteniment
 
 portamento
---MISSING--
+portamento
 
 sostenuto
---MISSING--
+sostenuto
 
 soft
---MISSING--
+suau
 
 resonance 
---MISSING--
+ressonància
 
 release time
---MISSING--
+temps d'extinció
 
 attack time
---MISSING--
+temps d'atac
 
 cutoff 
---MISSING--
+filtre de freqüència
 
 decay time
---MISSING--
+temps de decaïment
 
 vibrato rate
---MISSING--
+freqüència del vibrato
 
 vibrato depth
---MISSING--
+intensitat del vibrato
 
 vibrato delay
---MISSING--
+retard del vibrato
 
 portamento control
---MISSING--
+control del portamento
 
 effect 1
---MISSING--
+efecte 1
 
 effect 2
---MISSING--
+efecte 2
 
 # library blocks
 

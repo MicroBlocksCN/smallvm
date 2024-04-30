@@ -1,23 +1,21 @@
 module Rhythm Control
 author MicroBlocks
-version 2 2 
+version 2 4 
 description 'Keeps time according to a tempo and time signature. Useful to create musical patterns.
 
 Includes abstractions for note durations, bars and beats.
 '
-variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures 
+variables _rhy_tempo _rhy_bars _rhy_beat_duration _rhy_measures _rhy_reference_note 
 
-  spec ' ' 'rhy_set tempo' 'set tempo to _ bpm at _ / _ signature' 'auto auto auto' 250 4 4
-  space
-  spec ' ' 'rhy_start counting' 'start counting _ bars' 'auto' 16
-  spec ' ' 'rhy_stop counting' 'stop counting'
+  spec ' ' 'rhy_set tempo' 'set tempo to _ bpm at _ / _ signature' 'num num num' 250 4 4
+  spec ' ' 'rhy_set bars' 'set pattern to _ bars' 'num' 16
   space
   spec 'r' 'rhy_current bar' 'current bar'
   spec 'r' 'rhy_current beat' 'current beat'
   space
-  spec ' ' 'rhy_wait until next' 'wait until next _ duration' 'auto' ''
-  spec ' ' 'rhy wait until beat' 'wait until beat _' 'auto' 3
-  spec ' ' 'rhy wait until bar' 'wait until bar _' 'auto' 2
+  spec ' ' 'rhy_wait until next' 'wait until next _ duration' 'num' 
+  spec ' ' 'rhy wait until beat' 'wait until beat _' 'num' 3
+  spec ' ' 'rhy wait until bar' 'wait until bar _' 'num' 2
   space
   spec 'r' 'rhy_whole duration' '¹⁄₁'
   spec 'r' 'rhy_half duration' '½'
@@ -28,7 +26,6 @@ variables _rhy_tempo _rhy_bars _rhy_looping _rhy_beat_duration _rhy_measures
   spec 'r' 'rhy_dotted' '_ .' 'auto' ''
   spec 'r' 'rhy_triplet' '‿³ _' 'auto' ''
   space
-  spec ' ' '_rhy loop' '_rhy loop'
   spec 'r' '_rhy duration of note value' '_rhy duration of note value _' 'auto' 4
   spec 'r' '_rhy 2 ^' '_rhy 2 ^ _' 'auto' '10'
   spec 'r' '_rhy between' '_rhy _ between _ and _' 'auto auto auto' '10' '10' '10'
@@ -46,21 +43,13 @@ to '_rhy between' foo a b {
 }
 
 to '_rhy duration of note value' 'note value' {
+  if (_rhy_beat_duration == 0) {'rhy_set tempo' 250 4 4}
   return ((_rhy_beat_duration * _rhy_reference_note) / (v 'note value'))
 }
 
-to '_rhy loop' {
-  repeatUntil (not _rhy_looping) {
-    for bar _rhy_bars {
-      for beat _rhy_measures {
-        if (not _rhy_looping) {stopTask}
-        'rhy_wait until next' _rhy_beat_duration
-      }
-    }
-  }
-}
-
 to 'rhy wait until bar' 'bar number' {
+  if (_rhy_beat_duration == 0) {'rhy_set tempo' 250 4 4}
+  if (_rhy_bars == 0) {'rhy_set bars' 16}
   local 'bar duration' (_rhy_measures * _rhy_beat_duration)
   local 'round duration' ((v 'bar duration') * _rhy_bars)
   local 'wakeTime' (((v 'round duration') * (((millisOp) / (v 'round duration')) + 1)) + (((v 'bar number') - 1) * (v 'bar duration')))
@@ -68,6 +57,7 @@ to 'rhy wait until bar' 'bar number' {
 }
 
 to 'rhy wait until beat' 'beat number' {
+  if (_rhy_beat_duration == 0) {'rhy_set tempo' 250 4 4}
   local 'bar duration' (_rhy_measures * _rhy_beat_duration)
   local 'wakeTime' (((v 'bar duration') * (((millisOp) / (v 'bar duration')) + 1)) + (((v 'beat number') - 1) * _rhy_beat_duration))
   waitMillis ((wakeTime - (millisOp)) % (v 'bar duration'))
@@ -100,6 +90,11 @@ to 'rhy_quarter duration' {
   return ('_rhy duration of note value' 4)
 }
 
+to 'rhy_set bars' bars {
+  if (_rhy_measures == 0) {'rhy_set tempo' 240 4 4}
+  _rhy_bars = bars
+}
+
 to 'rhy_set tempo' tempo measures 'note value' {
   _rhy_tempo = tempo
   _rhy_reference_note = (v 'note value')
@@ -109,17 +104,6 @@ to 'rhy_set tempo' tempo measures 'note value' {
 
 to 'rhy_sixteenth duration' {
   return ('_rhy duration of note value' 16)
-}
-
-to 'rhy_start counting' bars {
-  if (_rhy_measures == 0) {'rhy_set tempo' 240 4 4}
-  _rhy_bars = bars
-  _rhy_looping = (booleanConstant true)
-  sendBroadcast '_rhy loop'
-}
-
-to 'rhy_stop counting' {
-  _rhy_looping = (booleanConstant false)
 }
 
 to rhy_triplet duration {

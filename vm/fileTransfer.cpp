@@ -52,17 +52,16 @@ static void writeInt(int n, char *dst) {
 	*dst++ = ((n >> 24) & 0xFF);
 }
 
-static void clearFileRecieveState() {
+static void clearFileReceiveState() {
 	receivedFileName[0] = 0;
 	receiveID = 0;
 	receivedBytes = 0;
-	if (!tempFile) tempFile.close();
 }
 
 static void receiveChunk(int msgByteCount, char *msg) {
 	// Append the incoming chunk to the file being received.
 
-	if (!tempFile) return; // not receiving a file; ignore
+	if (!receiveID) return; // not receiving a file; ignore
 
 	int transferID = readInt(&msg[0]);
 	int offset = readInt(&msg[4]);
@@ -72,9 +71,9 @@ static void receiveChunk(int msgByteCount, char *msg) {
 	if ((transferID != receiveID) || (offset != receivedBytes)) {
 		// Unexpected transferID or offset; abort file transfer.
 		outputString("Communication error; file transfer cancelled");
-		clearFileRecieveState();
+		tempFile.close();
+		clearFileReceiveState();
 		return;
-	} else {
 	}
 
 	if (chunkSize > 0) { // append chunk to the temporary file
@@ -85,7 +84,7 @@ static void receiveChunk(int msgByteCount, char *msg) {
 		tempFile.close();
 		closeAndDeleteFile(receivedFileName); // delete the old version
 		myFS.rename(tempFileName, receivedFileName);
-		clearFileRecieveState();
+		clearFileReceiveState();
 	}
 }
 

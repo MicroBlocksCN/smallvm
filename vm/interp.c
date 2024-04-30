@@ -63,7 +63,7 @@ int failure() {
 
 // Printing
 
-#define PRINT_BUF_SIZE 800
+#define PRINT_BUF_SIZE 1000
 static char printBuffer[PRINT_BUF_SIZE];
 static int printBufferByteCount = 0;
 
@@ -147,7 +147,7 @@ OBJ primBroadcastToIDEOnly(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// Timer
+// Timing Support
 
 static uint32 timerStart = 0;
 
@@ -167,6 +167,28 @@ static int timer() {
 		return (msecWrap - timerStart) + now; // time to wrap + time since wrap
 	}
 	return now - timerStart;
+}
+
+static OBJ primMSecsSince(int argCount, OBJ *args) {
+	int startTime = obj2int(args[0]);
+	int endTime = ((argCount > 1) && isInt(args[1])) ?
+		obj2int(args[1]) :
+		((uint32) ((totalMicrosecs() / 1000))) & 0x3FFFFFFF;
+
+	int deltaTime = endTime - startTime;
+	if (deltaTime < 0) deltaTime += 0x40000000;
+	return int2obj(deltaTime);
+}
+
+static OBJ primUSecsSince(int argCount, OBJ *args) {
+	int startTime = obj2int(args[0]);
+	int endTime = ((argCount > 1) && isInt(args[1])) ?
+		obj2int(args[1]) :
+		microsecs() & 0x3FFFFFFF;
+
+	int deltaTime = endTime - startTime;
+	if (deltaTime < 0) deltaTime += 0x40000000;
+	return int2obj(deltaTime);
 }
 
 // String Access
@@ -548,9 +570,9 @@ static void runTask(Task *task) {
 		&&spiRecv_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&secs_op,
+		&&millisSince_op,
+		&&microsSince_op,
 		&&mbDisplay_op,
 		&&mbDisplayOff_op,
 		&&mbPlot_op,
@@ -573,8 +595,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&primitiveCommand_op,
+		&&primitiveReporter_op,
 		&&callCustomCommand_op,
 		&&callCustomReporter_op,
 		&&callCommandPrimitive_op,
@@ -778,7 +800,7 @@ static void runTask(Task *task) {
 			DISPATCH();
 		}
 		task->status = waiting_micros;
-		task->wakeTime = (microsecs() + tmp) - 10; // adjusted for approximate scheduler overhead
+		task->wakeTime = (microsecs() + tmp) - 7; // adjusted for approximate scheduler overhead
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
@@ -789,7 +811,7 @@ static void runTask(Task *task) {
 	 		goto error;
 	 	}
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + ((1000 * tmp) - 10);
+		task->wakeTime = microsecs() + ((1000 * tmp) - 7);
 		goto suspend;
 	sendBroadcast_op:
 		primSendBroadcast(arg, sp - arg);
@@ -1081,7 +1103,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	millis_op:
 		STACK_CHECK(1);
-		*sp++ = int2obj(millisecs());
+		*sp++ = int2obj((uint32) ((totalMicrosecs() / 1000) & 0x3FFFFFFF)); // result range is 0 - 1073741823
 		DISPATCH();
 	micros_op:
 		STACK_CHECK(1);
@@ -1211,6 +1233,20 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
+	// more time operations
+	secs_op:
+		STACK_CHECK(1);
+		*sp++ = int2obj((uint32) ((totalMicrosecs() / 1000000)) & 0x3FFFFFFF); // result range is 0 - 1073741823
+		DISPATCH();
+	millisSince_op:
+		*(sp - arg) = primMSecsSince(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	microsSince_op:
+		*(sp - arg) = primUSecsSince(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+
 	// micro:bit operations:
 	mbDisplay_op:
 		primMBDisplay(arg, sp - arg);
@@ -1259,6 +1295,22 @@ static void runTask(Task *task) {
 	neoPixelSetPin_op:
 		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	// new primitive call ops:
+	primitiveCommand_op:
+		tmp = (arg >> 17) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		arg = arg & 0xFF; // argument count
+		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	primitiveReporter_op:
+		tmp = (arg >> 17) & 0x7F; // primitive set index
+		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+		arg = arg & 0xFF; // argument count
+		*(sp - arg) = newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
+		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// call a function using the function name and parameter list:
@@ -1336,6 +1388,7 @@ void vmLoop() {
 			#if defined(HAS_LED_MATRIX)
 				updateMicrobitDisplay();
 			#endif
+			handleMicosecondClockWrap();
 			count = 95; // must be under 30 when building on mbed to avoid serial errors
 		} else if ((count & 0xF) == 0) {
 			captureIncomingBytes();

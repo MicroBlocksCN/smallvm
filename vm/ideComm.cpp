@@ -17,6 +17,21 @@ char BLE_ThreeLetterID[4];
 int BLE_connected_to_IDE = false;
 int USB_connected_to_IDE = false;
 
+// Helper function (works on all boards)
+
+void BLE_initThreeLetterID() {
+	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+	getMACAddress(mac);
+	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
+
+	BLE_ThreeLetterID[0] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[1] = 65 + (machineNum % 26);
+	machineNum = machineNum / 26;
+	BLE_ThreeLetterID[2] = 65 + (machineNum % 26);
+	BLE_ThreeLetterID[3] = 0;
+}
+
 #if defined(BLE_IDE)
 
 // BLE Communications
@@ -32,6 +47,7 @@ extern uint32 lastRcvTime;
 
 static BLEServer *pServer = NULL;
 static BLEService *pService = NULL;
+static BLEService *pUARTService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
 static char uniqueName[32];
@@ -68,21 +84,6 @@ static void flashUserLED() {
 	delay(10);
 	primSetUserLED(&off);
 	updateMicrobitDisplay();
-}
-
-void BLE_initThreeLetterID() {
-	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
-	getMACAddress(mac);
-	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
-
-	BLE_ThreeLetterID[0] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	BLE_ThreeLetterID[1] = 65 + (machineNum % 26);
-	machineNum = machineNum / 26;
-	BLE_ThreeLetterID[2] = 65 + (machineNum % 26);
-	BLE_ThreeLetterID[3] = 0;
-
-	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
 }
 
 static void displayFor(int msecs) {
@@ -211,28 +212,34 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 // Start/Stop BLE
 
+BLEService * BLE_createUARTService(); // imported from blePrims.cpp
+
 void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
 	// Create BLE Device
 	BLE_initThreeLetterID();
+	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
 	BLEDevice::init(uniqueName);
 
 	// Create BLE Server
 	pServer = BLEDevice::createServer();
 	pServer->setCallbacks(new MyServerCallbacks());
 
-	// Create BLE Service
+	// Create IDE Service
 	pService = pServer->createService(MB_SERVICE_UUID);
-
-	// Create BLE Characteristics
 	pTxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
 	pTxCharacteristic->setCallbacks(new MyCallbacks());
 	pRxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
 	pRxCharacteristic->setCallbacks(new MyCallbacks());
 
-	// Start the service
+	// Create UART Service
+	pUARTService = BLE_createUARTService();
+
+	// Start Services
 	pService->start();
+	pUARTService->start();
+
 	serviceOnline = true;
 	bleRunning = true;
 
@@ -280,20 +287,6 @@ void BLE_resumeAdvertising() {
 	pAdvertising->setMinInterval(100);
 	pAdvertising->setMaxInterval(200);
 	if (serviceOnline) pAdvertising->start();
-}
-
-// Stop and resume IDE service (used by BLE UART
-
-void BLE_suspendIDEService() {
-	pServer->removeService(pService);
-	pServer->setCallbacks(NULL);
-}
-
-void BLE_resumeIDEService() {
-	pServer->addService(pService);
-	pServer->setCallbacks(new MyServerCallbacks());
-	pService->start();
-	BLE_resumeAdvertising();
 }
 
 // IDE receive and send
@@ -385,7 +378,6 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // stubs for non-BLE:
-void BLE_initThreeLetterID() { BLE_ThreeLetterID[0] = 0; }
 void BLE_start() { }
 void BLE_stop() { }
 void BLE_pauseAdvertising() { }

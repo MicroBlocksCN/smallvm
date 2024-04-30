@@ -682,11 +682,25 @@ shuffle _
 
 sort _
 
+unique _
+
 shuffled _
 
 reversed _
 
 sorted _
+
+uniqued _
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+
+pseudorandom _ to _ with seed _
+
+_ pseudorandom numbers _ to _ with seed _
 
 ####
 # BLE Keyboard library
@@ -941,15 +955,17 @@ Rhythm
 
 set tempo to _ bpm at _ / _ signature
 
-start counting _ bars
-
-stop counting
-
-wait until next _
+set pattern to _ bars
 
 current beat
 
 current bar
+
+wait until next _ duration
+
+wait until beat _
+
+wait until bar _
 
 ####
 # MIDI

@@ -30,6 +30,8 @@
 #include "interp.h"
 #include "persist.h"
 
+void delay(int); // Arduino delay function
+
 // flash operations for supported platforms
 
 #if defined(NRF51) || defined(NRF52) || defined(ARDUINO_NRF52_PRIMO)
