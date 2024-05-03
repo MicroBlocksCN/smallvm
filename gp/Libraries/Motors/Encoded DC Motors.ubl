@@ -9,8 +9,8 @@ variables edcmotors__encoderPosition _edcmotors__initialized _edcmotors__running
   spec ' ' 'edcmotors_moveMotorWithEffort' 'move motor _ with effort _ (-1023 to 1023)' 'num num' 1 250
   spec ' ' 'edcmotors_resetMotorEncoder' 'reset motor encoder index _' 'num' 1
   spec ' ' 'edcmotors_stopAllMotors' 'stop all motors'
-  spec ' ' 'edcmotors_stopMotors' 'stop motors _ : _ :' 'num num' 1 2
-  spec ' ' 'edcmotors_waitForMotorsToStop' 'wait for motors to stop _ : _ : ...' 'num num' 1 2
+  spec ' ' 'edcmotors_stopMotors' 'stop motors _ : _ : ...' 'num num' 1 2 3 4 5 6 7 8 999
+  spec ' ' 'edcmotors_waitForMotorsToStop' 'wait for motors to stop _ : _ : ...' 'num num' 1 2 3 4 5 6 7 8 999
   space
   spec ' ' '_edcmotors_basicMoveMotorsWithEffort' '_basic drive motor index _ with effort _ (-1023 to 1023)' 'num num' 1 250
   spec ' ' '_edcmotors_driveMotorsToFollowTarget' '_drive motors to follow target'
