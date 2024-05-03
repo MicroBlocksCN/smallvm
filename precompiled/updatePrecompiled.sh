@@ -8,8 +8,8 @@ pio run -e microbitV2-ble
 cp .pio/build/microbitV2-ble/firmware.hex precompiled/vm_microbitV2.hex
 pio run -e calliope
 cp .pio/build/calliope/firmware.hex precompiled/vm_calliope.hex
-pio run -e calliopeV3
-cp .pio/build/calliopeV3/firmware.hex precompiled/vm_calliopeV3.hex
+pio run -e calliopeV3-ble
+cp .pio/build/calliopeV3-ble/firmware.hex precompiled/vm_calliopeV3-ble.hex
 pio run -e nodemcu
 cp .pio/build/nodemcu/firmware.bin precompiled/vm_nodemcu.bin
 pio run -e ed1
@@ -48,5 +48,5 @@ cd precompiled
 npm install
 node buildUniversalHex.js
 rm vm_microbitV1.hex vm_microbitV2.hex
-rm vm_calliope.hex vm_calliopeV3.hex
+rm vm_calliope.hex vm_calliopeV3-ble.hex
 

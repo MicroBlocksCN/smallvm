@@ -16,14 +16,14 @@ fs.writeFileSync(
 );
 
 fs.writeFileSync(
-    'vm_calliope-universal.hex', 
+    'vm_calliope-universal.hex',
     mbUniveralHex.createUniversalHex([
         {
             hex: fs.readFileSync('vm_calliope.hex').toString(),
             boardId: 0x9900,
         },
         {
-            hex: fs.readFileSync('vm_calliopeV3.hex').toString(),
+            hex: fs.readFileSync('vm_calliopeV3-ble.hex').toString(),
             boardId: 0x9903,
         },
     ])
