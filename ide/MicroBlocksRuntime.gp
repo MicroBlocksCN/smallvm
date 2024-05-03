@@ -1409,9 +1409,13 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	addAll data chunkBytes
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
-			inform (global 'page') (join
-				(localized 'Function "') (functionName aBlockOrFunction)
-				(localized '" is too large to send to board.'))
+            print (join (functionName aBlockOrFunction) (localized 'Script is too large to send to board.'))
+            // The following causes a recursive error because "inform" runs the step function
+            // which tries to save the script again. Workaround is to only print the error
+            // in the console.
+// 			inform (global 'page') (join
+// 				(localized 'Function "') (functionName aBlockOrFunction)
+// 				(localized '" is too large to send to board.'))
 		} else {
 			showError (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
