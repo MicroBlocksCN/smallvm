@@ -1,4 +1,4 @@
-module 'XRP'
+module 'XRP' Output
 author 'Russell Owen'
 version 0 6
 description 'Drive the WPI XRP robot'
