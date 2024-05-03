@@ -1,4 +1,4 @@
-module XRP
+module XRP Output
 author 'Russell Owen'
 version 0 8 
 depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
