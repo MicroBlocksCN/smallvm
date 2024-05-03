@@ -1,4 +1,4 @@
-module 'Encoded DC Motors'
+module 'Encoded DC Motors' Output
 author 'Russell Owen'
 version 0 6
 description 'Drive DC motors with encoders'

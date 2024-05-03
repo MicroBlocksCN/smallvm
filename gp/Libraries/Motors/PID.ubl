@@ -1,4 +1,4 @@
-module 'PID'
+module 'PID' Operators
 author 'Russell Owen'
 version 0 5
 description 'PID Control Loop'
