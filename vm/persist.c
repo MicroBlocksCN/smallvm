@@ -409,7 +409,7 @@ void flashWriteWord(int *addr, int value) {
 		#define HALF_SPACE (60 * 1024)
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 		#define USE_CODE_FILE true
-		#define HALF_SPACE (50 * 1024)
+		#define HALF_SPACE (48 * 1024)
 	#elif defined(ARDUINO_ARCH_RP2040)
 		#define USE_CODE_FILE RP2040_PHILHOWER
 		#define HALF_SPACE (40 * 1024)
