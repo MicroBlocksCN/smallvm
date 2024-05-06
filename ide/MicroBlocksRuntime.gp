@@ -3196,6 +3196,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'ESP8266'
 			addItem menu '未来科技盒'
 			addItem menu 'handpy'
+			addItem menu 'M5StickC+'
 			// addItem menu 'Mbits'
 		} else {
 			addItem menu 'micro:bit'
@@ -3216,6 +3217,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			// addItem menu 'Mbits'
 			addItem menu '未来科技盒'
 			addItem menu 'handpy'
+			addItem menu 'M5StickC+'
 		}
 		popUpAtHand menu (global 'page')
 	}
