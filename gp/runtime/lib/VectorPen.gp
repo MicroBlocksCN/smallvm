@@ -26,14 +26,14 @@ method examples VectorPen {
 }
 
 to newVectorPenOnScreen {
-  return (intialize (new 'VectorPen'))
+  return (initialize (new 'VectorPen'))
 }
 
 to newVectorPen bitmap owningMorph noPrimitives {
   if (isNil bitmap) {
 	bitmap = (newBitmap 200 200)
   }
-  return (intialize (new 'VectorPen') bitmap owningMorph noPrimitives)
+  return (initialize (new 'VectorPen') bitmap owningMorph noPrimitives)
 }
 
 to newVectorPenForSVG pageW pageH {
@@ -49,7 +49,7 @@ method setClipRect VectorPen aRect { clipRect = aRect }
 method setHeading VectorPen degrees { heading = degrees }
 method path VectorPen { return (toArray path) }
 
-method intialize VectorPen aBitmap aMorph noPrimitives {
+method initialize VectorPen aBitmap aMorph noPrimitives {
   offsetX = 0
   offsetY = 0
   penX = 100

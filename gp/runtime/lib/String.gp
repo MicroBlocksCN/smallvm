@@ -197,6 +197,14 @@ method findSubstring String stringToSearch startIndex {
   return nil
 }
 
+method findAnyOf String aListOfStrings startIndex {
+	for s aListOfStrings {
+		match = (findSubstring s this startIndex)
+		if (notNil match) { return match }
+	}
+	return nil
+}
+
 method foundMatch String stringToSearch matchIndex {
   j = matchIndex
   for i (byteCount this) {
