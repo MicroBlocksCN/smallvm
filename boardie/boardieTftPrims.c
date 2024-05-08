@@ -243,7 +243,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 			window.ctx.beginPath();
 			window.ctx.moveTo($0, $1);
 			window.ctx.lineTo($2, $3);
-			window.ctx.lineTo($3, $4);
+			window.ctx.lineTo($4, $5);
 			window.ctx.closePath();
 			if ($7) {
 				window.ctx.fill();
@@ -574,5 +574,5 @@ static PrimEntry entries[] = {
 };
 
 void addTFTPrims() {
-	addPrimitiveSet("tft", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(TFTPrims, "tft", sizeof(entries) / sizeof(PrimEntry), entries);
 }

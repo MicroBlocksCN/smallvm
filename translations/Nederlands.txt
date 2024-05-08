@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: April 14 2023
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -40,6 +40,9 @@ milliseconden
 
 board type
 board type
+
+connected to IDE
+--MISSING--
 
 Pins
 Pinnen
@@ -122,6 +125,12 @@ commentaar _
 How this works...
 Hoe dit werkt...
 
+range _ to _
+--MISSING--
+
+by _
+--MISSING--
+
 for _ in _ _
 voor _ in _ _
 
@@ -139,6 +148,12 @@ stop alles
 
 last message
 laatste bericht
+
+arg _ default _
+--MISSING--
+
+default
+--MISSING--
 
 call _
 roep _ aan
@@ -187,6 +202,9 @@ of _
 
 _ is a _
 _ is een _
+
+convert _ to _
+--MISSING--
 
 boolean
 booleaans
@@ -397,11 +415,14 @@ serieel lezen
 serial write _
 serieel schrijven _
 
+anIntegerStringListOrByteArray
+--MISSING--
+
 serial write _ starting at _
 serieel schrijven _ startend bij _
 
-aByteStringOrByteArray
-eenByteReeksOfByteArray
+aStringListOrByteArray
+--MISSING--
 
 soft serial write byte _ pin _ baud _
 soft seriele schrijf byte _ pin _ baud _
@@ -551,6 +572,12 @@ maak alle NeoPixels kleur _
 rotate NeoPixels by _
 draai NeoPixels met _
 
+brighten NeoPixel _ by _
+--MISSING--
+
+brighten all NeoPixels by _
+--MISSING--
+
 color r _ g _ b _ (0-255)
 kleur r _ g _ b _ (0-255)
 
@@ -568,6 +595,32 @@ PIR
 
 PIR at pin _ detected movement
 PIR op pin _ detecteerde beweging
+
+#### NeoPanel library
+
+NeoPanel
+--MISSING--
+
+attach NeoPixel panel width _ height _ at pin _
+--MISSING--
+
+NeoPanel set x _ y _ color _
+--MISSING--
+
+NeoPanel fill column _ color _
+--MISSING--
+
+NeoPanel fill row _ color _
+--MISSING--
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+--MISSING--
+
+NeoPanel draw text _ at x _ y _ color _
+--MISSING--
+
+NeoPanel draw BMP file _ at x _ y _
+--MISSING--
 
 ####
 # Microphone library
@@ -795,6 +848,175 @@ IR transmit device _ command _
 IR zend device _ command _
 
 ####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+--MISSING--
+
+press key _ : while holding _
+--MISSING--
+
+hold key _
+--MISSING--
+
+release key _
+--MISSING--
+
+release all keys
+--MISSING--
+
+Shift
+--MISSING--
+
+Control
+Besturen
+
+Alt / ⌥
+--MISSING--
+
+Logo / ⌘
+--MISSING--
+
+AltGr 
+--MISSING--
+
+enter
+--MISSING--
+
+return
+--MISSING--
+
+tab
+--MISSING--
+
+backspace
+--MISSING--
+
+delete
+verwijder
+
+insert
+--MISSING--
+
+home
+home
+
+end
+--MISSING--
+
+PgUp
+--MISSING--
+
+PgDown
+--MISSING--
+
+CapsLock
+--MISSING--
+
+NumLock
+--MISSING--
+
+ScrollLock
+--MISSING--
+
+PrintScreen
+--MISSING--
+
+ESC
+--MISSING--
+
+_ mouse click
+--MISSING--
+
+left
+links
+
+right
+rechts
+
+middle
+--MISSING--
+
+both
+beide
+
+move mouse pointer by _ , _
+--MISSING--
+
+scroll mouse by _
+--MISSING--
+
+hold _ mouse button
+--MISSING--
+
+release mouse buttons
+--MISSING--
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+--MISSING--
+
+list _ contains _
+--MISSING--
+
+circular item _ of _
+--MISSING--
+
+aListOrString
+--MISSING--
+
+map _ over _
+--MISSING--
+
+aFunction
+--MISSING--
+
+filter _ with _
+--MISSING--
+
+pick _ from _
+--MISSING--
+
+a few
+--MISSING--
+
+some
+--MISSING--
+
+most
+--MISSING--
+
+reverse _
+--MISSING--
+
+shuffle _
+--MISSING--
+
+sort _
+--MISSING--
+
+shuffled _
+--MISSING--
+
+reversed _
+--MISSING--
+
+sorted _
+--MISSING--
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+--MISSING--
+
+start BLE Keyboard
+--MISSING--
+
+####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
 # All of its blocks are primitive (see "Primitives" section)
@@ -864,6 +1086,60 @@ wis x _ y _
 
 display character _
 toon teken _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+--MISSING--
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+--MISSING--
+
+write _ at x _ y _ inverse _
+--MISSING--
+
+show display buffer
+--MISSING--
+
+clear
+--MISSING--
+
+set contrast (1-4) _
+--MISSING--
+
+draw circle at x _ y _ radius _ erase _
+--MISSING--
+
+draw image _ at x _ y _
+--MISSING--
+
+draw line from x _ y _ to x _ y _ erase _
+--MISSING--
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+--MISSING--
+
+fill rectangle x _ y _ w _ h _ erase _
+--MISSING--
+
+_flip display top _
+--MISSING--
+
+make image _
+--MISSING--
+
+set pixel x _ y _ erase _
+--MISSING--
+
+set video _
+--MISSING--
+
+cursor location
+--MISSING--
+
+defer display updates
+--MISSING--
 
 ####
 # TFT display library
@@ -1070,6 +1346,513 @@ WAV bestand _ afspelen
 
 filename
 bestandsnaam
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+--MISSING--
+
+set tempo to _ bpm at _ / _ signature
+--MISSING--
+
+start counting _ bars
+--MISSING--
+
+stop counting
+--MISSING--
+
+wait until next _
+--MISSING--
+
+current beat
+--MISSING--
+
+current bar
+--MISSING--
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+--MISSING--
+
+Bass Drum 1
+--MISSING--
+
+Side Stick
+--MISSING--
+
+Acoustic Snare
+--MISSING--
+
+Hand Clap
+--MISSING--
+
+Electric Snare
+--MISSING--
+
+Low Floor Tom
+--MISSING--
+
+Closed Hi-Hat
+--MISSING--
+
+High Floor Tom
+--MISSING--
+
+Pedal Hi-Hat
+--MISSING--
+
+Low Tom
+--MISSING--
+
+Open Hi-Hat
+--MISSING--
+
+Low-Mid Tom
+--MISSING--
+
+Hi-Mid Tom
+--MISSING--
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+--MISSING--
+
+Ride Cymbal 1
+--MISSING--
+
+Chinese Cymbal
+--MISSING--
+
+Ride Bell
+--MISSING--
+
+Tambourine 
+--MISSING--
+
+Splash Cymbal
+--MISSING--
+
+Cowbell 
+--MISSING--
+
+Crash Cymbal 2
+--MISSING--
+
+Vibraslap 
+--MISSING--
+
+Ride Cymbal 2
+--MISSING--
+
+Hi Bongo
+--MISSING--
+
+Low Bongo
+--MISSING--
+
+Mute Hi Conga
+--MISSING--
+
+Open Hi Conga
+--MISSING--
+
+Low Conga
+--MISSING--
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+--MISSING--
+
+effect 2
+--MISSING--
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
+--MISSING--
 
 ####
 # Turtle geometry library
@@ -1352,6 +2135,15 @@ bmx280 luchtdruk
 bme280 humidity
 bme280 vochtigheid
 
+bmx280 set base altitude _ meters
+--MISSING--
+
+bmx280 altitude (cm)
+--MISSING--
+
+bmx280 altitude (feet)
+--MISSING--
+
 ####
 # TCS34725 color sensor
 
@@ -1539,6 +2331,15 @@ events JSON
 gebeurtenissen
 
 ####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
 # MiKe Robot library
 
 MiKe front obstacle (cm)
@@ -1630,6 +2431,144 @@ set plotter speed to _ %
 maak plotter snelheid naar _ %
 
 ####
+# Innova Didactic libraries
+
+red
+--MISSING--
+
+yellow
+--MISSING--
+
+green
+--MISSING--
+
+forward
+--MISSING--
+
+backward
+--MISSING--
+
+turn right
+--MISSING--
+
+turn left
+--MISSING--
+
+stop
+--MISSING--
+
+right sensor
+--MISSING--
+
+left sensor
+--MISSING--
+
+both sensors
+--MISSING--
+
+TdR test buzzer
+--MISSING--
+
+TdR set blue LED _
+--MISSING--
+
+TdR set red LED _
+--MISSING--
+
+TdR set RGB LED _
+--MISSING--
+
+TdR clear RGB LED
+--MISSING--
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+--MISSING--
+
+TdR rotation
+--MISSING--
+
+TdR light level
+--MISSING--
+
+TdR button 1
+--MISSING--
+
+TdR button 2
+--MISSING--
+
+TdR receive IR code
+--MISSING--
+
+Imagina set _ led to _
+--MISSING--
+
+Imagina play _ octave _ for _ ms
+--MISSING--
+
+Imagina temperature (°C)
+--MISSING--
+
+Imagina light
+--MISSING--
+
+Imagina distance (cm)
+--MISSING--
+
+Imagina button (D2) pressed?
+--MISSING--
+
+Imagina digital reading _
+--MISSING--
+
+Imagina analog reading A1
+--MISSING--
+
+Imagina set digital pin _ to _
+--MISSING--
+
+Imagina stop servo _
+--MISSING--
+
+Imagina set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Imagina set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Imagina set _ speed to _ %
+--MISSING--
+
+Imagina set _ to _
+--MISSING--
+
+Imagina IR reading
+--MISSING--
+
+Imagina IR transmit device _ command _
+--MISSING--
+
+_ steps
+--MISSING--
+
+at _ % speed
+--MISSING--
+
+3dBot set speed at _ %
+--MISSING--
+
+3dBot obstacle < _ cm?
+--MISSING--
+
+3dBot line on _ ?
+--MISSING--
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -1677,8 +2616,8 @@ onderwerp voor MQTT-gebeurtenis _
 payload for MQTT event _
 payload voor MQTT-gebeurtenis _
 
-MQTT set will topic _ payload _ retain _ QoS _
-MQTT zet will topic _ payload _ retain _ QoS _
+MQTT set will topic _ payload _
+--MISSING--
 
 testWill
 testWill
@@ -1712,6 +2651,30 @@ UDP IP-adres op afstand
 
 UDP remote port
 UDP IP-adres op afstand
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
 
 ####
 # Cutebot
@@ -1841,6 +2804,115 @@ NeZha maak _ servo _ hoek naar _
 NeZha set continuous rotation servo _ speed to _ %
 NeZha maak continue rotatie servo _ snelheid naar _ %
 
+####
+# WuKong2040
+
+WuKong2040
+--MISSING--
+
+WuKong2040 rainbowLED _ color to _
+--MISSING--
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+--MISSING--
+
+WuKong2040 clear all rainbowLED
+--MISSING--
+
+WuKong2040 motor _ speed to _ (-100~100)
+--MISSING--
+
+WuKong2040 stop motor _
+--MISSING--
+
+WuKong2040 stop all motors
+--MISSING--
+
+WuKong2040 buzzer beep _ ms
+--MISSING--
+
+####
+# Octopus
+
+Octopus
+--MISSING--
+
+Octopus LED pin _ toggle to _
+--MISSING--
+
+Octopus LED pin _ brightness _ %
+--MISSING--
+
+Octopus motor fan pin _ speed to _ %
+--MISSING--
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+--MISSING--
+
+Octopus sonar trig _ echo _ distance (cm)
+--MISSING--
+
+Octopus value of light intensity (Lux) at pin _
+--MISSING--
+
+Octopus value of DHT11 temperature (°C) at pin _
+--MISSING--
+
+Octopus value of DHT11 humidity (0~100) at pin _
+--MISSING--
+
+Octopus value of water level (0~40mm) at pin _
+--MISSING--
+
+Octopus value of trimpot (0~1023) at pin _
+--MISSING--
+
+Octopus value of noise (dB) at pin _
+--MISSING--
+
+Octopus OLED show _ at x _ y _
+--MISSING--
+
+Octopus OLED clear
+--MISSING--
+
+Octopus OLED draw pixel x _ y _
+--MISSING--
+
+Octopus OLED draw line from x _ y _ to x _ y _
+--MISSING--
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+--MISSING--
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+--MISSING--
+
+Octopus OLED draw circle x _ y _ radius _
+--MISSING--
+
+Octopus OLED fill circle x _ y _ radius _
+--MISSING--
+
+
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1889,6 +2961,9 @@ Verbind
 connect
 verbind
 
+connect (BLE)
+--MISSING--
+
 open Boardie
 open Boardie
 
@@ -1897,6 +2972,9 @@ verbreek verbinding
 
 Serial port:
 Seriële poort:
+
+Connect board and try again
+--MISSING--
 
 other...
 ander...
@@ -2026,6 +3104,15 @@ groot (100%)
 printable (200%)
 afdrukbaar (200%)
 
+duplicate selection
+--MISSING--
+
+drag selection
+--MISSING--
+
+delete selection
+--MISSING--
+
 about...
 over...
 
@@ -2037,6 +3124,12 @@ virtuele machine versie
 
 update firmware on board
 update firmware op board
+
+enable or disable BLE
+--MISSING--
+
+Allow the attached board to be connected via BLE?
+--MISSING--
 
 show data graph
 toon data grafiek
@@ -2062,6 +3155,9 @@ MicroBlocks HTTP Server luistert op poort 6473
 disable autoloading board libraries
 schakel autoloading board bibliotheken uit
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 schakel autoloading board bibliotheken in
 
@@ -2070,6 +3166,18 @@ PlugShare inschakelen als project leeg is
 
 disable PlugShare when project empty
 PlugShare uitschakelen als project leeg is
+
+hide implementation blocks
+--MISSING--
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
+
+show implementation blocks
+--MISSING--
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+--MISSING--
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 wanneer je een board verbindt, zet dan niet automatisch de inhoud in de IDE, zelfs als het huidige project leeg is
@@ -2080,8 +3188,14 @@ wanneer je een board verbindt, zet dan automatisch de inhoud in de IDE als het h
 erase flash and update firmware on ESP board
 flash wissen en firmware op ESP-bord updaten
 
+install ESP firmware from URL
+--MISSING--
+
 Use board type
 Gebruik board type
+
+Firmware Install
+--MISSING--
 
 Firmware Installed
 Firmware geïnstalleerd
@@ -2101,11 +3215,17 @@ Selecteer
 as the destination drive, then click Save.
 als de bestemmings schijf, klik daarna op Bewaar.
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+--MISSING--
+
 Installing firmware...
 Installeer firmware...
 
 Plug in the board.
 Sluit het board aan
+
+Board not connected
+--MISSING--
 
 Wiping board...
 Board wissen ...
@@ -2889,3 +4009,5 @@ Geef een byte-array met de UTF-8 bytes van de gegeven string.
 
 Report the number of words of memory available. Stop button frees up memory.
 Geef het aantal beschikbare woorden geheugen aan. Stoptoets maakt geheugen vrij.
+
+

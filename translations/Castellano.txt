@@ -41,6 +41,9 @@ milisegundos
 board type
 tipo de placa
 
+connected to IDE
+conectado a la IDE
+
 Pins
 Pines
 
@@ -111,7 +114,7 @@ when _ received
 al recibir _
 
 go!
---MISSING--
+adelante!
 
 broadcast _
 envía _
@@ -120,7 +123,13 @@ comment _
 comentario _
 
 How this works...
---MISSING--
+Así funciona...
+
+range _ to _
+números de _ a _
+
+by _
+en incrementos de _
 
 for _ in _ _
 por cada _ en _ _
@@ -140,14 +149,20 @@ detenlo todo
 last message
 último mensaje
 
+arg _ default _
+--MISSING--
+
+default
+--MISSING--
+
 call _
 llama _
 
 function name
---MISSING--
+nombre de la función
 
 parameter list
---MISSING--
+lista de parámetros
 
 with _
 con parámetro(s) _
@@ -188,6 +203,9 @@ o _
 _ is a _
 _ es un _
 
+convert _ to _
+convertir _ a _
+
 boolean
 booleano
 
@@ -198,7 +216,7 @@ string
 texto
 
 list
-listas
+lista
 
 byte array
 lista de bytes
@@ -207,7 +225,7 @@ Advanced:
 Avanzado:
 
 rescale _ from ( _ , _ ) to ( _ , _ )
---MISSING--
+reescalar _ de ( _ , _ ) a ( _ , _ )
 
 hex _
 hexadecimal _
@@ -241,19 +259,19 @@ Data
 Datos
 
 list
-listas
+lista
 
 cat
---MISSING--
+gato
 
 dog
---MISSING--
+perro
 
 bird
---MISSING--
+pájaro
 
 fish
---MISSING--
+pez
 
 length of _
 tamaño de _
@@ -277,7 +295,7 @@ copy _ from _
 copia _ desde _
 
 smiles
---MISSING--
+foca
 
 to _
 hasta _
@@ -310,7 +328,7 @@ as byte array _
 lista de bytes a partir de _
 
 aByteListOrString
---MISSING--
+listaDeBytesOCadenaDeTexto
 
 with all _
 llena de _
@@ -383,7 +401,7 @@ spi exchange bytes _
 bytes de intercambio de spi _
 
 aByteArray
---MISSING--
+listaDeBytes
 
 serial open _ baud
 abre puerto serie a _ baudios
@@ -397,14 +415,17 @@ lee puerto serie
 serial write _
 escribe _ al puerto serie
 
+anIntegerStringListOrByteArray
+--MISSING--
+
 serial write _ starting at _
 escribe _ al puerto serie empezando por _
 
-aByteStringOrByteArray
+aStringListOrByteArray
 --MISSING--
 
 soft serial write byte _ pin _ baud _
---MISSING--
+escribe byte _ al puerto serie virtual en pin _ a _ baudios
 
 print _
 escribe _
@@ -458,13 +479,13 @@ radio send string _
 envía texto _ por radio
 
 Hello!
---MISSING--
+¡Hola!
 
 radio send pair _ = _
 envía associación _ = _ por radio
 
 light
---MISSING--
+luz
 
 radio message received?
 ¿mensaje de radio recibido?
@@ -516,7 +537,7 @@ tilt z
 inclinación z
 
 acceleration
-acceleración
+aceleración
 
 light level
 nivel de luz
@@ -552,10 +573,10 @@ rotate NeoPixels by _
 rota NeoPíxeles en _
 
 brighten NeoPixel _ by _
---MISSING--
+aclarar NeoPixel _ en _
 
 brighten all NeoPixels by _
---MISSING--
+aclarar todos los NeoPixels en _
 
 color r _ g _ b _ (0-255)
 color r _ v _ a _ (0-255)
@@ -600,7 +621,6 @@ escribe _ en x _ y _ color _ en el NeoPanel
 
 NeoPanel draw BMP file _ at x _ y _
 muestra imagen BMP _ x _ y _ en el NeoPanel
-
 
 ####
 # Microphone library
@@ -828,36 +848,191 @@ IR transmit device _ command _
 envía al dispositivo IR _ el comando _
 
 ####
-# Keyboard and Mouse
+# Keyboard and Mouse library
 
 Keyboard and Mouse
---MISSING--
+Teclado y Ratón
 
 press key _ : while holding _
---MISSING--
+pulsa la tecla _ : manteniendo _
 
 hold key _
---MISSING--
+mantén la tecla _ pulsada
 
 release key _
---MISSING--
+suelta la tecla _
 
 release all keys
---MISSING--
+suelta todas las teclas
+
+Shift
+Mayúsculas
+
+Control
+Control
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+intro
+
+return
+retorno
+
+tab
+tabulador
+
+backspace
+retroceso
+
+delete
+elimina
+
+insert
+insertar
+
+home
+vuelve a casa
+
+end
+fin
+
+PgUp
+AvPg
+
+PgDown
+RePg
+
+CapsLock
+BloqMayús
+
+NumLock
+BloqNum
+
+ScrollLock
+BloqDespl
+
+PrintScreen
+ImprPant
+
+ESC
+ESC
 
 _ mouse click
---MISSING--
+click _ del ratón
+
+left
+izquierdo
+
+right
+derecho
+
+middle
+medio
+
+both
+ambos
 
 move mouse pointer by _ , _
---MISSING--
+mueve puntero del ratón en _ , _
 
 scroll mouse by _
---MISSING--
+desplaza el ratón en _
 
 hold _ mouse button
---MISSING--
+mantén pulsado el botón _ del ratón
 
 release mouse buttons
+suelta los botones del ratón
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+Listas
+
+list _ contains _
+la lista _ contiene _
+
+circular item _ of _
+elemento circular _ de _
+
+aListOrString
+unaListaOTexto
+
+map _ over _
+aplica _ sobre _
+
+aFunction
+unaFunción
+
+filter _ with _
+filtra _ utilizando _
+
+pick _ from _
+escoge _ elementos de _
+
+a few
+unos pocos
+
+some
+unos cuantos
+
+most
+la mayoría de
+
+reverse _
+invierte _
+
+shuffle _
+mezcla _
+
+sort _
+ordena _
+
+unique _
+elimina duplicados de _
+
+shuffled _
+_ mezclada
+
+reversed _
+_ invertida
+
+sorted _
+_ ordenada
+
+uniqued _
+_ sin duplicados
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudoaleatoriedad
+
+pseudorandom _ to _ with seed _
+número pseudoaleatorio entre _ y _ con semilla _
+
+_ pseudorandom numbers _ to _ with seed _
+_ números pseudoaleatorios entre _ y _ con semilla _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+--MISSING--
+
+start BLE Keyboard
 --MISSING--
 
 ####
@@ -879,7 +1054,7 @@ scroll text _
 anima el texto _
 
 HELLO ROSA!
---MISSING--
+¡HOLA, ROSA!
 
 scroll number _
 anima el número _
@@ -932,6 +1107,60 @@ display character _
 muestra carácter _
 
 ####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+--MISSING--
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+--MISSING--
+
+write _ at x _ y _ inverse _
+--MISSING--
+
+show display buffer
+--MISSING--
+
+clear
+--MISSING--
+
+set contrast (1-4) _
+--MISSING--
+
+draw circle at x _ y _ radius _ erase _
+--MISSING--
+
+draw image _ at x _ y _
+--MISSING--
+
+draw line from x _ y _ to x _ y _ erase _
+--MISSING--
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+--MISSING--
+
+fill rectangle x _ y _ w _ h _ erase _
+--MISSING--
+
+_flip display top _
+--MISSING--
+
+make image _
+--MISSING--
+
+set pixel x _ y _ erase _
+--MISSING--
+
+set video _
+--MISSING--
+
+cursor location
+--MISSING--
+
+defer display updates
+--MISSING--
+
+####
 # TFT display library
 
 enable TFT _
@@ -968,7 +1197,7 @@ write _ on TFT at x _ y _ color _
 escribe _ en x _ y _ color _
 
 Hello World!
---MISSING--
+¡Hola, Mundo!
 
 scale _ wrap _
 escala _ con saltos de línea _
@@ -981,7 +1210,7 @@ display BMP file _ at x _ y _
 muestra archivo BMP _ en x _ y _
 
 image.bmp
---MISSING--
+imagen.bmp
 
 ####
 # HSV color library
@@ -1135,6 +1364,519 @@ play WAV file _
 reproduce el archivo WAV _
 
 filename
+nombre de archivo
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+Ritmo
+
+set tempo to _ bpm at _ / _ signature
+fija tempo a _ bpm y compás a _ / _
+
+set pattern to _ bars
+fija el patrón a _ compases
+
+current beat
+tiempo actual
+
+current bar
+compás actual
+
+wait until next _ duration
+espera hasta la próxima duración _
+
+wait until beat _
+espera hasta el tiempo _
+
+wait until bar _
+espera hasta el compás _
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+Bombo acústico
+
+Bass Drum 1
+Bombo 1
+
+Side Stick
+Aro de caja
+
+Acoustic Snare
+Caja acústica
+
+Hand Clap
+Palmada
+
+Electric Snare
+Caja eléctrica
+
+Low Floor Tom
+Goliat grave
+
+Closed Hi-Hat
+Charles cerrado
+
+High Floor Tom
+Goliat agudo
+
+Pedal Hi-Hat
+Charles (pedal)
+
+Low Tom
+Tom-tom grave
+
+Open Hi-Hat
+Charles abierto
+
+Low-Mid Tom
+Tom-tom medio-grave
+
+Hi-Mid Tom
+Tom-tom medio-agudo
+
+Crash Cymbal 1
+Plato de acentos (crash) 1
+
+High Tom
+Tom-tom agudo
+
+Ride Cymbal 1
+Plato de ritmo (ride) 1
+
+Chinese Cymbal
+Plato chino
+
+Ride Bell
+Campana
+
+Tambourine 
+Pandereta
+
+Splash Cymbal
+Plato splash
+
+Cowbell 
+Cencerro
+
+Crash Cymbal 2
+Plato de acentos (crash) 2
+
+Vibraslap 
+Vibraslap 
+
+Ride Cymbal 2
+Plato de ritmo (ride) 2
+
+Hi Bongo
+Bongo agudo
+
+Low Bongo
+Bongo grave
+
+Mute Hi Conga
+Conga aguda sorda
+
+Open Hi Conga
+Conga aguda abierta
+
+Low Conga
+Conga grave
+
+High Timbale
+Timbal agudo
+
+Low Timbale
+Timbal grave
+
+High Agogo
+Agogô agudo
+
+Low Agogo
+Agogô grave
+
+Cabasa
+Cabasa
+
+Maracas 
+Maracas
+
+Short Whistle
+Silbato corto
+
+Long Whistle
+Silbato largo
+
+Short Guiro
+Güiro corto
+
+Long Guiro
+Güiro largo
+
+Claves 
+Clave
+
+Hi Wood Block
+Caja china aguda
+
+Low Wood Block
+Caja china grave
+
+Mute Cuica
+Cuica sorda
+
+Open Cuica
+Cuica abierta
+
+Mute Triangle
+Triángulo sordo
+
+Open Triangle
+Triángulo abierto
+
+# General MIDI instrument categories
+
+piano 
+piano
+
+chromatic percussion
+percusión cromática
+
+organ
+órgano
+
+guitar
+guitarra
+
+bass
+bajo
+
+strings
+sección de cuerdas
+
+ensemble
+ensemble
+
+brass
+viento metal
+
+reed
+viento caña
+
+pipe 
+viento fusta
+
+synth lead
+sintetizador solista
+
+synth pad
+sintetizador ambiente
+
+synth SFX
+efectos sintetizados
+
+ethnic
+étnico
+
+percussive
+percusión
+
+SFX 
+efectos especiales
+
+# General MIDI drum sets
+
+standard
+estándar
+
+room
+estudio
+
+power
+potente
+
+electronic 
+electrónica
+
+TR-808
+TR-808
+
+jazz
+jazz
+
+brush
+escobillas
+
+orchestra
+orquesta
+
+SFX 
+efectos especiales
+
+CM-64/CM-32L
+CM-64/CM-32L
+
+# General MIDI control changes
+
+bank select 1
+selección de banco 1
+
+bank select 2
+selección de banco 2
+
+modulation 
+modulación
+
+portamento time
+tiempo de portamento
+
+volume
+volumen
+
+pan
+panning
+
+expression
+expresión
+
+hold
+tiempo de sostenido
+
+portamento
+portamento
+
+sostenuto
+sostenuto
+
+soft
+suave
+
+resonance 
+resonancia
+
+release time
+tiempo de extinción
+
+attack time
+tiempo de ataque
+
+cutoff 
+filtro de frecuencia
+
+decay time
+tiempo de decaimiento
+
+vibrato rate
+frecuencia del vibrato
+
+vibrato depth
+intensidad del vibrato
+
+vibrato delay
+retraso del vibrato
+
+portamento control
+control del portamento
+
+effect 1
+efecto 1
+
+effect 2
+efecto 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+toca nota MIDI _ durante _ ms en el canal _ volumen _
+
+set MIDI note _ to _ on channel _ volume _
+pon la nota MIDI _ a _ en el canal _ volumen _
+
+note _ octave _ to MIDI key
+nota _ octava _ a tecla MIDI
+
+select MIDI instrument _ for channel _
+selecciona instrumento MIDI _ para el canal _
+
+instrument _ number _
+instrumento _ número _
+
+select MIDI drum kit _
+selecciona batería MIDI _
+
+play MIDI drum _ for _ ms volume _
+toca percusión MIDI _ durante _ ms volumen _
+
+drum _
+percusión _
+
+change MIDI control _ on channel _ to _
+pon control MIDI _ del canal _ a _
+
+pitch bend MIDI channel _ to _ %
+modula canal MIDI _ en un _ %
+
+send MIDI reset
+reinicializa MIDI
+
+send MIDI start playing
+inicia secuenciador MIDI
+
+send MIDI stop playing
+pausa secuenciador MIDI
+
+send MIDI continue playing
+reanuda secuenciador MIDI
+
+set MIDI signal to pin _
+configura MIDI al pin _
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+Escalas y acordes
+
+# scale names
+
+ionian
+jónica
+
+dorian
+dórica
+
+phrygian
+frigia
+
+lydian
+lidia
+
+mixolydian
+mixolidia
+
+aeolian
+eólica
+
+locrian
+locria
+
+major
+mayor
+
+minor 
+menor
+
+# chord types
+
+major
+mayor
+
+minor
+menor
+
+diminished
+disminuida
+
+major 7th
+7ª mayor
+
+minor 7th
+7ª menor
+
+Maj7 
+Maj7
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+canal MIDI
+
+tone pin 
+pin de zumbador
+
+# library blocks
+
+_ scale root _
+escala _ con raíz _
+
+steps _
+y _ grados
+
+pentatonic _ scale root _
+escala pentatónica _ con raíz _
+
+_ chord root _
+acorde _ con raíz _
+
+_ chord for root _
+acorde _ para raíz _
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+arpegia _ en orden _ duración _ y volumen _ en el _ _
+
+improvised arpeggio over _ for _ bars with durations _
+arpegio improvisado sobre _ durante _ compases con duraciones _
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+improvisa sobre _ durante _ compases con duraciones _ en el _ _ volumen _
+
+_ transposed _ semitones
+_ transportado _ semitonos
+
+chord progression _ with root _
+progresión de acordes _ con raíz _
+
+and _ steps per chord
+y _ grados por acorde
+
+rotation _ of circle of 5ths _ M _ m _ º
+rotación _ del círculo de quintas _ M _ m _ º
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
 --MISSING--
 
 ####
@@ -1207,10 +1949,10 @@ next _ bytes of file _
 siguientes _ bytes del archivo _
 
 read into _ from file _
---MISSING--
+lee a _ desde archivo _
 
 a ByteArray
---MISSING--
+una ListaDeBytes
 
 starting at _
 empezando desde _
@@ -1219,7 +1961,7 @@ file names
 nombres de archivos
 
 in directory _
---MISSING--
+en el directorio _
 
 size of file _
 tamaño del archivo _
@@ -1247,19 +1989,19 @@ _ begins with _
 _ empieza por _
 
 prefix
---MISSING--
+prefijo
 
 pre
---MISSING--
+pre
 
 _ ends with _
 _ acaba en _
 
 suffix
---MISSING--
+sufijo
 
 fix
---MISSING--
+fijo
 
 _ contains _
 _ contiene _
@@ -1268,13 +2010,13 @@ lowercase _
 _ en minúscula
 
 THIS is a String! :)
---MISSING--
+¡ESTO es un Texto! :)
 
 uppercase _
 _ en mayúscula
 
 Hello, world!
---MISSING--
+¡Hola, mundo!
 
 _ without white space
 _ sin espacios en blanco
@@ -1286,13 +2028,13 @@ unicodes _
 unicodes de _
 
 aString
---MISSING--
+unaCadenaDeTexto
 
 string from unicodes _
 texto a partir de los unicodes _
 
 aList
---MISSING--
+unaLista
 
 num2str _
 número _ a texto
@@ -1310,7 +2052,7 @@ wifi connect to _ password _
 conéctate a la wifi _ con contraseña _
 
 Network_Name
---MISSING--
+Nombre_de_red
 
 IP _ gateway _ subnet _
 IP _ pasarela _ subred _
@@ -1319,7 +2061,7 @@ wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
 
 Network_Password
---MISSING--
+Contraseña_de_red
 
 IP address
 dirección IP
@@ -1494,7 +2236,7 @@ _ data _ to http܃// _
 petición _ con contenido _ a http܃// _
 
 MicroBlocks is fun
---MISSING--
+MicroBlocks es divertido
 
 port _
 puerto _
@@ -1518,7 +2260,7 @@ with body _
 con contenido _
 
 Welcome to the MicroBlocks HTTP server
---MISSING--
+El servicor HTTP de MicroBlocks os da la bienvenida
 
 and headers _
 y cabeceras _
@@ -1563,7 +2305,7 @@ send _ to WebSocket client _
 envía _ al cliente WebSocket _
 
 Hello, Client!
---MISSING--
+¡Hola, cliente!
 
 ####
 # Web Things library
@@ -1612,6 +2354,15 @@ JSON de las definiciones de eventos
 
 events JSON
 JSON de los eventos
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+gira el fantàstic en _ grados
+
+move fantàstic _ mm
+mueve el fantàstic en _ mm
 
 ####
 # MiKe Robot library
@@ -1755,11 +2506,11 @@ TdR pon el LED RGB a _
 TdR clear RGB LED
 TdR apaga el LED RGB
 
-TdR LM35 temperature °C
-TdR LM35 temperatura °C
+TdR LM35 temperature ºC
+--MISSING--
 
-TdR DHT11 temperature °C
-TdR DHT11 temperatura °C
+TdR DHT11 temperature ºC
+--MISSING--
 
 TdR DHT11 humidity
 TdR DHT11 humedad
@@ -1873,7 +2624,7 @@ MQTT pub topic _ payload _
 publica al tema de MQTT _ el contenido _
 
 Hello!
---MISSING--
+¡Hola!
 
 retain _ QoS _
 con retención _ y calidad del servicio _
@@ -1925,6 +2676,30 @@ dirección IP remota de UDP
 
 UDP remote port
 puerto remoto de UDP
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
 
 ####
 # Cutebot
@@ -2145,6 +2920,24 @@ Octopus OLED fill circle x _ y _ radius _
 --MISSING--
 
 
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -2193,6 +2986,9 @@ Conecta
 connect
 conecta
 
+connect (BLE)
+--MISSING--
+
 open Boardie
 conéctate a Boardie
 
@@ -2201,6 +2997,9 @@ desconecta
 
 Serial port:
 Puerto serie:
+
+Connect board and try again
+Conectar la placa e intetar de nuevo
 
 other...
 otro...
@@ -2330,6 +3129,15 @@ grande (100%)
 printable (200%)
 para impresión (200%)
 
+duplicate selection
+--MISSING--
+
+drag selection
+--MISSING--
+
+delete selection
+--MISSING--
+
 about...
 sobre...
 
@@ -2341,6 +3149,12 @@ versión de la máquina virtual
 
 update firmware on board
 actualiza firmware de la placa
+
+enable or disable BLE
+--MISSING--
+
+Allow the attached board to be connected via BLE?
+--MISSING--
 
 show data graph
 muestra el gráfico de datos
@@ -2366,6 +3180,9 @@ El servidor HTTP de MicroBlocks está activo en el puerto 6473
 disable autoloading board libraries
 desactivar autocarga de librerías de placa
 
+compact code store
+--MISSING--
+
 enable autoloading board libraries
 activar autocarga de librerías de placa
 
@@ -2374,6 +3191,18 @@ activar PlugShare en proyecto en blanco
 
 disable PlugShare when project empty
 desactivar PlugShare en proyecto en blanco
+
+hide implementation blocks
+ocultar los bloques de implementación
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+ocultar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo) 
+
+show implementation blocks
+mostrar los bloques de implementación
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+mostrar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo) 
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 al conectar una placa, no leas automáticamente sus contenidos aunque el proyecto actual esté en blanco
@@ -2384,8 +3213,14 @@ al conectar una placa, lee automáticamente sus contenidos si el proyecto actual
 erase flash and update firmware on ESP board
 borra y reparticiona el firmware en placa ESP
 
+install ESP firmware from URL
+instalar firmwre ESP desde la URL
+
 Use board type
 ¿La placa conectada es de tipo
+
+Firmware Install
+--MISSING--
 
 Firmware Installed
 Firmware instalado
@@ -2405,11 +3240,17 @@ Selecciona
 as the destination drive, then click Save.
 como unidad de desinación y haz clic en Guarda.
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+--MISSING--
+
 Installing firmware...
 Instalando firmware...
 
 Plug in the board.
 Conecta la placa.
+
+Board not connected
+Placa no conectada
 
 Wiping board...
 Borrando placa...
@@ -2586,7 +3427,7 @@ save a picture of these blocks as a PNG file
 guarda una imagen de estos bloques en formato PNG
 
 save a picture of these blocks and their result as a PNG file
---MISSING--
+guarda una imagen de estos bloques y su resultado en formato PNG
 
 copy script
 copia el programa

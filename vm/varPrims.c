@@ -71,5 +71,5 @@ static PrimEntry entries[] = {
 };
 
 void addVarPrims() {
-	addPrimitiveSet("vars", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(VarPrims, "vars", sizeof(entries) / sizeof(PrimEntry), entries);
 }

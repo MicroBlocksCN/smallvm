@@ -21,13 +21,13 @@ static int touchEnabled = false;
 static int deferUpdates = false;
 
 // Redefine this macro for displays that must explicitly push offscreen changes to the display
-#define UPDATE_DISPLAY()
+#define UPDATE_DISPLAY() { taskSleep(-1); } // yield after potentially slow TFT operations
 
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(PICO_ED) || defined(OLED_128_64)
+	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64)
 
 	#define BLACK 0
 
@@ -469,12 +469,12 @@ static int deferUpdates = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(-1); }}
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-			tftClear();
 			useTFT = true;
+			tftClear();
 		}
 
 	#elif defined(OLED_128_64)
@@ -489,21 +489,58 @@ static int deferUpdates = false;
 
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
 
-		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
-
 		void tftInit() {
+			delay(5); // need 2 msecs minimum for micro:bit PicoBricks board power up I2C pullups
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
 			int response = readI2CReg(TFT_ADDR, 0); // test if OLED responds at TFT_ADDR
 			if (response < 0) return; // no OLED display detected
 
 			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
-			tftClear();
 			// set to max OLED brightness
 			writeI2CReg(TFT_ADDR, 0x80, 0x81);
 			writeI2CReg(TFT_ADDR, 0x80, 0xFF);
 			useTFT = true;
+			tftClear();
 		}
+
+		static void i2cWriteBytes(uint8 *bytes, int byteCount) {
+			Wire.beginTransmission(TFT_ADDR);
+			for (int i = 0; i < byteCount; i++) Wire.write(bytes[i]);
+			Wire.endTransmission(true);
+		}
+
+		static void oledUpdate() {
+			// Send the entire OLED buffer to the display via i2c. Takes about 30 msecs.
+			// Periodically update the LED display to avoid flicker.
+			uint8 oneLine[33];
+			uint8 setupCmds[] = {
+				0x20, 0,		// Horizontal mode
+				0x22, 0, 7,		// Page start and end address
+				0x21, 0, 0x7F	// Column start and end address
+			};
+			i2cWriteBytes(setupCmds, sizeof(setupCmds));
+			oneLine[0] = 0x40;
+			uint8 *displayBuffer = tft.getBuffer();
+			uint8 *src = displayBuffer;
+			for (int i = 0; i <= 1024; i++) {
+				if ((i % 16) == 0) {
+					captureIncomingBytes();
+				}
+				if ((i % 64) == 0) {
+					// do time-sensitive background tasks
+					updateMicrobitDisplay();
+				}
+				int col = i % 32;
+				if ((col == 0) && (i != 0)) {
+					i2cWriteBytes(oneLine, sizeof(oneLine));
+					captureIncomingBytes();
+				}
+				oneLine[col + 1] = *src++;
+			}
+		}
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(-1); }}
 
 	#elif defined(TTGO_DISPLAY)
 		#include "Adafruit_GFX.h"
@@ -526,6 +563,26 @@ static int deferUpdates = false;
 			tft.init(TFT_HEIGHT, TFT_WIDTH);
 			tft.setRotation(1);
 			tftClear();
+			useTFT = true;
+		}
+
+	#elif defined(GAMEPAD_DISPLAY)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_MOSI 13
+		#define TFT_SCLK 14
+		#define TFT_CS 18
+		#define TFT_DC 16
+		#define TFT_RST 17
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_144GREENTAB);
+			tft.setRotation(3);
+			tft.fillScreen(ST77XX_BLACK);
 			useTFT = true;
 		}
 
@@ -744,6 +801,12 @@ void tftClear() {
 void tftSetHugePixel(int x, int y, int state) {
 	if (!useTFT) return;
 
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2) || \
+		defined(ARDUINO_CALLIOPE_MINI) || defined(CALLIOPE_V3)
+			// allow independent use of OLED and micro:bit display
+			return;
+	#endif
+
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
 	#if defined(PICO_ED)
 		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
@@ -774,6 +837,11 @@ void tftSetHugePixel(int x, int y, int state) {
 void tftSetHugePixelBits(int bits) {
 	if (!useTFT) return;
 
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+		// allow independent use TFT and micro:bit display
+		return;
+	#endif
+
 	#if defined(PICO_ED)
 		tft.clearDisplayBuffer();
 		tft.showMicroBitPixels(bits, 1, 1);
@@ -796,7 +864,7 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int brightness = obj2int(args[0]);
-	(void) (brightness); //  // reference var to suppress compiler warning
+	(void) (brightness); // reference var to suppress compiler warning
 
 	#if defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);
@@ -954,20 +1022,28 @@ static OBJ primText(int argCount, OBJ *args) {
 	int color16b = color24to16b(obj2int(args[3]));
 	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
 	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
+	int bgColor = (argCount > 6) ? color24to16b(obj2int(args[6])) : -1;
 	tft.setCursor(x, y);
 	tft.setTextColor(color16b);
 	tft.setTextSize(scale);
 	tft.setTextWrap(wrap);
 
+	int lineH = 8 * scale;
+	int letterW = 6 * scale;
 	if (IS_TYPE(value, StringType)) {
+		char *str = obj2str(value);
+		if (bgColor != -1) tft.fillRect(x, y, strlen(str) * letterW, lineH, bgColor);
 		tft.print(obj2str(value));
 	} else if (trueObj == value) {
+		if (bgColor != -1)  tft.fillRect(x, y, 4 * letterW, lineH, bgColor);
 		tft.print("true");
 	} else if (falseObj == value) {
+		if (bgColor != -1)  tft.fillRect(x, y, 5 * letterW, lineH, bgColor);
 		tft.print("false");
 	} else if (isInt(value)) {
 		char s[50];
 		sprintf(s, "%d", obj2int(value));
+		if (bgColor != -1) tft.fillRect(x, y, strlen(s) * letterW, lineH, bgColor);
 		tft.print(s);
 	}
 	UPDATE_DISPLAY();
@@ -1078,6 +1154,70 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primDrawBitmap(int argCount, OBJ *args) {
+	// Draw an 8-bit bitmap at a given position without scaling.
+
+	if (!useTFT) return falseObj;
+	uint32 palette[256];
+
+	if (argCount < 4) return fail(notEnoughArguments);
+	OBJ bitmapObj = args[0]; // bitmap: a two-item list of [width (int), pixels (byte array)]
+	OBJ paletteObj = args[1]; // palette: a list of RGB values
+	int dstX = obj2int(args[2]);
+	int dstY = obj2int(args[3]);
+
+	if ((dstX > TFT_WIDTH) || (dstY > TFT_HEIGHT)) return falseObj; // off screen
+
+	// process bitmap arg
+	if (!IS_TYPE(bitmapObj, ListType) ||
+	 	(obj2int(FIELD(bitmapObj, 0)) != 2) ||
+	 	!isInt(FIELD(bitmapObj, 1)) ||
+	 	!IS_TYPE(FIELD(bitmapObj, 2), ByteArrayType)) {
+	 		return fail(bad8BitBitmap);
+	}
+	int bitmapWidth = obj2int(FIELD(bitmapObj, 1));
+	OBJ bitmapBytesObj = FIELD(bitmapObj, 2);
+	int bitmapByteCount = BYTES(bitmapBytesObj);
+	if ((bitmapWidth <= 0) || ((bitmapByteCount % bitmapWidth) != 0)) return fail(bad8BitBitmap);
+	int bitmapHeight = bitmapByteCount / bitmapWidth;
+
+	// process palette arg
+	if (!IS_TYPE(paletteObj, ListType)) return fail(badColorPalette);
+	int colorCount = obj2int(FIELD(paletteObj, 0)); // list size
+	if (colorCount > 256) colorCount = 256;
+	memset(palette, 0, sizeof(palette)); // initialize to all black RGB values
+	for (int i = 0; i < colorCount; i++) {
+		int rgb = obj2int(FIELD(paletteObj, i + 1));
+		if (rgb < 0) rgb = 0;
+		if (rgb > 0xFFFFFF) rgb = 0xFFFFFF;
+		palette[i] = rgb;
+	}
+
+	int srcX = 0;
+	int srcW = bitmapWidth;
+	if (dstX < 0) { srcX = -dstX; dstX = 0; srcW -= srcX; }
+	if (srcW < 0) return falseObj; // off screen to left
+	if ((dstX + srcW) > TFT_WIDTH) srcW = TFT_WIDTH - dstX;
+
+	int srcY = 0;
+	int srcH = bitmapHeight;
+	if (dstY < 0) { srcY = -dstY; dstY = 0; srcH -= srcY; }
+	if (srcH < 0) return falseObj; // off screen above
+	if ((dstY + srcH) > TFT_HEIGHT) srcH = TFT_HEIGHT - dstY;
+
+	uint8 *bitmapBytes = (uint8 *) &FIELD(bitmapBytesObj, 0);
+	for (int i = 0; i < srcH; i++) {
+		uint8 *row = bitmapBytes + ((srcY + i) * bitmapWidth);
+		for (int j = 0; j < srcW; j++) {
+			uint8 pix = row[srcX + j]; // 8-bit color index
+			uint32 rgb = palette[pix]; // 24 bit RGB color
+			tft.drawPixel(dstX + j, dstY + i, color24to16b(rgb));
+		}
+	}
+	UPDATE_DISPLAY();
+	return falseObj;
+}
+
 // touchscreen ops
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
@@ -1144,6 +1284,7 @@ static OBJ primResumeUpdates(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
@@ -1170,6 +1311,7 @@ static PrimEntry entries[] = {
 
 	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},
+	{"drawBitmap", primDrawBitmap},
 
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
@@ -1178,5 +1320,5 @@ static PrimEntry entries[] = {
 };
 
 void addTFTPrims() {
-	addPrimitiveSet("tft", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(TFTPrims, "tft", sizeof(entries) / sizeof(PrimEntry), entries);
 }

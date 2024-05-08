@@ -1,0 +1,54 @@
+{
+  "build": {
+    "arduino": {
+        "ldscript": "flash_with_bootloader.ld"
+    },
+    "core": "adafruit",
+    "cpu": "cortex-m0plus",
+    "extra_flags": "-DARDUINO_SAMD_ZERO -DMAKERPORT_V2 -DARM_MATH_CM0PLUS -D__SAMD21G18A__",
+    "f_cpu": "48000000L",
+    "hwids": [
+      [
+        "0x239A",
+        "0x8013"
+      ],
+      [
+        "0x239A",
+        "0x0013"
+      ]
+    ],
+    "mcu": "samd21g18a",
+    "system": "samd",
+    "usb_product": "MakerPort",
+    "variant": "makerport2"
+  },
+  "debug": {
+    "jlink_device": "ATSAMD21G18",
+    "openocd_chipname": "at91samd21g18",
+    "openocd_target": "at91samdXX",
+    "svd_path": "ATSAMD21G18A.svd"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "MakerPort",
+  "upload": {
+    "disable_flushing": true,
+    "maximum_ram_size": 32768,
+    "maximum_size": 262144,
+    "native_usb": true,
+    "offset_address": "0x2000",
+    "protocol": "sam-ba",
+    "protocols": [
+      "sam-ba",
+      "blackmagic",
+      "jlink",
+      "atmel-ice"
+    ],
+    "require_upload_port": true,
+    "use_1200bps_touch": true,
+    "wait_for_upload_port": true
+  },
+  "url": "https://makerport.fun",
+  "vendor": "Roger Wagner"
+}

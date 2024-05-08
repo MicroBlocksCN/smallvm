@@ -233,7 +233,7 @@ method initialize MicroBlocksListItemViewer aList forEditing win {
 	morph = (morph box)
 	window = win
 	setClipping morph true
-	editFlag = (or (and (notNil forEditing) forEditing) false)
+	editFlag = (and (notNil forEditing) forEditing)
 	setContents this aList
 	fixLayout this
 	return this
@@ -453,7 +453,7 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	fontSize = (16 * (global 'scale'))
 	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
-	editFlag = (or (and (notNil forEditing) forEditing) false)
+	editFlag = (and (notNil forEditing) forEditing)
 	morph = (morph (newBox nil (transparent) 0))
 	window = win
 
@@ -461,6 +461,11 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	if editFlag { setEditRule descriptionText 'editable' }
 	descriptionFrame = (scrollFrame descriptionText (gray 255))
 	addPart (morph descriptionFrame) (morph descriptionText)
+
+	// make info text always editable and selectable to allow copy-paste of URLs
+	setEditRule descriptionText 'editable'
+	setGrabRule (morph descriptionText) 'ignore'
+	setGrabRule (morph descriptionFrame) 'ignore'
 
 	addPart morph (morph descriptionFrame)
 

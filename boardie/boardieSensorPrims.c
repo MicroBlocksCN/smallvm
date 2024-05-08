@@ -61,5 +61,5 @@ static PrimEntry entries[] = {
 };
 
 void addSensorPrims() {
-	addPrimitiveSet("sensors", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(SensorPrims, "sensors", sizeof(entries) / sizeof(PrimEntry), entries);
 }

@@ -19,11 +19,12 @@ method allVarsMenu InputSlot {
 
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
   if (notNil scripter) {
 	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
-          if (or ((at varName 1) != '_') (devMode)) {
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
             addItemNonlocalized menu varName (action 'setContents' this varName)
           }
 	}
@@ -204,6 +205,29 @@ to gpFolder {
 	path = (join path '/MicroBlocks')
   }
   return path
+}
+
+// Broadcast menu
+
+method broadcastMenu InputSlot {
+  menu = (menu)
+
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripter) {
+    saveScripts (handler scripter)
+    msgList = (allBroadcasts (project (handler scripter)))
+
+    // special case for default broadcast string
+    defaultBroadcast = 'go!'
+    remove msgList defaultBroadcast
+    addItemNonlocalized menu (localized defaultBroadcast) (action 'setContents' this defaultBroadcast)
+    addLine menu
+
+	for s msgList {
+      addItemNonlocalized menu s (action 'setContents' this s)
+	}
+  }
+  return menu
 }
 
 // Block additions
@@ -427,12 +451,15 @@ method contextMenu Block {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
   }
   if ((primName expression) == 'v') {
 	varNames = (allVariableNames (project scripter))
 	if (and (not isInPalette) ((count varNames) > 1)) {
 		for varName varNames {
-			if (varName != (first (argList expression))) {
+			if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
 				b = (toBlock (newReporter 'v' varName))
 				fixLayout b
 				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
@@ -569,13 +596,56 @@ method showDefinition Block {
   showDefinition (scripter pe) (primName expression)
 }
 
-method deleteBlockDefinition Block {
-  if (not (confirm (global 'page') nil
-  	'Are you sure you want to remove this block definition?')) {
-		return
-  }
+method deleteObsolete Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    if (not
+      (confirm
+	    (global 'page')
+	    nil
+        (join
+          'This block is still being used in '
+          (count (allEntries finder))
+          ' scripts or functions.'
+          (newline)
+          (newline)
+          'Are you sure you want to remove this obsolete block definition?'
+        )
+	  )
+	) { return }
+  }
+
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
+}
+
+method deleteBlockDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  confirmation = 'Are you sure you want to remove this block definition?'
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    confirmation = (join
+      'This block is still being used in '
+      (count (allEntries finder))
+      ' scripts or functions.'
+	  (newline)
+	  (newline)
+	  confirmation
+	)
+  }
+
+  if (not (confirm (global 'page') nil confirmation)) { return }
+
   deleteFunction (scripter pe) (primName expression)
 }
 
@@ -602,7 +672,7 @@ method wantsDropOf BlocksPalette aHandler {
 }
 
 method justReceivedDrop BlocksPalette aHandler {
-  // Hide a block definitions when it is is dropped on the palette.
+  // Hide a block definition when it is is dropped on the palette.
   pe = (findProjectEditor)
   if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
@@ -615,8 +685,9 @@ method justReceivedDrop BlocksPalette aHandler {
   }
   if (and (isClass aHandler 'Block') (notNil pe)) {
 	recordDrop (scriptEditor (scripter pe)) aHandler
+	deleteChunkFor (smallRuntime) aHandler
   }
-  if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
+  if (isClass aHandler 'MicroBlocksSelectionContents') {
 	for part (parts (morph aHandler)) {
 		justReceivedDrop this (handler part)
 	}
@@ -886,9 +957,8 @@ method copyScriptsToClipboardAsURL ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
   scriptsString = (allScriptsString (handler scripter))
-  setClipboard (join
-      'https://microblocks.fun/run/microblocks.html#scripts='
-	  (urlEncode scriptsString true))
+  urlPrefix = (urlPrefix (findMicroBlocksEditor))
+  setClipboard (join urlPrefix '#scripts=' (urlEncode scriptsString true))
 }
 
 // Color picker tweak

@@ -7,6 +7,8 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
+// TG edited on 2024-APR-03 based on Pilot FW v233
+
 defineClass MicroBlocksHelp opDict
 
 method initialize MicroBlocksHelp {
@@ -23,9 +25,17 @@ method initialize MicroBlocksHelp {
 		(array 'buttonB' 'input#button-b' 'Report the state of button B ( (-o) or (o-) ).')
 		(array 'timer' 'input#timer' 'Report the milliseconds since the timer was last reset.')
 		(array 'resetTimer' 'input#reset-timer' 'Reset the timer.')
+		(array 'secsOp' 'input#seconds' 'Report the seconds since power up.')
 		(array 'millisOp' 'input#milliseconds' 'Report the milliseconds since power up.')
 		(array 'microsOp' 'input#microseconds' 'Report the microseconds since power up.')
 		(array 'boardType' 'input#board-type' 'Report the board type.')
+		(array '[misc:version]' 'input#version' 'Reports firmware version loaded on the board.')
+		(array '[misc:bleID]' 'input#BLE-Id' 'Reports the three-letter BLE ID of the board if it supports BLE.')
+		(array '[ble:bleConnected]' 'input#BLE-connected' 'Reports (-o) if a BLE client is connected.')
+
+	    (array 'millisSince' 'input#milliseconds' 'Report the milliseconds since the given start milliseconds. Handles clock wrap.')
+		(array 'microsSince' 'input#microseconds' 'Report the microseconds since the given start microseconds. Handles clock wrap.')
+		(array '[misc:connectedToIDE]' 'input#Connected-to-IDE' 'Reports (-o) if the board is connected to IDE.')
 
 		// PINS
 		(array 'digitalReadOp' 'pins#read-digital' 'Report the electrical logic level on a digital pin ( (-o) or (o-) ).')
@@ -42,12 +52,14 @@ method initialize MicroBlocksHelp {
 		(array '[sensors:i2cWrite]' 'comm#i2c-device-write' 'Send multiple bytes to an I2C device.')
 		(array 'spiSend' 'comm#spi-send' 'Send a byte (0-255) to an SPI device.')
 		(array 'spiRecv' 'comm#spi-receive' 'Read a byte from an SPI device while sending a zero byte. Report the byte received.')
-		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed and mode.')
+		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed, mode, channel (Raspberry Pi only), and bit order.')
 		(array '[sensors:spiExchange]' 'comm#xxx' 'Send a byte array via SPI, replacing its contents with the bytes received.')
 		(array '[serial:open]' 'comm#serial-open' 'Open the serial port at the given baud rate.')
 		(array '[serial:close]' 'comm#serial-close' 'Close the serial port.')
 		(array '[serial:read]' 'comm#serial-read' 'Report data received from the serial port (a byte array).')
 		(array '[serial:write]' 'comm#serial-write' 'Send a byte array to the serial port.')
+		(array '[serial:writeBytes]' 'comm#serial-write-starting-at' 'Send a byte array to the serial port, starting at the given byte.')
+		(array '[io:softWriteByte]' 'comm#soft-serial-write' 'Write a byte to the pin at the specified baud rate.')
 
 		// CONTROL
 		(array 'whenStarted' 'control#when-started' 'Run when the board powers up or when the IDE start button is clicked.')
@@ -59,39 +71,44 @@ method initialize MicroBlocksHelp {
 		(array 'whenCondition' 'control#when' 'Run when the condition becomes (-o) .')
 		(array 'waitUntil' 'control#wait-until' 'Wait until the condition becomes (-o) .')
 		(array 'return' 'control#return' 'Return (report) the given value from a function or script.')
-		(array 'whenBroadcastReceived' 'control#when-received' 'Run when the given message is broadcast.')
+		(array 'whenBroadcastReceived' 'control#when-received' 'Run when the given message is received as a broadcast.')
 		(array 'sendBroadcast' 'control#broadcast' 'Broadcast the given message.')
 		(array 'comment' 'control#comment' 'Do nothing. Used to add notes and documentation.')
+		(array '[data:range]' 'control#range' 'Report a list containing the given range of numbers (with optional increment). Useful in "for" loops.')
 		(array 'for' 'control#for' 'Repeat the enclosed blocks with the variable set to the current iteration number or item.')
 		(array 'repeatUntil' 'control#repeat-until' 'Repeat the enclosed blocks until the condition becomes (-o) .')
 		(array 'stopTask' 'control#stop-this-task' 'Stop this task.')
 		(array 'stopAll' 'control#stop-other-tasks' 'Stop all tasks except this one.')
 		(array 'waitMicros' 'control#wait-microsecs' 'Wait the given number of microseconds.')
 		(array 'getLastBroadcast' 'control#last-message' 'Report the last broadcast message received.')
-		(array 'callCustomCommand' 'control#xxx' 'Call the function with the given name and optional parameter list.')
-		(array 'callCustomReporter' 'control#xxx' 'Call the function with the given name and optional parameter list and report its return value.')
+		(array 'argOrDefault' 'control#arg' 'Report the given argument or defaultValue if the argument was not supplied by the caller.')
+		(array 'callCustomCommand' 'control#call-custom-command' 'Call the function with the given name and optional parameter list.')
+		(array 'callCustomReporter' 'control#call-custom-reporter' 'Call the function with the given name and optional parameter list and report its return value.')
 
 		// OPERATORS
-		(array '+' 'operators#' 'Report the sum of the given numbers.')
-		(array '-' 'operators#' 'Report the first number minus the second.')
-		(array '*' 'operators#' 'Report the product of the given numbers.')
-		(array '/' 'operators#' 'Report the first number divided by the second.')
+		(array '+' 'operators#plus' 'Report the sum of the given numbers.')
+		(array '-' 'operators#minus' 'Report the first number minus the second.')
+		(array '*' 'operators#multiply' 'Report the product of the given numbers.')
+		(array '/' 'operators#divide' 'Report the first number divided by the second.')
 		(array '%' 'operators#modulus' 'Report the remainder of dividing the first number by the second.')
-		(array 'absoluteValue' 'operators#' 'Report the absolute value of the given number (always >= 0).')
-		(array 'minimum' 'operators#' 'Report the minimum of the values.')
-		(array 'maximum' 'operators#' 'Report the maximum of the values.')
+		(array 'absoluteValue' 'operators#abs' 'Report the absolute value of the given number (always >= 0).')
+		(array 'minimum' 'operators#min' 'Report the minimum of the values.')
+		(array 'maximum' 'operators#max' 'Report the maximum of the values.')
 		(array 'random' 'operators#random' 'Report a randomly chosen number in the given range.')
-		(array '<' 'operators#' 'Report (-o) if the first value is less than the second one.')
-		(array '<=' 'operators#' 'Report (-o) if the first value is less than or equal to the second one.')
-		(array '==' 'operators#' 'Report (-o) if the two values are equal.')
-		(array '!=' 'operators#' 'Report (-o) if the two values are not equal.')
-		(array '>=' 'operators#' 'Report (-o) if the first value is greater than or equal to the second one.')
-		(array '>' 'operators#' 'Report (-o) if the first value is greater than the second one.')
+		(array '<' 'operators#less-than' 'Report (-o) if the first value is less than the second one.')
+		(array '<=' 'operators#less-than-or-equal' 'Report (-o) if the first value is less than or equal to the second one.')
+		(array '==' 'operators#equal' 'Report (-o) if the two values are equal.')
+		(array '!=' 'operators#not-equal' 'Report (-o) if the two values are not equal.')
+		(array '>=' 'operators#greater-than-or-equal' 'Report (-o) if the first value is greater than or equal to the second one.')
+		(array '>' 'operators#greater-than' 'Report (-o) if the first value is greater than the second one.')
 		(array 'booleanConstant' 'operators#boolean-true/false' 'Boolean constant ( (-o) or (o-) ).')
 		(array 'not' 'operators#boolean-not' 'Report the logical inverse of a Boolean ( (-o) or (o-) ) value.')
 		(array 'and' 'operators#boolean-and' 'Report (-o) if both values are (-o)')
 		(array 'or' 'operators#boolean-or' 'Report (-o) if either value is (-o)')
 		(array 'isType' 'operators#is-type' 'Report (-o) if first input is a value of the given data type.')
+		(array '[data:convertType]' 'operators#convert' 'Convert a value to the given data type.')
+		(array 'ifExpression' 'operators#ternary-if' 'If the condition is (-o) report the first alternative otherwise report the second alternative.')
+		(array '[misc:rescale]' 'operators#rescale' 'Map a value in the "from" range to the corresponding value in the "to" range.')
 		(array 'hexToInt' 'operators#hex' 'Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)')
 		(array '&' 'operators#bitwise-and' 'Report bitwise AND of two numbers.')
 		(array '|' 'operators#bitwise-or' 'Report bitwise OR of two numbers.')
@@ -137,6 +154,7 @@ method initialize MicroBlocksHelp {
 
 		// LED DISPLAY LIBRARY
 		(array '[display:mbDisplay]' '/libraries#display' 'Display a 5x5 image on the LED display.')
+        (array 'led_displayImage' '/libraries' 'Choose an image to show on the LED display')
 		(array '[display:mbDisplayOff]' '/libraries#clear-display' 'Clear the LED display (all pixels off).')
 		(array '[display:mbPlot]' '/libraries#plot-x-y' 'Turn on the LED at the given row and column (1-5).')
 		(array '[display:mbUnplot]' '/libraries#unplot-x-y' 'Turn off the LED at the given row and column (1-5).')
@@ -153,6 +171,8 @@ method initialize MicroBlocksHelp {
 		(array 'rotateNeoPixelsBy' '/libraries#rotate-neopixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
 		(array 'colorFromRGB' '/libraries#color-r-g-b' 'Return a color defined by values of R G B (0-255).')
 		(array 'randomColor' '/libraries#random-color' 'Return a random color.')
+        (array 'NeoPixel_brighten' '/libraries' 'Brighten a single NeoPixel.')
+        (array 'NeoPixel_brighten_all' '/libraries' 'Brighten all NeoPixels.')
 
 		// RADIO
 		(array '[radio:sendInteger]' '/libraries#radio-send-number' 'Send a numerical message.')
@@ -177,8 +197,8 @@ method initialize MicroBlocksHelp {
 		(array 'play tone' '/libraries#play-note' 'Play the given note in the given octave for milliseconds.')
 		(array 'playMIDIKey' '/libraries#play-midi' 'Play the given piano key (0-127) for milliseconds. Middle C is 60.')
 		(array 'play frequency' '/libraries#play-frequency' 'Play a note specified in Hertz (Hz). Middle C is ~261 Hz.')
-		(array 'start tone' '/libraries#start-tone' 'Starts playing a tone specified in Hertz (Hz).')
-		(array 'stop tone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
+		(array 'startTone' '/libraries#start-tone' 'Starts playing a tone specified in Hertz (Hz).')
+		(array 'stopTone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
 		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
 
 		// IR Remote
@@ -241,14 +261,66 @@ method initialize MicroBlocksHelp {
 		(array 'HL request by ID' '/extension_libraries/huskylens#hl-request-by-id' 'Request only one object by id from HuskyLens.')
 		(array 'HL get info' '/extension_libraries/huskylens#hl-get-info' 'Get Info details from HuskyData.')
 		(array 'HL get block' '/extension_libraries/huskylens#hl-get-block' 'Get Block details from HuskyData.')
-		(array 'HL get arrow'  '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
+		(array 'HL get arrow' '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
 		(array 'HL learn current object as ID' '/extension_libraries/huskylens#hl-learn-as-id' 'Learn recognized object as ID#.')
 		(array 'HL learn object as ID' '/extension_libraries/huskylens#hl-learn-as-id-and-name' 'Learn recognized object as ID# and assigns name')
 		(array 'HL set CustomName' '/extension_libraries/huskylens#hl-set-custom-name' 'Set custom name for a learned object.')
 		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Write text to HuskyLens screen @ x,y [0,0 is top left].')
 		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load file to/from SDcard.')
 
- 	)
+		// WEBSOCKET SERVER
+		(array 'start WebSocket server' '/network_libraries/websocket-server#start-websocket-server' 'Start running the WebSocket server.')
+		(array '[net:webSocketLastEvent]' '/network_libraries/websocket-server#last-websocket-event' 'Report the last protocol message received.')
+		(array 'ws client id' '/network_libraries/websocket-server#client-id-for-websocket-event' 'Report the WebSocket client ID (0-4).')
+		(array 'ws event payload' '/network_libraries/websocket-server#payload-for-websocket-event' 'Report the content of the message received.')
+		(array 'ws event type' '/network_libraries/websocket-server#type-of-websocket-event' 'Report the WebSocket event type.')
+		(array '[net:webSocketSendToClient]' '/network_libraries/websocket-server#send-to-websocket-client'	'Send a message to any client using its client id.')
+
+        // OCTOSTUDIO
+        (array 'octoSendBeam' '/network_libraries/' 'Choose a shape that is send to the connected phone(s).')
+        (array 'octoBeamReceived' '/network_libraries/' 'Report (-o) if a new beam has been received. Use "Octo last beam" to get its value.')
+        (array 'octoLastBeam' '/network_libraries/' 'Report the name of the last shape received.')
+        (array 'octoReceiveBeam' '/network_libraries/' 'Report the shape if a new beam has been received.')
+
+        // BLE SCANNER
+        (array 'bleScan_scanReceived' '/network_libraries/ble-scanner#scan-received' 'Report (-o) when a BLE scan is detected.')
+        (array 'bleScan_RSSI' '/network_libraries/ble-scanner#rssi' 'Report RSSI, ranges from -26 (a few inches) to -100 (40-50 m distance).')
+        (array 'bleScan_address' '/network_libraries/ble-scanner#address' 'Report MAC address, a unique 48-bit identifier.')
+        (array 'bleScan_addressType' '/network_libraries/ble-scanner#address-type' 'Report address type.')
+        (array 'bleScan_deviceName' '/network_libraries/ble-scanner#device-name' 'Report device name.')
+        (array 'bleScan_hasType' '/network_libraries/ble-scanner#hastype' 'Report (-o) if device name is type 8 or 9.')
+
+        // BLE SERIAL
+        (array '[ble:uartConnected]' '/network_libraries/' 'Report (-o) if BLE serial is connected')
+        (array 'bleSerial_readString' '/network_libraries/' '')
+        (array 'bleSerial_readBytes' '/network_libraries/' '')
+        (array 'bleSerial_write' '/network_libraries/' '')
+
+        // UDP
+        (array '[net:udpStart]' '/network_libraries/' '')
+        (array '[net:udpStop]' '/network_libraries/' '')
+        (array '[net:udpSendPacket]' '/network_libraries/' '')
+        (array '[net:udpReceivePacket]' '/network_libraries/' '')
+        (array '[net:udpRemoteIPAddress]' '/network_libraries/' '')
+        (array '[net:udpRemotePort]' '/network_libraries/' '')
+
+        // WIFI
+        (array 'wifiConnect' '/network_libraries/wifi#wifi-connect-to' 'Connect to the local IP network.')
+        (array 'wifiCreateHotspot' '/network_libraries/wifi#wifi-create-hotspot' 'Create a hotspot with given credentials.')
+        (array 'getIPAddress' '/network_libraries/wifi#ip-address' 'Report acquired IP address.')
+        (array '[net:myMAC]' '/network_libraries/wifi#mac-address' 'Report MAC address of the WIFI device.')
+        (array '[net:allowWiFiAndBLE]' '/network_libraries/wifi#allow-wifi-while-using-ble' 'Enable simultaneous WIFI & BLE use.')
+
+        //WIFI RADIO
+        (array 'wifiRadio_sendNumber' '/network_libraries/wifi-radio#wifi-send-number' 'Send a message containing a number.')
+        (array 'wifiRadio_sendString' '/network_libraries/wifi-radio#wifi-send-string' 'Send a text string (up to approx. 800 bytes).')
+        (array 'wifiRadio_sendPair' '/network_libraries/wifi-radio#wifi-send-pair' 'Send a message containing both short text string and a number. ')
+        (array 'wifiRadio_messageReceived' '/network_libraries/wifi-radio#wifi-message-received' 'Report (-o) when a new wifi message is received.')
+        (array 'wifiRadio_receivedInteger' '/network_libraries/wifi-radio#wifi-last-number' 'Report the number part of the last wifi message received. Return zero if the message did not contain a number.')
+        (array 'wifiRadio_receivedString' '/network_libraries/wifi-radio#wifi-last-string' 'Report the string part of the last wifi message received. Return the empty string if the message did not contain a string.')
+        (array 'wifiRadio_setGroup' '/network_libraries/wifi-radio#wifi-set-group' 'Set the group number (0-255) used to send and receive messages.')
+
+	)
 
 	opDict = (dictionary)
 	for e opEntries {

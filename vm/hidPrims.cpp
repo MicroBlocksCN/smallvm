@@ -21,7 +21,7 @@
 #include "Mouse.h"
 
 #if defined(ARDUINO_ARCH_RP2040)
-	#define DELAY_IF_NEEDED() { delay(8); } // workaround for issue with Pico HID library
+	#define DELAY_IF_NEEDED() { taskSleep(12); } // workaround for issue with Pico HID library
 #else
 	#define DELAY_IF_NEEDED() { } // noop on SAM boards
 #endif
@@ -185,5 +185,5 @@ static PrimEntry entries[] = {
 };
 
 void addHIDPrims() {
-	addPrimitiveSet("hid", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(HIDPrims, "hid", sizeof(entries) / sizeof(PrimEntry), entries);
 }

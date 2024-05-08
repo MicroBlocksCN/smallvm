@@ -143,6 +143,7 @@ extern int extraByteDelay;
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define extendedMsg				30
+#define enableBLEMsg			31
 
 // Serial Protocol Messages: CRC Exchange
 
@@ -189,6 +190,16 @@ extern int extraByteDelay;
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
+#define wifiNotConnected		43	// Not connected to a WiFi network
+#define cannotConvertToInteger	44	// Cannot convert that to an integer
+#define cannotConvertToBoolean	45	// Cannot convert that to a boolean
+#define cannotConvertToList		46	// Cannot convert that to a list
+#define cannotConvertToByteArray 47	// Cannot convert that to a byte array
+#define unknownDatatype			48	// Unknown datatype
+#define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
+#define cannotUseWithBLE		50	// Cannot use this feature when board is connected to IDE via Bluetooth
+#define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
+#define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
@@ -249,12 +260,16 @@ void outputRecordHeaders();
 
 // Platform Specific Operations
 
+uint64 totalMicrosecs();
 uint32 microsecs(void);
 uint32 millisecs(void);
+uint32 seconds();
+void handleMicosecondClockWrap();
 
-int serialConnected();
+int ideConnected();
 int recvBytes(uint8 *buf, int count);
-int sendByte(char aByte);
+int sendBytes(uint8 *buf, int start, int end);
+void captureIncomingBytes();
 void restartSerial();
 
 const char *boardType();
@@ -338,20 +353,60 @@ void tftClear();
 void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
 
+// BLE Support
+
+extern int BLE_connected_to_IDE;
+extern char BLE_ThreeLetterID[4];
+
+void BLE_initThreeLetterID();
+void BLE_start();
+void BLE_stop();
+
+void BLE_pauseAdvertising();
+void BLE_resumeAdvertising();
+
+void BLE_setEnabled(int enableFlag);
+int BLE_isEnabled();
+
+void getMACAddress(uint8 *sixBytes);
+
 // Primitive Sets
 
+// These primitive set indices are compiled into primitive calls, so their order cannot change.
+// New primitive sets must be added at the end, just before PrimitiveSetCount.
+typedef enum {
+	VarPrims,
+	DataPrims,
+	MiscPrims,
+	IOPrims,
+	SensorPrims,
+	SerialPrims,
+	DisplayPrims,
+	FilePrims,
+	NetPrims,
+	BLEPrims,
+	RadioPrims,
+	TFTPrims,
+	HIDPrims,
+	CameraPrims,
+	OneWirePrims,
+	PrimitiveSetCount
+} PrimitiveSetIndex;
+
+void addVarPrims();
 void addDataPrims();
-void addDisplayPrims();
-void addFilePrims();
-void addIOPrims();
 void addMiscPrims();
-void addNetPrims();
-void addRadioPrims();
+void addIOPrims();
 void addSensorPrims();
 void addSerialPrims();
+void addDisplayPrims();
+void addFilePrims();
+void addNetPrims();
+void addBLEPrims();
+void addRadioPrims();
 void addTFTPrims();
-void addVarPrims();
 void addHIDPrims();
+void addCameraPrims();
 void addOneWirePrims();
 
 // Named Primitive Support
@@ -363,8 +418,9 @@ typedef const struct {
 	PrimitiveFunction primFunc;
 } PrimEntry;
 
-void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries);
+void addPrimitiveSet(PrimitiveSetIndex primSetIndex, const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
+OBJ newPrimitiveCall(PrimitiveSetIndex setIndex, const char *primName, int argCount, OBJ *args);
 void primsInit();
 
 #ifdef __cplusplus

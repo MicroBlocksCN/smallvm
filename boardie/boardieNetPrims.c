@@ -121,7 +121,7 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 
 /*
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
-	// args[1] is buffer size, which we ignore for Boardie	
+	// args[1] is buffer size, which we ignore for Boardie
 	printf("connecting...\n");
 	EM_ASM_({
 		var brokerURI = UTF8ToString($0);
@@ -274,5 +274,5 @@ static PrimEntry entries[] = {
 };
 
 void addNetPrims() {
-	addPrimitiveSet("net", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(NetPrims, "net", sizeof(entries) / sizeof(PrimEntry), entries);
 }

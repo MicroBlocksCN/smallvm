@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: Feb 18 2024
 
 #########################
 # Blocks and categories #
@@ -40,6 +40,9 @@ milliseconds
 
 board type
 主板类型
+
+connected to IDE
+已连接到 IDE?
 
 Pins
 引脚
@@ -110,6 +113,9 @@ return _
 when _ received
 当接收到 _
 
+go!
+--MISSING--
+
 broadcast _
 广播 _
 
@@ -124,9 +130,6 @@ range _ to _
 
 by _
 间隔 _
-
-rescale _ from ( _ , _ ) to ( _ , _ )
-映射 _ 从 ( _ , _ ) 到 ( _ , _ )
 
 for _ in _ _
 重复执行 变化因子 _ 范围 _ _
@@ -144,10 +147,22 @@ stop all
 停止全部
 
 last message
-最新消息
+最后消息
+
+arg _ default _
+参数 _ 默认 _
+
+default
+默认
 
 call _
 调用 _
+
+function name
+方法名称
+
+parameter list
+参数列表
 
 with _
 参数 _
@@ -188,6 +203,9 @@ or _
 _ is a _
 _ 的类型是 _
 
+convert _ to _
+把 _ 转化为 _
+
 boolean
 布尔
 
@@ -205,6 +223,9 @@ byte array
 
 Advanced:
 高级
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+映射 _ 从 ( _ , _ ) 到 ( _ , _ )
 
 hex _
 十六进制 _
@@ -226,19 +247,31 @@ New variable name?
 新变量的名字是？
 
 set _ to _
-把 _ 设定为 _
+把 _ 设为 _
 
 change _ by _
 把 _ 增加 _
 
 initialize local _ to _
-将本地的 _ 初始化为 _
+将局部变量 _ 初始化为 _
 
 Data
 数据
 
 list
 列表
+
+cat
+--MISSING--
+
+dog
+--MISSING--
+
+bird
+--MISSING--
+
+fish
+--MISSING--
 
 length of _
 _ 的长度
@@ -260,6 +293,9 @@ join _ _
 
 copy _ from _
 复制 _ 从 _
+
+smiles
+--MISSING--
 
 to _
 到 _
@@ -291,6 +327,9 @@ new byte array _
 as byte array _
 作为字节数组 _
 
+aByteListOrString
+--MISSING--
+
 with all _
 填充 _
 
@@ -301,7 +340,7 @@ all
 所有
 
 last
-最新
+最后
 
 random
 随机
@@ -361,6 +400,9 @@ rpi 通道 _
 spi exchange bytes _
 spi 交换 字节 _
 
+aByteArray
+--MISSING--
+
 serial open _ baud
 串口打开 _ 波特率
 
@@ -373,8 +415,14 @@ serial read
 serial write _
 串口写入 _
 
+anIntegerStringListOrByteArray
+
+
 serial write _ starting at _
 串口写入 _ 开始于 _
+
+aStringListOrByteArray
+--MISSING--
 
 soft serial write byte _ pin _ baud _
 软串口写入 字节 _ 引脚 _ 速率 _
@@ -430,20 +478,26 @@ radio send number _
 radio send string _
 广播发送字符串 _
 
+Hello!
+--MISSING--
+
 radio send pair _ = _
 广播发送配对信息 _ = _
+
+light
+--MISSING--
 
 radio message received?
 广播消息已收到?
 
 radio last number
-最新广播的数字
+最后广播的数字
 
 radio last string
-最新广播的字符串
+最后广播的字符串
 
 radio last message type
-最新广播消息类型
+最后广播的消息类型
 
 radio set group _ (0-255)
 设置广播分组 _ (0-255)
@@ -455,7 +509,7 @@ radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
 radio last signal strength
-最新广播信号强度
+最后广播的信号强度
 
 radio receive packet _
 广播收到包 _
@@ -541,7 +595,6 @@ PIR
 
 PIR at pin _ detected movement
 位于引脚 _ 的人体红外传感器探测到运动
-
 
 #### NeoPanel library
 
@@ -794,8 +847,8 @@ attach IR receiver to pin _
 IR transmit device _ command _
 红外发射 设备 _ 指令 _
 
-#### 
-# Keyboard and Mouse
+####
+# Keyboard and Mouse library
 
 Keyboard and Mouse
 键盘与鼠标
@@ -815,8 +868,80 @@ release key _
 release all keys
 松开所有按键
 
+Shift
+Shift
+
+Control
+控制
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+enter
+
+return
+return
+
+tab
+tab
+
+backspace
+backspace
+
+delete
+delete
+
+insert
+insert
+
+home
+home
+
+end
+end
+
+PgUp
+PgUp
+
+PgDown
+PgDown
+
+CapsLock
+CapsLock
+
+NumLock
+NumLock
+
+ScrollLock
+ScrollLock
+
+PrintScreen
+PrintScreen
+
+ESC
+ESC
+
 _ mouse click
 点击鼠标 _ 键
+
+left
+左
+
+right
+右
+
+middle
+中键
+
+both
+全部
 
 move mouse pointer by _ , _
 移动鼠标箭头 变化量 _ , _
@@ -829,6 +954,72 @@ hold _ mouse button
 
 release mouse buttons
 松开鼠标按键
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+列表
+
+list _ contains _
+列表 _ 包含 _
+
+
+circular item _ of _
+列表项 _ 属于 _
+
+aListOrString
+--MISSING--
+
+map _ over _
+映射 _ 与 _
+
+aFunction
+aFunction
+
+filter _ with _
+过滤 _ 用 _
+
+pick _ from _
+选择 _ 从 _
+
+
+a few
+a few
+
+some
+some
+
+most
+most
+
+reverse _
+颠倒 _
+
+shuffle _
+打乱 _
+
+sort _
+排序 _
+
+shuffled _
+已打乱的 _
+
+reversed _
+已颠倒的 _
+
+sorted _
+已排序的 _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+蓝牙键盘
+
+start BLE Keyboard
+启动蓝牙键盘
 
 ####
 # Radio comm library
@@ -848,6 +1039,9 @@ Scrolling
 scroll text _
 滚动显示文字 _
 
+HELLO ROSA!
+--MISSING--
+
 scroll number _
 滚动显示数字 _
 
@@ -856,6 +1050,129 @@ pausing _ ms
 
 stop scrolling
 停止滚动
+
+display image _
+显示图像 _
+
+heart
+心
+
+small heart
+小心脏
+
+yes 
+好
+
+no
+不
+
+happy
+快乐
+
+sad
+悲伤
+
+confused
+困惑
+
+angry
+愤怒
+
+asleep
+睡着了
+
+surprised
+惊讶
+
+silly
+愚蠢
+
+fabulous
+美妙 
+
+meh
+嗯
+
+t-shirt
+T恤衫
+
+roller skate
+旱冰鞋
+
+duck
+鸭子
+
+house
+房子
+
+tortoise
+乌龟
+
+butterfly
+蝴蝶
+
+stick figure
+棍子
+
+ghost
+鬼 
+
+sword
+剑
+
+giraffe
+长颈鹿
+
+skull
+头骨
+
+umbrella
+伞
+
+snake
+蛇
+
+rabbit
+兔子
+
+cow
+牛
+
+quarter note
+四分音符
+
+eight note
+八分音符
+
+pitchfork
+干草叉
+
+target
+目标
+
+triangle
+三角形
+
+left triangle
+左三角铁
+
+chess board
+棋盘
+
+diamond
+钻石
+
+small diamond
+小钻石
+
+square
+正方形
+
+small square
+小正方形
+
+scissors
+剪刀
 
 ####
 # Servo motor library
@@ -886,6 +1203,9 @@ display _
 clear display
 清除显示
 
+set display color _
+设置显示颜色 _
+
 plot x _ y _
 点亮 x _ y _
 
@@ -894,6 +1214,60 @@ unplot x _ y _
 
 display character _
 显示字符 _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+初始化 i2c _ 地址(hex) _ 重置 pin# _ 翻转 _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+初始化 spi _ d/c pin# _ 重置 pin# _ 翻转 _
+
+write _ at x _ y _ inverse _
+绘制 _ 在 x _ y _ 反色 _
+
+show display buffer
+刷新显示缓存
+
+clear
+清除屏幕
+
+set contrast (1-4) _
+设置 对比度 (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+绘制圆形在 x _ y _ 半径 _ 擦除 _
+
+draw image _ at x _ y _
+绘制图像 _ 在 x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+绘制直线从 x _ y _ 到 x _ y _ 擦除 _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+绘制矩形 x _ y _ 宽 _ 高 _ 擦除 _ 圆角(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+填充矩形 x _ y _ 宽 _ 高 _ 擦除 _
+
+_flip display top _
+_上下反转显示屏 _
+
+make image _
+制作图片 _
+
+set pixel x _ y _ erase _
+设置像素 x _ y _ 擦除 _
+
+set video _
+设置视频 _
+
+cursor location
+光标位置
+
+defer display updates
+推迟显示更新
 
 ####
 # TFT display library
@@ -931,6 +1305,9 @@ filled _
 write _ on TFT at x _ y _ color _
 在TFT上写 _ 位置 x _ y _ 颜色 _
 
+Hello World!
+--MISSING--
+
 scale _ wrap _
 scale _ wrap _
 
@@ -938,8 +1315,11 @@ scale _ wrap _
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
-显示 BMP 文件 _
+display BMP file _ at x _ y _
+显示 BMP 文件 _ 在 x _ y _
+
+image.bmp
+image.bmp
 
 ####
 # HSV color library
@@ -995,7 +1375,6 @@ gcd _ _
 lcm _ _
 最小公倍数 _ _
 
-
 ####
 # Tone library
 # Generates music tones on buzzers
@@ -1020,6 +1399,42 @@ start tone _ Hz
 
 stop tone
 停止音调
+
+c
+c
+
+c#
+c#
+
+d
+d
+
+d#
+d#
+
+e
+e
+
+f
+f
+
+f#
+f#
+
+g
+g
+
+g#
+g#
+
+a
+a
+
+a#
+a#
+
+b
+b
 
 ####
 # Ringtone library
@@ -1056,6 +1471,516 @@ set pluck pin _
 
 play WAV file _
 播放 WAV 文件 _
+
+filename
+文件名称
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+节奏
+
+set tempo to _ bpm at _ / _ signature
+设置节拍 _ bpm 以 _ / _ 拍
+
+start counting _ bars
+开始计数 _ 小节
+
+stop counting
+停止计数
+
+wait until next _
+等待直到下一次 _
+
+current beat
+当前节拍
+
+current bar
+当前小节
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+原声低音鼓
+
+Bass Drum 1
+低音鼓 1
+
+Side Stick
+小鼓边击
+
+Acoustic Snare
+小鼓
+
+Hand Clap
+拍手
+
+Electric Snare
+电动军鼓
+
+Low Floor Tom
+低音落地嗵鼓
+
+Closed Hi-Hat
+封闭高音鼓
+
+High Floor Tom
+高音落地嗵鼓
+
+Pedal Hi-Hat
+踏板高音鼓
+
+Low Tom
+低音嗵鼓
+
+Open Hi-Hat
+开放高音鼓
+
+Low-Mid Tom
+中低嗵鼓
+
+Hi-Mid Tom
+中高嗵鼓
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+高音嗵鼓
+
+Ride Cymbal 1
+打击镲 1
+
+Chinese Cymbal
+中国镲
+
+Ride Bell
+马铃
+
+Tambourine 
+小手鼓
+
+Splash Cymbal
+飞溅钹
+
+Cowbell 
+牛铃
+
+Crash Cymbal 2
+撞镲 2
+
+Vibraslap 
+振动拍
+
+Ride Cymbal 2
+打击镲 2
+
+Hi Bongo
+高邦戈
+
+Low Bongo
+低邦戈
+
+Mute Hi Conga
+Mute Hi Conga
+
+Open Hi Conga
+低音康加
+
+Low Conga
+低音康加
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+效果 1
+
+effect 2
+效果 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
+--MISSING--
 
 ####
 # Turtle geometry library
@@ -1126,11 +2051,20 @@ next line of file _
 next _ bytes of file _
 接下来的 _ 字节 从文件 _
 
+read into _ from file _
+读入到 _ 从文件 _
+
+a ByteArray
+a ByteArray
+
 starting at _
 开始于 _
 
 file names
 文件名
+
+in directory _
+在字典 _
 
 size of file _
 文件 _ 的大小
@@ -1157,8 +2091,20 @@ _ 是大写字母
 _ begins with _
 _ 以 _ 开头
 
+prefix
+prefix
+
+pre
+pre
+
 _ ends with _
 _ 以 _ 结尾
+
+suffix
+suffix
+
+fix
+fix
 
 _ contains _
 _ 包含 _
@@ -1166,8 +2112,14 @@ _ 包含 _
 lowercase _
 小写 _
 
+THIS is a String! :)
+THIS is a String! :)
+
 uppercase _
 大写 _
+
+Hello, world!
+Hello, world!
 
 _ without white space
 _ 移除空格
@@ -1178,8 +2130,14 @@ join string list _ separator _
 unicodes _
 unicodes _
 
+aString
+aString
+
 string from unicodes _
 将 unicodes _ 转为字符串
+
+aList
+aList
 
 num2str _
 数字 _ 转为字符串
@@ -1196,11 +2154,17 @@ WiFi
 wifi connect to _ password _
 连接 wifi 至 _ 密码 _
 
+Network_Name
+网络名称
+
 IP _ gateway _ subnet _
 IP 地址 _ 网关 _ 子网掩码 _
 
 wifi create hotspot _ password _
 创建 wifi 热点 _ 密码 _
+
+Network_Password
+网络密码
 
 IP address
 IP 地址
@@ -1299,6 +2263,15 @@ bmx280 压力
 bme280 humidity
 bme280 湿度
 
+bmx280 set base altitude _ meters
+bmx280 设置基准高度 _ 米
+
+bmx280 altitude (cm)
+BMX280 高度（厘米）
+
+bmx280 altitude (feet)
+BMX280 高度（英尺）
+
 ####
 # TCS34725 color sensor
 
@@ -1339,13 +2312,31 @@ get PN532 firmware version
 PN532 固件版本
 
 ####
+# Touch Screen
+
+Touch Screen
+触摸屏
+
+TFT touched
+TFT被点击
+
+TFT touch X position
+TFT点击 X 坐标
+
+TFT touch Y position
+TFT点击 Y 坐标
+
+TFT touch pressure
+TFT 点击力度
+
+####
 # HTTP Client
 
 HTTP client
 HTTP 客户端
 
-_ data _ to http܃// _ 
-_ 数据 _ 到 http܃// _ 
+_ data _ to http܃// _
+_ 数据 _ 到 http܃// _
 
 port _
 端口 _
@@ -1367,6 +2358,9 @@ respond _ to HTTP request
 
 with body _
 with body _
+
+Welcome to the MicroBlocks HTTP server
+欢迎使用 MicroBlocks HTTP 服务器
 
 and headers _
 and headers _
@@ -1396,7 +2390,7 @@ start WebSocket server
 启动 WebSocket 服务器
 
 last WebSocket event
-最新的 WebSocket 事件
+最后的 WebSocket 事件
 
 client ID for WebSocket event _
 WebSocket 事件 _ 的客户端 ID
@@ -1409,6 +2403,9 @@ WebSocket 事件 _ 的类型
 
 send _ to WebSocket client _
 发送 _ 到 WebSocket 客户端 _
+
+Hello, Client!
+Hello, Client!
 
 ####
 # Web Things library
@@ -1459,6 +2456,244 @@ events JSON
 事件 JSON
 
 ####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+--MISSING--
+
+MiKe _ obstacle ?
+--MISSING--
+
+MiKe black line on _ ?
+--MISSING--
+
+MiKe back light
+--MISSING--
+
+MiKe IR
+--MISSING--
+
+MiKe digital D8 sensor
+--MISSING--
+
+MiKe stop motors
+--MISSING--
+
+MiKe Robot go _ at _ %
+--MISSING--
+
+MiKe Robot speed _ %
+--MISSING--
+
+MiKe Robot direction _
+--MISSING--
+
+MiKe turn _ motor _
+--MISSING--
+
+MiKe speed _ motor at _ %
+--MISSING--
+
+MiKe front lights off
+--MISSING--
+
+MiKe front lights to _
+--MISSING--
+
+MiKe circle lights off
+--MISSING--
+
+MiKe circle ligths to _
+--MISSING--
+
+MiKe circle light _ (1-18) to _
+--MISSING--
+
+MiKe rotate lights by _
+--MISSING--
+
+MiKe digital D8 to _
+--MISSING--
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+--MISSING--
+
+plotter move _ steps
+--MISSING--
+
+plotter turn _ degrees
+--MISSING--
+
+plotter turn _ / _ of circle
+--MISSING--
+
+plotter point in direction _
+--MISSING--
+
+plotter pen down
+--MISSING--
+
+plotter pen up
+--MISSING--
+
+plotter stop
+--MISSING--
+
+set plotter speed to _ %
+--MISSING--
+
+####
+# Innova Didactic libraries
+
+red
+--MISSING--
+
+yellow
+--MISSING--
+
+green
+--MISSING--
+
+forward
+--MISSING--
+
+backward
+--MISSING--
+
+turn right
+--MISSING--
+
+turn left
+--MISSING--
+
+stop
+--MISSING--
+
+right sensor
+--MISSING--
+
+left sensor
+--MISSING--
+
+both sensors
+--MISSING--
+
+TdR test buzzer
+--MISSING--
+
+TdR set blue LED _
+--MISSING--
+
+TdR set red LED _
+--MISSING--
+
+TdR set RGB LED _
+--MISSING--
+
+TdR clear RGB LED
+--MISSING--
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+--MISSING--
+
+TdR rotation
+--MISSING--
+
+TdR light level
+--MISSING--
+
+TdR button 1
+--MISSING--
+
+TdR button 2
+--MISSING--
+
+TdR receive IR code
+--MISSING--
+
+Imagina set _ led to _
+--MISSING--
+
+Imagina play _ octave _ for _ ms
+--MISSING--
+
+Imagina temperature (°C)
+--MISSING--
+
+Imagina light
+--MISSING--
+
+Imagina distance (cm)
+--MISSING--
+
+Imagina button (D2) pressed?
+--MISSING--
+
+Imagina digital reading _
+--MISSING--
+
+Imagina analog reading A1
+--MISSING--
+
+Imagina set digital pin _ to _
+--MISSING--
+
+Imagina stop servo _
+--MISSING--
+
+Imagina set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Imagina set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Imagina set _ speed to _ %
+--MISSING--
+
+Imagina set _ to _
+--MISSING--
+
+Imagina IR reading
+--MISSING--
+
+Imagina IR transmit device _ command _
+--MISSING--
+
+_ steps
+--MISSING--
+
+at _ % speed
+--MISSING--
+
+3dBot set speed at _ %
+--MISSING--
+
+3dBot obstacle < _ cm?
+--MISSING--
+
+3dBot line on _ ?
+--MISSING--
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -1479,11 +2714,17 @@ MQTT disconnect
 MQTT sub _
 订阅主题 _
 
+testTopic
+testTopic
+
 MQTT unsub _
 取消订阅主题 _
 
 MQTT pub topic _ payload _
 向主题 _ 发布载荷 _
+
+Hello!
+Hello!
 
 retain _ QoS _
 保留 _ QoS _
@@ -1495,13 +2736,19 @@ binary _
 二进制 _
 
 topic for MQTT event _
-最新 MQTT 事件的主题 _
+MQTT 事件的主题 _
 
 payload for MQTT event _
-最新 MQTT 事件的载荷 _
+MQTT 事件的载荷 _
 
 MQTT set will topic _ payload _
 MQTT 设置遗嘱 主题 _ 载荷 _
+
+testWill
+testWill
+
+Last will!
+Last will!
 
 buffer sizes _
 缓存大小 _
@@ -1529,6 +2776,49 @@ UDP 远程 IP 地址
 
 UDP remote port
 UDP 远程端口
+
+####
+# WiFi Radio
+
+WiFi Radio
+WiFi 广播
+
+wifi send number _
+wifi 广播发送数字 _
+
+wifi send string _
+wifi 广播发送字符串 _
+
+wifi send pair _ = _
+wifi 广播发送配对信息 _ = _
+
+wifi message received?
+wifi 广播消息已收到?
+
+wifi last number
+wifi 最后广播的数字
+
+wifi last string
+wifi 最后广播的字符串
+
+wifi set group _ (0-255)
+wifi 设置广播分组 _ (0-255)
+
+# BLE UART server
+start BLE UART server _
+创建蓝牙广播 _
+
+BLE Device connected
+蓝牙服务器已连接
+
+last BLE UART message
+最后一次的接收到的消息
+
+BLE UART write _
+向蓝牙连接的的设备发送 _
+
+stop BLE UART server
+停止蓝牙广播
 
 ####
 # Cutebot
@@ -1571,7 +2861,6 @@ right
 
 both
 全部
-
 
 # Wukong
 
@@ -1665,8 +2954,8 @@ NeZha set continuous rotation servo _ speed to _ %
 HuskyLens
 二哈识图
 
-HL init & set I2Caddr (hex) _
-二哈 初始化并设置 I2C 地址 _
+HL set Comms i2cAddr _ serial _
+二哈 设置 I2C 地址 _ 串行 _
 
 HL change algorithm _
 二哈 切换算法 _
@@ -1788,10 +3077,10 @@ Y 终点
 id
 id
 
-HL learn current object with ID _
+HL learn current object as ID _
 二哈 当前学习对象的 ID _
 
-HL learn object with ID _ Name _
+HL learn object as ID _ Name _
 二哈 学习对象的 ID _ 名称 _
 
 HL set CustomName _ for a learned object with ID _
@@ -1838,6 +3127,7 @@ WuKong2040 buzzer beep _ ms
 
 ####
 # Octopus
+
 Octopus
 八爪鱼系列传感器
 
@@ -1898,6 +3188,503 @@ Octopus OLED draw circle x _ y _ radius _
 Octopus OLED fill circle x _ y _ radius _
 八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
+####
+# OctoStudio
+
+Octo start
+Octo 启动
+
+Octo beam to phones _
+Octo 给手机发信号 _
+
+duration _ ms
+持续 _ 毫秒
+
+Octo receive beam
+Octo 收到的信号
+
+Octo stop
+Octo 停止
+
+####
+# TM1650
+
+clear
+清除显示
+
+set intensity _
+设置亮度为 _
+
+show digit number _ at _
+显示单个数字 _ 在第 _ 位
+
+show dot point _ show _
+小数点在第 _ 位 显示 _
+
+
+show number _
+显示数字 _
+
+turn off display
+关闭屏幕
+
+turn on display
+打开屏幕
+
+#### Elite AI Training Platform
+
+Elite AI Training Platform
+英荔 AI 训练平台
+
+class _ > probability _ %
+类别 _ > 概率 _ %
+
+#### M5FireKits
+
+M5FireKits
+M5Fire M5Go底座
+
+buttonC
+按键 C
+
+LEDStripPin15
+灯带引脚15
+
+IRTxPin
+红外发射引脚13
+
+readMicValue
+麦克风读数
+
+PortA _
+端口A _
+
+PortB _
+端口B _
+
+PortC _
+端口C _
+
+clearStrip
+清除灯带
+
+setStripLED _ _ _ _ _ _ _ _ _ _
+灯带 _ _ _ _ _ _ _ _ _ _
+
+setStripRight _ _ _ _ _
+右边灯带 _ _ _ _ _
+
+setStripLeft _ _ _ _ _
+左边灯带 _ _ _ _ _
+
+_MicPin34
+麦克风引脚34
+
+Screen _
+屏幕开关 _
+
+#### 8 Bit Graphics
+
+8 Bit Graphics
+8 Bit 图像
+
+set scale _
+设置比例 _
+
+draw buffer : starting at x _ y _ width _ height _
+
+
+bitmap from BMP file _
+来自 BMP 文件的位图 _
+
+bitmap of width _ from raw indexed file _
+宽度 _ 的位图 来自 raw indexed 文件 _
+
+bitmap of width _ from string _
+宽度 _ 的位图 来自字串 _
+
+merge bitmap _ at _ , _
+合并位图 _ 在 _ , _
+
+merge tile _ at tile position _ , _
+合并背景图 _ 从 背景位置 _ , _
+
+merge tile _ from _ , _ to _ , _
+合并背景图 _ 从 _ , _ 到 _ , _
+
+set palette _
+设置调色板 _
+
+set transparent color index _
+设置透明颜色索引 _
+
+palette from pal file _
+调色板来自调色板文件 _
+
+palette from BMP file _
+来自 BMP 文件的调色板 _
+
+4 bit _ palette
+4 位 _ 调色板
+
+8 bit _ palette
+8 位 _ 调色板
+
+color number for r _ g _ b _ (0-255)
+_ g _ b _ (0-255) 转颜色数值
+
+draw palette table _
+绘制调色板表 _
+
+screen width
+屏幕宽度
+
+screen height
+屏幕高度
+
+#### OLED Graphics
+
+OLED Graphics
+OLED 屏幕
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+初始化 i2c _ 地址(hex) _ 重置引脚# _ 翻转 _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+初始化 spi _ d/c 引脚# _ 重置引脚# _ 翻转 _
+
+write _ at x _ y _ inverse _
+输入字符 _ 在 x _ y _ 反色 _
+
+show display buffer
+刷新显示缓存
+
+set contrast (1-4) _
+对比度 (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+绘制圆形在 x _ y _ 处，半径为 _ 擦除 _
+
+draw image _ at x _ y _
+绘制 _ 图，在 x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+画线 从 x _ y _ 到 x _ y _ 擦除 _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+绘制矩形 x _ y _ 宽 _ 高 _ 擦除 _ 圆角(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+填充矩形 x _ y _ 宽 _ 高 _ 擦除 _
+
+_flip display top _
+反转显示 上 _
+
+make image _
+做 _ 图
+
+set pixel x _ y _ erase _
+绘制像素点 x _ y _ 擦除 _
+
+set video _
+图像设置 _
+
+Inverse
+反色
+
+Normal
+正常
+
+cursor location
+光标位置
+
+defer display updates
+推迟显示更新
+
+#### XGO-nano
+
+Left Front
+左前
+
+Right Front
+右前
+
+Right Rear
+右后
+
+Left Rear
+左后
+
+Upper(-65°~65°)
+上(-65°~65°)
+
+Middle(-115°~70°)
+中(-115°~70°)
+
+Lower(-90°~105°)
+下(-90°~105°)
+
+Upper(-30°~30°)
+上(-30°~30°)
+
+Middle(-70°~90°)
+中(-70°~90°)
+
+Lower(-85°~50°)
+下(-85°~50°)
+
+Fast
+快速
+
+Slow
+慢速
+
+Trot
+对角
+
+Walk
+行走
+
+High Walk
+高抬腿
+
+Micro Trot
+微调
+
+Forward(0mm~25mm)
+前平移(0mm~25mm)
+
+Backward(-25mm~0mm)
+后平移(-25mm~0mm)
+
+Left Shift(0mm~18mm)
+左平移(0mm~18mm)
+
+Right Shift(-18mm~0mm)
+右平移(-18mm~0mm)
+
+roll
+翻滚
+
+pitch
+俯仰
+
+yaw
+偏航
+
+Lie Down
+趴下
+
+Stand Up
+站起
+
+Crawl
+匍匐前进
+
+Turn Around
+转圈
+
+Mark Time
+踏步
+
+Squat
+蹲起
+
+Turn Roll
+翻滚转角
+
+Turn Pich
+俯仰转角
+
+Turn Yaw
+偏航转角
+
+3-axis Rotation
+三轴转动
+
+Pee
+撒尿
+
+Sit Down
+坐下
+
+Wave Hand
+招手
+
+Stretch Oneself
+伸懒腰
+
+Wave Body
+波浪
+
+Stagger
+摇摆
+
+Begging
+乞讨
+
+Hunt for food
+找食物
+
+Handshake
+握手
+
+Pigeon Head
+鸡头
+
+Push-up
+俯卧撑
+
+Look Around
+张望
+
+Dance
+跳舞
+
+Naughty
+调皮
+
+Grab Up
+上抓
+
+Grab Middle
+中抓
+
+Grab Down
+下抓
+
+XGO init
+XGO初始化
+
+XGO reset
+XGO恢复初始状态
+
+get battery level
+读取当前电量
+
+get all servos angle
+读取全部舵机角度
+
+say leg _ servos angle
+读取第 _ 腿舵机值
+
+get gyro angle _
+读取整数姿态角度 _
+
+set towards 0
+设置当前朝向为0
+
+rotation to _
+设置转动到角度 _
+
+set stride frequency _
+设置迈步频率为 _
+
+set frequency _
+设置迈步频率为 _
+
+set gait _
+设置运动步态为 _
+
+set _ leg _ joint servos to _ °
+设置 _  腿 _ 关节舵机转动至 _ °
+
+
+set arm _ joint servos to _ °
+设置机械臂 _ 关节舵机转动至 _ °
+
+execute action _
+执行命令 _
+
+move _ with stride _ mm for _ ms
+向 _ 步幅为 _ 毫米持续 _ 毫秒
+
+Rotate _ at speed _ degrees/second for _ ms
+向 _ 方向以速度 _ 度/秒旋转 _ 毫秒
+
+Translation along _ _ mm
+沿 _ 轴平移 _ mm
+
+Rotate _ _ °
+沿 _ 旋转 _ °
+
+set _ foot position to X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+设置 _ 腿足尖坐标位置为 X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+
+set arm position X(-80~155) _ mm Z(-95~155) _ mm
+设置机械臂末端坐标位置X(-80~155) _ mm Z(-95~155) _ mm
+
+claw _
+机械爪开合 _
+
+gyros _
+陀螺仪 _
+
+performance mode _
+表演模式 _
+
+unload all servo _
+卸载所有舵机 _
+
+2Pin 5V output _
+2Pin接口 5V输出 _
+
+digtial IO output _
+数字IO输出 _
+
+readbutton _
+读取按键 _
+
+perform action _
+执行编号 _ 动作组
+
+XGO turn towards _
+XGO转向 _
+
+XGO-nano move _ step _
+XGO-nano 移动方向 _ 步数 _
+
+set _ foot position X _ Y _ Z _
+设置 _ 腿足尖坐标位置 X _ Y _ Z _
+
+oneservo _ _ _ _
+单个舵机 _ _ _ _
+
+set gait _
+运动步态 _
+
+servo _  angle _ °
+舵机编号 _  角度 _ °
+
+_close serial
+_串口结束
+
+_modified remainder _ _
+_修正后的余数 _ _
+
+Communication Failure!!!
+通信失败!!!
+
+#### Four Digit Display (TM1637)
+Four Digit Display (TM1637)
+4位数码管(TM1637)
+
+four digit initialize clock _ data _
+4位数码管初始化 时钟 _ 数据 _
+
+four digit show number _
+4位数码管显示数字 _
+
+four digit clear
+4位数码管清屏
+
+four digit brightness _ (0 to 7)
+设置4位数码管亮度 _ (0 to 7)
+
+four digit show colon _
+4位数码管亮度冒号
+
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1931,7 +3718,7 @@ Reading project from board...
 Loading project...
 加载项目
 
-Found a newer version of 
+Found a newer version of
 发现新版本
 
 Do you want me to update the one in the project?
@@ -1946,14 +3733,23 @@ Connect
 connect
 连接主板
 
+connect (BLE)
+无线连接 (BLE)
+
 open Boardie
 连接模拟器
+
+connect (BLE) (Experimental!)
+无线连接 (BLE) (实验功能!)
 
 disconnect
 断开连接
 
 Serial port:
 串口:
+
+Connect board and try again
+连接板子并重试
 
 other...
 其他...
@@ -1974,7 +3770,7 @@ Could not read:
 无法读取:
 
 by
-由
+作者
 
 Created with GP
 使用GP开发
@@ -2032,7 +3828,6 @@ Discard current project?
 
 # Scripting area right-click context menu
 
-
 set block size...
 设置积木块大小
 
@@ -2084,6 +3879,15 @@ large (100%)
 printable (200%)
 可打印 (200%)
 
+duplicate selection
+复制选择的积木
+
+drag selection
+拖拽选择的积木
+
+delete selection
+删除选择的积木
+
 about...
 关于...
 
@@ -2095,6 +3899,12 @@ virtual machine version
 
 update firmware on board
 升级主板固件
+
+enable or disable BLE
+打开或关闭 BLE
+
+Allow the attached board to be connected via BLE?
+允许通过 BLE 对板子进行无线编程?
 
 show data graph
 显示数据图表
@@ -2120,6 +3930,9 @@ MicroBlocks HTTP 服务器正在监听端口 6473
 disable autoloading board libraries
 禁止自动加载和主板相关的积木库
 
+compact code store
+紧凑代码存储
+
 enable autoloading board libraries
 允许自动加载和主板相关的积木库
 
@@ -2128,6 +3941,18 @@ enable PlugShare when project empty
 
 disable PlugShare when project empty
 禁止项目为空时从主板里获取代码
+
+hide implementation blocks
+隐藏实现块
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+不显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
+
+show implementation blocks
+显示实现块
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 连接主板时，即使当前项目为空，也不要自动将主板里的代码读入 IDE
@@ -2138,11 +3963,17 @@ when plugging a board, automatically read its contents into the IDE if the curre
 erase flash and update firmware on ESP board
 擦除信息并升级 ESP 固件
 
+install ESP firmware from URL
+从 URL 安装 ESP 固件
+
 Use board type
 使用主板类型信息
 
 connected to IDE
 已连接到 IDE?
+
+Firmware Install
+安装固件
 
 Firmware Installed
 完成固件安装
@@ -2154,7 +3985,7 @@ Connect USB cable while holding down the white BOOTSEL button before proceeding.
 按住白色 BOOTSEL 按钮的同时连接 USB 线。
 
 You will be asked to save the firmware file.
-你将被要求保存固件文件。
+请安装固件文件。
 
 Select
 选择
@@ -2162,11 +3993,17 @@ Select
 as the destination drive, then click Save.
 作为目标驱动器，然后点击保存。
 
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+如果 micro:bit 显示一个悲伤的表情，请先将 firmware.hex 文件保存到电脑上，然后再将它拖放到 MICROBIT 驱动器上。
+
 Installing firmware...
 正在安装固件...
 
 Plug in the board.
 插上主板。
+
+Board not connected
+未连接主板
 
 Wiping board...
 擦除主板...
@@ -2230,7 +4067,6 @@ zero at bottom
 
 zero in middle
 中部为零
-
 
 export data to CSV file
 将数据导出到 CSV 文件
@@ -2445,6 +4281,15 @@ Okay
 Confirm
 确认
 
+duplicate selection
+复制选择的积木
+
+drag selection
+拖拽选择的积木
+
+delete selection
+删除选择的积木
+
 # Library folders
 
 Libraries
@@ -2628,7 +4473,7 @@ Command Block
 指令类积木
 
 [l] to run, or drag to build scripts. [r] menu.
-[l] 点击运行，或用鼠标拖拽出来搭建积木脚本。 [r] 打开菜单
+[l] 点击运行，或用鼠标拖拽出来搭建脚本。 [r] 打开菜单
 
 Hat Block
 帽子类积木
@@ -2818,7 +4663,7 @@ Wait the given number of microseconds.
 等待输入的微秒时长
 
 Report the last broadcast message received.
-报告接受到的最新广播消息
+报告接受到的最后广播消息
 
 Call the function with the given name and optional parameter list.
 调用输入的函数或可选列表中的函数
@@ -2967,3 +4812,7 @@ Report a byte array containing the UTF-8 bytes of the given string.
 Report the number of words of memory available. Stop button frees up memory.
 报告可用内存的字数。停止按钮释放内存
 
+#### board name cn
+
+handpy
+掌控板

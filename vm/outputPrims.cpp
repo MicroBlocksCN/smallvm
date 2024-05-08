@@ -65,6 +65,20 @@ int mbDisplayColor = 0x00FF00; // Green by default
 #define COL4 6
 #define COL5 10
 
+#elif defined(CALLIOPE_V3)
+
+#define ROW1 21
+#define ROW2 22
+#define ROW3 23
+#define ROW4 24
+#define ROW5 25
+
+#define COL1 4
+#define COL2 7
+#define COL3 18
+#define COL4 6
+#define COL5 10
+
 #endif
 
 static int microBitDisplayBits = 0;
@@ -221,7 +235,7 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 
 static void setHighDrive(int pin) {
 	if ((pin < 0) || (pin >= PINS_COUNT)) return;
@@ -268,7 +282,7 @@ static int updateLightLevel() {
 	// NOTE: This code is sensitive to ordering and timing details. If you change it, please
 	// test it carefully in various lightings, with the LED display both on and off.
 
-	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3, 10
+	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3 (18 on CalliopeV3), 10
 
 	// How this works:
 	// The first step is to reverse-bias the LED's to charge up the stray capacitance
@@ -562,6 +576,8 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 8; // internal NeoPixel pin on Circuit Playground (Bluefruit)
 		#elif defined(ARDUINO_NRF52840_CLUE)
 			pinNum = 18; // internal NeoPixel pin on Clue
+		#elif defined(CALLIOPE_V3)
+			pinNum = 35; // internal NeoPixel pin on Calliope
 		#else
 			pinNum = 0; // use pin 0 on others
 		#endif
@@ -641,6 +657,8 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 0; // default to pin 0
 		#endif
 	}
+
+	setPinMode(pinNum, OUTPUT);
 
 	neoPixelPinMask = 1 << g_APinDescription[pinNum].ulPin;
 	int baseReg = PORT_BASE + (0x80 * g_APinDescription[pinNum].ulPort);
@@ -759,6 +777,10 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 			pinNum = 13; // internal NeoPixel pin
 		#elif defined(DATABOT)
 			pinNum = 2; // internal NeoPixel pin
+		#elif defined(ESP32_S3)
+		    pinNum = 48; // ESP32-S3-DevKitC-1 internal NeoPixel pin
+		#elif defined(ESP32_C3)
+		    pinNum = 8; // ESP32-C3-DevKitC-02 internal NeoPixel pin
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
@@ -890,13 +912,19 @@ static void sendNeoPixelData(int val) { }
 #endif // NeoPixel Support
 
 static inline int gamma(int val) {
-	// This function computes the n^3 gamma curve, where n is a brightness in the range 0.0..1.0,
+	// This function computes the n^2 gamma curve, where n is a brightness in the range 0.0..1.0,
 	// with the result scaled to the integer range 0..neoMax, but it uses only integer arithmetic.
 	// The input is assumed to be an integer in the range 0..255, and what's computed is the
 	// neoMax * ((val / 255) ^ 3). Since (val / 255) has the range 0.0 and 1.0, ((val / 255) ^ 3)
 	// will also be in the range 0.0..1.0, and that is scaled to 0..neoMax.
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
+
+	#if defined(ARDUINO_Mbits)
+	    // The Mbits power supply cannot supply enough current to run both
+	    // the WiFi/BLE radio and the Neopixel array a full brightness.
+	    if (val > 175) val = 175; // limit brightness to avoid making WiFi fail
+	#endif
 
 	const int neoMax = 40;
 	const int divisor = (255 * 255) / neoMax;
@@ -971,7 +999,7 @@ void turnOffInternalNeoPixels() {
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
-	#elif defined(DATABOT)
+	#elif defined(DATABOT) || defined(CALLIOPE_V3)
 		count = 3;
 	#elif defined(WUKONG2040)
 		count = 2;
@@ -1121,5 +1149,5 @@ static PrimEntry entries[] = {
 };
 
 void addDisplayPrims() {
-	addPrimitiveSet("display", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(DisplayPrims, "display", sizeof(entries) / sizeof(PrimEntry), entries);
 }

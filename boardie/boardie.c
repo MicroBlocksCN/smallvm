@@ -38,7 +38,19 @@ uint32 millisecs() {
 	return microsecs() / 1000;
 }
 
+uint64 totalMicrosecs() {
+	// Returns a 64-bit integer containing microseconds since start.
+
+	struct timeval now;
+	gettimeofday(&now, NULL);
+
+	uint64 secs = now.tv_sec - startSecs;
+	return (1000000 * secs) + now.tv_usec;
+}
+
 // Communication/System Functions
+
+char BLE_ThreeLetterID[4] = "";
 
 void initMessageService() {
 	EM_ASM_({
@@ -84,6 +96,7 @@ int sendBytes(uint8 *buf, int start, int end) {
 }
 
 // Keyboard support
+
 void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
@@ -112,6 +125,7 @@ void initKeyboardHandler() {
 }
 
 // Sound support
+
 void initSound() {
 	EM_ASM_({
 		var context = new AudioContext();
@@ -188,11 +202,15 @@ void readScriptsFromURL() {
 
 // Stubs for functions not used by Boardie
 
-void addSerialPrims() {}
+void addBLEPrims() {}
+void addCameraPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
+void addRadioPrims() {}
+
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
+void resetRadio() {}
 
 // Stubs for code file (persistence) not yet used by Boardie
 
@@ -200,6 +218,7 @@ int initCodeFile(uint8 *flash, int flashByteCount) { return 0; }
 void writeCodeFile(uint8 *code, int byteCount) { }
 void writeCodeFileWord(int word) { }
 void clearCodeFile(int ignore) { }
+void BLE_setEnabled(int enableFlag) { }
 
 // Main loop
 

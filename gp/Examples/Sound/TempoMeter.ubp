@@ -32,7 +32,7 @@ forever {
 
 module Microphone Input
 author MicroBlocks
-version 1 3 
+version 1 4 
 description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
 variables _clapThreshold _loudnessSamples 
 
@@ -108,7 +108,7 @@ to setClapThreshold n {
 }
 
 to turnOnMicrophone {
-  if ('micro:bit v2' == (boardType)) {
+  if (or ('micro:bit v2' == (boardType)) ('Calliope v3' == (boardType))) {
     comment 'Turn on the microphone and
 wait for it to settle down.'
     digitalWriteOp 28 true

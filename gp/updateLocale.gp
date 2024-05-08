@@ -19,7 +19,7 @@ to startup {
 		(writeFile (join (tmpPath) langName '.txt') oldLocale)
 	}
 
-        updatedLocale = ''
+	updatedLocale = ''
 	allLocales = (readFile '../Locales.txt')
 
 	// Check whether it's an RTL language, and keep the tag if so
@@ -31,11 +31,11 @@ to startup {
 	lines = (toList (lines allLocales))
 	while ((count lines) >= 1) {
 		original = (removeFirst lines)
-                if (or (beginsWith original '#') (original == '')) {
+		if (or (beginsWith original '#') (original == '')) {
 			// Copy comments. We should be smarter about it and get
 			// them from the original file somehow.
 			updatedLocale = (join updatedLocale original (newline))
-                } else {
+		} else {
 			translation = (localizedOrNil original)
 			if (or (isNil translation) (isNil oldLocale)) {
 				translation = '--MISSING--'

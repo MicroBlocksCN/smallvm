@@ -203,6 +203,7 @@ method removeLibraryNamed MicroBlocksScripter libName {
   removeLibraryNamed mbProject libName
   variablesChanged (smallRuntime)
   updateLibraryList this
+  languageChanged this
 }
 
 method showLibraryInfo MicroBlocksScripter libName {
@@ -430,13 +431,17 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 	if ('-' == op) {
 	  // add some vertical space
 	   nextY += (20 * (global 'scale'))
-	} (or (devMode) (not (beginsWith op '_'))) {
+	} (or (showHiddenBlocksEnabled projectEditor) (not (beginsWith op '_'))) {
 	  spec = (specForOp (authoringSpecs) op)
 	  if (notNil spec) {
 	  	addBlock this (blockForSpec spec) spec
 	  }
 	}
   }
+}
+
+to caseInsensitiveLessThan s1 s2 {
+  return ((toUpperCase s1) < (toUpperCase s2))
 }
 
 method addVariableBlocks MicroBlocksScripter {
@@ -446,7 +451,24 @@ method addVariableBlocks MicroBlocksScripter {
   visibleVars = (visibleVars this)
   if (notEmpty visibleVars) {
 	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
-	nextY += (8 * scale)
+  }
+
+  // add set/change variable
+  nextY += (20 * scale)
+  defaultVarName = ''
+  if (notEmpty visibleVars) { defaultVarName = (first visibleVars) }
+
+  addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
+  addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
+  if (or (devMode) (contains (commandLine) '--allowMorphMenu')) {
+    nextY += (10 * scale)
+    addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  }
+
+  nextY += (20 * scale)
+
+  if (notEmpty visibleVars) {
+    visibleVars = (sorted (toArray visibleVars) 'caseInsensitiveLessThan')
 	for varName visibleVars {
 	    lastY = nextY
 	    b = (toBlock (newReporter 'v' varName))
@@ -461,16 +483,6 @@ method addVariableBlocks MicroBlocksScripter {
 	nextY += (5 * scale)
   }
 
-  defaultVarName = ''
-  if (notEmpty visibleVars) { defaultVarName = (first visibleVars) }
-
-  nextY += (10 * scale)
-  addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
-  addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
-  if (devMode) {
-	nextY += (10 * scale)
-	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
-  }
 }
 
 method addMyBlocks MicroBlocksScripter {
@@ -481,7 +493,7 @@ method addMyBlocks MicroBlocksScripter {
   nextY += (8 * scale)
 
   for f (functions (main mbProject)) {
-	if (or (devMode) (not (beginsWith (functionName f) '_'))) {
+	if (or (showHiddenBlocksEnabled projectEditor) (not (beginsWith (functionName f) '_'))) {
 	  spec = (specForOp (authoringSpecs) (functionName f))
 	  if (isNil spec) { spec = (blockSpecFor f) }
 	  addBlock this (blockForSpec spec) spec
@@ -540,6 +552,7 @@ method addSectionLabel MicroBlocksScripter label {
 
 method createEmptyProject MicroBlocksScripter {
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   if (notNil scriptsFrame) {
 	removeAllParts (morph (contents scriptsFrame))
 	restoreScripts this
@@ -551,6 +564,7 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
   // Load an old-style (GP-format) MicroBlocks project from the given class and spec list.
 
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   if (notNil aClass) {
 	loadFromOldProjectClassAndSpecs mbProject aClass specs
   }
@@ -561,6 +575,7 @@ method loadNewProjectFromData MicroBlocksScripter aString updateLibraries {
   // Load an new-style MicroBlocks project from the given string.
 
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   loadFromString mbProject aString updateLibraries
   restoreScripts this
 }
@@ -576,7 +591,7 @@ method visibleVars MicroBlocksScripter {
   // Include vars that start with underscore only in dev mode.
 
   allVars = (allVariableNames mbProject)
-  if (devMode) {
+  if (showHiddenBlocksEnabled projectEditor) {
     return allVars
   } else {
     return (filter
@@ -634,8 +649,19 @@ method deleteVariable MicroBlocksScripter varName {
 // save and restore scripts in class
 
 method scriptChanged MicroBlocksScripter {
-  updateHighlights (smallRuntime)
+  runtime = (smallRuntime)
+  updateHighlights runtime
   saveNeeded = true
+// Check whether the block has just been moved.
+// Commented out for now, since it seems to not be reliable enough, causing some
+// changes to fail to propagate to the board.
+//  for m (parts (morph (contents scriptsFrame))) {
+//	b = (handler m)
+//    if (isClass b 'Block') {
+//	  entry = (chunkEntryForBlock runtime b)
+//	  saveNeeded = (or (isNil entry) ((sourceForChunk runtime b) != (at entry 4)))
+//	}
+//  }
 }
 
 method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }

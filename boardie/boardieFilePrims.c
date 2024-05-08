@@ -379,5 +379,5 @@ static PrimEntry entries[] = {
 };
 
 void addFilePrims() {
-	addPrimitiveSet("file", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(FilePrims, "file", sizeof(entries) / sizeof(PrimEntry), entries);
 }

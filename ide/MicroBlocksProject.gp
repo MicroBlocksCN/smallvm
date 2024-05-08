@@ -222,12 +222,16 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 // Variables
 
 method allVariableNames MicroBlocksProject {
+	// Return a sorted array of all global variables. Use case-insensitive sort.
+
 	result = (dictionary)
 	addAll result (variableNames main)
 	for lib (values libraries) {
 		addAll result (variableNames lib)
 	}
-	return (sorted (keys result))
+	return (sorted
+		(keys result)
+		(function s1 s2 { return ((toUpperCase s1) < (toUpperCase s2)) }))
 }
 
 method addVariable MicroBlocksProject newVar {
@@ -238,6 +242,20 @@ method deleteVariable MicroBlocksProject varName {
 	for lib (values libraries) {
 		deleteVariable lib varName
 	}
+}
+
+// Variables
+
+method allBroadcasts MicroBlocksProject {
+	result = (dictionary)
+	for entry (scripts main) {
+		for b (allBlocks (last entry)) {
+			if (isOneOf (primName b) 'sendBroadcast' 'whenBroadcastReceived') {
+				add result (first (argList b))
+			}
+		}
+	}
+	return (toList (sorted (keys result)))
 }
 
 // Loading
@@ -260,9 +278,9 @@ method loadFromString MicroBlocksProject s updateLibraries {
 	initialize this
 	cmdList = (parse s)
 	if (and (notEmpty cmdList) ('projectName' == (primName (first cmdList)))) {
-      // skip projectName line, if any
-      cmdList = (copyFromTo cmdList 2)
-    }
+		// skip projectName line, if any
+		cmdList = (copyFromTo cmdList 2)
+	}
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
 	isFirst = true
@@ -631,9 +649,7 @@ method codeString MicroBlocksModule owningProject newLibName {
 	}
 
 	// add description
-	desc = description
-	if (needsQuotes this desc) { desc = (join '''' desc '''') }
-	add result (join 'description ' desc (newline))
+	add result (join 'description ' (printString description) (newline))
 
 	// add variable declaration
 	if ((count variableNames) > 0) {

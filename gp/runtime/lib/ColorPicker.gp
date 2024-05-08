@@ -186,10 +186,15 @@ method handDownOn ColorPicker aHand {
 		 (containsPoint (bounds colorPalette) x y)) {
 	focusOn aHand this
 	handMoveFocus this aHand
+	setCursor 'crosshair'
   } else {
 	grab aHand this
   }
   return true
+}
+
+method handUpOn ColorPicker aHand {
+  setCursor 'default'
 }
 
 method handMoveFocus ColorPicker aHand {

@@ -80,7 +80,7 @@ to pb_light_sensor {
   comment 'Returns Light Values s a percentage:
 0: dark,  100: light'
   '_pb_init_pins'
-  return ('[misc:rescale]' (1023 - (analogReadOp _pb_pin_LDR)) 0 1023 0 100)
+  return ((minimum (analogReadOp _pb_pin_LDR) 300) / 3)
 }
 
 to pb_potentiometer {

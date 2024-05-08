@@ -1,6 +1,6 @@
 module 'RFID (PN532)' Input
 author 'José García Yeste'
-version 1 0
+version 1 1
 description 'Read Radio Frequency Identification (RFID) data from key cards and other electronic tags with the PN532 sensor.'
 tags sensor pn532
 
@@ -78,7 +78,7 @@ to '_PN532sendCommand' cmd {
     checksum += (at i cmd)
   }
   '[data:addLast]' ('_PN532checksum' checksum) send
-  '[data:addLast]' '0' send
+  '[data:addLast]' 0 send
   atPut 1 send (((at 1 send) + (size cmd)) + 3)
   '[sensors:i2cWrite]' (hexToInt '24') send
   waitMillis 1

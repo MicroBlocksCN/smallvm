@@ -1,0 +1,97 @@
+module 'Light (TSL2591)' Input
+author MicroBlocks
+version 1 0 
+description ''
+variables _tsl2591_addr _tsl2591_gain _tsl2591_fullSpectrum _tsl2591_ir 
+
+  spec 'r' 'tsl2591_visibleLight' 'tsl2591 visible light level'
+  spec 'r' 'tsl2591_totalLight' 'tsl2591 total light level'
+  spec 'r' 'tsl2519_IR' 'tsl2519 IR light level'
+  space
+  spec ' ' 'tsl2591_setGain' 'tsl2591 set gain _ (0-3)' 'num' 1
+  space
+  spec ' ' '_tsl2591_init' '_tsl2591_init'
+  spec ' ' '_tsl2591_update' '_tsl2591_update'
+  spec 'r' '_tsl2591_adjustedLevel' '_tsl2591_adjustedLevel _' 'num' 10
+  spec ' ' '_tsl2591_autoAdjustGain' '_tsl2591_autoAdjustGain'
+
+to '_tsl2591_adjustedLevel' level {
+  comment 'Return the level adjusted for the current gain.'
+  local 'scaledLevel' (100 * level)
+  if (0 == _tsl2591_gain) {
+    return scaledLevel
+  } (1 == _tsl2591_gain) {
+    return (scaledLevel / 25)
+  } (2 == _tsl2591_gain) {
+    return (scaledLevel / 428)
+  } (3 == _tsl2591_gain) {
+    return (scaledLevel / 9876)
+  }
+}
+
+to '_tsl2591_autoAdjustGain' {
+  local 'maxLevel' (maximum _tsl2591_fullSpectrum _tsl2591_ir)
+  if (maxLevel < 500) {
+    comment 'Increase gain'
+    tsl2591_setGain (_tsl2591_gain + 1)
+  }
+  if (maxLevel > 37000) {
+    comment 'Decrase'
+    tsl2591_setGain (_tsl2591_gain - 1)
+  }
+  comment 'Start collecting a new sample'
+  i2cSet _tsl2591_addr (hexToInt 'A0') 1
+  i2cSet _tsl2591_addr (hexToInt 'A0') 3
+}
+
+to '_tsl2591_init' {
+  if (_tsl2591_addr == 41) {
+    comment 'Already initialized'
+    return 0
+  }
+  _tsl2591_addr = 41
+  tsl2591_setGain 1
+  comment 'Turn on'
+  i2cSet _tsl2591_addr (hexToInt 'A0') 3
+  comment 'Wait for first reading'
+  waitMillis 110
+}
+
+to '_tsl2591_update' {
+  '_tsl2591_init'
+  if (((i2cGet _tsl2591_addr (hexToInt 'B3')) & 1) == 0) {
+    comment 'Not finished collecting the light sample'
+    return 0
+  }
+  local 'data' (newList 4)
+  '[sensors:i2cWrite]' _tsl2591_addr ('[data:makeList]' (hexToInt 'B4'))
+  '[sensors:i2cRead]' _tsl2591_addr data
+  _tsl2591_fullSpectrum = (((at 2 data) << 8) | (at 1 data))
+  _tsl2591_ir = (((at 4 data) << 8) | (at 3 data))
+  comment 'Start collecting the next sample'
+  i2cSet _tsl2591_addr (hexToInt 'A0') 1
+  i2cSet _tsl2591_addr (hexToInt 'A0') 3
+}
+
+to tsl2519_IR {
+  '_tsl2591_update'
+  return ('_tsl2591_adjustedLevel' _tsl2591_ir)
+}
+
+to tsl2591_setGain gain {
+  '_tsl2591_init'
+  _tsl2591_gain = (maximum 0 (minimum gain 3))
+  i2cSet _tsl2591_addr (hexToInt 'A1') (_tsl2591_gain << 4)
+}
+
+to tsl2591_totalLight {
+  '_tsl2591_update'
+  return ('_tsl2591_adjustedLevel' _tsl2591_fullSpectrum)
+}
+
+to tsl2591_visibleLight {
+  '_tsl2591_update'
+  local 'visible' (maximum 0 (_tsl2591_fullSpectrum - _tsl2591_ir))
+  return ('_tsl2591_adjustedLevel' visible)
+}
+

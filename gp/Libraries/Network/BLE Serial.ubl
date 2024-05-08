@@ -1,0 +1,38 @@
+module 'BLE Serial' Comm
+author MicroBlocks
+version 1 2 
+description 'Support for Bluetooth Low Energy (BLE) Nordic UART service for serial communications.
+
+The BLE Serial service is always available on boards that support BLE, along with the MicroBlocks IDE service. A connected client can use either service or both at once.
+
+However, BLE only supports one client at a time. Thus, if the IDE is connected, another client cannot connect to use BLE serial. Similarly, if a USB serial client is connected, the IDE cannot connect via BLE.
+
+However, the Chrome browser WebBluetooth implementation currently shares BLE connections between tabs. Thus, in Chrome, it is possible to the MicroBlocks IDE connected from one browser tab while another program (e.g. Snap!) is also connected to the same board via BLE.
+
+Connecting a board to the IDE via a serial cable will disconnect any connected BLE clients to ensure exclusive IDE access to the board.'
+
+  spec 'r' '[ble:uartConnected]' 'BLE serial connected?'
+  space
+  spec 'r' 'bleSerial_readString' 'BLE serial read string'
+  spec 'r' 'bleSerial_readBytes' 'BLE serial read bytes'
+  spec ' ' 'bleSerial_write' 'BLE serial write _' 'str' 'aStringOrByteArray'
+
+to bleSerial_readBytes {
+  return ('[ble:uartRead]' true)
+}
+
+to bleSerial_readString {
+  return ('[ble:uartRead]' false)
+}
+
+to bleSerial_write aStringOrByteArray {
+  comment 'Send the given string or byte array, breaking it into 240 byte chunks if necessary.'
+  local 'bytes' ('[data:convertType]' aStringOrByteArray 'byte array')
+  local 'i' 1
+  local 'end' (size bytes)
+  repeatUntil (i > end) {
+    '[ble:uartWrite]' bytes i
+    i += 240
+  }
+}
+

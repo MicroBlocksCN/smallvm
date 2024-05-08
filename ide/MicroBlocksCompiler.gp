@@ -7,16 +7,16 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes argNames localVars trueObj falseObj zeroObj oneObj stringClassID
+defineClass SmallCompiler opcodes primsets argNames localVars trueObj falseObj zeroObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
+	initPrimsets this
 	argNames = (dictionary)
 	localVars = (dictionary)
 	falseObj = 0
 	trueObj = 4
 	zeroObj = ((0 << 1) | 1)
-	oneObj = ((1 << 1) | 1)
 	stringClassID = 4
 	return this
 }
@@ -46,10 +46,19 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'timer'				'timer')
 		(array ' ' 'resetTimer'			'reset timer')
 		'-'
+		(array 'r' 'secsOp'				'seconds')
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
-		(array 'r' 'boardType'				'board type')
+		(array 'r' 'boardType'			'board type')
+		(array 'r' '[misc:version]'		'version')
+		'-'
+		(array 'r' '[misc:bleID]'		'BLE id')
+		(array 'r' '[ble:bleConnected]' 'BLE connected')
+	'Input-Advanced'
+		(array 'r' 'millisSince'		'milliseconds since _ : end time _' 'num auto' 0 'now')
+		(array 'r' 'microsSince'		'microseconds since _ : end time _' 'num auto' 0 'now')
+		'-'
 		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
@@ -65,18 +74,18 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		'-'
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
-		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _' 'num auto')
+		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
 		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
-		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _' 'num num num' 1000000 0 0)
+		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _ : bit order _' 'num num num str' 1000000 0 0 'MSB')
 		(array ' ' '[sensors:spiExchange]'	'spi exchange bytes _' 'auto' 'aByteArray')
 		'-'
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array ' ' '[serial:write]'			'serial write _' 'str' 'aByteStringOrByteArray')
-		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'str num' 'aByteStringOrByteArray' 1)
+		(array ' ' '[serial:write]'			'serial write _' 'auto' 'anIntegerStringListOrByteArray')
+		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'auto num' 'aStringListOrByteArray' 1)
 		'-'
 		(array ' ' '[io:softWriteByte]'		'soft serial write byte _ pin _ baud _' 'num num num' '85' 2 9600)
 	'Control'
@@ -93,8 +102,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
-		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
+		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str.broadcastMenu' 'go!')
+		(array ' ' 'sendBroadcast'		'broadcast _' 'str.broadcastMenu' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
@@ -107,6 +116,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
+		(array 'r' 'argOrDefault'		'arg _ default _' 'num auto' 1 'default')
 		'-'
 		(array ' ' 'callCustomCommand'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
 		(array 'r' 'callCustomReporter'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
@@ -135,7 +145,10 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 		'-'
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
+		(array 'r' '[data:convertType]'	'convert _ to _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
+		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
+		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
 		'-'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
@@ -271,7 +284,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[tft:roundedRect]'		'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
-		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 0 80 16777215 1 false 16777215)
+		(array ' ' '[tft:drawBitmap]'		'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10)
 		(array ' ' '[tft:deferUpdates]'		'defer TFT display updates')
 		(array ' ' '[tft:resumeUpdates]'	'resume TFT display updates')
 
@@ -323,6 +337,12 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[1wire:readByte]'		'oneWire read byte')
 		(array 'r' '[1wire:crc8]'			'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8)
 		(array 'r' '[1wire:crc16]'			'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8)
+
+		(array ' ' '[ble:uartStart]' 'start BLE serial')
+		(array ' ' '[ble:uartStop]' 'stop BLE serial')
+		(array 'r' '[ble:uartConnected]' 'BLE serial connected?')
+		(array 'r' '[ble:uartRead]' '_BLE serial read as bytes _' 'bool' false)
+		(array ' ' '[ble:uartWrite]' '_BLE serial write _ (max 240) starting at _' 'str num' 'aStringOrByteArray' 1)
 	)
 }
 
@@ -418,7 +438,7 @@ method initOpcodes SmallCompiler {
 		printIt 75
 		boardType 76
 		comment 77
-	RESERVED 78
+		argOrDefault 78
 	RESERVED 79
 		analogPins 80
 		digitalPins 81
@@ -437,9 +457,9 @@ method initOpcodes SmallCompiler {
 		spiRecv 94
 	RESERVED 95
 	RESERVED 96
-	RESERVED 97
-	RESERVED 98
-	RESERVED 99
+		secsOp 97
+		millisSince 98
+		microsSince 99
 	RESERVED 100
 	RESERVED 101
 	RESERVED 102
@@ -462,8 +482,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 119
 	RESERVED 120
 	RESERVED 121
-	RESERVED 122
-	RESERVED 123
+		commandPrimitive 122
+		reporterPrimitive 123
 		callCustomCommand 124
 		callCustomReporter 125
 		callCommandPrimitive 126
@@ -480,6 +500,36 @@ method initOpcodes SmallCompiler {
 	// renamed opcodes:
 	atPut opcodes 'newArray' 60
 	atPut opcodes 'fillArray' 62
+}
+
+method initPrimsets SmallCompiler {
+	// Initialize the primitive set table, which maps a primitive set name to its index.
+	// NOTE: The primitive set order must match PrimitiveSetIndex enum in interp.c!
+
+	primSetNames = '
+		vars
+		data
+		misc
+		io
+		sensors
+		serial
+		display
+		file
+		net
+		ble
+		radio
+		tft
+		hid
+		camera
+		1wire'
+
+	primsets = (dictionary)
+	primSetIndex = 0
+	for primSetName (copyFromTo (lines primSetNames) 2) {
+		primSetName = (trim primSetName)
+		atPut primsets primSetName primSetIndex
+		primSetIndex += 1
+	}
 }
 
 // instruction generation: entry point
@@ -779,6 +829,8 @@ method instructionsForExpression SmallCompiler expr {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
 		return (instructionsForOr this args)
+	} ('ifExpression' == op) {
+		return (instructionsForIfExpression this args)
 	} (isFunctionCall this op) {
 		return (instructionsForFunctionCall this op args false)
 	} else {
@@ -864,6 +916,18 @@ method instructionsForOrOLD SmallCompiler args { // xxx remove later
 	return result
 }
 
+method instructionsForIfExpression SmallCompiler args {
+	trueCase = (instructionsForExpression this (at args 2))
+	falseCase = (instructionsForExpression this (at args 3))
+	add falseCase (array 'jmp' (count trueCase))
+
+	result = (instructionsForExpression this (first args)) // test
+	add result (array 'jmpTrue' (count falseCase))
+	addAll result falseCase
+	addAll result trueCase
+	return result
+}
+
 // instruction generation utility methods
 
 method primitive SmallCompiler op args isCommand {
@@ -889,6 +953,38 @@ method primitive SmallCompiler op args isCommand {
 				add result (array 'callCommandPrimitive' ((count args) + 2))
 			} else {
 				add result (array 'callReporterPrimitive' ((count args) + 2))
+			}
+		}
+	} else {
+		print 'Skipping unknown op:' op
+		if (not isCommand) {
+			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
+		}
+	}
+	return result
+}
+
+method primitiveNEW SmallCompiler op args isCommand {
+	result = (list)
+	if ('print' == op) { op = 'printIt' }
+	if (contains opcodes op) {
+		for arg args {
+			addAll result (instructionsForExpression this arg)
+		}
+		add result (array op (count args))
+	} (and (beginsWith op '[') (endsWith op ']')) {
+		// named primitives of the form '[primSetName:primName]'
+		i = (findFirst op ':')
+		if (notNil i) {
+			primSetName = (substring op 2 (i - 1))
+			primName = (substring op (i + 1) ((count op) - 1))
+			for arg args {
+				addAll result (instructionsForExpression this arg)
+			}
+			if isCommand {
+				add result (array 'commandPrimitive' primName primSetName (count args))
+			} else {
+				add result (array 'reporterPrimitive' primName primSetName (count args))
 			}
 		}
 	} else {
@@ -1005,7 +1101,7 @@ method appendLiterals SmallCompiler instructions {
 	nextOffset = (count instructions)
 	for ip (count instructions) {
 		instr = (at instructions ip)
-		if (and (isClass instr 'Array') ('pushLiteral' == (first instr))) {
+		if (and (isClass instr 'Array') (isOneOf (first instr) 'pushLiteral' 'commandPrimitive' 'reporterPrimitive')) {
 			literal = (at instr 2)
 			litOffset = (at literalOffsets literal)
 			if (isNil litOffset) {
@@ -1015,7 +1111,14 @@ method appendLiterals SmallCompiler instructions {
 				nextOffset += (wordsForLiteral this literal)
 			}
 			atPut instr 2 (litOffset - ip)
-			atPut instructions ip (copyWith instr literal) // retain literal string for use by "show instructions"
+			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
+				primNameLiteralOffset = ((at instr 2) & 511)
+				primSetIndex = ((at primsets (at instr 3)) & 127)
+				argCount = ((at instr 4) & 255)
+				instrArgs = (((primSetIndex << 17) | (primNameLiteralOffset << 8)) | argCount)
+				atPut instr 2 instrArgs
+			}
+			atPut instructions ip (copyWith (at instructions ip) literal) // retain literal string for use by "show instructions"
 		}
 	}
 	addAll instructions literals

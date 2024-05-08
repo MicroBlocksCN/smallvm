@@ -38,25 +38,32 @@
 // update (forward) references of objects that move during compaction and object resizing.
 
 #if defined(NRF51)
-  #define OBJSTORE_BYTES 2400 // max is 2480
-#elif defined(ARDUINO_BBC_MICROBIT_V2)
-  #define OBJSTORE_BYTES 92000
+  #define OBJSTORE_BYTES 1300
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI_V3)
+  #define OBJSTORE_BYTES 48000
 #elif defined(ARDUINO_NRF52_PRIMO)
   #define OBJSTORE_BYTES 16000
 #elif defined(NRF52)
   #define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
-  #define OBJSTORE_BYTES 16000
+  #define OBJSTORE_BYTES 14000
+#elif defined(HAS_CAMERA)
+  #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
+#elif defined(ESP32_S3) || defined(ESP32_C3)
+  #define OBJSTORE_BYTES 80000
 #elif defined(ARDUINO_ARCH_ESP32)
-  #ifdef BLE_PRIMS
-    #define OBJSTORE_BYTES 8000
+  // object store is allocated from heap on ESP32
+  #if defined(USE_NIMBLE)
+	#define OBJSTORE_BYTES 48000 // max that allows both BLE and WiFi is 59000
   #else
-    #define OBJSTORE_BYTES 16000 // 48000 // max that compiles is 56000
+    #define OBJSTORE_BYTES 80000
   #endif
 #elif defined(GNUBLOCKS)
   #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
 #elif defined(ARDUINO_ARCH_RP2040)
   #define OBJSTORE_BYTES 100000
+#elif defined(ARDUINO_SAM_DUE)
+  #define OBJSTORE_BYTES 80000
 #else
   #define OBJSTORE_BYTES 4000
   // max that works on Wemos D1 mini (ESP8266) is 11000
@@ -66,7 +73,13 @@
 #endif
 
 #define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)
-static OBJ objstore[OBJSTORE_WORDS];
+
+#if defined(ARDUINO_ARCH_ESP32)
+  static OBJ *objstore = NULL; // allocated from heap on ESP32
+#else
+  static OBJ objstore[OBJSTORE_WORDS];
+#endif
+
 static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
 static OBJ freeChunk = NULL;
@@ -82,6 +95,11 @@ void memInit() {
 	if (!(sizeof(int) == 4 && sizeof(int*) == 4 && sizeof(float) == 4)) {
 		vmPanic("MicroBlocks expects int, int*, and float to all be 32-bits");
 	}
+
+	#if defined(ARDUINO_ARCH_ESP32)
+		objstore = (OBJ *) malloc(4 * OBJSTORE_WORDS);
+		if (!objstore) vmPanic("ESP32 could not allocate objectstore");
+	#endif
 
 	// initialize object heap memory
 	memStart = (OBJ) objstore;
@@ -463,16 +481,25 @@ void compact() {
 
 void gc() {
 	// Perform a garbage collection to reclaim unused objects and compact memory.
+	// Call captureIncomingBytes() to avoid serial buffer overruns during garbage collection.
+
+	captureIncomingBytes();
+	updateMicrobitDisplay();
 
 	uint32 usecs = microsecs();
+
 	// assume: forwarding pointers cleared at end of compaction so no need to clear them here
 	markRoots();
 	sweep();
 	applyForwarding();
 	compact();
+
 	usecs = microsecs() - usecs;
 
 	char s[100];
 	sprintf(s, "GC took %d usecs; free %d words", usecs, WORDS(freeChunk) - 2);
 	outputString(s);
+
+	captureIncomingBytes();
+	updateMicrobitDisplay();
 }

@@ -32,7 +32,7 @@ forever {
 
 module Cutebot Output
 author wwj718
-version 1 5 
+version 1 6 
 depends 'Distance (HC-SR04)' NeoPixel 
 choices cutebot_side left right 
 choices cutebot_light left right both 
@@ -48,16 +48,24 @@ https://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html'
 
   spec ' ' 'cutebot_setWheelSpeed' 'Cutebot set wheel left _ right _ (-100 to 100)' 'num num' 100 -100
   spec ' ' 'cutebot_stopWheels' 'Cutebot stop wheels'
+  space
   spec ' ' 'cutebot_setServo' 'Cutebot set servo _ to _ degrees (-90 to 90)' 'menu.range:1-2 num' 1 90
   spec ' ' 'cutebot_setServoSpeed' 'Cutebot set servo _ to speed _ (-100 to 100)' 'menu.range:1-2 num' 1 100
+  space
   spec ' ' 'cutebot_setHeadlightColor' 'Cutebot set headlight _ to _' 'menu.cutebot_light color' 'both'
   spec ' ' 'cutebot_setNeopixels' 'Cutebot set NeoPixel _ to _' 'menu.cutebot_light color' 'both'
+  space
   spec 'r' 'cutebot_lineSensor' 'Cutebot _ line sensor' 'menu.cutebot_side' 'left'
   spec 'r' 'cutebot_seesLine' 'Cutebot sees line on left _ right _' 'bool bool' true true
   spec 'r' 'cutebot_distance' 'Cutebot distance (cm)'
+  space
+  spec ' ' '_cutebot_sendCmd' '_cutebot_sendCmd _' 'str' 'aList'
 
-to '_cutebot_ADDR' {
-  return 16
+to '_cutebot_sendCmd' aList {
+  local 'cutebotAddr' 16
+  '[sensors:i2cSetClockSpeed]' 100000
+  '[sensors:i2cWrite]' cutebotAddr aList
+  '[sensors:i2cSetClockSpeed]' 400000
 }
 
 to cutebot_distance {
@@ -88,12 +96,12 @@ to cutebot_setHeadlightColor which color {
   local 'left_LED' 4
   local 'right_LED' 8
   if (which == 'left') {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' left_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
   } (which == 'right') {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' right_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' right_LED r g b)
   } else {
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' left_LED r g b)
-    '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' right_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' left_LED r g b)
+    '_cutebot_sendCmd' ('[data:makeList]' right_LED r g b)
   }
 }
 
@@ -115,7 +123,7 @@ to cutebot_setServo servo value {
 value range of -90 to 90 maps to the full range of the servo'
   servo = (maximum 1 (minimum servo 2))
   value = (maximum -90 (minimum value 90))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 90 -90 0 180) 0 0)
+  '_cutebot_sendCmd' ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 90 -90 0 180) 0 0)
 }
 
 to cutebot_setServoSpeed servo value {
@@ -123,7 +131,7 @@ to cutebot_setServoSpeed servo value {
 value range of -100 to 100 maps to the full range of the servo'
   servo = (maximum 1 (minimum servo 2))
   value = (maximum -100 (minimum value 100))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 100 -100 0 180) 0 0)
+  '_cutebot_sendCmd' ('[data:makeList]' (servo + 4) ('[misc:rescale]' value 100 -100 0 180) 0 0)
 }
 
 to cutebot_setWheelSpeed left_wheel_speed right_wheel_speed {
@@ -141,8 +149,8 @@ direction: 1 = backward, 2 = forward'
   }
   left_wheel_speed = (minimum left_wheel_speed 100)
   right_wheel_speed = (minimum right_wheel_speed 100)
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 1 left_direction left_wheel_speed 0)
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 2 right_direction right_wheel_speed 0)
+  '_cutebot_sendCmd' ('[data:makeList]' 1 left_direction left_wheel_speed 0)
+  '_cutebot_sendCmd' ('[data:makeList]' 2 right_direction right_wheel_speed 0)
 }
 
 to cutebot_stopWheels {
@@ -193,9 +201,8 @@ to sr04_distanceOnePin pin {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 3 
-tags led strip rgb string ws2812 
-description 'Control NeoPixel (WS2812) RGB LED strips.
+version 1 7 
+description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
 
@@ -204,12 +211,30 @@ variables _np_pixels
   spec ' ' 'clearNeoPixels' 'clear NeoPixels'
   spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
   spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
-  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  space
   spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'randomColor' 'random color'
+  space
+  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  spec ' ' 'NeoPixel_brighten' 'brighten NeoPixel _ by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
+  space
   spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
   spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
   spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+
+to NeoPixel_brighten i delta {
+  '_NeoPixel_increaseRGB' i delta
+  '_NeoPixel_update'
+}
+
+to NeoPixel_brighten_all delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_increaseRGB' i delta
+  }
+  '_NeoPixel_update'
+}
 
 to '_NeoPixel_ensureInitialized' {
   if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
@@ -222,6 +247,26 @@ to '_NeoPixel_ensureInitialized' {
   } else {
     neoPixelAttach 10 '' false
   }}
+}
+
+to '_NeoPixel_increaseRGB' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'r' ((rgb >> 16) & 255)
+    local 'g' ((rgb >> 8) & 255)
+    local 'b' (rgb & 255)
+    local 'brightness' (maximum r g b)
+    if (delta > 0) {
+      delta = (minimum delta (255 - brightness))
+    } else {
+      delta = (maximum delta (42 - brightness))
+    }
+    r = (maximum 0 (minimum (r + delta) 255))
+    g = (maximum 0 (minimum (g + delta) 255))
+    b = (maximum 0 (minimum (b + delta) 255))
+    atPut i _np_pixels (colorFromRGB r g b)
+  }
 }
 
 to '_NeoPixel_rotate' left {
@@ -244,7 +289,7 @@ to '_NeoPixel_rotate' left {
 
 to '_NeoPixel_update' {
   '[display:neoPixelSend]' _np_pixels
-  waitMicros 100
+  waitMicros 300
 }
 
 to clearNeoPixels {

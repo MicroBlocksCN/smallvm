@@ -1,0 +1,151 @@
+module 'Four Digit Display (TM1637)' Output
+author MicroBlocks
+version 1 0 
+description 'Four digit LED display that can display decimal numbers from -999 to 9999.
+Datasheet:
+https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/docs/datasheet/unit/digi_clock/TM1637.pdf'
+variables _tmClockPin _tmDataPin _tmBrightness _tmShowColon 
+
+  spec ' ' 'tmInitialize' 'four digit initialize clock _ data _' 'num num' 1 2
+  spec ' ' 'tmDisplayNumber' 'four digit show number _' 'num' 10
+  spec ' ' 'tmClear' 'four digit clear'
+  space
+  spec ' ' 'tmSetBrightness' 'four digit brightness _ (0 to 7)' 'num' 2
+  spec ' ' 'tmShowColon' 'four digit show colon _' 'bool' false
+  space
+  spec 'r' '_tmIsInitialized' '_tmIsInitialized'
+  spec 'r' '_tmShowSegments' '_tmShowSegments _ _' 'num num' 255 1
+  spec 'r' '_tmSegmentsForNum' '_tmSegmentsForNum _' 'num' 10
+  space
+  spec ' ' '_tmWriteByte' '_tmWriteByte _' 'num' 0
+  spec ' ' '_tmStart' '_tmStart'
+  spec ' ' '_tmStop' '_tmStop'
+  spec ' ' '_tmBitDelay' '_tmBitDelay'
+
+to '_tmBitDelay' {
+  waitMicros 10
+}
+
+to '_tmIsInitialized' {
+  if (and (_tmClockPin == 0) (_tmDataPin == 0)) {
+    sayIt 'Four digit display is not initialized'
+    waitMillis 500
+    return (booleanConstant false)
+  }
+  return (booleanConstant true)
+}
+
+to '_tmSegmentsForNum' n {
+  comment 'Return the segment bits for the given hex value (0-15).'
+  if (or (n < 0) (n > 15)) {
+    return 0
+  }
+  local 'i' ((3 * n) + 1)
+  return (hexToInt ('[data:copyFromTo]' '3f,06,5b,4f,66,6d,7d,07,7f,6f,77,7c,39,5e,79,71' i (i + 1)))
+}
+
+to '_tmShowSegments' value index {
+  comment 'Set the segment bits for the given digit. Index 1 is the right-most digit.'
+  if _tmShowColon {
+    value = (value | 128)
+  }
+  '_tmStart'
+  '_tmWriteByte' (hexToInt '44')
+  '_tmStop'
+  '_tmStart'
+  '_tmWriteByte' ((hexToInt 'C0') | (4 - index))
+  '_tmWriteByte' value
+  '_tmStop'
+  '_tmStart'
+  '_tmWriteByte' ((hexToInt '88') + _tmBrightness)
+  '_tmStop'
+}
+
+to '_tmStart' {
+  digitalWriteOp _tmClockPin true
+  digitalWriteOp _tmDataPin true
+  digitalWriteOp _tmDataPin false
+  digitalWriteOp _tmClockPin false
+}
+
+to '_tmStop' {
+  digitalWriteOp _tmClockPin false
+  digitalWriteOp _tmDataPin false
+  digitalWriteOp _tmClockPin true
+  digitalWriteOp _tmDataPin true
+}
+
+to '_tmWriteByte' byte {
+  repeat 8 {
+    digitalWriteOp _tmClockPin false
+    if ((byte & 1) == 1) {
+      digitalWriteOp _tmDataPin true
+    } else {
+      digitalWriteOp _tmDataPin false
+    }
+    '_tmBitDelay'
+    digitalWriteOp _tmClockPin true
+    byte = (byte >> 1)
+    '_tmBitDelay'
+  }
+  comment 'Clock ack bit (ignored)'
+  digitalWriteOp _tmClockPin false
+  digitalWriteOp _tmDataPin false
+  digitalWriteOp _tmClockPin true
+}
+
+to tmClear {
+  if (not ('_tmIsInitialized')) {return 0}
+  for i 4 {
+    '_tmShowSegments' 0 i
+  }
+}
+
+to tmDisplayNumber n {
+  if (not ('_tmIsInitialized')) {return 0}
+  if (n == 0) {
+    tmClear
+    '_tmShowSegments' ('_tmSegmentsForNum' 0) 1
+    return 0
+  }
+  local 'negative' (n < 0)
+  if negative {
+    n = (minimum (absoluteValue n) 999)
+  } else {
+    n = (minimum n 9999)
+  }
+  local 'i' 1
+  repeatUntil (n == 0) {
+    '_tmShowSegments' ('_tmSegmentsForNum' (n % 10)) i
+    n = (n / 10)
+    i += 1
+  }
+  if negative {
+    comment 'leading minus sign'
+    '_tmShowSegments' 64 i
+    i += 1
+  }
+  repeatUntil (i > 4) {
+    '_tmShowSegments' 0 i
+    i += 1
+  }
+}
+
+to tmInitialize clockPin dataPin {
+  _tmClockPin = clockPin
+  _tmDataPin = dataPin
+  _tmBrightness = 2
+  _tmShowColon = false
+  for i 4 {
+    '_tmShowSegments' 0 i
+  }
+}
+
+to tmSetBrightness brightness {
+  _tmBrightness = (maximum 0 (minimum brightness 7))
+}
+
+to tmShowColon showColon {
+  _tmShowColon = showColon
+}
+

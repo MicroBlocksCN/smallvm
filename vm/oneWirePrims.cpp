@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(DATABOT) // only Databot for now
+#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 
 #include <OneWire.h>
 
@@ -135,5 +135,5 @@ static PrimEntry entries[] = {
 };
 
 void addOneWirePrims() {
-	addPrimitiveSet("1wire", sizeof(entries) / sizeof(PrimEntry), entries);
+	addPrimitiveSet(OneWirePrims, "1wire", sizeof(entries) / sizeof(PrimEntry), entries);
 }

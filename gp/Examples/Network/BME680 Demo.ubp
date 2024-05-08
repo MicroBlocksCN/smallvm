@@ -1,0 +1,871 @@
+module main
+author 'José García Yeste'
+version 1 0 
+description ''
+variables server _day _hours _minutes _month _seconds _year 
+
+  spec 'r' 'online date from server' 'date and time from server _' 'auto' 'microblocks.fun'
+  spec 'r' 'files list' 'files list'
+  spec 'r' 'main menu' 'main page'
+  spec ' ' 'write' 'write _ to file _' 'auto auto' '' ''
+  spec 'r' 'file deleted' 'delete file _' 'auto' ''
+  spec 'r' 'graph with data' 'graph data from file _' 'auto' '(list)'
+  spec 'r' 'read file' 'read file _' 'auto' ''
+  spec 'r' 'delete all files' 'delete all files'
+  spec 'r' 'decimal' 'decimal _' 'auto' 123
+  spec 'r' 'chart script' 'html chart script'
+  spec 'r' 'download as csv file' 'html download as csv file _' 'auto' ''
+  spec 'r' 'html chart from colum' 'html chart from file _ column _' 'auto auto' '' 1
+  spec 'r' 'column names' 'column names _' 'auto' 1
+  spec 'r' 'current time short' 'current time short'
+
+to 'chart script' {
+  return '<head>
+<script src="https://unpkg.com/tlx/browser/tlx.js"></script>
+<script src="https://unpkg.com/tlx-chart/browser/tlx-chart.js"></script>
+</head>'
+}
+
+to 'column names' index {
+  return (at index ('[data:makeList]' 'Temperature (&deg;C)' 'Humidity %' 'Air Pressure (mBar)' 'Gas (m&Omega;)'))
+}
+
+to 'current time short' {
+  comment '+Timezone +Daylightsaving '
+  local 'hours' (_hours + (1 + 0))
+  local 'minutes' _minutes
+  if (hours < 10) {
+    hours = ('[data:join]' '0' hours)
+  }
+  if (minutes < 10) {
+    minutes = ('[data:join]' '0' minutes)
+  }
+  return ('[data:join]' hours ':' minutes)
+}
+
+to decimal int {
+  comment 'one decimal'
+  return ('[data:join]' (int / 10) '.' (int % 10))
+}
+
+to 'delete all files' {
+  for name ('file names') {
+    '[file:delete]' name
+  }
+  return '<p>All files  removed successfully</p>
+<button onclick="location.href=''/''" type="button">Back</button>'
+}
+
+to 'download as csv file' filename {
+  return ('[data:join]' '<button onclick="location.href=''/' filename '.csv''" type="button">Download as CSV</button>
+<br><br>
+<button onclick="location.href=''/''" type="button">Back</button>')
+}
+
+to 'file deleted' name {
+  '[file:delete]' name
+  if (('[data:find]' ('current date') ('file names')) == -1) {
+    return ('[data:join]' '<p>File ' name ' removed successfully</p>
+<button onclick="location.href=''/''" type="button">Back</button>')
+  } else {
+    return ('[data:join]' '<p>Error removing file ' name '</p>
+<button onclick="location.href=''/''" type="button">Back</button>')
+  }
+}
+
+to 'files list' {
+  local 'string' ''
+  for 'file name' ('file names') {
+    string = ('[data:join]' string '<li><a href="/' (v 'file name') '">' (v 'file name') '</a>&nbsp<button onclick="location.href=''/' (v 'file name') '/delete''" type="button">Delete</button></li>')
+  }
+  return string
+}
+
+to 'graph with data' filename {
+  local 'html' ('[data:join]' ('chart script') '<body><h1>BME680 </h1>')
+  for i 4 {
+    html = ('[data:join]' html ('html chart from colum' filename i))
+  }
+  return ('[data:join]' html ('download as csv file' filename) '</body>')
+}
+
+to 'html chart from colum' filename col {
+  local 'html' ('[data:join]' '<b>' ('column names' col) '</b>
+<tlx-chart chart-type="LineChart" 
+	chart-columns="${[''Timestamp'',''' ('column names' col) ''']}" 
+	chart-data="${[')
+  '[file:open]' filename
+  comment 'Only the last 60 reads (aprox. 30 chars per line) Max 110 for ESP32 16000 bytes memory'
+  local 'read_size' (30 * 60)
+  if (('[file:fileSize]' filename) > read_size) {
+    '[file:setReadPosition]' (('[file:fileSize]' filename) - read_size) filename
+    local 'var' ('[file:readLine]' filename)
+  }
+  repeatUntil ('[file:endOfFile]' filename) {
+    local 'colums' ('[data:split]' ('[file:readLine]' filename) ',')
+    html = ('[data:join]' html '[' ('[data:join]' (at 1 colums) ',' (at (col + 1) colums)) '],')
+  }
+  '[file:close]' filename
+  html = ('[data:join]' html ']}">
+</tlx-chart>')
+  return html
+}
+
+to 'main menu' {
+  return ('[data:join]' '<h1>BME680 </h1>
+<h3>Current values (Temperature &deg;C / Humidity % / Pressure mBar / Gas m&Omega;): ' ('[data:join]' (decimal ('bme680 temperature')) ' / ' (decimal ('bme680 humidity')) ' / ' (decimal ('bme680 pressure')) ' / ' (decimal ('bme680 gas'))) '</h3>
+<p>Daily records with data registered every minute. Click on each link to visualize them in a linear graph:</p>
+<ul>' ('files list') '</ul>
+<button onclick="location.href=''/deleteAll''" type="button">Delete all files</button>
+<br><br>
+<i>File system info:  ' ('[file:systemInfo]'))
+}
+
+to 'read file' name {
+  '[file:open]' name
+  local 'string' ''
+  repeatUntil ('[file:endOfFile]' name) {
+    string = ('[data:join]' string ('[file:readLine]' name) ('[data:unicodeString]' 13))
+  }
+  '[file:close]' name
+  return string
+}
+
+to write data name {
+  '[file:open]' name
+  '[file:appendLine]' data name
+  '[file:close]' name
+}
+
+script 667 50 {
+whenBroadcastReceived 'connected'
+forever {
+  if (('current date') == '0-00-0') {
+    'fetch current time from server' 'microblocks.fun'
+  } else {
+    if ((timer) >= 60000) {
+      write ('[data:join]' '''' ('current time short') ''',' (decimal ('bme680 temperature')) ',' (decimal ('bme680 humidity')) ',' (decimal ('bme680 pressure')) ',' (decimal ('bme680 gas'))) ('current date')
+      resetTimer
+    }
+  }
+  tick
+}
+}
+
+script 51 60 {
+whenStarted
+wifiConnect 'Network_Name' ''
+sendBroadcast 'connected'
+forever {
+  local 'request' ('[net:httpServerGetRequest]')
+  if (request != '') {
+    local 'path' ('path of request' request)
+    if (path == '/') {
+      '[net:respondToHttpRequest]' '200 OK' ('main menu')
+    }
+    if (path == '/deleteAll') {
+      '[net:respondToHttpRequest]' '200 OK' ('delete all files')
+    }
+    for name ('file names') {
+      if (path == ('[data:join]' '/' name)) {'[net:respondToHttpRequest]' '200 OK' ('graph with data' name)}
+      if (path == ('[data:join]' '/' name '/delete')) {'[net:respondToHttpRequest]' '200 OK' ('file deleted' name)}
+      if (path == ('[data:join]' '/' name '.csv')) {'[net:respondToHttpRequest]' '200 OK' ('read file' name) 'Content-Type: text/csv'}
+    }
+    '[net:respondToHttpRequest]' '404 Not Found' '<h1>404 Not Found</h1><p>I''m sorry, this page does not exist :(</p>'
+  }
+  waitMillis 10
+}
+}
+
+
+module DateTime
+author unknown
+version 1 0 
+description ''
+variables _day _hours _minutes _month _seconds _year 
+
+  spec ' ' 'fetch current time from server' 'fetch date and time from server _' 'auto' 'microblocks.fun'
+  spec ' ' 'tick' 'tick'
+  spec 'r' 'current date' 'current date'
+  spec 'r' 'current time' 'current time'
+  spec 'r' 'online date from server' 'date and time from server _' 'auto' 'microblocks.fun'
+  spec 'r' 'seconds' 'seconds'
+
+to 'current date' {
+  local 'month' _month
+  if (month < 10) {
+    month = ('[data:join]' '0' month)
+  }
+  return ('[data:join]' _year '-' month '-' _day)
+}
+
+to 'current time' {
+  local 'hours' _hours
+  local 'minutes' _minutes
+  local 'seconds' _seconds
+  if (hours < 10) {
+    hours = ('[data:join]' '0' hours)
+  }
+  if (minutes < 10) {
+    minutes = ('[data:join]' '0' minutes)
+  }
+  if (seconds < 10) {
+    seconds = ('[data:join]' '0' seconds)
+  }
+  return ('[data:join]' hours ':' minutes ':' seconds)
+}
+
+to 'fetch current time from server' url {
+  local 'current datetime' ('online date from server' url)
+  _year = ('[data:copyFromTo]' (v 'current datetime') 8 11)
+  _day = ('[data:copyFromTo]' (v 'current datetime') 1 2)
+  local 'month names' ('[data:makeList]' 'Jan' 'Feb' 'Mar' 'Apr' 'May' 'Jun' 'Jul' 'Aug' 'Sep' 'Oct' 'Nov' 'Dec')
+  local 'month name' ('[data:copyFromTo]' (v 'current datetime') 4 6)
+  _month = 1
+  repeatUntil ((at _month (v 'month names')) == (v 'month name')) {
+    _month += 1
+  }
+  local 'start ms' (millisOp)
+  _hours = (('[data:copyFromTo]' (v 'current datetime') 13 14) + 1)
+  _minutes = (('[data:copyFromTo]' (v 'current datetime') 16 17) + 0)
+  _seconds = (('[data:copyFromTo]' (v 'current datetime') 19 20) - (((millisOp) - (v 'start ms')) / 1000))
+}
+
+to 'online date from server' server {
+  local 'url' ('[data:join]' server '/nonExistentPage')
+  local 'response' ('_request_url' url 'GET' '')
+  local 'header' ('_http_header_text' response)
+  return ('[data:copyFromTo]' header (('[data:find]' 'Date:' header) + 11) (('[data:find]' 'GMT' header) - 2))
+}
+
+to seconds {
+  return _seconds
+}
+
+to tick {
+  _seconds += 1
+  if (_seconds == 60) {
+    _seconds = 0
+    _minutes += 1
+    if (_minutes == 60) {
+      _minutes = 0
+      _hours += 1
+      if (_hours == 24) {
+        _hours = 0
+      }
+    }
+  }
+  waitMillis 1000
+}
+
+
+module Files Data
+author MicroBlocks
+version 1 3 
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file names' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
+}
+
+
+module 'Gas (BME680)' Input
+author 'José García Yeste'
+version 1 0 
+description 'Suport for Bosch BME680 sensor
+Temperature, Humidity, Air Pressure and Gas Sensor
+
+Based on https://github.com/Zanduino/BME680
+
+Tested on TeslaLAB Galileo Univestiy Board
+'
+variables _bme680 _bme680_last _bme680_raw _bme680_t _bme680_p _bme680_h _bme680_g 
+
+  spec ' ' '_bme680 setup' '_bme680 setup'
+  spec 'r' 'bme680 connected' 'bme680 connected'
+  spec 'r' '_bme680 read int' '_bme680 read int16 _' 'auto' 0
+  spec 'r' '_bme680 read word' '_bme680 read word _' 'auto' 0
+  spec ' ' '_bme680 read raw' '_bme680 read raw'
+  spec 'r' 'bme680 temperature' 'bme680 temperature (°C x10)'
+  spec 'r' '_bm680 read int8' '_bm680 read int8 _' 'auto' 0
+  spec 'r' 'bme680 pressure' 'bme680 pressure (mBar x10)'
+  spec ' ' '_bme680_set_bits' '_bme680_set_bits reg _ mask _ pos _ val _' 'auto auto auto auto' 0 0 0 0
+  spec 'r' '_bme680 temperature' '_bme680 temperature'
+  spec 'r' 'bme680 humidity' 'bme680 humidity (% x10)'
+  spec ' ' '_bm680 read humidity coefficients' '_bm680 read humidity coefficients'
+  spec ' ' '_bme680 read pressure coefficients' '_bme680 read pressure coefficients'
+  spec ' ' '_bme680 read temperature coefficients' '_bme680 read temperature coefficients'
+  spec ' ' '_read gas coefficients' '_read gas coefficients'
+  spec 'r' 'bme680 gas' 'bme680 gas resistance (mΩ x10)'
+  spec ' ' 'bme680 set gas' 'bme680 set gas to _ degrees for _ millisecs' 'auto auto' 320 150
+  spec ' ' 'bme680 set address to' 'bme680 set address to _' 'auto' 119
+
+to '_bm680 read humidity coefficients' {
+  _bme680_h = ('[data:makeList]')
+  local 'h' (i2cGet _bme680 ((hexToInt 'E1') + 1))
+  '[data:addLast]' (((i2cGet _bme680 ((hexToInt 'E1') + 2)) << 4) | ((h >> 4) & (hexToInt '0F'))) _bme680_h
+  '[data:addLast]' (((i2cGet _bme680 (hexToInt 'E1')) << 4) | ((h >> 4) & (hexToInt '0F'))) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 28) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 29) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 30) _bme680_h
+  '[data:addLast]' (i2cGet _bme680 ((hexToInt 'E1') + (31 - 25))) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 32) _bme680_h
+}
+
+to '_bm680 read int8' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  local 'val' (i2cGet _bme680 reg)
+  if (val > 128) {
+    return (val - 256)
+  } else {
+    return val
+  }
+}
+
+to '_bme680 read int' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  local 'val' (((i2cGet _bme680 (reg + 1)) << 8) | (i2cGet _bme680 reg))
+  if (val > 32768) {
+    return (val - 65536)
+  } else {
+    return val
+  }
+  local 'var' 0
+}
+
+to '_bme680 read pressure coefficients' {
+  _bme680_p = ('[data:makeList]')
+  '[data:addLast]' ('_bme680 read word' 5) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 7) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 9) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 11) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 13) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 16) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 15) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 19) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 21) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 23) _bme680_p
+}
+
+to '_bme680 read raw' {
+  '_bme680 setup'
+  if (or (_bme680_raw == 0) ((millisOp) > (_bme680_last + 1000))) {
+    comment 'forced  mode'
+    '_bme680_set_bits' (hexToInt '74') 3 0 1
+    repeat 3 {
+      waitMillis 10
+      if (((i2cGet _bme680 (hexToInt '1D')) & (hexToInt '80')) != 0) {
+        _bme680_raw = (newList 15 0)
+        '[sensors:i2cWrite]' _bme680 ('[data:makeList]' (hexToInt '1D'))
+        '[sensors:i2cRead]' _bme680 _bme680_raw
+        _bme680_last = (millisOp)
+        return 0
+      }
+    }
+  }
+}
+
+to '_bme680 read temperature coefficients' {
+  _bme680_t = ('[data:makeList]')
+  '[data:addLast]' ('_bme680 read int' 33) _bme680_t
+  '[data:addLast]' ('_bme680 read word' 1) _bme680_t
+  '[data:addLast]' ('_bm680 read int8' 3) _bme680_t
+}
+
+to '_bme680 read word' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  return (((i2cGet _bme680 (reg + 1)) << 8) | (i2cGet _bme680 reg))
+}
+
+to '_bme680 setup' {
+  if (_bme680 == 0) {_bme680 = (hexToInt '77')}
+  if (_bme680_last == 0) {
+    comment 'soft reset'
+    i2cSet _bme680 (hexToInt 'E0') (hexToInt 'B6')
+    waitMillis 10
+    comment 'sleep mode'
+    i2cSet _bme680 (hexToInt '74') 0
+    '_bme680 read temperature coefficients'
+    '_bme680 read pressure coefficients'
+    '_bm680 read humidity coefficients'
+    '_read gas coefficients'
+    comment 'humidity oversample x2'
+    '_bme680_set_bits' (hexToInt '72') 7 0 2
+    comment 'pressure oversample x4'
+    '_bme680_set_bits' (hexToInt '74') (hexToInt '1C') 2 3
+    comment 'temperature oversample x8'
+    '_bme680_set_bits' (hexToInt '74') (hexToInt 'E0') 5 4
+    comment 'sef filter'
+    '_bme680_set_bits' (hexToInt '75') (hexToInt '1C') 2 2
+    _bme680_last = (millisOp)
+    waitMillis 1000
+  }
+}
+
+to '_bme680 temperature' {
+  local 'v1' ((((at 6 _bme680_raw) << 12) | ((at 7 _bme680_raw) << 4)) | ((at 8 _bme680_raw) >> 4))
+  v1 = ((v1 >> 3) - ((at 1 _bme680_t) << 1))
+  local 'v2' ((v1 * (at 2 _bme680_t)) >> 11)
+  local 'v3' (((v1 >> 1) * (v1 >> 1)) >> 12)
+  v3 = ((v3 * ((at 3 _bme680_t) << 4)) >> 14)
+  return (v2 + v3)
+}
+
+to '_bme680_set_bits' reg mask pos val {
+  local 'reg_value' (i2cGet _bme680 reg)
+  if (reg_value >= 0) {
+    i2cSet _bme680 reg ((reg_value & ('~' mask)) | (val << pos))
+  }
+}
+
+to '_read gas coefficients' {
+  _bme680_g = ('[data:makeList]')
+  '[data:addLast]' ('_bm680 read int8' 37) _bme680_g
+  '[data:addLast]' ('_bme680 read int' 35) _bme680_g
+  '[data:addLast]' ('_bm680 read int8' 38) _bme680_g
+  comment 'heat_range, heat & rng_sw_err'
+  '[data:addLast]' (((i2cGet _bme680 2) & (hexToInt '30')) / 16) _bme680_g
+  '[data:addLast]' (i2cGet _bme680 0) _bme680_g
+  if ((at 'last' _bme680_g) > 128) {
+    atPut _bme680_g _bme680_g 10
+    return ((at 'last' _bme680_g) - 256)
+  }
+  '[data:addLast]' (((i2cGet _bme680 2) & (hexToInt 'F0')) / 16) _bme680_g
+}
+
+to 'bme680 connected' {
+  if (_bme680 == 0) {
+    local 'addr' (hexToInt '77')
+  } else {
+    addr = _bme680
+  }
+  return ((i2cGet addr (hexToInt 'D0')) == (hexToInt '61'))
+}
+
+to 'bme680 gas' {
+  '_bme680 read raw'
+  if ((i2cGet _bme680 (hexToInt '71')) == 0) {
+    'bme680 set gas' 320 150
+  }
+  local 'adc' (((at 14 _bme680_raw) << 2) | ((at 15 _bme680_raw) >> 6))
+  if (adc > 0) {
+    local 'range' (((at 15 _bme680_raw) & (hexToInt '0F')) + 1)
+    return (('[misc:bme680GasResistance]' adc range (at 6 _bme680_g)) / 10)
+  } else {
+    return 0
+  }
+}
+
+to 'bme680 humidity' {
+  '_bme680 read raw'
+  local 't' (((('_bme680 temperature') * 5) + 128) >> 8)
+  local 'v1' (((at 9 _bme680_raw) << 8) | (at 10 _bme680_raw))
+  v1 = ((v1 - ((at 1 _bme680_h) << 4)) - (((t * (at 3 _bme680_h)) / 100) >> 1))
+  local 'v2' (longMult (at 2 _bme680_h) ((((t * (at 4 _bme680_h)) / 100) + (((t * ((t * (at 5 _bme680_h)) / 100)) >> 6) / 100)) + 16384) 10)
+  local 'v3' (v1 * v2)
+  local 'v4' ((at 6 _bme680_h) << 7)
+  v4 = ((v4 + ((t * (at 7 _bme680_h)) / 100)) >> 4)
+  local 'v5' (longMult (v3 >> 14) (v3 >> 14) 10)
+  local 'v6' (longMult v4 v5 1)
+  return ((maximum 0 (minimum 100000 (longMult ((v3 + v6) >> 10) 1000 12))) / 100)
+}
+
+to 'bme680 pressure' {
+  local 'v1' ((('_bme680 temperature') >> 1) - 64000)
+  local 'v2' (((((v1 >> 2) * (v1 >> 2)) >> 11) * (at 6 _bme680_p)) >> 2)
+  v2 = (v2 + ((v1 * (at 5 _bme680_p)) << 1))
+  v2 = ((v2 >> 2) + ((at 4 _bme680_p) << 16))
+  v1 = ((((((v1 >> 2) * (v1 >> 2)) >> 13) * ((at 3 _bme680_p) << 5)) >> 3) + (((at 2 _bme680_p) * v1) >> 1))
+  v1 = (v1 >> 18)
+  v1 = (longMult (32768 + v1) (at 1 _bme680_p) 15)
+  local 'p' (1048576 - ((((at 3 _bme680_raw) << 12) | ((at 4 _bme680_raw) << 4)) | ((at 5 _bme680_raw) >> 4)))
+  comment 'original *3125, <<1'
+  p = ((p - (v2 >> 12)) * 1562)
+  p = ((p / v1) << 2)
+  v1 = (longMult (at 9 _bme680_p) (longMult (p >> 3) (p >> 3) 13) 12)
+  v2 = (longMult (p >> 2) (at 8 _bme680_p) 13)
+  local 'v3' (longMult ((p >> 8) * ((p >> 8) * (p >> 8))) (at 10 _bme680_p) 17)
+  return ((p + ((((v1 + v2) + v3) + ((at 7 _bme680_p) << 7)) >> 4)) / 10)
+}
+
+to 'bme680 set address to' addr {
+  _bme680 = addr
+  _bme680_last = 0
+  '_bme680 setup'
+}
+
+to 'bme680 set gas' degrees ms {
+  local 'gas_reg' (i2cGet _bme680 (hexToInt '71'))
+  if (or (degrees <= 0) (ms <= 0)) {
+    comment 'Turn off gas measurements'
+    i2cSet _bme680 (hexToInt '70') 8
+    i2cSet _bme680 (hexToInt '71') (gas_reg & (hexToInt 'EF'))
+  } else {
+    i2cSet _bme680 (hexToInt '70') 0
+    degrees = (maximum (minimum degrees 400) 200)
+    local 'v1' ((((((('_bme680 temperature') * 5) + 128) >> 8) * (at 3 _bme680_g)) / 1000) << 8)
+    local 'v2' (((at 1 _bme680_g) + 784) * (((((((at 2 _bme680_g) + 154009) * degrees) * 5) / 100) + 3276800) / 10))
+    local 'v3' (v1 + (v2 / 2))
+    local 'v3' (v1 + (v2 / 2))
+    local 'v4' (v3 / ((at 4 _bme680_g) + 4))
+    local 'v5' ((131 * (at 5 _bme680_g)) + 65536)
+    local 'heatr_res' (((((v4 / v5) - 250) * 34) + 50) / 100)
+    i2cSet _bme680 (hexToInt '5A') heatr_res
+    local 'factor' 0
+    local 'durval' 0
+    if (ms > 4032) {
+      durval = (hexToInt 'FF')
+    } else {
+      repeatUntil (ms <= (hexToInt '3F')) {
+        ms = (ms >> 1)
+        if (ms > (hexToInt '3F')) {
+          factor += 1
+        }
+      }
+      durval = (ms + (factor * 64))
+    }
+    i2cSet _bme680 (hexToInt '70') 0
+    i2cSet _bme680 (hexToInt '64') durval
+    i2cSet _bme680 (hexToInt '71') (gas_reg | (hexToInt '10'))
+  }
+}
+
+to 'bme680 temperature' {
+  '_bme680 read raw'
+  return ((((('_bme680 temperature') * 5) + 128) >> 8) / 10)
+}
+
+
+module 'HTTP client' Comm
+author MicroBlocks
+version 1 4 
+depends WiFi 
+tags http network get post put delete 
+description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
+'
+
+  spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+  spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+  spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+  spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+  spec 'r' '_http_status' '_status of response _' 'auto' ''
+  spec 'r' '_line_end' '_line_end'
+  spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+  spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
+  spec 'r' '_readHTTPResponse' '_readHTTPResponse'
+  spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
+  spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
+
+to '_http_body_start' response {
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
+}
+
+to '_http_header' header response {
+  local 'header text' ('_http_header_text' response)
+  header = ('_lowercase' header)
+  repeatUntil ((size (v 'header text')) < 3) {
+    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
+    if (('_lowercase' key) == header) {
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
+    }
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
+  }
+  return (booleanConstant false)
+}
+
+to '_http_header_text' response {
+  local 'headersStart' (('[data:find]' ('_line_end') response) + 2)
+  return ('[data:copyFromTo]' response headersStart (('_http_body_start' response) + 2))
+}
+
+to '_http_status' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
+to '_http_status_text' response {
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
+}
+
+to '_lowercase' string {
+  local 'lowercased' ''
+  local 'char code' ''
+  for c (size string) {
+    'char code' = ('[data:unicodeAt]' c string)
+    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
+      'char code' = ((v 'char code') + 32)
+    }
+    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
+  }
+  return lowercased
+}
+
+to '_readHTTPResponse' {
+  local 'response' ''
+  local 'lastChunkTime' (millisOp)
+  repeatUntil (not ('[net:httpIsConnected]')) {
+    local 'chunk' ('[net:httpResponse]')
+    if ((size chunk) > 0) {
+      response = ('[data:join]' response chunk)
+      lastChunkTime = (millisOp)
+    } (((millisOp) - lastChunkTime) > 10000) {
+      return response
+    }
+    waitMillis 20
+  }
+  response = ('[data:join]' response ('[net:httpResponse]'))
+  return response
+}
+
+to '_request_url' url method body optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'host' ''
+  local 'path' ''
+  local 'slashPosition' ('[data:find]' '/' url)
+  if (slashPosition > 0) {
+    host = ('[data:copyFromTo]' url 1 (slashPosition - 1))
+    path = ('[data:copyFromTo]' url (slashPosition + 1))
+  } else {
+    host = url
+  }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  '[net:httpConnect]' host port
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  }
+  '[net:httpRequest]' method host path
+  return ('_readHTTPResponse')
+}
+
+to 'http܃//' url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 1) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url 'GET' '' port)
+  if (response != '') {
+    if (('_http_status' response) == 200) {
+      return ('[data:copyFromTo]' response ('_http_body_start' response))
+    } else {
+      return ('_http_status_text' response)
+    }
+  } else {
+    return 'Failed to get response'
+  }
+}
+
+to request method data url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url method data port)
+  if (response != '') {
+    local 'status' ('_http_status' response)
+    local 'body start' ('_http_body_start' response)
+    if (and (200 == status) ((v 'body start') > 0)) {
+      sayIt ('[data:copyFromTo]' response (v 'body start'))
+    } else {
+      sayIt ('_http_status_text' response)
+    }
+  } else {
+    sayIt 'Failed to get response'
+  }
+}
+
+
+module 'HTTP server' Comm
+author MicroBlocks
+version 1 3 
+depends WiFi 
+tags http network 
+description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
+
+  spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+  spec 'r' 'request method' 'method of request _' 'str' ''
+  spec 'r' 'path of request' 'path of request _' 'str' ''
+  spec 'r' 'headers of request' 'headers of request _' 'str' ''
+  spec 'r' 'body of request' 'body of request _' 'str' ''
+  spec 'r' 'content length of request' 'content length of request _' 'str' ''
+  spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
+  spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+  spec 'r' '_toString' '_toString _' 'auto' 'abc'
+
+to '_endOfHeaders' request {
+  return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
+}
+
+to '_toString' aStringOrByteArray {
+  comment 'If argument is a byte array, convert it to a string. '
+  if (not (isType aStringOrByteArray 'string')) {
+    aStringOrByteArray = ('[data:join]' '' aStringOrByteArray)
+  }
+  return aStringOrByteArray
+}
+
+to 'body of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('[data:copyFromTo]' request (i + 4))
+}
+
+to 'content length of request' request {
+  local 'i' ('_endOfHeaders' request)
+  if (i < 0) {
+    return 0
+  }
+  local 'j' ('[data:find]' 'Content-Length: ' request)
+  if (j < 0) {
+    comment 'Try alternate capitalization'
+    j = ('[data:find]' 'Content-length: ' request)
+  }
+  if (or (j < 0) (j > i)) {
+    return 0
+  }
+  j += 16
+  local 'k' ('[data:find]' ('[data:unicodeString]' 13) request j)
+  return (('[data:copyFromTo]' request j (k - 1)) + 0)
+}
+
+to 'headers of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('_toString' ('[data:copyFromTo]' request 1 (i - 1)))
+}
+
+to 'path of request' request {
+  return ('_toString' ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1)))
+}
+
+to 'request method' request {
+  return ('_toString' ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1)))
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 8 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  space
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+  space
+  spec ' ' '[net:allowWiFiAndBLE]' 'allow WiFi while using BLE _' 'bool' true
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 30000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  if ((size password) < 8) {
+    sayIt 'Password must be at least 8 characters'
+    return 0
+  }
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+

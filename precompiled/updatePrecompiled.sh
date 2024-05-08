@@ -4,10 +4,12 @@ rm -f *.hex *.bin *.uf2
 cd ..
 pio run -e microbit
 cp .pio/build/microbit/firmware.hex precompiled/vm_microbitV1.hex
-pio run -e microbitV2
-cp .pio/build/microbitV2/firmware.hex precompiled/vm_microbitV2.hex
+pio run -e microbitV2-ble
+cp .pio/build/microbitV2-ble/firmware.hex precompiled/vm_microbitV2.hex
 pio run -e calliope
 cp .pio/build/calliope/firmware.hex precompiled/vm_calliope.hex
+pio run -e calliopeV3-ble
+cp .pio/build/calliopeV3-ble/firmware.hex precompiled/vm_calliopeV3-ble.hex
 pio run -e nodemcu
 cp .pio/build/nodemcu/firmware.bin precompiled/vm_nodemcu.bin
 pio run -e ed1
@@ -36,8 +38,6 @@ pio run -e databot
 cp .pio/build/databot/firmware.bin precompiled/vm_databot.bin
 pio run -e makerport
 python precompiled/uf2conv.py -c .pio/build/makerport/firmware.bin -o precompiled/vm_makerport.uf2
-pio run -e mbits
-cp .pio/build/mbits/firmware.bin precompiled/vm_mbits.bin
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
@@ -48,4 +48,5 @@ cd precompiled
 npm install
 node buildUniversalHex.js
 rm vm_microbitV1.hex vm_microbitV2.hex
+rm vm_calliope.hex vm_calliopeV3-ble.hex
 

@@ -60,4 +60,24 @@ extern "C" void clearCodeFile(int cycleCount) {
 	closeAndOpenCodeFile();
 }
 
+// File operations for storing system state
+
+extern "C" void createFile(const char *fileName) {
+	File file = myFS.open(fileName, "w");
+	file.close();
+}
+
+extern "C" void deleteFile(const char *fileName) {
+	if (fileExists(fileName)) {
+		myFS.remove(fileName);
+	}
+}
+
+extern "C" int fileExists(const char *fileName) {
+	File file = myFS.open(fileName, "r");
+	if (!file) return false;
+	file.close();
+	return true;
+}
+
 #endif

@@ -30,6 +30,8 @@
 #include "interp.h"
 #include "persist.h"
 
+void delay(int); // Arduino delay function
+
 // flash operations for supported platforms
 
 #if defined(NRF51) || defined(NRF52) || defined(ARDUINO_NRF52_PRIMO)
@@ -44,6 +46,14 @@
 		// Primo: SoftDevice: 0-112k; App: 112k-210k; Persistent Mem: 210k-488k; Boot: 488k-512k
 		#define START (210 * 1024)
 		#define HALF_SPACE (100 * 1024)
+	#elif defined(NRF52833_XXAA)
+		// nrf52833: SoftDevice + app: 0-316k; Persistent Mem: 316-436k; User data: 436k-464k; Boot: 464k-512k
+		#define START (316 * 1024)
+		#define HALF_SPACE (60 * 1024)
+	#elif defined(NRF52840_XXAA)
+		// nrf52840: SoftDevice + app: 0-450k; Persistent Mem: 450k-570k; User data: 948k-976k; Boot: 976k-1024k
+		#define START (450 * 1024)
+		#define HALF_SPACE (60 * 1024)
 	#elif defined(NRF52)
 		// nrf52832: SoftDevice + app: 0-316k; Persistent Mem: 316-436k; User data: 436k-464k; Boot: 464k-512k
 		#define START (316 * 1024)
@@ -57,6 +67,10 @@
 			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
 			startAddr += pageSize;
+			captureIncomingBytes();
+			#if defined(BLE_IDE)
+				delay(30);
+			#endif
 		}
 		NRF_NVMC->CONFIG = 0; // disable Flash erase
 	}
@@ -88,8 +102,8 @@
 	#include "samr.h" // SAM21D
 
 	// SAMD: App: 0-96k; Persistent Mem: 96k-256k
-	#define START (96 * 1024)
-	#define HALF_SPACE (80 * 1024)
+	#define START (136 * 1024)
+	#define HALF_SPACE (60 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
 	#define NVMC_CTRLA		((volatile int *) 0x41004000)
@@ -390,14 +404,17 @@ void flashWriteWord(int *addr, int value) {
 	#if defined(ESP8266)
 		#define USE_CODE_FILE true
 		#define HALF_SPACE (18 * 1024) // ESP8266 is unreliable at 24
+	#elif defined(ESP32_S3) || defined(ESP32_C3)
+		#define USE_CODE_FILE true
+		#define HALF_SPACE (60 * 1024)
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 		#define USE_CODE_FILE true
-		#define HALF_SPACE (40 * 1024)
+		#define HALF_SPACE (45 * 1024)
 	#elif defined(ARDUINO_ARCH_RP2040)
 		#define USE_CODE_FILE RP2040_PHILHOWER
 		#define HALF_SPACE (40 * 1024)
 	#else
-		#define HALF_SPACE (10 * 1024)
+		#define HALF_SPACE (40 * 1024)
 	#endif
 
 	#define START (&flash[0])
@@ -659,11 +676,6 @@ static void updateChunkTable() {
 
 #ifndef RAM_CODE_STORE
 
-struct {
-	int *chunkCodeRec;
-	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];
-} chunkData;
-
 static char chunkProcessed[256];
 static char varProcessed[256];
 
@@ -673,36 +685,25 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 
 	if (chunkProcessed[id]) return dst;
 
-	// clear chunkData
-	memset(&chunkData, 0, sizeof(chunkData));
+	int *chunkSrc = 0;
 
 	// scan rest of the records to get the most recent info about this chunk
 	while (src) {
-		int attributeID;
 		if (id == ((*src >> 8) & 0xFF)) { // id field matches
 			int type = (*src >> 16) & 0xFF;
 			switch (type) {
 			case chunkCode:
-				chunkData.chunkCodeRec = src;
-				break;
-			case chunkAttribute:
-				attributeID = *src & 0xFF;
-				if (attributeID < CHUNK_ATTRIBUTE_COUNT) {
-					chunkData.attributeRecs[attributeID] = src;
-				}
+				chunkSrc = src;
 				break;
 			case chunkDeleted:
-				memset(&chunkData, 0, sizeof(chunkData)); // clear chunkData
+				chunkSrc = 0;
 				break;
 			}
 		}
 		src = recordAfter(src);
 	}
-	if (chunkData.chunkCodeRec) {
-		dst = copyChunk(dst, chunkData.chunkCodeRec);
-		for (int i = 0; i < CHUNK_ATTRIBUTE_COUNT; i++) {
-			if (chunkData.attributeRecs[i]) dst = copyChunk(dst, chunkData.attributeRecs[i]);
-		}
+	if (chunkSrc) {
+		dst = copyChunk(dst, chunkSrc);
 	}
 	chunkProcessed[id] = true;
 	return dst;
@@ -747,6 +748,8 @@ static void compactFlash() {
 	//	5. switch to the other half-space
 	//	6. remember the free pointer for the new half-space
 
+	uint32_t startT = millisecs();
+
 	// clear the processed flags
 	memset(chunkProcessed, 0, sizeof(chunkProcessed));
 	memset(varProcessed, 0, sizeof(varProcessed));
@@ -757,6 +760,7 @@ static void compactFlash() {
 
 	int *src = compactionStartRecord(NULL);
 	while (src) {
+		captureIncomingBytes();
 		int header = *src;
 		int type = (header >> 16) & 0xFF;
 		int id = (header >> 8) & 0xFF;
@@ -775,14 +779,15 @@ static void compactFlash() {
 
 	updateChunkTable();
 
-	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2)
+	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
 		// Compaction messes up the serial port on the micro:bit v1 and v2 and Calliope
 		restartSerial();
 	#endif
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted Flash code store\n%d bytes used (%d%%) of %d",
+	sprintf(s, "Compacted Flash code store (%lu msecs)\n%d bytes used (%d%%) of %d",
+		millisecs() - startT,
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 }
@@ -800,7 +805,6 @@ static int keepCodeChunk(int id, int header, int *start) {
 
 	int *rec = start;
 	while (rec) {
-		// superceded only if all fields of header match (i.e. type, id, attributeType)
 		if (*rec == header) return false; // superceded
 		rec = recordAfter(rec);
 	}
@@ -829,6 +833,8 @@ static void compactRAM(int printStats) {
 	//	6. update the compaction count
 	//	7. re-write the code file
 
+	uint32_t startT = millisecs();
+
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord();
 
@@ -847,7 +853,7 @@ static void compactRAM(int printStats) {
 		int header = *src;
 		int type = (header >> 16) & 0xFF;
 		int id = (header >> 8) & 0xFF;
-		if ((chunkCode <= type) && (type <= chunkAttribute) && keepCodeChunk(id, header, next)) {
+		if ((type == chunkCode) && keepCodeChunk(id, header, next)) {
 			dst = copyChunk(dst, src);
 		} else if ((varName == type) && (src >= varsStart)) {
 			dst = copyChunk(dst, src);
@@ -872,7 +878,9 @@ static void compactRAM(int printStats) {
 	if (printStats) {
 		char s[100];
 		int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-		sprintf(s, "Compacted RAM code store\n%d bytes used (%d%%) of %d",
+
+		sprintf(s, "Compacted RAM code store (%lu msecs)\n%d bytes used (%d%%) of %d",
+			millisecs() - startT,
 			bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 		outputString(s);
 	}

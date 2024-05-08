@@ -1,0 +1,203 @@
+module XRP Output
+author 'Russell Owen'
+version 0 8 
+depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
+description 'Drive the WPI XRP robot'
+variables _xrp__imuAddress 
+
+  spec ' ' 'xrp_driveDistance' 'drive distance _ (mm) speed _ (mm/sec)' 'num num' 100 300
+  spec ' ' 'xrp_driveAtSpeed' 'drive at speed left _ right _ (mm/sec) for _ millisec (0=forever)' 'num num num' 300 300 1000
+  spec 'r' 'xrp_readRollRate' 'read roll rate (deg/sec)'
+  spec 'r' 'xrp_readPitchRate' 'read pitch rate (deg/sec)'
+  spec 'r' 'xrp_readYawRate' 'read yaw rate (deg/sec)'
+  spec 'r' 'xrp_readDistanceSensor' 'read distance sensor (cm)'
+  spec 'r' 'xrp_readLineSensors' 'read left, right line sensors'
+  spec ' ' 'xrp_setServo' 'set servo _ to angle _ (deg)' 'num num' 1 0
+  spec ' ' 'xrp_stopWheels' 'stop both wheels'
+  spec ' ' 'xrp_turnAngle' 'turn angle _ (deg) at motor speed _ (mm/sec)' 'num num' 90 300
+  spec ' ' 'xrp_waitForWheelsToStop' 'wait for wheels to stop'
+  space
+  spec 'r' 'edcmotors_getNumMotors' 'get the number of encoded DC motors'
+  spec 'r' 'xrp_mmToCounts' 'convert _ mm to encoder counts' 'num' 0
+  space
+  spec ' ' '_edcmotors_checkSystem' '_edcmotors_checkSystem'
+  spec ' ' '_edcmotors_initSystemVariables' '_edcmotors_initSystemVariables'
+  spec 'r' '_xrp_scaleRollPitchOrYaw' '_scale gyro raw roll, pitch, or yaw _' 'num' 10
+  spec ' ' '_xrp_initGyroscope' '_init gyroscope'
+
+to '_edcmotors_checkSystem' {
+  comment 'Check drive power to the XRP board.'
+  repeatUntil ((analogReadOp 28) >= 300) {
+    sayIt 'Insufficient drive voltage; check the power switch and batteries.'
+  }
+  sayIt ''
+}
+
+to '_edcmotors_initSystemVariables' {
+  comment 'Set system-specific motors variables.
+    Assume that _init_edcmotors_variables has been called, so that all lists exist.'
+  if (or (_edcmotors__numMotors < 2) (_edcmotors__numMotors > 4)) {
+    sayIt 'Number of motors must be 2-4'
+    return
+  }
+  _edcmotors__pCoeff = 2000
+  _edcmotors__iCoeff = 0
+  _edcmotors__dCoeff = 0
+  _edcmotors__deadband = 10
+  _edcmotors__minEffort = 300
+  _edcmotors__maxEffort = 1023
+  _edcmotors__maxIntegral = 10
+  comment 'Approximate maximum motor speed (encoder counts/second) with no load'
+  _edcmotors__maxSpeed = 1080
+  atPut 1 _edcmotors__pinEncoderA 4
+  atPut 1 _edcmotors__pinEncoderB 5
+  atPut 1 _edcmotors__pinDirection 6
+  atPut 1 _edcmotors__pinDutyCycle 7
+  atPut 2 _edcmotors__pinEncoderA 12
+  atPut 2 _edcmotors__pinEncoderB 13
+  atPut 2 _edcmotors__pinDirection 14
+  atPut 2 _edcmotors__pinDutyCycle 15
+  if (_edcmotors__numMotors > 2) {
+    atPut 3 _edcmotors__pinEncoderA 0
+    atPut 3 _edcmotors__pinEncoderB 1
+    atPut 3 _edcmotors__pinDirection 2
+    atPut 3 _edcmotors__pinDutyCycle 3
+  }
+  if (_edcmotors__numMotors > 3) {
+    atPut 4 _edcmotors__pinEncoderA 8
+    atPut 4 _edcmotors__pinEncoderB 9
+    atPut 4 _edcmotors__pinDirection 10
+    atPut 4 _edcmotors__pinDutyCycle 11
+  }
+}
+
+to '_xrp_initGyroscope' {
+  comment 'Initialize the gyroscope'
+  _xrp__imuAddress = (hexToInt '6B')
+  comment 'Configure the LSM6DSOX IMU gyroscope:
+* Read at 1660 Hz (a fairly high rate)
+* Maximum roll, pitch, or yaw is 250 deg/sec (the 2nd-most-sensitive range)
+See section 9.16 of https://www.st.com/resource/en/datasheet/lsm6dsox.pdf for details.'
+  i2cSet _xrp__imuAddress (hexToInt '11') (hexToInt '80')
+}
+
+to '_xrp_scaleRollPitchOrYaw' speed {
+  comment 'Scale LSM6DSOX gyroscope speed data from raw to degrees/second.
+Valid raw speed values are between 0 and 255, inclusive,
+with the following unusual subranges:
+* 0-127 represents positive values 0 through 127,
+* 128-255 represents negative values -128 through -1.'
+  comment 'Handle negative values.'
+  if (speed >= 128) {
+    speed = (speed - 256)
+  }
+  comment 'Scale the result to degrees/second'
+  speed = ((speed * 250) / 127)
+  return speed
+}
+
+to edcmotors_getNumMotors {
+  comment 'Get the number of motors. The standard XRP kit comes with 2 motors that drive wheels,
+    but the board can drive up to 4 motors. If you are using more than 2 motors,
+    override this method to return how many you are using. Never return less than 2.'
+  return 2
+}
+
+to xrp_driveAtSpeed leftSpeed rightSpeed durationMillis {
+  comment 'Drive the wheels at the specified speed (mm/sec) for the specified duration (milliseconds; 0=forever)'
+  edcmotors_moveMotorAtSpeed 1 (xrp_mmToCounts leftSpeed) durationMillis
+  edcmotors_moveMotorAtSpeed 2 (-1 * (xrp_mmToCounts rightSpeed)) durationMillis
+}
+
+to xrp_driveDistance distance speed {
+  comment 'Drive the wheels the specified distance (mm) at the specified speed (mm/second)'
+  if (speed == 0) {
+    sayIt 'Speed must be nonzero'
+    return
+  }
+  if (distance == 0) {
+    comment 'Prevent inifinite motion due to duration=0'
+    return
+  }
+  local 'durationMillis' (absoluteValue ((distance * 1000) / speed))
+  local 'speedCounts' (pid_applySign distance (xrp_mmToCounts speed))
+  edcmotors_moveMotorAtSpeed 1 speedCounts durationMillis
+  edcmotors_moveMotorAtSpeed 2 (-1 * speedCounts) durationMillis
+}
+
+to xrp_mmToCounts mm {
+  comment 'Convert mm to encoder counts.
+Use a hard-coded constant to avoid having to check initialization.'
+  return ((mm * 1000) / 322)
+}
+
+to xrp_readDistanceSensor {
+  comment 'Return the distance (cm) read by the HC-SR04 distance sensor.'
+  return ('distance (cm)' 20 21)
+}
+
+to xrp_readLineSensors {
+  return ('[data:makeList]' (analogReadOp 26) (analogReadOp 27))
+}
+
+to xrp_readPitchRate {
+  comment 'Read pitch (deg/sec) from the gyroscope'
+  if (_xrp__imuAddress == 0) {
+    '_xrp_initGyroscope'
+  }
+  return ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 35))
+}
+
+to xrp_readRollRate {
+  comment 'Read roll (deg/sec) from the gyroscope'
+  if (_xrp__imuAddress == 0) {
+    '_xrp_initGyroscope'
+  }
+  return ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 37))
+}
+
+to xrp_readYawRate {
+  comment 'Read yaw (deg/sec) from the gyroscope'
+  if (_xrp__imuAddress == 0) {
+    '_xrp_initGyroscope'
+  }
+  return (-1 * ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 39)))
+}
+
+to xrp_setServo index angle {
+  '_edcmotors_checkSystem'
+  if (index == 1) {
+    setServoAngle 16 angle
+  } (index == 2) {
+    setServoAngle 17 angle
+  } else {
+    sayIt 'Invalid servo index; must be 1 or 2'
+  }
+}
+
+to xrp_stopWheels {
+  comment 'Stop both wheels'
+  edcmotors_stopMotors 1 2
+}
+
+to xrp_turnAngle angle speed {
+  comment 'Turn the robot by the specified angle (degrees),
+moving the wheel at the specified speed (mm/second).
+Rotate about a point halfway between the wheels.'
+  if (angle == 0) {
+    comment 'Prevent inifinite motion due to duration=0'
+    return
+  }
+  local 'speedCounts' (pid_applySign angle (xrp_mmToCounts speed))
+  local 'distanceCounts' ((41978 * angle) / 10000)
+  local 'durationMillis' (absoluteValue ((distanceCounts * 1000) / speedCounts))
+  edcmotors_moveMotorAtSpeed 1 speedCounts durationMillis
+  edcmotors_moveMotorAtSpeed 2 speedCounts durationMillis
+}
+
+to xrp_waitForWheelsToStop {
+  comment 'Wait for both wheels to stop. This is based on predicted end time,
+rather than actual motion, so it is not exact.'
+  edcmotors_waitForMotorsToStop 1 2
+}
+
