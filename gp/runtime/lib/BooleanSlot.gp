@@ -42,7 +42,7 @@ method drawOn BooleanSlot ctx {
 		drawOn elseLabel ctx
 		return
 	}
-	borderWidth = (max 1 (half scale))
+	borderWidth = (max 1 (global 'scale'))
 	sliderSize = (height morph)
 	corner = (8 * scale)
 	r = (bounds morph)

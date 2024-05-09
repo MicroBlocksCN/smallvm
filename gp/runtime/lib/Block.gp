@@ -121,7 +121,7 @@ method fixLayout Block {
 	}
   }
 
-  space = 3
+  space = 6
   vSpace = 3
 
   break = 450
@@ -129,16 +129,16 @@ method fixLayout Block {
   lines = (list)
   lineArgCount = 0
 
-  left = (left morph)
+  left = ((left morph) + (3 * scale))
   h = 0
   w = 0
 
   if (type == 'hat') {
-    indentation = (* scale (+ border space space))
+    indentation = (* scale (+ border space))
   } (type == 'reporter') {
     indentation = (* scale 8)
   } (type == 'command') {
-    indentation = (* scale (+ border space space border))
+    indentation = (* scale (+ border space border))
   }
 
   // arrange label parts horizontally and break up into lines
@@ -230,15 +230,15 @@ method fixLayout Block {
     if (notEmpty each) {
       elem = (last each)
       if (not (isClass elem 'CommandSlot')) {
-        blockWidth = (max blockWidth ((right (fullBounds (morph elem))) - left))
+        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)) + (3 * scale))
       }
     }
   }
   blockHeight = (callWith + (toArray lineHeights))
-  blockHeight += (* (count lines) vSpace scale)
+  blockHeight += ((* (count lines) vSpace scale) + (8 * scale))
 
   // arrange label parts vertically
-  tp = (+ (top morph) (* 2 scale border))
+  tp = (+ (top morph) (* 2 scale border) (4 * scale))
   if (type == 'hat') {
     tp += (hatHeight this)
   }
@@ -267,11 +267,11 @@ method fixLayout Block {
 
   // adjust block width (i.e. right margin)
   if (type == 'command') {
-	blockWidth += (-3 * scale)
+	blockWidth += (-1 * scale)
   } (type == 'hat') {
 	blockWidth += (-2 * scale)
   } (type == 'reporter') {
-	blockWidth += (-8 * scale)
+	blockWidth += (-4 * scale)
   }
 
   if (type == 'command') {
@@ -721,7 +721,7 @@ method setNext Block another {
   if (isNil another) {
     setField expression 'nextBlock' nil
   } else {
-    setPosition (morph another) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+    setPosition (morph another) (left morph) ((((top morph) + (height morph)) - (scale * corner)) - 1)
     addPart morph (morph another)
     setField expression 'nextBlock' (expression another)
     if (notNil n) {setNext (bottomBlock another) n}
