@@ -1,16 +1,20 @@
 to readSVG data x y {
-	reader = (initialize (new 'SVGReader'))
+	reader = (initialize (new 'SVGReader') x y)
 	readFrom reader data
 	return (bitmap reader)
 }
 
-defineClass SVGReader pen index svgData
+defineClass SVGReader pen index svgData originX originY
 
-method initialize SVGReader {
+method initialize SVGReader x y {
 	index = 1
 
-	bm = (newBitmap 100 100) // just in case SVG tag doesn't have any dimensions
-	pen = (newVectorPen bm)
+	//bm = (newBitmap 100 100) // just in case SVG tag doesn't have any dimensions
+	pen = (newVectorPenOnScreen)
+
+	setOffset pen x y
+	originX = x
+	originY = y
 
 	return this
 }
@@ -101,8 +105,9 @@ method processSVGTag SVGReader attributes {
 		}
 	}
 
-	bm = (newBitmap (w + 5) (h + 5)) // add a bit for line width
-	pen = (newVectorPen bm)
+	setClipRect pen originX originY w h
+	//bm = (newBitmap (w + 5) (h + 5)) // add a bit for line width
+	//pen = (newVectorPen bm)
 }
 
 method processPath SVGReader attributes {
@@ -128,9 +133,9 @@ method drawPath SVGReader pathString {
 		} (currentChar == 'L') { // draw line to absolute point
 			lineTo pen (at params 1) (at params 2)
 		} (currentChar == 'V') { // draw vertical line to absolute y
-			lineTo pen (x pen) (at params 1)
+			vLine pen (at params 1)
 		} (currentChar == 'H') { // draw horizontal line to absolute x
-			lineTo pen (at params 1) (y pen)
+			hLine pen (at params 1)
 		} (currentChar == 'C') { // cubic Bézier
 			(cubicCurveTo
 				pen
@@ -156,7 +161,7 @@ method getPathParams SVGReader pathString startIndex {
 		paramString = (join paramString (at pathString i))
 		i = (i + 1)
 	}
-	for item (splitWith paramString ' ') { add params (toNumber item) }
+	for item (splitWith (trim paramString) ' ') { add params (toNumber item) }
 	return (list params i)
 }
 

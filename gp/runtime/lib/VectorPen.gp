@@ -528,6 +528,14 @@ method drawLine VectorPen x0 y0 x1 y1 {
   }
 }
 
+method hLine VectorPen destX {
+	lineTo this destX (x this)
+}
+
+method vLine VectorPen destY {
+	lineTo this (y this) destY
+}
+
 method fillPath VectorPen {
   // Use flood fill to fill a closed path, using a point on the right side of the first
   // segment as the seed. Does not work for paths that cross themselves, for donuts, etc.
