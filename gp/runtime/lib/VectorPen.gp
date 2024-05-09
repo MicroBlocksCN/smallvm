@@ -118,8 +118,8 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
 
   startX = penX
   startY = penY
-  penX = (dstX + offsetX)
-  penY = (dstY + offsetY)
+  penX = dstX
+  penY = dstY
 
   // points used to calculate the control points pc2 and pc3
   paX = (interpolate startX c1X 0.75)
@@ -529,11 +529,11 @@ method drawLine VectorPen x0 y0 x1 y1 {
 }
 
 method hLine VectorPen destX {
-	lineTo this destX (x this)
+	lineTo this destX (y this)
 }
 
 method vLine VectorPen destY {
-	lineTo this (y this) destY
+	lineTo this (x this) destY
 }
 
 method fillPath VectorPen {
