@@ -1,25 +1,26 @@
-to readSVG data x y {
-	reader = (initialize (new 'SVGReader') x y)
+to readSVG data x y scale {
+	reader = (initialize (new 'SVGReader') x y scale)
 	readFrom reader data
-	return (bitmap reader)
 }
 
-defineClass SVGReader pen index svgData originX originY
+defineClass SVGReader pen index svgData originX originY scaleFactor
 
-method initialize SVGReader x y {
+method initialize SVGReader x y scale {
 	index = 1
 
-	//bm = (newBitmap 100 100) // just in case SVG tag doesn't have any dimensions
 	pen = (newVectorPenOnScreen)
 
 	setOffset pen x y
 	originX = x
 	originY = y
+	if (notNil scale) {
+		scaleFactor = scale
+	} else {
+		scaleFactor = 1
+	}
 
 	return this
 }
-
-method bitmap SVGReader { return bm }
 
 method readFrom SVGReader data {
 	svgData = data
@@ -97,17 +98,14 @@ method processSVGTag SVGReader attributes {
 		name = (first attr)
 		value = (at attr 2)
 		if (name == 'width') {
-			w = (toNumber value)
+			w = ((toNumber value) * scaleFactor)
 		} (name == 'height') {
-			h = (toNumber value)
+			h = ((toNumber value) * scaleFactor)
 		} (name == 'viewBox') {
-			//TODO parse viewBox here
+			//TODO parse viewBox here. Or not!
 		}
 	}
-
 	setClipRect pen originX originY w h
-	//bm = (newBitmap (w + 5) (h + 5)) // add a bit for line width
-	//pen = (newVectorPen bm)
 }
 
 method processPath SVGReader attributes {
@@ -161,7 +159,9 @@ method getPathParams SVGReader pathString startIndex {
 		paramString = (join paramString (at pathString i))
 		i = (i + 1)
 	}
-	for item (splitWith (trim paramString) ' ') { add params (toNumber item) }
+	for item (splitWith (trim paramString) ' ') {
+		add params ((toNumber item) * scaleFactor)
+	}
 	return (list params i)
 }
 
