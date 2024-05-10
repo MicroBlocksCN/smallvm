@@ -155,7 +155,7 @@ method fixLayout Block {
           	add lines currentLine
           	add lineHeights h
           }
-          fastSetLeft (morph each) (+ left (* scale (+ border corner)))
+          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) - (3 * scale))
           add lines (list each)
           add lineHeights (height (morph each))
           currentLine = (list)
@@ -721,7 +721,7 @@ method setNext Block another {
   if (isNil another) {
     setField expression 'nextBlock' nil
   } else {
-    setPosition (morph another) (left morph) ((((top morph) + (height morph)) - (scale * corner)) - 1)
+    setPosition (morph another) (left morph) ((((top morph) + (height morph)) - (scale * corner)) - (max 1 (blockScale)))
     addPart morph (morph another)
     setField expression 'nextBlock' (expression another)
     if (notNil n) {setNext (bottomBlock another) n}
