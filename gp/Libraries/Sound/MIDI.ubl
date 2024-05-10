@@ -228,7 +228,7 @@ or periods and all lowercase.'
   return ('[data:unicodeString]' result)
 }
 
-to '_MIDI stop all notes in channel' channel {
+to 'MIDI_stop all notes in channel' channel {
   for i 127 {
     'MIDI_send note' i false channel 0
   }
