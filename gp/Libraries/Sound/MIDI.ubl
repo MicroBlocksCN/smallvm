@@ -1,6 +1,6 @@
 module MIDI Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
@@ -20,6 +20,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
 
   spec ' ' 'MIDI_play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
   spec ' ' 'MIDI_send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
+  spec ' ' 'MIDI_stop all notes in channel' 'stop all notes on channel _' 'auto' 1
   space
   spec 'r' 'MIDI_note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   space
@@ -225,5 +226,11 @@ or periods and all lowercase.'
     }
   }
   return ('[data:unicodeString]' result)
+}
+
+to 'MIDI_stop all notes in channel' channel {
+  for i 127 {
+    'MIDI_send note' i false channel 0
+  }
 }
 
