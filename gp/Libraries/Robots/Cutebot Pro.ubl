@@ -1,6 +1,6 @@
 module 'Cutebot Pro' Output
 author MicroBlocks
-version 0 8 
+version 0 9 
 depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
 choices wheelMenu left right both 
 choices leftRightMenu left right 
@@ -59,7 +59,7 @@ I2C Commands:
 '
 variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
 
-  spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (10 to 60 cm/s)' 'num num' 60 60
+  spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (-60 to 60 cm/s)' 'num num' 30 30
   spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
   spec ' ' 'cbpro_stopWheel' 'CBPro stop wheel _' 'menu.wheelMenu' 'both'
   spec ' ' 'cbpro_stopAll' 'CBPro stop all'
@@ -273,17 +273,17 @@ to cbpro_setServoSpeed servo speed {
 
 to cbpro_setWheelSpeed leftSpeed rightSpeed {
   comment 'Set the wheels to the given speeds. Negative speeds mean reverse.
-Usable peed range: 10cm/s - 60cm/s
+Usable speed range: 10cm/s - 60cm/s (absolute value)
 NOTE: speed=0 is used internally to reset.'
   local 'leftDir' 1
   local 'rightDir' 1
   if (leftSpeed < 0) {
     leftDir = 0
-    leftSpeed = (minimum (absoluteValue speedL) 255)
+    leftSpeed = (minimum (absoluteValue leftSpeed) 255)
   }
   if (rightSpeed < 0) {
     rightDir = 0
-    rightSpeed = (minimum (absoluteValue speedL) 255)
+    rightSpeed = (minimum (absoluteValue rightSpeed) 255)
   }
   '_cbpro_writeCmd' (hexToInt '2') leftDir leftSpeed rightDir rightSpeed
 }
