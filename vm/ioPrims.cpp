@@ -853,6 +853,8 @@ void hardwareInit() {
 			0, 0, 0, 0, 0, 0, 0, 0, 0};
 	#else
 		#if defined(XRP)
+			#undef BOARD_TYPE
+			#define BOARD_TYPE "RP2040 XRP"
 			#define PIN_BUTTON_A 22
 		#endif
 		#define DEFAULT_TONE_PIN 20 // speaker pin on PicoBricks board
