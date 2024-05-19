@@ -261,6 +261,53 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+#if defined(ARDUINO_ARCH_RP2040)
+
+static int legal_rp2040_SDA_pin(int pin) {
+	if ((pin < 0) || (pin > 29)) return false;
+	return (&Wire != &Wire1) ? ((pin % 4) == 0) : ((pin % 4) == 2);
+}
+
+static int legal_rp2040_SCL_pin(int pin) {
+	if ((pin < 0) || (pin > 29)) return false;
+	return (&Wire != &Wire1) ? ((pin % 4) == 1) : ((pin % 4) == 3);
+}
+
+#endif
+
+static OBJ primI2cSetPins(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int pinSDA = obj2int(args[0]);
+	int pinSCL = obj2int(args[1]);
+
+	#if defined(ARDUINO_ARCH_ESP32) || defined(NRF52_SERIES)
+		Wire.end();
+		Wire.setPins(pinSDA, pinSCL);
+		Wire.begin();
+	#elif defined(ARDUINO_ARCH_RP2040)
+		if (!legal_rp2040_SDA_pin(pinSDA)) return falseObj;
+		if (!legal_rp2040_SCL_pin(pinSCL)) return falseObj;
+
+		// stop Wire and set pins
+		Wire.end();
+		Wire.setSDA(pinSDA);
+		Wire.setSCL(pinSCL);
+
+		// restart Wire
+		Wire.begin();
+		Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+		#if defined(ARDUINO_ARCH_RP2040)
+			// Needed on RP2040 to reset the I2C bus after a timeout
+			Wire.setTimeout(100, true);
+		#endif
+		wireStarted = true;
+	#else
+		return fail(primitiveNotImplemented);
+	#endif
+	return falseObj;
+}
+
 // SPI prims
 
 #if defined(PICO_ED)
@@ -2021,6 +2068,7 @@ static PrimEntry entries[] = {
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"i2cSetClockSpeed", primI2cSetClockSpeed},
+	{"i2cSetPins", primI2cSetPins},
 	{"spiExchange", primSPIExchange},
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
