@@ -81,6 +81,10 @@ static void startWire() {
 	#endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+	#if defined(ARDUINO_ARCH_RP2040)
+		// Needed on RP2040 to reset the I2C bus after a timeout
+		Wire.setTimeout(100, true);
+	#endif
 	wireStarted = true;
 }
 
