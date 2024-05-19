@@ -1,6 +1,6 @@
 module 'PicoBricks-mb'
 author MicroBlocks
-version 0 87 
+version 0 88 
 depends 'IR Motion (PIR)' 'IR Remote' 'Light & Gesture (APDS9960)' NeoPixel 'Temperature Humidity (SHTC3)' Tone 
 choices servoNumMenu '1' '2' '3' '4' ALL 
 choices dcNumMenu 'M1:1' 'M2:2' ALL 
@@ -32,7 +32,7 @@ See https://www.robotistan.com,
 https://wiki.microblocks.fun/en/picobricks,
 https://github.com/Robotistan/picobricks-for-microbit-ext/tree/master
 '
-variables _pbmb_initialized _pbmb_pin_Button _pbmb_pin_Relay _pbmb_pin_Pot _pbmb_pin_LDR _pbmb_pin_Buzzer _pbmb_pin_RGB_LED _pbmb_pin_TX _pbmb_pin_RX _pbmb_motor_i2c _pbmb_touch_i2c _pbmb_pin_PIR _pbmb_pin_IRrecv i2cStat _pbmb_touched i2cBuffer _pbmb_kvTable _pbmb_lastKeyTouched _pbmb_current_config _pbmb_config_completed _pbmb_crcTable _pbmb_configNames _pbmb_configTable 
+variables _pbmb_initialized _pbmb_pin_Button _pbmb_pin_Relay _pbmb_pin_Pot _pbmb_pin_LDR _pbmb_pin_Buzzer _pbmb_pin_RGB_LED _pbmb_pin_TX _pbmb_pin_RX _pbmb_motor_i2c _pbmb_touch_i2c _pbmb_pin_PIR _pbmb_pin_IRrecv i2cStat i2cBuffer _pbmb_kvTable _pbmb_lastKeyTouched _pbmb_current_config _pbmb_config_completed _pbmb_crcTable _pbmb_configNames _pbmb_configTable 
 
   spec ' ' 'pbmb_beep' 'PicoBricks-mb beep _ ms' 'auto' 100
   space
@@ -278,20 +278,22 @@ to 'pbmb Last key touched' {
 }
 
 to 'pbmb key _ pressed' touchKey {
-  comment 'OK: non-looping version'
+  comment 'OK: non-looping version
+Reentrant to allow <when _> use.'
   if (not _pbmb_initialized) {
     '_pbmb_init_lib'
   }
   comment 'Read TOUCH Status'
   local 'buttonStat' 0
-  _pbmb_touched = (newList 1)
+  local '_pbmb_touched' (newList 1)
   '_pbmb_wakeup'
   '[sensors:i2cWrite]' _pbmb_touch_i2c ('[data:makeList]' (hexToInt 'AE'))
   '[sensors:i2cRead]' _pbmb_touch_i2c _pbmb_touched
   if (255 == (at 1 _pbmb_touched)) {
     comment '255 = I2C error occurred.'
     _pbmb_touched = (booleanConstant false)
-    stopTask
+    waitMillis 50
+    return (booleanConstant false)
   } else {
     _pbmb_touched = ('[data:convertType]' (at 1 _pbmb_touched) 'boolean')
   }
