@@ -192,6 +192,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		connID = -1;
 		BLE_connected_to_IDE = false;
+		BLE_resumeAdvertising();
 	}
 };
 
@@ -279,10 +280,12 @@ void BLE_resumeAdvertising() {
 	if (!pServer) return;
 
 	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->stop();
 	pAdvertising->reset();
-	if (!BLE_connected_to_IDE && !USB_connected_to_IDE) {
-		pAdvertising->addServiceUUID(MB_SERVICE_UUID);
+	if (BLE_connected_to_IDE || USB_connected_to_IDE) {
+		return; // don't advertise if connected to IDE
 	}
+	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
 	pAdvertising->setName(uniqueName);
 	pAdvertising->setMinInterval(100);
 	pAdvertising->setMaxInterval(200);
