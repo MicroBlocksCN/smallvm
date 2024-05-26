@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 2 28 
+version 2 29 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -9,13 +9,13 @@ choices transmove_Menu 'X(-25mm-25mm)' 'Y(-18mm-18mm)' 'Z(60mm-110mm)'
 choices direction_Menu '逆时针' '顺时针' 
 choices speed_Menu '正常' '慢速' '快速' 
 choices translation_Menu X Y Z 
-choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' 
+choices transrotate_Menu 'X(-20°-20°)' 'Y(-20°-20°)' 'Z(-12°-12°)' 
 choices gait_Menu '对角' '行走' '高抬腿' '微调' 
 choices button_Menu A B 
 choices attitude_Menu R P Y 
 choices move_Menu '前平移（0mm~25mm）' '后平移（-25mm~0mm）' '左平移（0mm~18mm）' '右平移（-18mm~0mm）' 
 choices angle_Menu roll pitch yaw 
-choices transrotate_Menu 'X(-20°-20°)' 'Y(-20°-20°)' 'Z(-12°-12°)' 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
 variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata '动作列表' _buttons 
@@ -23,6 +23,8 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '初始化XGO-nano' 'XGO初始化'
   spec ' ' 'XGO复位' 'XGO恢复初始状态'
   space
+  spec 'r' '机器狗模拟读取' '模拟读取'
+  spec 'r' '机器狗数字读取' '数字读取'
   spec 'r' '读取机器狗电量' '读取当前电量'
   spec 'r' '获取机器狗版本' '读取全部舵机角度'
   spec 'r' '读取第' '读取第 _ 腿舵机值' 'auto' 1
@@ -48,6 +50,7 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '机器狗机械臂' '设置机械臂末端坐标位置X（-80-155） _ mm Z（-95-155） _ mm' 'auto auto' 100 -60
   spec ' ' '机器狗夹爪' '机械爪开合 _' 'auto' '128'
   space
+  spec ' ' '机器狗陀螺仪重置' '陀螺仪重置'
   spec ' ' '陀螺仪' '陀螺仪 _' 'bool' false
   spec ' ' '表演模式' '表演模式 _' 'bool' false
   spec ' ' '卸载所有舵机' '卸载所有舵机 _' 'bool' false
@@ -156,19 +159,19 @@ to '_button pressed' 'pin or name' {
 }
 
 to '_conver2float' data min max {
-  data = (maximum min (minimum data max))
   return (((data * (max - min)) / 255) + min)
 }
 
-to '_conver2u8' limit data {
-  limit = (absoluteValue limit)
-  data = (maximum (0 - limit) (minimum data limit))
-  return ((255 * (data + limit)) / (limit * 2))
+to '_conver2u8' limit u8_data {
+  return ((255 * (u8_data + limit)) / (limit * 2))
 }
 
-to '_conver2u8t' min max data {
-  data = (maximum min (minimum data max))
-  return ((255 * (data - min)) / (max - min))
+to '_conver2u8t' min_data max_data u8_data {
+  if (min_data <= u8_data) {
+    return ((255 * (u8_data - min_data)) / (max_data - min_data))
+  } else {
+    return 0
+  }
 }
 
 to '_read button' 'pin or name' {
@@ -475,6 +478,17 @@ to '机器狗平移无时间' move_direction steps times {
   }
 }
 
+to '机器狗数字读取' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 147 1 96))
+  '_串口结束'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt '通信失败！！！'
+  }
+}
+
 to '机器狗旋转' direction steps times {
   if (direction == '逆时针') {
     '_XGO转向' steps
@@ -520,6 +534,17 @@ to '机器狗机械臂稳定模式' mode {
   }
 }
 
+to '机器狗模拟读取' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 146 1 97))
+  '_串口结束'
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt '通信失败！！！'
+  }
+}
+
 to '机器狗轴向平移' direction steps {
   if (direction == 'X(-25mm-25mm)') {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 51 ('_conver2u8' 25 steps)))
@@ -550,6 +575,12 @@ to '机器狗轴向旋转' direction steps {
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (66 + ('_conver2u8' 12 steps))) % 256))))
     '_串口结束'
   }
+}
+
+to '机器狗陀螺仪重置' {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 96 1 148))
+  '_串口结束'
+  waitMillis 5000
 }
 
 to '机械臂运动' arm degree {
