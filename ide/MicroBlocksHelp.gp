@@ -7,7 +7,7 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
-// TG edited on 2024-APR-03 based on Pilot FW v233
+// PM edited on 2024-05-25
 
 defineClass MicroBlocksHelp opDict
 
@@ -160,7 +160,10 @@ method initialize MicroBlocksHelp {
 		(array '[display:mbUnplot]' '/libraries#unplot-x-y' 'Turn off the LED at the given row and column (1-5).')
 		(array 'displayCharacter' '/libraries#display-character' 'Display a single character on the LED display.')
 		(array 'scroll_text' '/libraries#scroll-text' 'Scroll words or numbers across the LED display.')
-		(array 'stopScrollingText' 	'/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
+		(array 'stopScrollingText' '/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
+        (array '_set display color' '/libraries#set-display-color' 'Sets the color of the 5x5 square LED pixels to the color selected.')
+        (array '_led_image' '/libraries#led-image' 'Reports a number representative of the image drawn on the 5x5 LED panel pixels.')
+        (array '_led_namedImage' '/libraries#_led_namedimage' 'Returns the integer value representing the image selected from the drop-down menu.')
 
 		// NEOPIXEL
 		(array 'neoPixelAttach' '/libraries#attach-neopixel-led-to-pin' 'Set Neopixel count and pin number.')
@@ -292,9 +295,10 @@ method initialize MicroBlocksHelp {
 
         // BLE SERIAL
         (array '[ble:uartConnected]' '/network_libraries/' 'Report (-o) if BLE serial is connected')
-        (array 'bleSerial_readString' '/network_libraries/' '')
-        (array 'bleSerial_readBytes' '/network_libraries/' '')
-        (array 'bleSerial_write' '/network_libraries/' '')
+        (array 'bleSerial_readString' '/network_libraries/' 'Returns a string read from the BLE Serial port.')
+        (array 'bleSerial_readBytes' '/network_libraries/' 'Returns bytes read from the BLE Serial port.')
+        (array 'bleSerial_write' '/network_libraries/' 'Writes any String or ByteArray to the BLE Serial port.
+')
 
         // UDP
         (array '[net:udpStart]' '/network_libraries/' '')
