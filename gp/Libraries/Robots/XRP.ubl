@@ -1,24 +1,26 @@
 module XRP Output
 author 'Russell Owen'
-version 0 8 
+version 0 9 
 depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
 description 'Drive the WPI XRP robot'
 variables _xrp__imuAddress 
 
+  spec ' ' 'xrp_driveAtSpeed' 'drive at speed left _ right _ (mm/sec)' 'num num' 300 300
   spec ' ' 'xrp_driveDistance' 'drive distance _ (mm) speed _ (mm/sec)' 'num num' 100 300
-  spec ' ' 'xrp_driveAtSpeed' 'drive at speed left _ right _ (mm/sec) for _ millisec (0=forever)' 'num num num' 300 300 1000
+  spec ' ' 'xrp_stopWheels' 'stop both wheels'
+  spec ' ' 'xrp_turnAngle' 'turn angle _ (deg) at motor speed _ (mm/sec)' 'num num' 90 300
+  spec ' ' 'xrp_waitForWheelsToStop' 'wait for wheels to stop'
+  space
+  spec ' ' 'xrp_setServo' 'set servo _ to angle _ (deg)' 'num num' 1 0
+  space
   spec 'r' 'xrp_readRollRate' 'read roll rate (deg/sec)'
   spec 'r' 'xrp_readPitchRate' 'read pitch rate (deg/sec)'
   spec 'r' 'xrp_readYawRate' 'read yaw rate (deg/sec)'
   spec 'r' 'xrp_readDistanceSensor' 'read distance sensor (cm)'
   spec 'r' 'xrp_readLineSensors' 'read left, right line sensors'
-  spec ' ' 'xrp_setServo' 'set servo _ to angle _ (deg)' 'num num' 1 0
-  spec ' ' 'xrp_stopWheels' 'stop both wheels'
-  spec ' ' 'xrp_turnAngle' 'turn angle _ (deg) at motor speed _ (mm/sec)' 'num num' 90 300
-  spec ' ' 'xrp_waitForWheelsToStop' 'wait for wheels to stop'
   space
-  spec 'r' 'edcmotors_getNumMotors' 'get the number of encoded DC motors'
   spec 'r' 'xrp_mmToCounts' 'convert _ mm to encoder counts' 'num' 0
+  spec 'r' 'edcmotors_getNumMotors' 'get the number of encoded DC motors'
   space
   spec ' ' '_edcmotors_checkSystem' '_edcmotors_checkSystem'
   spec ' ' '_edcmotors_initSystemVariables' '_edcmotors_initSystemVariables'
@@ -27,28 +29,35 @@ variables _xrp__imuAddress
 
 to '_edcmotors_checkSystem' {
   comment 'Check drive power to the XRP board.'
+  local 'clearText' (booleanConstant false)
   repeatUntil ((analogReadOp 28) >= 300) {
     sayIt 'Insufficient drive voltage; check the power switch and batteries.'
+    clearText = (booleanConstant true)
   }
-  sayIt ''
+  if clearText {
+    sayIt ''
+  }
 }
 
 to '_edcmotors_initSystemVariables' {
   comment 'Set system-specific motors variables.
-    Assume that _init_edcmotors_variables has been called, so that all lists exist.'
+Assume that _init_edcmotors_variables has been called, so that all lists exist.'
   if (or (_edcmotors__numMotors < 2) (_edcmotors__numMotors > 4)) {
     sayIt 'Number of motors must be 2-4'
     return
   }
-  _edcmotors__pCoeff = 2000
-  _edcmotors__iCoeff = 0
-  _edcmotors__dCoeff = 0
-  _edcmotors__deadband = 10
-  _edcmotors__minEffort = 300
-  _edcmotors__maxEffort = 1023
-  _edcmotors__maxIntegral = 10
-  comment 'Approximate maximum motor speed (encoder counts/second) with no load'
-  _edcmotors__maxSpeed = 1080
+  comment 'If you are controlling more than the standard 2 wheel motors,
+you may want to tweak the following lines to specify different tuning parameters for the extra motors,
+especially if the extra motors are not the same as the wheel motors.'
+  atPut 'all' _edcmotors__pCoeff 2000
+  atPut 'all' _edcmotors__iCoeff 0
+  atPut 'all' _edcmotors__dCoeff 0
+  atPut 'all' _edcmotors__deadband 10
+  atPut 'all' _edcmotors__minEffort 300
+  atPut 'all' _edcmotors__maxEffort 1023
+  atPut 'all' _edcmotors__maxIntegral 10
+  comment 'Approximate maximum motor speed (encoder counts/second) with no load.'
+  atPut 'all' _edcmotors__maxSpeed 1800
   atPut 1 _edcmotors__pinEncoderA 4
   atPut 1 _edcmotors__pinEncoderB 5
   atPut 1 _edcmotors__pinDirection 6
@@ -98,31 +107,23 @@ with the following unusual subranges:
 
 to edcmotors_getNumMotors {
   comment 'Get the number of motors. The standard XRP kit comes with 2 motors that drive wheels,
-    but the board can drive up to 4 motors. If you are using more than 2 motors,
-    override this method to return how many you are using. Never return less than 2.'
+but the board can drive up to 4 motors. If you are using more than 2 motors,
+override this method to return how many you are using. Never return less than 2.'
   return 2
 }
 
-to xrp_driveAtSpeed leftSpeed rightSpeed durationMillis {
-  comment 'Drive the wheels at the specified speed (mm/sec) for the specified duration (milliseconds; 0=forever)'
-  edcmotors_moveMotorAtSpeed 1 (xrp_mmToCounts leftSpeed) durationMillis
-  edcmotors_moveMotorAtSpeed 2 (-1 * (xrp_mmToCounts rightSpeed)) durationMillis
+to xrp_driveAtSpeed leftSpeed rightSpeed {
+  comment 'Drive the wheels at the specified speed (mm/sec)'
+  edcmotors_moveMotorAtSpeed 1 (xrp_mmToCounts leftSpeed)
+  edcmotors_moveMotorAtSpeed 2 (0 - (xrp_mmToCounts rightSpeed))
 }
 
 to xrp_driveDistance distance speed {
   comment 'Drive the wheels the specified distance (mm) at the specified speed (mm/second)'
-  if (speed == 0) {
-    sayIt 'Speed must be nonzero'
-    return
-  }
-  if (distance == 0) {
-    comment 'Prevent inifinite motion due to duration=0'
-    return
-  }
-  local 'durationMillis' (absoluteValue ((distance * 1000) / speed))
-  local 'speedCounts' (pid_applySign distance (xrp_mmToCounts speed))
-  edcmotors_moveMotorAtSpeed 1 speedCounts durationMillis
-  edcmotors_moveMotorAtSpeed 2 (-1 * speedCounts) durationMillis
+  local 'distanceCounts' (xrp_mmToCounts distance)
+  local 'speedCounts' (xrp_mmToCounts speed)
+  edcmotors_moveMotorDistance 1 distanceCounts speedCounts
+  edcmotors_moveMotorDistance 2 (0 - distanceCounts) speedCounts
 }
 
 to xrp_mmToCounts mm {
@@ -161,7 +162,7 @@ to xrp_readYawRate {
   if (_xrp__imuAddress == 0) {
     '_xrp_initGyroscope'
   }
-  return (-1 * ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 39)))
+  return (0 - ('_xrp_scaleRollPitchOrYaw' (i2cGet _xrp__imuAddress 39)))
 }
 
 to xrp_setServo index angle {
@@ -184,15 +185,10 @@ to xrp_turnAngle angle speed {
   comment 'Turn the robot by the specified angle (degrees),
 moving the wheel at the specified speed (mm/second).
 Rotate about a point halfway between the wheels.'
-  if (angle == 0) {
-    comment 'Prevent inifinite motion due to duration=0'
-    return
-  }
   local 'speedCounts' (pid_applySign angle (xrp_mmToCounts speed))
   local 'distanceCounts' ((41978 * angle) / 10000)
-  local 'durationMillis' (absoluteValue ((distanceCounts * 1000) / speedCounts))
-  edcmotors_moveMotorAtSpeed 1 speedCounts durationMillis
-  edcmotors_moveMotorAtSpeed 2 speedCounts durationMillis
+  edcmotors_moveMotorDistance 1 distanceCounts speedCounts
+  edcmotors_moveMotorDistance 2 distanceCounts speedCounts
 }
 
 to xrp_waitForWheelsToStop {

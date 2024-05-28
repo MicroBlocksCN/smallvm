@@ -1,18 +1,19 @@
 module 'Encoded DC Motors' Output
 author 'Russell Owen'
-version 0 8 
+version 0 9 
 depends PID 
 description 'Drive DC motors with encoders'
 variables edcmotors__encoderPosition _edcmotors__initialized _edcmotors__running _edcmotors__numMotors _edcmotors__maxSpeed _edcmotors__pinDutyCycle _edcmotors__pinEncoderA _edcmotors__pinEncoderB _edcmotors__pinDirection _edcmotors__prevEncoderAState _edcmotors__prevEncoderBState _edcmotors__targetStartPosition _edcmotors__targetSpeed _edcmotors__targetStartMillis _edcmotors__targetDurationMillis _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort _edcmotors__maxIntegral 
 
-  spec ' ' 'edcmotors_moveMotorAtSpeed' 'move motor _ at speed _ (encoder counts/sec) for _ milliseconds (0=forever)' 'num num num' 1 1000 100
+  spec ' ' 'edcmotors_moveMotorAtSpeed' 'move motor _ at speed _ (encoder counts/sec)' 'num num' 1 500
+  spec ' ' 'edcmotors_moveMotorDistance' 'move motor _ distance _ (encoder counts) at speed _ (counts/sec)' 'num num num' 1 100 500
   spec ' ' 'edcmotors_moveMotorWithEffort' 'move motor _ with effort _ (-1023 to 1023)' 'num num' 1 250
-  spec ' ' 'edcmotors_resetMotorEncoder' 'reset motor encoder index _' 'num' 1
+  spec ' ' 'edcmotors_resetMotorEncoders' 'reset motor encoders _ : _ : ...' 'num num num num' 1 2 3 4
   spec ' ' 'edcmotors_stopAllMotors' 'stop all motors'
   spec ' ' 'edcmotors_stopMotors' 'stop motors _ : _ : ...' 'num num num num' 1 2 3 4
   spec ' ' 'edcmotors_waitForMotorsToStop' 'wait for motors to stop _ : _ : ...' 'num num num num' 1 2 3 4
   space
-  spec ' ' '_edcmotors_basicMoveMotorsWithEffort' '_basic drive motor index _ with effort _ (-1023 to 1023)' 'num num' 1 250
+  spec ' ' '_edcmotors_basicMoveMotorWithEffort' '_basic move motor _ with effort _ (-1023 to 1023)' 'num num' 1 250
   spec ' ' '_edcmotors_driveMotorsToFollowTarget' '_drive motors to follow target'
   spec 'r' '_edcmotors_getTargetPositionSpeedRunning' '_get target position and speed for motor _ at time _ (msec, -1 for now)' 'num num' 1 -1
   spec ' ' '_edcmotors_initLibrary' '_edcmotors init library'
@@ -20,7 +21,7 @@ variables edcmotors__encoderPosition _edcmotors__initialized _edcmotors__running
   spec ' ' '_edcmotors_monitorEncoders' '_monitor motor encoders'
   spec ' ' '_edcmotors_stopOneMotor' '_stop one motor _' 'num' 1
 
-to '_edcmotors_basicMoveMotorsWithEffort' index effort {
+to '_edcmotors_basicMoveMotorWithEffort' index effort {
   comment 'Implement edcmotors_moveMotorWithEffort. Assumes that _edcmotors_initLibrary has been called'
   analogWriteOp (at index _edcmotors__pinDutyCycle) (absoluteValue effort)
   digitalWriteOp (at index _edcmotors__pinDirection) (effort > 0)
@@ -29,7 +30,7 @@ to '_edcmotors_basicMoveMotorsWithEffort' index effort {
 to '_edcmotors_driveMotorsToFollowTarget' {
   comment 'Drive motors to follow the specified target position and speed.
 This is a background task (infinite loop) that must be running,
-in order for edcmotors_moveMotorAtSpeed to work.'
+in order for edcmotors_moveMotorAtSpeed and edcmotors_moveMotorDistance to work.'
   for i _edcmotors__numMotors {
     pid_resetPID i
   }
@@ -52,19 +53,19 @@ in order for edcmotors_moveMotorAtSpeed to work.'
         encoderPosition = (at i edcmotors__encoderPosition)
         comment 'Note: simple subtraction handles encoder wraparound automatically'
         positionError = (targetPosition - encoderPosition)
-        correction = (pid_computePID i positionError _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__maxIntegral)
+        correction = (pid_computePID i positionError (at i _edcmotors__pCoeff) (at i _edcmotors__iCoeff) (at i _edcmotors__dCoeff) (at i _edcmotors__maxIntegral))
         comment 'Compute predicted ("feed forward") effort.'
-        effort = ((targetSpeed * _edcmotors__maxEffort) / _edcmotors__maxSpeed)
+        effort = ((targetSpeed * (at i _edcmotors__maxEffort)) / (at i _edcmotors__maxSpeed))
         comment 'If the predicted effort is too small to be useful, set it to 0,
-          in order to make the system more stable at the start and end of each move.'
-        if ((absoluteValue effort) < _edcmotors__maxEffort) {
+in order to make the system more stable at the start and end of each move.'
+        if ((absoluteValue effort) < (at i _edcmotors__maxEffort)) {
           effort = 0
         }
         effort += (correction / 1000)
-        effort = (pid_constrainValue effort _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort)
+        effort = (pid_constrainValue effort (at i _edcmotors__deadband) (at i _edcmotors__minEffort) (at i _edcmotors__maxEffort))
         comment 'Check that following is still wanted, just before commanding the motor.'
         if ((at i _edcmotors__targetStartMillis) >= 0) {
-          '_edcmotors_basicMoveMotorsWithEffort' i effort
+          '_edcmotors_basicMoveMotorWithEffort' i effort
           if running {
             _edcmotors__running = (_edcmotors__running | (1 << (i - 1)))
           } else {
@@ -78,7 +79,7 @@ in order for edcmotors_moveMotorAtSpeed to work.'
 
 to '_edcmotors_getTargetPositionSpeedRunning' index atMillis {
   comment 'Compute the target position for the specified motor at the specified time (msec, <0 for now).
-Return a list with four elements:
+Return a list with three elements:
 * target position (encoder counts)
 * target speed (encoder counts/second)
 * running
@@ -88,14 +89,14 @@ Assumes that _edcmotors_initLibrary has been called.'
   }
   local 'targetStartMillis' (at index _edcmotors__targetStartMillis)
   if (targetStartMillis < 0) {
-    sayIt 'Warning: no target; returning 0, 0'
-    return ('[data:makeList]' 0 0 0 (booleanConstant false))
+    comment 'No target'
+    return ('[data:makeList]' 0 0 (booleanConstant false))
   }
   local 'durationMillis' (millisSince targetStartMillis atMillis)
   local 'targetDurationMillis' (at index _edcmotors__targetDurationMillis)
   local 'targetSpeed' 0
   local 'running' (booleanConstant false)
-  if (and (targetDurationMillis > 0) (durationMillis > targetDurationMillis)) {
+  if (durationMillis > targetDurationMillis) {
     comment 'Move is done; target position = end position'
     durationMillis = targetDurationMillis
     targetSpeed = 0
@@ -138,6 +139,14 @@ and create all lists (but do not set values) of variables that are system-specif
   _edcmotors__prevEncoderAState = (newList _edcmotors__numMotors (booleanConstant false))
   _edcmotors__prevEncoderBState = (newList _edcmotors__numMotors (booleanConstant false))
   comment 'The following lists are system specific, so their elements must be set elsewhere.'
+  _edcmotors__pCoeff = (newList _edcmotors__numMotors 0)
+  _edcmotors__iCoeff = (newList _edcmotors__numMotors 0)
+  _edcmotors__dCoeff = (newList _edcmotors__numMotors 0)
+  _edcmotors__deadband = (newList _edcmotors__numMotors 0)
+  _edcmotors__minEffort = (newList _edcmotors__numMotors 0)
+  _edcmotors__maxEffort = (newList _edcmotors__numMotors 0)
+  _edcmotors__maxIntegral = (newList _edcmotors__numMotors 0)
+  _edcmotors__maxSpeed = (newList _edcmotors__numMotors 0)
   _edcmotors__pinEncoderA = (newList _edcmotors__numMotors 0)
   _edcmotors__pinEncoderB = (newList _edcmotors__numMotors 0)
   _edcmotors__pinDirection = (newList _edcmotors__numMotors 0)
@@ -179,20 +188,35 @@ to '_edcmotors_stopOneMotor' index {
   _edcmotors__running = (_edcmotors__running & ('~' (1 << (index - 1))))
 }
 
-to edcmotors_moveMotorAtSpeed index speed durationMillis {
-  comment 'Move the specified motor at the specified speed (counts/sec) for the specified duration (milliseconds; 0=forever).'
+to edcmotors_moveMotorAtSpeed index speed {
+  comment 'Move the specified motor at the specified speed (counts/sec)'
   '_edcmotors_initLibrary'
-  if (durationMillis < 0) {
-    sayIt 'durationMillis=' durationMillis 'must be >= 0'
+  comment 'Always start by setting start time <0, set all other parameters, then set the correct start time,
+in case something goes wrong.'
+  atPut index _edcmotors__targetStartMillis -1
+  atPut index _edcmotors__targetStartPosition (at index edcmotors__encoderPosition)
+  atPut index _edcmotors__targetSpeed speed
+  atPut index _edcmotors__targetDurationMillis 1000000000
+  _edcmotors__running = (_edcmotors__running | (1 << (index - 1)))
+  atPut index _edcmotors__targetStartMillis (millisOp)
+}
+
+to edcmotors_moveMotorDistance index distance speed {
+  comment 'Move the specified motor the specified distance (encoder counts) at the specified speed (counts/sec).'
+  '_edcmotors_initLibrary'
+  if (speed == 0) {
+    sayIt 'speed=' speed 'must be non-zero'
     return
   }
-  comment 'Constrain the speed to a sane value.
-This reduces the risk that the robot will keep going long after the move should have finished.'
-  if ((absoluteValue speed) > _edcmotors__maxSpeed) {
-    speed = (pid_applySign speed _edcmotors__maxSpeed)
+  comment 'Constrain the speed to a sane value: 80% of the unloaded max speed.
+This makes it far more likely that the robot can actually obey the requested speed.'
+  local 'maxRequestedSpeed' ((800 * (at index _edcmotors__maxSpeed)) / 1000)
+  if ((absoluteValue speed) > maxRequestedSpeed) {
+    speed = (pid_applySign speed maxRequestedSpeed)
   }
-  comment 'Always start by setting start time <0, set all other parameters, then set the correct start time.
-This avoids race conditions.'
+  local 'durationMillis' ((distance * 1000) / speed)
+  comment 'Always start by setting start time <0, set all other parameters, then set the correct start time,
+in case something goes wrong.'
   atPut index _edcmotors__targetStartMillis -1
   atPut index _edcmotors__targetStartPosition (at index edcmotors__encoderPosition)
   atPut index _edcmotors__targetSpeed speed
@@ -212,12 +236,14 @@ Thus the usable range of effort is usually rather small.'
   comment 'Prevent _edcmotors_driveMotorsToFollowTarget from moving the motor'
   atPut index _edcmotors__targetStartMillis -1
   _edcmotors__running = (_edcmotors__running | (1 << (index - 1)))
-  '_edcmotors_basicMoveMotorsWithEffort' index effort
+  '_edcmotors_basicMoveMotorWithEffort' index effort
 }
 
-to edcmotors_resetMotorEncoder index {
+to edcmotors_resetMotorEncoders {
   '_edcmotors_initLibrary'
-  atPut index edcmotors__encoderPosition 0
+  for i (pushArgCount) {
+    atPut (getArg i) edcmotors__encoderPosition 0
+  }
 }
 
 to edcmotors_stopAllMotors {
