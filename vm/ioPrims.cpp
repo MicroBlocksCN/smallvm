@@ -943,11 +943,9 @@ static void initPins(void) {
 
 void turnOffPins() {
 	for (int pin = 0; pin < TOTAL_PINS; pin++) {
-		if (OUTPUT == currentMode[pin]) {
-			digitalWrite(pin, LOW);
-			pinMode(pin, INPUT);
-			currentMode[pin] = INPUT;
-		}
+		if (OUTPUT == currentMode[pin]) digitalWrite(pin, LOW);
+		pinMode(pin, INPUT);
+		currentMode[pin] = INPUT;
 	}
 }
 
@@ -967,6 +965,24 @@ int mapDigitalPinNum(int pinNum) {
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return -1; // out of range
 	return pinNum;
+}
+
+static int inputModeFor(OBJ pullArg) {
+	// Return the input mode (INPUT, INPUT_PULLUP, INPUT_PULLDOWN) for the given argument.
+	// If the argument is a boolean: true -> INPUT_PULLUP, false -> INPUT
+	// If the argument is a string: "up" -> INPUT_PULLUP, "down" -> INPUT_PULLDOWN, other -> INPUT
+
+	int argType = objType(pullArg);
+	if (BooleanType == argType) {
+		return (pullArg == trueObj) ? INPUT_PULLUP : INPUT;
+	} else if (StringType == argType) {
+		char *s = obj2str(pullArg);
+		if (strcmp("up", s) == 0) return INPUT_PULLUP;
+		#if defined(INPUT_PULLDOWN)
+			if (strcmp("down", s) == 0) return INPUT_PULLDOWN;
+		#endif
+	}
+	return INPUT;
 }
 
 #if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
@@ -1036,10 +1052,8 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
-	#if !defined(ESP8266)
-		SET_MODE(pin, INPUT);
-		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
-	#endif
+	int mode = (argCount > 1) ? inputModeFor(args[1]) : INPUT;
+	SET_MODE(pin, mode);
 	return int2obj(analogRead(pin));
 }
 
@@ -1139,7 +1153,7 @@ void primAnalogWrite(OBJ *args) {
 		}
 	#else
 		int modeChanged = (OUTPUT != currentMode[pinNum]);
-		(void)(modeChanged); // reference var to suppress compiler warning
+		(void) (modeChanged); // reference var to suppress compiler warning
 
 		SET_MODE(pinNum, OUTPUT);
 		#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(CALLIOPE_V3)
@@ -1218,8 +1232,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
-	int mode = INPUT;
-	if ((argCount > 1) && (trueObj == args[1])) mode = INPUT_PULLUP;
+	int mode = (argCount > 1) ? inputModeFor(args[1]) : INPUT;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		if (7 == pinNum) mode = INPUT_PULLUP; // slide switch
 	#endif
