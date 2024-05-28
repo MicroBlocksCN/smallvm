@@ -236,7 +236,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
-		(array 'r' '[misc:sqrt]'		'fixed sqrt _' 'num' 2)
+		(array 'r' '[misc:sqrt]'		'fixed sqrt _' 'num' 9)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)
