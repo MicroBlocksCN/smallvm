@@ -1185,6 +1185,7 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   }
 
   libName = (withoutExtension (filePart fileName))
+  removeLibraryNamed mbProject libName
   importLibraryFromString this (toString data) libName fileName
 }
 
