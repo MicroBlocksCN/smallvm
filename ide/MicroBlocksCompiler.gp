@@ -150,7 +150,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
 		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
-		'-'
+		(array 'r' '[misc:sqrt]'		'sqrt _' 'num' 9)
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
@@ -236,7 +236,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
-		(array 'r' '[misc:sqrt]'		'fixed sqrt _' 'num' 9)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)
