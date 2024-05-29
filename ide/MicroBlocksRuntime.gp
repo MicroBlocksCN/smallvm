@@ -350,6 +350,7 @@ method analyzeProject SmallRuntime {
 	}
 	print '  Total:' totalBytes
 	print '-----------'
+	return totalBytes
 }
 
 // Decompiling
