@@ -525,7 +525,7 @@ WiFiUDP udp;
 
 static OBJ primUDPStart(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
-	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!isConnectedToWiFi()) return falseObj;
 
 	if (argCount < 1) return fail(notEnoughArguments);
 	int port = evalInt(args[0]);
@@ -537,6 +537,7 @@ static OBJ primUDPStart(int argCount, OBJ *args) {
 
 static OBJ primUDPStop(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return falseObj;
 
 	udp.stop();
 	return falseObj;
@@ -569,7 +570,7 @@ static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 
 static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
-	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
+	if (!isConnectedToWiFi()) return (OBJ) &noDataString;
 
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	int byteCount = udp.parsePacket();

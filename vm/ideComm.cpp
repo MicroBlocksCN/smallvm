@@ -114,19 +114,6 @@ static void show_BLE_ID() {
 	primMBDisplayOff(0, args);
 }
 
-static int gotSerialPing() {
-	char buf[8];
-	int byteCount = Serial.available();
-	if (byteCount < 3) return false;
-	byteCount = Serial.readBytes((char *) buf, sizeof(buf));
-	for (int i = 0; i < byteCount - 2; i++) {
-		if ((buf[i] == 0xFA) && (buf[i+1] == 0x1A) && (buf[i+2] == 0)) {
-			return true; // receive ping message from IDE
-		}
-	}
-	return false;
-}
-
 static void updateConnectionState() {
 	if (USB_connected_to_IDE && !ideConnected()) {
 		// resume BLE service and advertisting
@@ -134,7 +121,7 @@ static void updateConnectionState() {
 		USB_connected_to_IDE = false;
 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
-		if (gotSerialPing()) {
+		if (Serial.available()) {
 			// new serial connection; disconnect BLE if it is connected
 			if (pServer) {
 				if (connID != -1) { pServer->disconnect(connID); }
@@ -192,6 +179,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		connID = -1;
 		BLE_connected_to_IDE = false;
+		BLE_resumeAdvertising();
 	}
 };
 
@@ -279,10 +267,12 @@ void BLE_resumeAdvertising() {
 	if (!pServer) return;
 
 	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->stop();
 	pAdvertising->reset();
-	if (!BLE_connected_to_IDE && !USB_connected_to_IDE) {
-		pAdvertising->addServiceUUID(MB_SERVICE_UUID);
+	if (BLE_connected_to_IDE || USB_connected_to_IDE) {
+		return; // don't advertise if connected to IDE
 	}
+	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
 	pAdvertising->setName(uniqueName);
 	pAdvertising->setMinInterval(100);
 	pAdvertising->setMaxInterval(200);

@@ -61,8 +61,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
-		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
-		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
+		(array 'r' 'digitalReadOp'		'read digital pin _ : pull _' 'num menu.pullMenu' 1 'none')
+		(array 'r' 'analogReadOp'		'read analog pin _ : pull _' 'num menu.pullMenu' 1 'none')
 		'-'
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
@@ -150,7 +150,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
 		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
-		'-'
+		(array 'r' '[misc:sqrt]'		'sqrt _' 'num' 9)
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
@@ -216,6 +216,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
 		(array 'r' '[sensors:microphone]'	'microphone')
 		(array ' ' '[sensors:i2cSetClockSpeed]'	'set i2c clock speed _' 'num' 400000)
+		(array ' ' '[sensors:i2cSetPins]'	'set i2c pins SDA _ SCL _' 'num num' 4 5)
 	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
@@ -235,7 +236,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
-		(array 'r' '[misc:sqrt]'		'fixed sqrt _' 'num' 2)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)

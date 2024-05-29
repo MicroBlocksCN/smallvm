@@ -1050,6 +1050,12 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primClear(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+	tftClear();
+	return falseObj;
+}
+
 // display update control
 
 static OBJ primDeferUpdates(int argCount, OBJ *args) {
@@ -1278,6 +1284,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+static OBJ primClear(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primDeferUpdates(int argCount, OBJ *args) { return falseObj; }
 static OBJ primResumeUpdates(int argCount, OBJ *args) { return falseObj; }
@@ -1306,6 +1313,7 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"clear", primClear},
 	{"deferUpdates", primDeferUpdates},
 	{"resumeUpdates", primResumeUpdates},
 

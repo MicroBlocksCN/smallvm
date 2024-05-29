@@ -315,6 +315,11 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primClear(int argCount, OBJ *args) {
+	tftClear();
+	return falseObj;
+}
+
 // defer/force update
 
 static OBJ primDeferUpdates(int argCount, OBJ *args) {
@@ -560,6 +565,7 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"clear", primClear},
 
 	{"deferUpdates", primDeferUpdates},
 	{"resumeUpdates", primResumeUpdates},

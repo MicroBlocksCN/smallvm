@@ -1,6 +1,6 @@
 module PID Operators
 author 'Russell Owen'
-version 0 8 
+version 0 9 
 description 'PID Control Loop'
 variables _pid__initialized _pid__numPIDs _pid__prevError _pid__prevMicros _pid__prevIntegral 
 
@@ -8,7 +8,7 @@ variables _pid__initialized _pid__numPIDs _pid__prevError _pid__prevMicros _pid_
   spec ' ' 'pid_resetPID' 'reset pid at index _' 'num' 1
   space
   spec 'r' 'pid_constrainValue' 'constrain value _ deadband _ minimum _ maximum _' 'num num num num' 0 0 0 1000
-  spec 'r' 'pid_applySign' 'apply sign _ to value _' 'num num' 1 0
+  spec 'r' 'pid_applySign' 'apply sign of _ to value _' 'num num' 1 0
   space
   spec ' ' '_pid_extendPIDLists' '_extend pid lists; index _' 'num' 1
   spec ' ' '_pid_initLibrary' '_init pid library'
@@ -38,7 +38,7 @@ to '_pid_initLibrary' {
 
 to pid_applySign sign value {
   comment 'If sign < 0 return -value else return value'
-  return (ifExpression (sign >= 0) value (-1 * value))
+  return (ifExpression (sign >= 0) value (0 - value))
 }
 
 to pid_computePID index error pCoeff iCoeff dCoeff maxIntegral {

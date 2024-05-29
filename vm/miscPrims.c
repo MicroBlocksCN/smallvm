@@ -171,10 +171,14 @@ static OBJ primSine(int argCount, OBJ *args) {
 }
 
 static OBJ primSqrt(int argCount, OBJ *args) {
-	// Returns the integer part of a square root of a given number multiplied by
-	// 1000 (e.g. sqrt(2) = 1414).
+	// Returns the integer square root of a given number rounded to the nearest integer.
+	// For example, sqrt(9) = 3. To get more precision, you can pre-multiply by a scaling
+	// factor squared. For example, to get two digits of precision you can multiple by
+	// 100 * 100 = 10000. The square root of two with two digits: sqrt(20000) = 141
 
-	return int2obj((int) round(1000 * sqrt(evalInt(args[0]))));
+	int n = evalInt(args[0]);
+	if (n < 0) n = -n; // xxx should we give an error here?
+	return int2obj((int) round(sqrt(n)));
 }
 
 static OBJ primArctan(int argCount, OBJ *args) {
