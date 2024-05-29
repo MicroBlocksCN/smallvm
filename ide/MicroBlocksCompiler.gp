@@ -1144,7 +1144,9 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// add local variable names
 	varNames = (list)
 	for pair (sortedPairs localVars) {
-		add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+		if (isClass (last pair) 'String') { // skip if non-string (can happen due to syntax error)
+			add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+		}
 	}
 	add instructionList (joinStrings varNames (string 9)) // tab delimited string
 
