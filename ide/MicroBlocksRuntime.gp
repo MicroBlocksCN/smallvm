@@ -201,11 +201,12 @@ method showCallTree SmallRuntime aBlock {
 		funcName = (primName (expression aBlock))
 	}
 
+    globalVars = (allVariableNames (project scripter))
 	allFunctions = (dictionary)
 	for f (allFunctions (project scripter)) { atPut allFunctions (functionName f) f }
 
 	result = (list)
-	appendCallsForFunction this funcName result '' allFunctions (array funcName)
+	appendCallsForFunction this funcName result '' globalVars allFunctions (array funcName)
 
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Call Tree'
@@ -214,11 +215,14 @@ method showCallTree SmallRuntime aBlock {
 	fixLayout ws
 }
 
-method appendCallsForFunction SmallRuntime funcName result indent allFunctions callers {
+method appendCallsForFunction SmallRuntime funcName result indent globalVars allFunctions callers {
 	func = (at allFunctions funcName)
+	updateCmdList func (cmdList func)
+	localNames = (toList (localNames func))
+	removeAll localNames globalVars
 
 	argCount = (count (argNames func))
-	localCount = (count (localNames func))
+	localCount = (count localNames)
 	stackWords = (+ 3 argCount localCount)
 	info = ''
 	if (or (argCount > 0) (localCount > 0)) {
@@ -246,7 +250,7 @@ method appendCallsForFunction SmallRuntime funcName result indent allFunctions c
 			if (contains callers op) {
 				add result (join indent '   ' funcName ' [recursive]')
 			} else {
-				appendCallsForFunction this op result indent allFunctions (copyWith callers op)
+				appendCallsForFunction this op result indent globalVars allFunctions (copyWith callers op)
 			}
 			add processed op
 		}
