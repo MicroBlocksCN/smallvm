@@ -7,7 +7,7 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
-// PM edited on 2024-05-25
+// PM edited on 2024-05-30
 
 defineClass MicroBlocksHelp opDict
 
@@ -329,12 +329,12 @@ method initialize MicroBlocksHelp {
         (array 'pbmb_temperature' '/extension_libraries/picobricks-mb#picobricks-mb-temperature' 'Returns the temperature in Celsius.')
         (array 'pbmb_pir' '/extension_libraries/picobricks-mb#picobricks-mb-pir-detected' 'Returns (-o) if any motion is detected.')
         (array 'pbmb_set_relay' '/extension_libraries/picobricks-mb#picobricks-mb-set-relay' 'Sets the relay as (-o) or (o-)')
-        (array 'pbmb_set_motor_speed' '/extension_libraries/picobricks-mb#picobricks-mb-set-motor' 'Sets the DC motor speeds (0-255).')
+        (array 'pbmb_set_motor_speed' '/extension_libraries/picobricks-mb#picobricks-mb-set-motor' 'This module controls the two DC motors (M1, M2).')
         (array 'pbmb_set_servo_angle' '/extension_libraries/picobricks-mb#picobricks-mb-set-servo' 'Sets the servo ANGLE to (0-180).')
         (array 'pbmb_ir_code_received' '/extension_libraries/picobricks-mb#picobricks-mb-ir-code-received' 'Waits until IR code is received, and then returns (-o)')
         (array 'pbmb_ir_code' '/extension_libraries/picobricks-mb#picobricks-mb-ir-code' 'Returns the last IR code detected by the IR sensor.')
         (array 'pbmb_ir_recv_code' '/extension_libraries/picobricks-mb#picobricks-mb-receive-ir-code' 'Waits until IR is (-o) and returns the IR code detected.')
-        (array 'pbmb_gest_color' '/extension_libraries/picobricks-mb#picobricks-mb-gs-color' 'R,G,B light intensity results are returned in a list format.')
+        (array 'pbmb_gest_color' '/extension_libraries/picobricks-mb#picobricks-mb-gs-color' 'Returns color detected as a number derived from RGB values.')
         (array 'pbmb_gest_avail' '/extension_libraries/picobricks-mb#picobricks-mb-gs-detected' 'Returns (-o) or (o-) based on the detected motion over the sensor.')
         (array 'pbmb_gest_lastgest' '/extension_libraries/picobricks-mb#picobricks-mb-gs-last-gesture' 'Returns the last gesture detected.')
         (array 'pbmb_gest_light' '/extension_libraries/picobricks-mb#picobricks-mb-gs-light' 'Returns the light level detected by the sensor.')
