@@ -941,11 +941,17 @@ static void initPins(void) {
 	#endif
 }
 
+#if !defined(ARDUINO_SAM_DUE) && !defined(ESP8266)
+  #define HAS_INPUT_PULLDOWN true
+#endif
+
 void turnOffPins() {
 	for (int pin = 0; pin < TOTAL_PINS; pin++) {
-		if (OUTPUT == currentMode[pin]) digitalWrite(pin, LOW);
-		pinMode(pin, INPUT);
-		currentMode[pin] = INPUT;
+		int turnOffPin = ((OUTPUT == currentMode[pin]) || (INPUT_PULLUP == currentMode[pin]));
+		#if defined(HAS_INPUT_PULLDOWN)
+			if (INPUT_PULLDOWN == currentMode[pin]) turnOffPin = true;
+		#endif
+		if (turnOffPin) SET_MODE(pin, INPUT);
 	}
 }
 
@@ -978,7 +984,7 @@ static int inputModeFor(OBJ pullArg) {
 	} else if (StringType == argType) {
 		char *s = obj2str(pullArg);
 		if (strcmp("up", s) == 0) return INPUT_PULLUP;
-		#if defined(INPUT_PULLDOWN)
+		#if defined(HAS_INPUT_PULLDOWN)
 			if (strcmp("down", s) == 0) return INPUT_PULLDOWN;
 		#endif
 	}
