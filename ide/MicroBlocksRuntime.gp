@@ -2635,7 +2635,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (and (contains (array 'Citilab ED1' 'M5Stack-Core' 'ESP8266' 'ESP32' 'Databot') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
-		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0' 'MakerPort') {
+		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'MakerPort') {
 			adaFruitResetMessage this
 		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 			rp2040ResetMessage this
@@ -2677,8 +2677,6 @@ method niceBoardName SmallRuntime board {
 		return 'Circuit Playground Bluefruit'
 	} (beginsWith name 'CLUE') {
 		return 'Clue'
-	} (beginsWith name 'METRO') {
-		return 'Metro M0'
 	} (beginsWith name 'RPI-RP2') {
 		return 'Raspberry Pi Pico'
 	}
@@ -2724,7 +2722,6 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
 			if (notNil (nextMatchIn 'Adafruit CLUE nRF52840' contents)) { return 'CLUEBOOT' } // bootloader 0.7
-			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
 			if (notNil (nextMatchIn 'MakerPort' contents)) { return 'MAKERBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
@@ -2765,8 +2762,6 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
 		vmFileName = 'vm_clue.uf2'
-	} ('METROBOOT' == driveName) {
-		vmFileName = 'vm_metroM0.uf2'
 	} ('MAKERBOOT' == driveName) {
 		vmFileName = 'vm_makerport.uf2'
 	} ('RPI-RP2' == driveName) {
@@ -2801,10 +2796,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
-	} ('Metro M0' == boardType) {
-		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
 	} ('MakerPort' == boardType) {
-		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'MakerPort'
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
@@ -2835,7 +2828,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'Circuit Playground Express'
 			addItem menu 'Circuit Playground Bluefruit'
 			addItem menu 'Clue'
-			addItem menu 'Metro M0'
 			addLine menu
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
@@ -2890,9 +2882,6 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Clue' == boardName) {
 		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
-	} ('Metro M0' == boardName) {
-		vmFileName = 'vm_metroM0.uf2'
-		driveName = 'METROBOOT'
 	} ('MakerPort' == boardName) {
 		vmFileName = 'vm_makerport.uf2'
 		driveName = 'MAKERBOOT'
