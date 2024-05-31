@@ -189,7 +189,7 @@ method scrollToXY MicroBlocksScripter x y {
 	scrollToY scriptsFrame (y + (top (morph scriptsFrame)))
 }
 
-method hideAllMyBlocks MicroBlocksScripter libName {
+method hideAllMyBlocks MicroBlocksScripter {
   for f (functions (main mbProject)) {
 	internalHideDefinition this (functionName f)
   }
@@ -1190,7 +1190,10 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   }
 
   libName = (withoutExtension (filePart fileName))
-  removeLibraryNamed mbProject libName
+  if (notNil (libraryNamed mbProject libName)) {
+    // replacing library; first hide its block definitions
+    hideAllLibraryDefinitions this libName
+  }
   importLibraryFromString this (toString data) libName fileName
 }
 
