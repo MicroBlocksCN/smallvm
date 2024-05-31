@@ -1,6 +1,6 @@
 module 'PicoBricks-mb'
 author MicroBlocks
-version 0 88 
+version 0 89 
 depends 'IR Motion (PIR)' 'IR Remote' 'Light & Gesture (APDS9960)' NeoPixel 'Temperature Humidity (SHTC3)' Tone 
 choices servoNumMenu '1' '2' '3' '4' ALL 
 choices dcNumMenu 'M1:1' 'M2:2' ALL 
@@ -17,9 +17,9 @@ This library controls these PicoBricks components:
 - 2xDC & 4xSERVO Motors (HK32F030) I2C:0x22
 - IR Remote
 - Light & Gesture (APDS9960) I2C:0x39
-- Light sensor (LDR:Light Dependent Resistor)
+- Light sensor (ALS-PDIC243-3B)
 - Potentiometer (variable resistor)
-- Button on POT
+- Button on POT w/ pull-down
 - 14ch TOUCH Panel (CY8CMBR3116) I2C:0x37
 
 Use separate libraries to control:
@@ -32,7 +32,7 @@ See https://www.robotistan.com,
 https://wiki.microblocks.fun/en/picobricks,
 https://github.com/Robotistan/picobricks-for-microbit-ext/tree/master
 '
-variables _pbmb_initialized _pbmb_pin_Button _pbmb_pin_Relay _pbmb_pin_Pot _pbmb_pin_LDR _pbmb_pin_Buzzer _pbmb_pin_RGB_LED _pbmb_pin_TX _pbmb_pin_RX _pbmb_motor_i2c _pbmb_touch_i2c _pbmb_pin_PIR _pbmb_pin_IRrecv i2cStat i2cBuffer _pbmb_kvTable _pbmb_lastKeyTouched _pbmb_current_config _pbmb_config_completed _pbmb_crcTable _pbmb_configNames _pbmb_configTable 
+variables _pbmb_initialized _pbmb_pin_Button _pbmb_pin_Relay _pbmb_pin_Pot _pbmb_pin_LDR _pbmb_pin_Buzzer _pbmb_pin_RGB_LED _pbmb_pin_TX _pbmb_pin_RX _pbmb_motor_i2c _pbmb_touch_i2c _pbmb_pin_PIR _pbmb_pin_IRrecv i2cStat _pbmb_touched i2cBuffer _pbmb_kvTable _pbmb_lastKeyTouched _pbmb_current_config _pbmb_config_completed _pbmb_crcTable _pbmb_configNames _pbmb_configTable 
 
   spec ' ' 'pbmb_beep' 'PicoBricks-mb beep _ ms' 'auto' 100
   space
@@ -339,7 +339,7 @@ to pbmb_button {
   if (not _pbmb_initialized) {
     '_pbmb_init_lib'
   }
-  return (digitalReadOp _pbmb_pin_Button)
+  return (digitalReadOp _pbmb_pin_Button 'down')
 }
 
 to pbmb_gest_avail {
@@ -432,7 +432,7 @@ to pbmb_light_sensor {
   if (not _pbmb_initialized) {
     '_pbmb_init_lib'
   }
-  return ('[misc:rescale]' (analogReadOp _pbmb_pin_LDR) 0 1023 100 0)
+  return ('[misc:rescale]' (analogReadOp _pbmb_pin_LDR) 0 700 0 100)
 }
 
 to pbmb_pir {
