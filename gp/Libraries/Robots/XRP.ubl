@@ -1,6 +1,6 @@
 module XRP Output
 author 'Russell Owen'
-version 0 9 
+version 0 10 
 depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
 description 'Drive the WPI XRP robot'
 variables _xrp__imuAddress 
@@ -58,6 +58,8 @@ especially if the extra motors are not the same as the wheel motors.'
   atPut 'all' _edcmotors__maxIntegral 10
   comment 'Approximate maximum motor speed (encoder counts/second) with no load.'
   atPut 'all' _edcmotors__maxSpeed 1800
+  comment 'Acceleration for point to point moves (encoder counts/second^2)'
+  atPut 'all' _edcmotors__accel 2500
   atPut 1 _edcmotors__pinEncoderA 4
   atPut 1 _edcmotors__pinEncoderB 5
   atPut 1 _edcmotors__pinDirection 6
