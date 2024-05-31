@@ -740,6 +740,9 @@ method restoreScripts MicroBlocksScripter {
 		  block = nil
 		}
       } else {
+        isReporter = ('r' == (blockType (specForOp (authoringSpecs) (primName dta))))
+        if (and isReporter (isClass dta 'Command')) { dta = (toReporter dta) }
+        if (and (not isReporter) (isClass dta 'Reporter')) { dta = (toCommand dta) }
         block = (toBlock dta)
       }
       if (notNil block) {
@@ -879,6 +882,8 @@ method createFunction MicroBlocksScripter isReporter {
   recordBlockSpec mbProject opName spec
   addToBottom this (scriptForFunction func)
   updateBlocks this
+  saveScripts this
+  restoreScripts this
 }
 
 method copyFunction MicroBlocksScripter definition {
