@@ -7,7 +7,7 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
-// PM edited on 2024-05-30
+// PM edited on 2024-06-02
 
 defineClass MicroBlocksHelp opDict
 
@@ -346,6 +346,31 @@ method initialize MicroBlocksHelp {
         (array 'pbmb Last key touched' '/extension_libraries/picobricks-mb#picobricks-mb-last-key-touched' 'Returns the name of last key touch detected.')
         (array '_pbmb_configureTouch' '/extension_libraries/picobricks-mb#_picobricks-mb-configure-touch-options' 'Configures touch sensor area options.')
         (array '_pbmb_Config&CRC' '/extension_libraries/picobricks-mb#_picobricks-mb-show-touch-config&crc' 'Displays the configuration & CRC of the current configuration.')
+
+        // Cutebot Pro
+        (array 'cbpro_setWheelSpeed' '/extension_libraries/cutebotpro#cbpro-set-wheel-speed' 'Runs car at specified cm/s speed.')
+        (array 'cbpro_wheelSpeed' '/extension_libraries/cutebotpro#cbpro-speed-of-wheel' 'Returns speed of selected wheel in cm/s.')
+        (array 'cbpro_stopWheel' '/extension_libraries/cutebotpro#cbpro-stop-wheel' 'Stops selected wheel.')
+        (array 'cbpro_stopAll' '/extension_libraries/cutebotpro#cbpro-stop-all' 'Resets all car settings: stops car, stops external motor, turns off all lights.')
+        (array 'cbpro_move' '/extension_libraries/cutebotpro#cbpro-move' 'Moves car a specified distance (0-255cm).')
+        (array 'cbpro_turn' '/extension_libraries/cutebotpro#cbpro-turn' 'Executes a turn per selected parameters.')
+        (array 'cbpro_setHeadlight' '/extension_libraries/cutebotpro#cbpro-set-headlight' 'Sets headlights to specified color.')
+        (array 'cbpro_setNeopixels' '/extension_libraries/cutebotpro#cbpro-set-neopixel' 'Sets colors of the selected NeoPixels under the car.')
+        (array 'cbpro_distance' '/extension_libraries/cutebotpro#cbpro-distance' 'Returns distance to detected object in cm.')
+        (array 'cbpro_trackingSensorState' '/extension_libraries/cutebotpro#cbpro-tracking-state-is' 'Returns (-o) if tracking sensors match the pattern selected.')
+        (array 'cbpro_getTrackingState' '/extension_libraries/cutebotpro#cbpro-tracking-state' 'Returns the tracking state of the Line tracking sensors.')
+        (array 'cbpro_getTrackingOffset' '/extension_libraries/cutebotpro#cbpro-tracking-offset' 'Returns the tracking offset of the Line tracking sensors.')
+        (array 'cbpro_irCodeReceived' '/extension_libraries/cutebotpro#cbpro-ir-code-received' 'Returns (-o) if an IR code is detected.')
+        (array 'cbpro_irCode' '/extension_libraries/cutebotpro#cbpro-ir-code' 'Returns the value of the IR code detected.')
+        (array 'cbpro_setServoAngle' '/extension_libraries/cutebotpro#cbpro-set-servo-angle' 'Sets selected servo types to set angles.')
+        (array 'cbpro_setServoSpeed' '/extension_libraries/cutebotpro#cbpro-set-servo-speed' 'Sets continuous servos to set speed and direction.')
+        (array 'cbpro_setMotorPower' '/extension_libraries/cutebotpro#cbpro-set-external-motor-power' 'Runs external motor at specified power % and direction.')
+        (array 'cbpro_stopMotor' '/extension_libraries/cutebotpro#cbpro-stop-external-motor' 'Stops external motor.')
+        (array 'cbpro_getVersion' '/extension_libraries/cutebotpro#cbpro-version' 'Returns firmware version of the controller.')
+        (array '_cbpro_setWheelPower' '/extension_libraries/cutebotpro#_cbpro_setwheel-power' 'Runs car at specified power % and direction.')
+        (array '_cbpro_clearEncodersAndOrientation' '/extension_libraries/cutebotpro#_cbpro_clearencodersandorientation' 'Clears encoder value and orientation variables.')
+        (array '_cbpro_getOrientation' '/extension_libraries/cutebotpro#_cbpro_getorientation' 'Returns orientation of car.')
+        (array '_cbpro_readEncoders' '/extension_libraries/cutebotpro#_cbpro_readencoders' 'Reads encoder values and sets variables _cbpro_leftCount and _cbpro_rightCount.')
 
 	)
 
