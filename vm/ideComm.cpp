@@ -32,37 +32,6 @@ void BLE_initThreeLetterID() {
 	BLE_ThreeLetterID[3] = 0;
 }
 
-#if defined(BLE_IDE)
-
-// BLE Communications
-
-#include <NimBLEDevice.h>
-
-extern uint32 lastRcvTime;
-
-// BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
-// INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
-#define BLE_SEND_MAX 250
-#define INTER_SEND_TIME 20
-
-static BLEServer *pServer = NULL;
-static BLEService *pService = NULL;
-static BLEService *pUARTService = NULL;
-static BLECharacteristic *pTxCharacteristic;
-static BLECharacteristic *pRxCharacteristic;
-static char uniqueName[32];
-static bool bleRunning = false;
-static bool serviceOnline = false;
-static uint16_t connID = -1;
-
-static uint32 lastSendTime = 0;
-static int lastRC = 0;
-
-#define RECV_BUF_MAX 1024
-static uint8_t bleRecvBuf[RECV_BUF_MAX];
-static int bleBytesAvailable = 0;
-static int overRuns = 0;
-
 // MicroBlocks IDE Service UUIDs:
 #define MB_SERVICE_UUID				"bb37a001-b922-4018-8e74-e14824b3a638"
 #define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
@@ -94,6 +63,37 @@ static void displayFor(int msecs) {
 		delay(1);
 	}
 }
+
+#if defined(BLE_IDE)
+
+// BLE Communications
+
+#include <NimBLEDevice.h>
+
+extern uint32 lastRcvTime;
+
+// BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
+// INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
+#define BLE_SEND_MAX 250
+#define INTER_SEND_TIME 20
+
+static BLEServer *pServer = NULL;
+static BLEService *pService = NULL;
+static BLEService *pUARTService = NULL;
+static BLECharacteristic *pTxCharacteristic;
+static BLECharacteristic *pRxCharacteristic;
+static char uniqueName[32];
+static bool bleRunning = false;
+static bool serviceOnline = false;
+static uint16_t connID = -1;
+
+static uint32 lastSendTime = 0;
+static int lastRC = 0;
+
+#define RECV_BUF_MAX 1024
+static uint8_t bleRecvBuf[RECV_BUF_MAX];
+static int bleBytesAvailable = 0;
+static int overRuns = 0;
 
 static void show_BLE_ID() {
 	OBJ args[5]; // used to call primitives
@@ -349,6 +349,179 @@ int BLE_isEnabled() {
 		return true;
 	#endif
 	return false;
+}
+
+#elif PIO_FRAMEWORK_ARDUINO_ENABLE_BLUETOOTH
+
+#include <BTstackLib.h>
+#include <ble/att_server.h>
+#include <ble/att_db_util.h>
+
+static int bleRunning = false;
+
+static hci_con_handle_t connectionHandle = 0;
+static uint16_t txCharacteristic = 0;
+
+// xxx can eliminate by making tx dynamic?
+#define BUF_SIZE 50
+static uint8_t rxBuf[BUF_SIZE];
+static uint8_t txBuf[BUF_SIZE];
+
+// incoming BLE buffer
+#define RECV_BUF_MAX 1024
+static uint8_t bleRecvBuf[RECV_BUF_MAX];
+static int bleBytesAvailable = 0;
+static int overRuns = 0;
+
+// Pico advertising
+
+static uint8_t adv_data[32]; // advertisting data limited to 31 bytes
+static int adv_data_len = 0;
+
+void setAdvertisingData(const char *name, UUID uuid) {
+	// See Common Data Types in:
+	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Assigned_Numbers/out/en/Assigned_Numbers.pdf?v=1716217306904
+
+	int pos = 0;
+
+	// flags
+	const uint8_t flags[] = { 2, 1, 6 };
+	memcpy(&adv_data[pos], flags, sizeof(flags));
+	pos += sizeof(flags);
+
+	// service UUID (low byte first)
+	adv_data[pos++] = 17; // field size
+	adv_data[pos++] = 7; // "Complete List of 128-bit Service Class UUIDs"
+	const uint8_t *uuidBytes = uuid.getUuid();
+	for (int i = 0; i < 16; i++) {
+		adv_data[pos++] = uuidBytes[15 - i];
+	}
+
+	// name
+	int nameBytes = strlen(name);
+	if (nameBytes > (29 - pos)) nameBytes = 29 - pos; // truncate name to fit
+	adv_data[pos++] = nameBytes + 1; // field size
+	adv_data[pos++] = 9; // "Complete Local Name"
+	memcpy(&adv_data[pos], name, nameBytes);
+	pos += nameBytes;
+
+	adv_data_len = pos;
+	BTstack.setAdvData(adv_data_len, adv_data);
+}
+
+// Pico connect/disconnect callbacks
+
+static void deviceConnectedCallback(BLEStatus status, BLEDevice *device) {
+	if (BLE_STATUS_OK == status) {
+		connectionHandle = device->getHandle();
+		BLE_connected_to_IDE = true;
+	}
+}
+
+static void deviceDisconnectedCallback(BLEDevice *device) {
+	connectionHandle = 0;
+	BLE_connected_to_IDE = false;
+}
+
+// Pico data receive callback
+
+static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t byteCount) {
+	int available = RECV_BUF_MAX - bleBytesAvailable;
+	if (byteCount > available) {
+		overRuns++;
+		byteCount = available;
+	}
+	memcpy(&bleRecvBuf[bleBytesAvailable], data, byteCount);
+	bleBytesAvailable += byteCount;
+	return 0;
+}
+
+int recvBytes(uint8 *buf, int count) {
+	int bytesRead;
+
+//	updateConnectionState();
+
+	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
+		bytesRead = Serial.available();
+		if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
+		return Serial.readBytes((char *) buf, bytesRead);
+	}
+
+	// use BLE connection
+	bytesRead = (count < bleBytesAvailable) ? count : bleBytesAvailable;
+	if (bytesRead == 0) return 0;
+
+	memcpy(buf, bleRecvBuf, bytesRead); // copy bytes to buf
+
+	int remainingBytes = bleBytesAvailable - bytesRead;
+	if (remainingBytes > 0) {
+		// remove bytesRead bytes from bleRecvBuf
+		memcpy(bleRecvBuf, &bleRecvBuf[bytesRead], remainingBytes);
+	}
+	bleBytesAvailable = remainingBytes;
+
+	return bytesRead;
+}
+
+int sendBytes(uint8 *buf, int start, int end) {
+	// Send bytes buf[start] through buf[end - 1] and return the number of bytes sent.
+
+	int byteCount = end - start;
+	if (byteCount > BUF_SIZE) byteCount = BUF_SIZE;
+	int status = att_server_notify(connectionHandle, txCharacteristic, &buf[start], byteCount);
+	return (status ? 0 : byteCount);
+}
+
+void att_db_util_add_client_characteristic_configuration(uint16_t flags);
+
+void BLE_start() {
+	char picoName[8];
+
+	if (bleRunning) return; // BLE already running
+
+	// initialize three letter ID and name
+	BLE_initThreeLetterID();
+	sprintf(picoName, "Pico %s", BLE_ThreeLetterID);
+
+	  // setup GATT database
+	BTstack.addGATTService(new UUID(MB_SERVICE_UUID));
+// 	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
+// 	txCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_NOTIFY | ATT_PROPERTY_READ, BUF_SIZE);
+
+// #define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
+// #define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
+
+//   txChar = BTstack.addGATTCharacteristic(new UUID(UART_UUID_TX), ATT_PROPERTY_NOTIFY | ATT_PROPERTY_READ, txData, BUF_SIZE);
+//   rxChar = BTstack.addGATTCharacteristicDynamic(new UUID(UART_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
+
+	txCharacteristic = BTstack.addGATTCharacteristic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_INDICATE, txBuf, BUF_SIZE);
+	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
+
+	// set callbacks
+	BTstack.setBLEDeviceConnectedCallback(deviceConnectedCallback);
+	BTstack.setBLEDeviceDisconnectedCallback(deviceDisconnectedCallback);
+	BTstack.setGATTCharacteristicWrite(gattWriteCallback);
+
+	// start BLE and advertising
+	BTstack.setup();
+	setAdvertisingData(picoName, UUID(MB_SERVICE_UUID));
+	BTstack.startAdvertising();
+
+	bleRunning = true;
+}
+
+void BLE_stop() {
+	// xxx to do
+	bleRunning = false;
+}
+
+void BLE_setEnabled(int enableFlag) {
+	// xxx to do
+}
+
+int BLE_isEnabled() {
+	// xxx to do
+	return true;
 }
 
 #else
