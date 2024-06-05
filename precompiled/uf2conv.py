@@ -46,7 +46,7 @@ def convertFromUF2(buf):
         block = buf[ptr:ptr + 512]
         hd = struct.unpack("<IIIIIIII", block[0:32])
         if hd[0] != UF2_MAGIC_START0 or hd[1] != UF2_MAGIC_START1:
-            print "Skipping block at " + ptr + "; bad magic"
+            print("Skipping block at " + ptr + "; bad magic")
             continue
         if hd[2] & 1:
             # NO-flash flag set; skip block
@@ -192,17 +192,17 @@ def boardID(path):
 
 def listdrives():
     for d in getdrives():
-        print d, boardID(d)
+        print(d, boardID(d))
 
 def writeFile(name, buf):
     with open(name, "wb") as f:
         f.write(buf)
-    print "Wrote %d bytes to %s." % (len(buf), name)
+    print("Wrote %d bytes to %s." % (len(buf), name))
 
 def main():
     global appstartaddr, familyid
     def error(msg):
-        print msg
+        print(msg)
         sys.exit(1)
     parser = argparse.ArgumentParser(description='Convert to UF2 or flash directly.')
     parser.add_argument('input', metavar='INPUT', type=str, nargs='?',
@@ -248,7 +248,7 @@ def main():
             outbuf = convertFromHexToUF2(inpbuf)
         else:
             outbuf = convertToUF2(inpbuf)
-        print "Converting to %s, output size: %d, start address: 0x%x" % (ext, len(outbuf), appstartaddr)
+        print("Converting to %s, output size: %d, start address: 0x%x" % (ext, len(outbuf), appstartaddr))
 
         if args.convert:
             drives = []
@@ -263,7 +263,7 @@ def main():
             if len(drives) == 0:
                 error("No drive to deploy.")
         for d in drives:
-            print "Flashing %s (%s)" % (d, boardID(d))
+            print("Flashing %s (%s)" % (d, boardID(d)))
             writeFile(outbuf, d + "/NEW.UF2")
 
 if __name__ == "__main__":
