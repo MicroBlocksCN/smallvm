@@ -2287,7 +2287,8 @@ static int readDigitalMicrophone() {
 	return result;
 }
 
-#elif defined(M5_CARDPUTER) || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C)
+#elif defined(M5_CARDPUTER) 
+// || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2)
 
 #define USE_DIGITAL_MICROPHONE 1
 
@@ -2307,7 +2308,7 @@ static int readDigitalMicrophone() {
 
 // Microphone input buffer (minimum sample count is 8)
 // Use smallest possible buffer to minimize latency
-#define MIC_BUF_LEN 8
+#define MIC_BUF_LEN 128
 static int16_t micBuffer[MIC_BUF_LEN];
 static int micNextSample = MIC_BUF_LEN;
 
@@ -2322,7 +2323,7 @@ void initI2SMicrophone() {
 	.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // is fixed at 12bit, stereo, MSB
 	.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
 	.communication_format = I2S_COMM_FORMAT_I2S,
-	.intr_alloc_flags = 0,
+	.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
 	.dma_buf_count = 2,
 	.dma_buf_len = 8,
 	.use_apll = false
@@ -2340,6 +2341,7 @@ void initI2SMicrophone() {
     i2s_set_pin(I2S_NUM_0, &pin_config);
 	// start I2S driver
 	// i2s_start(I2S_PORT);
+	i2s_set_clk(I2S_NUM_0, 22050, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
 	microphoneInitialized = true;
 }
 
