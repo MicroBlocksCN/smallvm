@@ -991,7 +991,7 @@ static int color24to16b(int color24b) {
 	r = (color24b >> 19) & 0x1F; // 5 bits
 	g = (color24b >> 10) & 0x3F; // 6 bits
 	b = (color24b >> 3) & 0x1F; // 5 bits
-	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
+	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus) && !defined(ARDUINO_M5Stick_C2) 
 		return (b << 11) | (g << 5) | r; // color order: BGR
 	#else
 		return (r << 11) | (g << 5) | b; // color order: RGB
