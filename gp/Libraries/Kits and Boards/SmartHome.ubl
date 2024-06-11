@@ -1,0 +1,214 @@
+module 'Smart Home'
+author 'Josep Ferràndiz'
+version 1 0 
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo NeoPixel 'RFID (RC522)' 
+choices fan clockwise 'counter-clockwise' stop 
+choices notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
+choices power 'voltage (V)' 'current (mA)' 'power (mW)' 
+choices lr left right 
+choices window open close 
+choices onoff on off 
+description 'Library for Keyestudio IoT Smart Home Kit for ESP32
+
+Connexion values----------------------------------
+Fan: -IN io18, +IN io19    Led: io12
+Steam sensor: io34         NeoPixel (4 leds): io26
+PIR: 14                            Gas sensor: io23
+Left button: io16              Right button: io27
+DHT11: io17                    Buzzer: io25
+Servo (window): io5        Servo (door): io13
+RFID: I2C                        LCD: I2C
+--------------------------------------------------
+
+https://docs.keyestudio.com/projects/KS5009/en/latest/docs/index.html#
+'
+variables _pinServoDoor _pinServoWindow _pinFanPos _pinFanNeg _pinDHT11 _pinLED _pinSteam _pinPIR _pinLeftBtn _pinRightBtn _addrRFID _pinGas _pinBuzzer _pinNeopixel _neopixelLedsQtty _shInitialized
+
+  spec ' ' 'fan' 'Home fan _' 'menu.fan' 'clockwise'
+  spec ' ' 'display' 'Home display _ in line _' 'auto auto' 'ESP32 Smart Home' 1
+  spec ' ' 'window' 'Home _ the window' 'menu.window' 'open'
+  spec ' ' 'door' 'Home activate the door'
+  spec ' ' 'play note' 'Home play _ octave _ for _ ms' 'menu.notes num num' 'c' 0 100
+  spec ' ' 'set light _' 'Home set light _' 'menu.onoff' 'on'
+  space
+  spec 'r' 'temperature' 'Home temperature ºC'
+  spec 'r' 'humidity' 'Home humidity'
+  spec 'r' 'steam level' 'Home steam level'
+  space
+  spec 'r' 'read RFID card' 'Home read RFID card : _' 'bool' true
+  spec 'r' 'movement?' 'Home movement detected?'
+  spec 'r' 'button pressed?' 'Home _ button pressed?' 'menu.lr' 'left'
+  spec 'r' 'gas detected?' 'Home gas detected?'
+  space
+  spec ' ' 'set neopixels colors' 'Home set NeoPixels _ _ _ _' 'color color color color'
+  spec ' ' 'clear leds' 'Home clear leds'
+  space
+  spec 'r' 'electric consumption' 'Home electric consumption _' 'menu.power' 'voltage (V)'
+
+to '_initialize' {
+  _pinServoDoor = 13
+  _pinServoWindow = 5
+  _pinFanPos = 19
+  _pinFanNeg = 18
+  _pinDHT11 = 17
+  _pinLED = 12
+  _pinSteam = 34
+  _pinPIR = 14
+  _pinLeftBtn = 16
+  _pinRightBtn = 27
+  _addrRFID = 40
+  _pinGas = 23
+  _pinBuzzer = 25
+  _pinNeopixel = 26
+  _neopixelLedsQtty = 4
+  'attach buzzer to pin' _pinBuzzer
+  neoPixelAttach _neopixelLedsQtty _pinNeopixel
+  rc522_initialize_I2C _addrRFID
+  _shInitialized = (booleanConstant true)
+}
+
+to 'read RFID card' beep {
+  if (not _shInitialized) {_initialize}
+  if (rc522_card_present) {
+    if beep {
+      'attach buzzer to pin' _pinBuzzer
+      'play tone' 'c' 0 60
+    }
+    return (rc522_read_uid)
+  }
+}
+
+to 'button pressed?' button {
+  if (not _shInitialized) {_initialize}
+  if (button == 'left') {
+    local 'pin' _pinLeftBtn
+  } (button == 'right') {
+    local 'pin' _pinRightBtn
+  } else {
+    return false
+  }
+  return (not (digitalReadOp pin))
+}
+
+to 'clear leds' {
+  if (not _shInitialized) {_initialize}
+  clearNeoPixels
+}
+
+to display text line {
+  if (not _shInitialized) {_initialize}
+  LCD1602_write text line
+  waitMillis 1000
+  for i ((size text) - 15) {
+    LCD1602_write ('[data:copyFromTo]' text i (16 + i)) line
+    waitMillis 350
+  }
+}
+
+to door {
+  if (not _shInitialized) {_initialize}
+  setServoAngle _pinServoDoor -90
+  waitMillis 1000
+  setServoAngle _pinServoDoor 90
+  waitMillis 1000
+  stopServo pin
+}
+
+to 'electric consumption' magnitude {
+  if (not _shInitialized) {_initialize}
+  local 'Vo' ('read samples' 500 36)
+  local 'V' ('read samples' 500 39)
+  local 'Vout' ((V * 323) / 500)
+  local 'Vsen' (Vo - V)
+  local 'Iout' (Vsen * 17)
+  local 'value' 0
+  if (magnitude == 'voltage (V)') {
+    value = ('[data:join]' (Vout / 100) ',' (Vout % 100))
+  }
+  if (magnitude == 'current (mA)') {
+    value = Iout
+  }
+  if (magnitude == 'power (mW)') {
+    value = (((Vout * 10) * Iout) / 1000)
+  }
+  return value
+}
+
+to fan state {
+  if (not _shInitialized) {_initialize}
+  if (state == 'clockwise') {
+    digitalWriteOp _pinFanNeg true
+    digitalWriteOp _pinFanPos false
+  }
+  if (state == 'counter-clockwise') {
+    digitalWriteOp _pinFanNeg false
+    digitalWriteOp _pinFanPos true
+  }
+  if (state == 'stop') {
+    digitalWriteOp _pinFanNeg false
+    digitalWriteOp _pinFanPos false
+  }
+}
+
+to 'gas detected?' {
+  if (not _shInitialized) {_initialize}
+  return (not (digitalReadOp _pinGas))
+}
+
+to humidity {
+  if (not _shInitialized) {_initialize}
+  return (humidity_DHT11 _pinDHT11)
+}
+
+to movement? {
+  if (not _shInitialized) {_initialize}
+  return (digitalReadOp _pinPIR)
+}
+
+to 'play note' note octave time {
+  if (not _shInitialized) {_initialize}
+  local 'pin' 25
+  'attach buzzer to pin' pin
+  'play tone' note octave time
+}
+
+to 'read samples' n pin {
+  if (not _shInitialized) {_initialize}
+  local 'sum' 0
+  repeat n {
+    sum += (analogReadOp pin)
+  }
+  return (sum / n)
+}
+
+to 'set light _' state {
+  if (not _shInitialized) {_initialize}
+  if (state == 'on') {digitalWriteOp _pinLED true}
+  if (state == 'off') {digitalWriteOp _pinLED false}
+}
+
+to 'set neopixels colors' c1 c2 c3 c4 {
+  if (not _shInitialized) {_initialize}
+  setNeoPixelColors10 c1 c2 c3 c4 (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255)
+}
+
+to 'steam level' {
+  if (not _shInitialized) {_initialize}
+  return (analogReadOp _pinSteam)
+}
+
+to temperature {
+  if (not _shInitialized) {_initialize}
+  return (temperature_DHT11 _pinDHT11)
+}
+
+to window position {
+  if (not _shInitialized) {_initialize}
+  if (position == 'open') {setServoAngle _pinServoWindow -90}
+  if (position == 'close') {setServoAngle _pinServoWindow 90}
+  waitMillis 2000
+}
+
+
+
+
