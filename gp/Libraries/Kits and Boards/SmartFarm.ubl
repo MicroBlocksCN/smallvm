@@ -1,0 +1,188 @@
+module 'Smart Farm'
+author 'Josep Ferràndiz & José Garcia'
+version 1 0 
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo 'Distance (HC-SR04)' 
+choices fan clockwise 'counter-clockwise' stop 
+choices trapdoor open close 
+choices notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
+choices power 'voltage (V)' 'current (mA)' 'power (mW)' 
+choices startstop start stop 
+choices onoff on off 
+description 'Library for ESP32 Smart Farm
+Connexion values----------------------------------
+Fan: -IN io18, +IN io19    Led: io27
+Steam sensor: io35         Relay: io25
+PIR: io23                         Light Sensor: io34   
+Trigger: io12                    Echo: io13
+Button: io5                       Water level: io4
+DHT11: io17                    Buzzer: io16
+Servo (window): io14      Soil moisture: io2
+RFID: I2C                        LCD: I2C
+--------------------------------------------------
+'
+variables _sfInitialized _sfServo _sfFanPos _sfFanNeg _sfDHT11 _sfLED _sfSteam _sfButton _sfPIR _sfRelay _sfTrigger _sfEcho _sfBuzzer _sfSoilMoisture _sfLightSensor _sfWaterLevel 
+
+  spec ' ' 'fan' 'Farm fan _' 'menu.fan' 'clockwise'
+  spec ' ' 'Farm display' 'Farm display _ in line _' 'auto auto' 'ESP32 Smart Farm' 1
+  spec ' ' 'trapdoor' 'Farm _ the trapdoor' 'menu.trapdoor' 'open'
+  spec ' ' 'Farm play note' 'Farm play _ octave _ for _ ms' 'menu.notes num num' 'c' 0 100
+  spec ' ' 'Farm set light _' 'Farm set light _' 'menu.onoff' 'on'
+  spec ' ' 'Farm watter pump _' 'Farm watter pump _' 'menu.startstop' 'start'
+  space
+  spec 'r' 'temperature' 'Farm temperature ºC'
+  spec 'r' 'humidity' 'Farm humidity'
+  spec 'r' 'Farm movement detected?' 'Farm movement detected?'
+  spec 'r' 'Farm button pressed?' 'Farm button pressed?'
+  spec 'r' 'Farm distance (cm)' 'Farm distance (cm)'
+  spec 'r' 'Farm light level' 'Farm light level'
+  space
+  spec 'r' 'Farm water level' 'Farm water level'
+  spec 'r' 'Farm moisture' 'Farm soil moisture'
+  spec 'r' 'Farm steam level' 'Farm steam level'
+  space
+  spec 'r' 'Farm electric consumption' 'Farm electric consumption _' 'menu.power' 'voltage (V)'
+
+to 'Farm button pressed?' {
+  if (not _sfInitialized) {'_initialize'}
+  return (not (digitalReadOp _sfButton))
+}
+
+to 'Farm display' text line {
+  if (not _sfInitialized) {'_initialize'}
+  LCD1602_write text line
+  waitMillis 1000
+  for i ((size text) - 15) {
+    LCD1602_write ('[data:copyFromTo]' text i (16 + i)) line
+    waitMillis 350
+  }
+}
+
+to 'Farm distance (cm)' {
+  if (not _sfInitialized) {'_initialize'}
+  return ('distance (cm)' _sfTrigger _sfEcho)
+}
+
+to 'Farm electric consumption' magnitude {
+  if (not _sfInitialized) {'_initialize'}
+  local 'Vo' ('read samples' 500 36)
+  local 'V' ('read samples' 500 39)
+  local 'Vout' ((V * 323) / 500)
+  local 'Vsen' (Vo - V)
+  local 'Iout' (Vsen * 17)
+  local 'value' 0
+  if (magnitude == 'voltage (V)') {
+    value = ('[data:join]' (Vout / 100) ',' (Vout % 100))
+  }
+  if (magnitude == 'current (mA)') {
+    value = Iout
+  }
+  if (magnitude == 'power (mW)') {
+    value = (((Vout * 10) * Iout) / 1000)
+  }
+  return value
+}
+
+to 'Farm light level' {
+  if (not _sfInitialized) {'_initialize'}
+  return (analogReadOp _sfLightSensor)
+}
+
+to 'Farm moisture' {
+  if (not _sfInitialized) {'_initialize'}
+  return (analogReadOp _sfSoilMoisture)
+}
+
+to 'Farm movement detected?' {
+  if (not _sfInitialized) {'_initialize'}
+  local 'pin' 23
+  return (digitalReadOp _sfPIR)
+}
+
+to 'Farm play note' note octave time {
+  if (not _sfInitialized) {'_initialize'}
+  'attach buzzer to pin' _sfBuzzer
+  'play tone' note octave time
+}
+
+to 'Farm set light _' state {
+  if (not _sfInitialized) {'_initialize'}
+  if (state == 'on') {digitalWriteOp _sfLED true}
+  if (state == 'off') {digitalWriteOp _sfLED false}
+}
+
+to 'Farm steam level' {
+  if (not _sfInitialized) {'_initialize'}
+  return (analogReadOp _sfSteam)
+}
+
+to 'Farm water level' {
+  if (not _sfInitialized) {'_initialize'}
+  return (analogReadOp _sfWaterLevel)
+}
+
+to 'Farm watter pump _' state {
+  if (not _sfInitialized) {'_initialize'}
+  if (state == 'start') {digitalWriteOp _sfRelay true}
+  if (state == 'stop') {digitalWriteOp _sfRelay false}
+}
+
+to '_initialize' {
+  _sfServo = 14
+  _sfFanPos = 19
+  _sfFanNeg = 18
+  _sfDHT11 = 17
+  _sfLED = 27
+  _sfSteam = 35
+  _sfPIR = 23
+  _sfButton = 5
+  _sfRelay = 25
+  _sfTrigger = 12
+  _sfEcho = 13
+  _sfBuzzer = 16
+  _sfSoilMoisture = 2
+  _sfLightSensor = 34
+  _sfWaterLevel = 4
+  'attach buzzer to pin' _sfBuzzer
+  _sfInitialized = (booleanConstant true)
+}
+
+to fan state {
+  if (not _sfInitialized) {'_initialize'}
+  if (state == 'clockwise') {
+    digitalWriteOp _sfFanNeg true
+    digitalWriteOp _sfFanPos false
+  }
+  if (state == 'counter-clockwise') {
+    digitalWriteOp _sfFanNeg false
+    digitalWriteOp _sfFanPos true
+  }
+  if (state == 'stop') {
+    digitalWriteOp _sfFanNeg false
+    digitalWriteOp _sfFanPos false
+  }
+}
+
+to humidity {
+  if (not _sfInitialized) {'_initialize'}
+  return (humidity_DHT11 _sfDHT11)
+}
+
+to 'read samples' n pin {
+  local 'sum' 0
+  repeat n {
+    sum += (analogReadOp pin)
+  }
+  return (sum / n)
+}
+
+to temperature {
+  if (not _sfInitialized) {'_initialize'}
+  return (temperature_DHT11 _sfDHT11)
+}
+
+to trapdoor position {
+  if (not _sfInitialized) {'_initialize'}
+  if (position == 'open') {setServoAngle _sfServo 90}
+  if (position == 'close') {setServoAngle _sfServo -90}
+}
+
