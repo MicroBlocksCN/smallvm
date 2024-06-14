@@ -116,9 +116,17 @@ static void show_BLE_ID() {
 
 static void updateConnectionState() {
 	if (USB_connected_to_IDE && !ideConnected()) {
-		// resume BLE service and advertisting
+		// lost USB connection; resume BLE service and advertisting
 		if (pServer) pServer->addService(pService);
 		USB_connected_to_IDE = false;
+	}
+	if (BLE_connected_to_IDE && pServer && (pServer->getConnectedCount() == 0)) {
+		// lost BLE connection
+		if (pServer) {
+			if (connID != -1) { pServer->disconnect(connID); }
+			connID = -1;
+		}
+		BLE_connected_to_IDE = false;
 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
@@ -174,6 +182,7 @@ static int bleSendData(uint8_t *data, int byteCount) {
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
 		connID = desc->conn_handle;
+		lastRcvTime = microsecs();
 		BLE_connected_to_IDE = true;
 	}
 	void onDisconnect(BLEServer* pServer, ble_gap_conn_desc* desc) {
