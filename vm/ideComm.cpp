@@ -367,14 +367,10 @@ int BLE_isEnabled() {
 #include <ble/att_db_util.h>
 
 static int bleRunning = false;
-
 static hci_con_handle_t connectionHandle = 0;
 static uint16_t txCharacteristic = 0;
 
-// xxx can eliminate by making tx dynamic?
-#define BUF_SIZE 50
-static uint8_t rxBuf[BUF_SIZE];
-static uint8_t txBuf[BUF_SIZE];
+#define BUF_SIZE 250 // 360 works, 380 fails; making both charactistics dynamic allows larger
 
 // incoming BLE buffer
 #define RECV_BUF_MAX 1024
@@ -384,7 +380,7 @@ static int overRuns = 0;
 
 // Pico advertising
 
-static uint8_t adv_data[32]; // advertisting data limited to 31 bytes
+static uint8_t adv_data[32]; // advertisting data limited to 31 bytes on Pico
 static int adv_data_len = 0;
 
 void setAdvertisingData(const char *name, UUID uuid) {
@@ -448,7 +444,7 @@ static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t 
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead;
 
-//	updateConnectionState();
+//	updateConnectionState(); // xxx todo for Pico
 
 	if (!BLE_connected_to_IDE) { // no BLE connection; use Serial
 		bytesRead = Serial.available();
@@ -492,18 +488,10 @@ void BLE_start() {
 	BLE_initThreeLetterID();
 	sprintf(picoName, "Pico %s", BLE_ThreeLetterID);
 
-	  // setup GATT database
+	// setup GATT database
 	BTstack.addGATTService(new UUID(MB_SERVICE_UUID));
-// 	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
-// 	txCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_NOTIFY | ATT_PROPERTY_READ, BUF_SIZE);
 
-// #define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
-// #define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
-
-//   txChar = BTstack.addGATTCharacteristic(new UUID(UART_UUID_TX), ATT_PROPERTY_NOTIFY | ATT_PROPERTY_READ, txData, BUF_SIZE);
-//   rxChar = BTstack.addGATTCharacteristicDynamic(new UUID(UART_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
-
-	txCharacteristic = BTstack.addGATTCharacteristic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_INDICATE, txBuf, BUF_SIZE);
+	txCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, BUF_SIZE);
 	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
 
 	// set callbacks
