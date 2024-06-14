@@ -283,8 +283,8 @@ void BLE_resumeAdvertising() {
 	}
 	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
 	pAdvertising->setName(uniqueName);
-	pAdvertising->setMinInterval(100);
-	pAdvertising->setMaxInterval(200);
+	pAdvertising->setMinInterval(50);
+	pAdvertising->setMaxInterval(100);
 	if (serviceOnline) pAdvertising->start();
 }
 
