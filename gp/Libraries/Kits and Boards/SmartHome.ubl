@@ -30,7 +30,7 @@ variables _smarthomeInitialized
   spec ' ' 'smarthome_displayText' 'Home display _ in line _' 'str num' 'ESP32 Smart Home' 1
   spec ' ' 'smarthome_setWindow' 'Home _ the window' 'menu.smarthome_window' 'open'
   spec ' ' 'smarthome_setDoor' 'Home activate the door'
-  spec ' ' 'smarthome_playNote' 'Home play _ octave _ for _ ms' 'menu.notes num num' 'c' 0 100
+  spec ' ' 'smarthome_playNote' 'Home play _ octave _ for _ ms' 'menu.smarthome_notes num num' 'c' 0 100
   spec ' ' 'smarthome_setLight' 'Home set light _' 'menu.smarthome_onoff' 'on'
   space
   spec 'r' 'smarthome_temperature' 'Home temperature ºC'
@@ -48,7 +48,7 @@ variables _smarthomeInitialized
   spec 'r' 'smarthome_electricConsumption' 'Home electric consumption _' 'menu.smarthome_power' 'voltage (V)'
 
 to '_initialize' {
-  if (not _smarthomeInitialized {
+  if (not _smarthomeInitialized) {
     local _pinBuzzer 25
     'attach buzzer to pin' _pinBuzzer
     local _pinNeopixel 26
