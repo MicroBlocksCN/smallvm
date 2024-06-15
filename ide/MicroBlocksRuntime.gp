@@ -750,7 +750,9 @@ method portList SmallRuntime {
 		for fn (listFiles '/dev') {
 			if (or	(notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
 					(notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
-				add portList (join '/dev/' fn)
+			    if (isNil (nextMatchIn 'usbmon' (toLowerCase fn))) { // ignore 'usbmonX' devices
+				    add portList (join '/dev/' fn)
+				}
 			}
 		}
 		if ('Linux' == (platform)) {
