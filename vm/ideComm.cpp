@@ -360,11 +360,12 @@ int BLE_isEnabled() {
 	return false;
 }
 
-#elif PIO_FRAMEWORK_ARDUINO_ENABLE_BLUETOOTH
+#elif PICO_BLUETOOTH
 
-#include <BTstackLib.h>
-#include <ble/att_server.h>
-#include <ble/att_db_util.h>
+// uncomment these to test BLE
+// #include <BTstackLib.h>
+// #include <ble/att_server.h>
+// #include <ble/att_db_util.h>
 
 static int bleRunning = false;
 static hci_con_handle_t connectionHandle = 0;
