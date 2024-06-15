@@ -1,15 +1,13 @@
 module 'Smart Home'
 author 'Josep Ferràndiz'
-version 1 1
-depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo NeoPixel 'RFID (RC522)'
-
-choices smarthome_fan clockwise 'counter-clockwise' stop
-choices smarthome_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
-choices smarthome_power 'voltage (V)' 'current (mA)' 'power (mW)'
-choices smarthome_lr left right
-choices smarthome_window open close
-choices smarthome_onoff on off
-
+version 1 1 
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo NeoPixel 'RFID (RC522)' 
+choices smarthome_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
+choices smarthome_window open close 
+choices smarthome_onoff on off 
+choices smarthome_power 'voltage (V)' 'current (mA)' 'power (mW)' 
+choices smarthome_lr left right 
+choices smarthome_fan clockwise 'counter-clockwise' stop 
 description 'Library for Keyestudio IoT Smart Home Kit for ESP32
 
 Connexion values----------------------------------
@@ -24,7 +22,7 @@ RFID: I2C                        LCD: I2C
 
 https://docs.keyestudio.com/projects/KS5009/en/latest/docs/index.html#
 '
-variables _smarthomeInitialized
+variables _smarthomeInitialized 
 
   spec ' ' 'smarthome_setFan' 'Home fan _' 'menu.smarthome_fan' 'clockwise'
   spec ' ' 'smarthome_displayText' 'Home display _ in line _' 'str num' 'ESP32 Smart Home' 1
@@ -49,27 +47,25 @@ variables _smarthomeInitialized
 
 to '_initialize' {
   if (not _smarthomeInitialized) {
-    local _pinBuzzer 25
+    local '_pinBuzzer' 25
     'attach buzzer to pin' _pinBuzzer
-    local _pinNeopixel 26
+    local '_pinNeopixel' 26
     neoPixelAttach 4 _pinNeopixel
-    local _addrRFID 40
+    local '_addrRFID' 40
     rc522_initialize_I2C _addrRFID
     _smarthomeInitialized = (booleanConstant true)
   }
 }
 
-to 'smarthome_readRFID' beep {
-  _initialize
-  if (rc522_card_present) {
-    if beep {
-      'play tone' 'c' 0 60
-    }
-    return (rc522_read_uid)
+to 'read samples' sampleCount pin {
+  local 'sum' 0
+  repeat sampleCount {
+    sum += (analogReadOp pin)
   }
+  return (sum / sampleCount)
 }
 
-to 'smarthome_button' button {
+to smarthome_button button {
   if (button == 'left') {
     local 'pin' 16
   } (button == 'right') {
@@ -81,7 +77,7 @@ to 'smarthome_button' button {
 }
 
 to smarthome_clearNeoPixels {
-  _initialize
+  '_initialize'
   clearNeoPixels
 }
 
@@ -94,18 +90,9 @@ to smarthome_displayText text line {
   }
 }
 
-to smarthome_setDoor {
-  local _pinServoDoor 13
-  setServoAngle _pinServoDoor -90
-  waitMillis 1000
-  setServoAngle _pinServoDoor 90
-  waitMillis 1000
-  stopServo pin
-}
-
-to 'smarthome_electricConsumption' magnitude {
-  local _pinVo 36
-  local _pinV 39
+to smarthome_electricConsumption magnitude {
+  local '_pinVo' 36
+  local '_pinV' 39
   local 'Vo' ('read samples' 500 _pinVo)
   local 'V' ('read samples' 500 _pinV)
   local 'Vout' ((V * 323) / 500)
@@ -124,9 +111,46 @@ to 'smarthome_electricConsumption' magnitude {
   return value
 }
 
+to smarthome_gasDetected {
+  local '_pinGas' 23
+  return (not (digitalReadOp _pinGas))
+}
+
+to smarthome_humidity {
+  local '_pinDHT11' 17
+  return (humidity_DHT11 _pinDHT11)
+}
+
+to smarthome_motion {
+  local '_pinPIR' 14
+  return (digitalReadOp _pinPIR)
+}
+
+to smarthome_playNote note octave time {
+  '_initialize'
+  'play tone' note octave time
+}
+
+to smarthome_readRFID beep {
+  '_initialize'
+  if (rc522_card_present) {
+    if beep {'play tone' 'c' 0 60}
+    return (rc522_read_uid)
+  }
+}
+
+to smarthome_setDoor {
+  local '_pinServoDoor' 13
+  setServoAngle _pinServoDoor -90
+  waitMillis 1000
+  setServoAngle _pinServoDoor 90
+  waitMillis 1000
+  stopServo pin
+}
+
 to smarthome_setFan state {
-  local _pinFanPos 19
-  local _pinFanNeg 18
+  local '_pinFanPos' 19
+  local '_pinFanNeg' 18
   if (state == 'clockwise') {
     digitalWriteOp _pinFanNeg true
     digitalWriteOp _pinFanPos false
@@ -141,58 +165,39 @@ to smarthome_setFan state {
   }
 }
 
-to 'smarthome_gasDetected' {
-  local _pinGas 23
-  return (not (digitalReadOp _pinGas))
-}
-
-to smarthome_humidity {
-  local _pinDHT11 17
-  return (humidity_DHT11 _pinDHT11)
-}
-
-to smarthome_motion {
-  local _pinPIR 14
-  return (digitalReadOp _pinPIR)
-}
-
-to 'smarthome_playNote' note octave time {
-  _initialize
-  'play tone' note octave time
-}
-
-to 'read samples' sampleCount pin {
-  local 'sum' 0
-  repeat sampleCount {
-    sum += (analogReadOp pin)
+to smarthome_setLight state {
+  local '_pinLED' 12
+  if (state == 'on') {
+    digitalWriteOp _pinLED true
   }
-  return (sum / sampleCount)
+  if (state == 'off') {
+    digitalWriteOp _pinLED false
+  }
 }
 
-to 'smarthome_setLight' state {
-  local _pinLED 12
-  if (state == 'on') {digitalWriteOp _pinLED true}
-  if (state == 'off') {digitalWriteOp _pinLED false}
-}
-
-to 'smarthome_setNeoPixels' c1 c2 c3 c4 {
-  _initialize
+to smarthome_setNeoPixels c1 c2 c3 c4 {
+  '_initialize'
   setNeoPixelColors10 c1 c2 c3 c4 (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255) (colorSwatch 35 190 30 255)
 }
 
-to 'smarthome_steamLevel' {
-  local _pinSteam 34
+to smarthome_setWindow position {
+  local '_pinServoWindow' 5
+  if (position == 'open') {
+    setServoAngle _pinServoWindow -90
+  }
+  if (position == 'close') {
+    setServoAngle _pinServoWindow 90
+  }
+  waitMillis 2000
+}
+
+to smarthome_steamLevel {
+  local '_pinSteam' 34
   return (analogReadOp _pinSteam)
 }
 
 to smarthome_temperature {
-  local _pinDHT11 17
+  local '_pinDHT11' 17
   return (temperature_DHT11 _pinDHT11)
 }
 
-to smarthome_setWindow position {
-  local _pinServoWindow 5
-  if (position == 'open') {setServoAngle _pinServoWindow -90}
-  if (position == 'close') {setServoAngle _pinServoWindow 90}
-  waitMillis 2000
-}
