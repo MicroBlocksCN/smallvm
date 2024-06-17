@@ -1,0 +1,65 @@
+module 'M5 HAT-JOYC' Control
+author '邵悦'
+version 1 0 
+description 'HAT-JOYC 
+https://docs.m5stack.com/en/hat/hat-joyc
+JoyC is a rocker module designed for the M5StickC.'
+
+  spec ' ' 'set JOYC color' 'set JOYC color _' 'color'
+  spec 'r' 'JOYC LEFT X' 'JOYC LEFT X'
+  spec 'r' 'JOYC LEFT Y' 'JOYC LEFT Y'
+  spec 'r' 'JOYC RIGHT X' 'JOYC RIGHT X'
+  spec 'r' 'JOYC RIGHT Y' 'JOYC RIGHT Y'
+  spec 'r' 'JOYC LEFT BUTTON' 'JOYC LEFT BUTTON'
+  spec 'r' 'JOYC RIGHT BUTTON' 'JOYC RIGHT BUTTON'
+  spec 'r' 'JOYC LEFT ANGLE' 'JOYC LEFT ANGLE'
+  spec 'r' 'JOYC RIGHT ANGLE' 'JOYC RIGHT ANGLE'
+  spec 'r' 'JOYC RIGHT DISTANCE' 'JOYC RIGHT DISTANCE'
+  spec 'r' 'JOYC LEFT DISTANCE' 'JOYC LEFT DISTANCE'
+
+to 'JOYC LEFT ANGLE' {
+  return (((i2cGet (hexToInt '38') (hexToInt '70')) << 8) | (i2cGet (hexToInt '38') (hexToInt '71')))
+}
+
+to 'JOYC LEFT BUTTON' {
+  return ((i2cGet (hexToInt '38') (hexToInt '64')) == 16)
+}
+
+to 'JOYC LEFT DISTANCE' {
+  return (((i2cGet (hexToInt '38') (hexToInt '74')) << 8) | (i2cGet (hexToInt '38') (hexToInt '75')))
+}
+
+to 'JOYC LEFT X' {
+  return (i2cGet (hexToInt '38') (hexToInt '60'))
+}
+
+to 'JOYC LEFT Y' {
+  return (i2cGet (hexToInt '38') (hexToInt '61'))
+}
+
+to 'JOYC RIGHT ANGLE' {
+  return (((i2cGet (hexToInt '38') (hexToInt '72')) << 8) | (i2cGet (hexToInt '38') (hexToInt '73')))
+}
+
+to 'JOYC RIGHT BUTTON' {
+  return ((i2cGet (hexToInt '38') (hexToInt '64')) == 1)
+}
+
+to 'JOYC RIGHT DISTANCE' {
+  return (((i2cGet (hexToInt '38') (hexToInt '76')) << 8) | (i2cGet (hexToInt '38') (hexToInt '77')))
+}
+
+to 'JOYC RIGHT X' {
+  return (i2cGet (hexToInt '38') (hexToInt '62'))
+}
+
+to 'JOYC RIGHT Y' {
+  return (i2cGet (hexToInt '38') (hexToInt '63'))
+}
+
+to 'set JOYC color' foo {
+  i2cSet (hexToInt '38') (hexToInt '22') (foo & 255)
+  i2cSet (hexToInt '38') (hexToInt '21') ((foo >> 8) & 255)
+  i2cSet (hexToInt '38') (hexToInt '20') (foo >> 16)
+}
+
