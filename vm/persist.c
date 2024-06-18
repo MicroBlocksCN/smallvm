@@ -30,7 +30,7 @@
 #include "interp.h"
 #include "persist.h"
 
-void delay(int); // Arduino delay function
+void delay(unsigned long); // Arduino delay function
 
 // flash operations for supported platforms
 

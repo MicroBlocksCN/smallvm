@@ -24,7 +24,7 @@
 
 // Forward Reference Declarations
 
-void delay(int); // Arduino delay function
+void delay(unsigned long); // Arduino delay function
 
 static void softReset(int clearMemoryFlag);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
