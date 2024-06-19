@@ -1260,6 +1260,8 @@ effect 2
 
 play MIDI note _ for _ ms on channel _ volume _
 
+stop all notes on channel _
+
 set MIDI note _ to _ on channel _ volume _
 
 note _ octave _ to MIDI key
