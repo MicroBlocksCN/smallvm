@@ -584,7 +584,9 @@ IR transmit device _ command _
 
 Keyboard and Mouse
 
-press key _ : while holding _
+press key _
+
+while holding _
 
 hold key _
 
