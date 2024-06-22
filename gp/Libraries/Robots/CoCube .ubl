@@ -1,0 +1,77 @@
+module CoCube
+author '梁帅'
+version 1 0 
+depends Tone Ringtone TFT Display 
+tags 'cocube机器人' 
+choices CarDirMenu '前进' '后退' '左转' '右转' 
+choices MotorDirMenu '前进' '后退' 
+description ''
+variables speed 
+
+  spec 'r' '[sensors:battery]' 'battery'
+  space
+  spec 'r' '[oid:position_x]' 'positionX'
+  spec 'r' '[oid:position_y]' 'positionY'
+  spec 'r' '[oid:position_yaw]' 'positionYaw'
+  space
+  spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'auto' '0'
+  space
+  spec ' ' 'ControlLeftMotor' 'Control Left Motor _' 'auto' 50
+  spec ' ' 'ControlRightMotor' 'Control Right Motor _' 'auto' 50
+  space
+  spec ' ' 'move_forward' 'Move Forward _' 'auto' 50
+  spec ' ' 'Move Backward' 'Move Backward _' 'auto' 50
+  spec ' ' 'Turn Left' 'Turn Left _' 'auto' 50
+  spec ' ' 'Turn Right' 'Turn Right _' 'auto' 50
+
+to ControlLeftMotor speed {
+  if (speed == 0) {
+    digitalWriteOp 9 false
+    digitalWriteOp 10 false
+  } (speed > 0) {
+    analogWriteOp 9 ('[misc:rescale]' speed 0 100 75 1023)
+    digitalWriteOp 10 false
+  } else {
+    digitalWriteOp 9 false
+    analogWriteOp 10 ('[misc:rescale]' (absoluteValue speed) 0 100 75 1023)
+  }
+}
+
+to ControlRightMotor speed {
+  if (speed == 0) {
+    digitalWriteOp 26 false
+    digitalWriteOp 25 false
+  } (speed > 0) {
+    analogWriteOp 26 ('[misc:rescale]' speed 0 100 75 1023)
+    digitalWriteOp 25 false
+  } else {
+    digitalWriteOp 26 false
+    analogWriteOp 25 ('[misc:rescale]' (absoluteValue speed) 0 100 75 1023)
+  }
+}
+
+to 'Move Backward' speed {
+  ControlLeftMotor (0 - speed)
+  ControlRightMotor (0 - speed)
+}
+
+to 'Turn Left' speed {
+  ControlLeftMotor (0 - speed)
+  ControlRightMotor speed
+}
+
+to 'Turn Right' speed {
+  ControlLeftMotor speed
+  ControlRightMotor (0 - speed)
+}
+
+to 'draw Aruco Marker on TFT' id {
+  comment '0 <= id < 100'
+  '[tft:aruco]' id
+}
+
+to move_forward speed {
+  ControlLeftMotor speed
+  ControlRightMotor speed
+}
+
