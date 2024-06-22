@@ -28,9 +28,12 @@ static int deferUpdates = false;
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
-	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER)
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
+	defined(COCUBE)
 
+	#ifndef COCUBE
 	#define BLACK 0
+	#endif // !COCUBE
 
 	// Optional TFT_ESPI code was added by John to study performance differences
 	#define USE_TFT_ESPI false // true to use TFT_eSPI library, false to use AdaFruit GFX library
@@ -959,14 +962,42 @@ static int deferUpdates = false;
 		tft.showMicroBitPixels(microBitDisplayBits, xPos, yPos);
 	}
 
-#endif // end of board-specific sections
+	#elif defined(COCUBE)
+		#include <Arduino_GFX_Library.h>
+		#define TFT_MOSI 19
+		#define TFT_SCLK 27
+		#define TFT_CS -1
+		#define TFT_DC 32
+		#define TFT_RST 2
+		#define TFT_BL 33
+		#define TFT_WIDTH 240
+		#define TFT_HEIGHT 240
+		#define TFT_PWR -1
 
-static int hasTFT() {
-	#if defined(OLED_128_64)
-		if (!useTFT) tftInit();
-	#endif
-	return useTFT;
-}
+		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, -1, TFT_SCLK, TFT_MOSI, -1);
+		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 1, false, 240, 240);
+
+		// ArUco Marker, 4x4, 0-white, 1-black
+        const uint16_t aruco_tags[100] = {
+            0X4ACD, 0XF065, 0XCCD2, 0X66B9, 0XAB61, 0X8632, 0X61D1, 0X3B0D, 0X0125, 0X30A9, 0X066E, 0XEE58, 0XF148,
+            0XD5F0, 0XDB4E, 0XD9C1, 0XB99A, 0X99FF, 0X93A1, 0X8950, 0X7974, 0X4FD4, 0X332A, 0X227D, 0X01B8, 0X6B8E,
+            0X531B, 0X5AAB, 0XDEDC, 0XCB90, 0XBBEA, 0XA84D, 0X6130, 0X0F34, 0XF751, 0XF6D6, 0XE78A, 0XFB00, 0XF209,
+            0XE3A5, 0XE8E7, 0XD5D7, 0XCD73, 0XC74D, 0XDB17, 0XD114, 0XD2C0, 0XB49B, 0XAFD1, 0XAFEC, 0XAE6B, 0XAA97,
+            0XA2BE, 0XA068, 0X97FE, 0X9798, 0XEDB,  0X9E16, 0X94ED, 0X901A, 0X9820, 0X81E4, 0X7F5F, 0X7CBB, 0X745D,
+            0X6C85, 0X7B93, 0X7AD5, 0X7A63, 0X6376, 0X605E, 0X4483, 0X43FB, 0X49A4, 0X4037, 0X4854, 0X35E0, 0X369D,
+            0X26A7, 0X2C2A, 0X3367, 0X385F, 0X3AC8, 0X16A2, 0X06DA, 0X0444, 0X11D5, 0X08B2, 0XCA8A, 0X7552, 0X89E8,
+            0XF530, 0XF9B4, 0XD23E, 0XB627, 0XBC0B, 0XB0C9, 0XB02C, 0X961B, 0X8F38};
+
+        void tftInit() {
+			tft.begin();
+			tft.invertDisplay(1);
+			tft.fillScreen(RGB565_BLACK);
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, HIGH);
+			useTFT = true;
+		}
+
+	#endif // end of board-specific sections
 
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
@@ -1377,13 +1408,23 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				}
 			}
 		}
-		tft.drawRGBBitmap(
+		#ifdef COCUBE
+			tft.fillRect(
 			originX * scale,
 			(originY + y) * scale,
-			bufferPixels,
 			originWidth * scale,
-			scale
+			scale,
+			bufferPixels[0]
 		);
+		#else
+			tft.drawRGBBitmap(
+				originX * scale,
+				(originY + y) * scale,
+				bufferPixels,
+				originWidth * scale,
+				scale
+			);
+		#endif
 	}
 
 	UPDATE_DISPLAY();

@@ -1139,15 +1139,26 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0};
 	#endif
 
-#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
-
-	#define BOARD_TYPE "BeagleConnect Freedom"
-	#define DIGITAL_PINS 24
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 24
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-	#define PIN_LED LED_BUILTIN
-	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
+#elif defined(COCUBE)
+	#define BOARD_TYPE "COCUBE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 4
+	#define PIN_LED -1
+	#define DEFAULT_BATTERY_PIN 34
+	#define DEFAULT_L1_PIN 9
+	#define DEFAULT_L2_PIN 10
+	#define DEFAULT_L3_PIN 26
+	#define DEFAULT_L4_PIN 25
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 38
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #else // unknown board
 
@@ -1236,6 +1247,16 @@ static void initPins(void) {
 		pinMode(5, OUTPUT); // 
 		pinMode(14, OUTPUT); // 
 		pinMode(15, OUTPUT); // 
+	#endif
+
+	#ifdef COCUBE
+		pinMode(34, INPUT); // BATTERY PIN
+		pinMode(9, OUTPUT); // L1 PIN
+		pinMode(10, OUTPUT); // L2 PIN
+		pinMode(26, OUTPUT); // L3 PIN
+		pinMode(25, OUTPUT); // L4 PIN
+		// pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
+		// pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
 	#endif
 }
 
