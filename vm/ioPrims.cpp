@@ -1345,152 +1345,26 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 	#endif
 
-#elif defined(DUELink)
-
-	#define BOARD_TYPE "DUELink"
-	#define DIGITAL_PINS 27
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 60
-	#define PIN_LED 15 // PB_8
-	static const int8_t analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
-
-	// Reserved C071R pins:
-	// 42 (PF_2) - reset
-	// 49 (PA_12) - USB P
-	// 50 (PA_11) - USB N
-	// 47 (PA_3) - Downlink RX (serial)
-	// 52 (PA_2) - Downlink TX (serial)
-
-	// PA_5, D13, edge pin 21 is the buzzer
-	// PB_0, D19, edge pin  9 is the light sensor
-	static const char cincoEdgePin[DIGITAL_PINS] = {
-		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
-		 2, 27, 32,  9,  5,  4, 33, 255, 255,  0,
-		 1, 13,  7, 12, 15, 54, 11}; // row pins: 7, 12, 15, 54, 11
-
-	// PA_5, D13, edge pin 21 is the buzzer
-	// PC_6, D29, edge pin 22 is the display reset pin
-	// PA_6, D12, edge pin 23 is the light sensor
-	static const char pixoEdgePin[DIGITAL_PINS] = {
-		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
-		 2, 27,  7,  9,  5,  4, 33, 255, 255,  0,
-		 1, 13, 29, 12, 15, 14, 32}; // unused pins: 12, 15, 14, 32
-
-	// PA_9, D8, edge pin 21 is UART1_TX
-	// PA_10, D2, edge pin 22 is UART1_RX
-	static const char dueStandardPin[DIGITAL_PINS] = {
-		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
-		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
-		28,  8,  2, 27, 32, 255, 255};
-
-	// Analog pin names for DUELink boards
-	// Note: CincoBit edge pins 3, 4, and 12 are not analog capable
-	#define DUE_ANALOG_PIN_COUNT 24
-	static const int16_t dueEdgeAnalog[DUE_ANALOG_PIN_COUNT] = {
-		PA_0, PA_1, PA_4, PA_7, PB_1, PA_14, -1, -1, PB_2, PB_0,
-		-1, PA_13, PA_8, -1, -1, -1, -1, -1, -1, -1,
-		-1, -1, -1, PA_6};
-	static const int16_t dueStandardAnalog[DUE_ANALOG_PIN_COUNT] = {
-		-1, PA_0, PA_1, PA_4, PA_5, PA_6, PA_7, PA_8, PB_1, PB_0,
-		-1, -1, -1, -1, -1,  -1,  -1, PB_2, -1, -1,
-		-1, -1, -1, -1};
-
-	static int dueAnalogPin(int pinNum) {
-		int result = -1; // default - no pin
-		if ((0 <= pinNum) && (pinNum < DUE_ANALOG_PIN_COUNT)) {
-			if (DUE_HAS_EDGE_CONNECTOR) {
-				result = dueEdgeAnalog[pinNum];
-				if (IS_DUE_CINCO) {
-					// CincoBit edge pins 3, 4, and 12 are not analog capable
-					if ((pinNum == 3) || (pinNum == 4) || (pinNum == 12)) result = -1;
-				}
-			} else {
-				result = dueStandardAnalog[pinNum];
-			}
-		}
-		return result;
-	}
-
-	// PWM pins for CincoBit and PixoBit edge pins 0 to 21
-	// Note: TIM14 is used by Tone library. TIM16 is used by Servo library
-	#define DUE_PWM_PIN_COUNT 22
-	static const int16 dueEdgePWM[DUE_PWM_PIN_COUNT] = {
-		PA_0_ALT1,		// TIM1_CH1, *TIM2_CH1, TIM16_CH1
-		PA_1_ALT1,		// TIM1_CH2, TIM2_CH2, TIM17_CH1
-		PA_4_ALT2,		// TIM1_CH2N, TIM14_CH1, *TIM17_CH1N
-		-1, // PB_9,	// TIM3_CH2, TIM17_CH1
-		-1, // PC_6,	// TIM2_CH3, TIM3_CH1
-		PA_14,			// TIM1_CH1
-		-1,	// PA_9		// TIM1_CH2
-		-1, // PA_15,	// TIM1_CH1, TIM2_CH1
-		-1,	// PB_2		// (no PWM)
-		-1,	// PB_0		// TIM1_CH2N, TIM3_CH3
-		PA_10,			// TIM1_CH3
-		-1,	// PA_13	// (no PWM)
-		PC_14,			// *TIM3_CH2, TIM17_CH1
-		PB_3,			// TIM1_CH2, *TIM2_CH2, TIM3_CH2
-		PB_4,			// *TIM3_CH1
-		PB_5_ALT1,		// TIM3_CH2, *TIM3_CH3
-		-1, // PC_15,	// TIM3_CH3
-		-1,
-		-1,
-		-1,
-		-1,
-		PA_5_ALT1,		// TIM1_CH1, *TIM1_CH3N, TIM2_CH1
-	};
-
-	// PWM pins for standard DUEBoards 0 to 16 (pin 17 does not have a timer)
-	// Note: TIM14 is used by Tone library. TIM16 is used by Servo library
-	static const int16 dueStandardPWM[DUE_PWM_PIN_COUNT] {
-		-1,
-		PA_0,		// *TIM1_CH1*, TIM2_CH1, TIM16_CH1
-		PA_1_ALT1,	// TIM1_CH2, *TIM2_CH2*, TIM17_CH1
-		PA_4_ALT2,	// TIM1_CH2N, TIM14_CH1, *TIM17_CH1N* (buzzer on Ghizzy)
-		PA_5_ALT2,	// TIM1_CH1, TIM1_CH3N, *TIM2_CH1
-		PA_6,		// *TIM3_CH1*, TIM16_CH1
-		PA_7_ALT1,	// TIM1_CH1N, *TIM3_CH2*, TIM14_CH1, TIM17_CH1
-		PA_8_ALT2,	// TIM1_CH1, TIM1_CH2N, *TIM1_CH3N, TIM3_CH3, TIM3_CH4, TIM14_CH1
-		PB_1_ALT2,	// TIM1_CH2N, TIM1_CH3N, *TIM3_CH4*, TIM14_CH1
-		PB_0, 		// *TIM1_CH2N*, TIM3_CH3
-		PC_15, 		// *TIM3_CH3*
-		PC_6, 		// *TIM2_CH3*, TIM3_CH1
-		-1,			// xxx TIM1_CH2, TIM2_CH2, TIM3_CH2
-		-1, 		// xxx TIM3_CH1
-		-1, 		// xxx TIM3_CH2, TIM3_CH3
-		-1,			// xxx TIM16_CH1N
-		PB_7,		// *TIM1_CH4*, TIM3_CH1, TIM3_CH4, TIM16_CH1, TIM17_CH1N
-		-1,
-		-1,
-		-1,
-		-1,
-		-1,
-	};
-
-	static int duePWMPin(int pinNum) {
-		int result = -1; // default - no pin
-		if ((0 <= pinNum) && (pinNum < DUE_PWM_PIN_COUNT)) {
-			if (DUE_HAS_EDGE_CONNECTOR) {
-				result = dueEdgePWM[pinNum];
-				if (!IS_DUE_CINCO) {
-					// on PixoBit, pin 4 is PB_1_ALT2 (TIM3_CH4)
-					if (pinNum == 4) result = PB_1_ALT2;
-				}
-			} else {
-				result = dueStandardPWM[pinNum];
-			}
-		}
-		return result;
-	}
-
-#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
-
-	#define BOARD_TYPE "BeagleConnect Freedom"
-	#define DIGITAL_PINS 24
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 24
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-	#define PIN_LED LED_BUILTIN
-	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
+#elif defined(COCUBE)
+	#define BOARD_TYPE "COCUBE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 4
+	#define PIN_LED -1
+	#define DEFAULT_BATTERY_PIN 34
+	#define DEFAULT_L1_PIN 9
+	#define DEFAULT_L2_PIN 10
+	#define DEFAULT_L3_PIN 26
+	#define DEFAULT_L4_PIN 25
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 38
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_WEACT)
 	#define BOARD_TYPE "WeAct STM32H743"
@@ -1622,16 +1496,14 @@ static void initPins(void) {
 		pinMode(15, OUTPUT); // 
 	#endif
 
-	#ifdef ARDUINO_SEEED_XIAO_M0
-		// put TX/RX LED into input mode to suppress flashing
-		SET_MODE(PIN_LED_RXL, INPUT);
-		SET_MODE(PIN_LED_TXL, INPUT);
-	#endif
-
-	#ifdef ARDUINO_SEEED_XIAO_RP2040
-		SET_MODE(PIN_LED_R, INPUT);
-		SET_MODE(PIN_LED_G, INPUT);
-		SET_MODE(PIN_LED_B, INPUT);
+	#ifdef COCUBE
+		pinMode(34, INPUT); // BATTERY PIN
+		pinMode(9, OUTPUT); // L1 PIN
+		pinMode(10, OUTPUT); // L2 PIN
+		pinMode(26, OUTPUT); // L3 PIN
+		pinMode(25, OUTPUT); // L4 PIN
+		// pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
+		// pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
 	#endif
 }
 
