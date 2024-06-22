@@ -1230,41 +1230,26 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 	#endif
 
-#elif defined(DUELink)
-
-	#define BOARD_TYPE "DUELink"
-	#define DIGITAL_PINS 30
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 60
-	#define PIN_LED 15 // PA_6 (unmapped)
-	#define PIN_BUTTON_A 28 // (unmapped) edge pin 5
-	#define PIN_BUTTON_B 27 // (unmapped) edge pin 11
-	#undef BUTTON_PRESSED
-	#define BUTTON_PRESSED HIGH
-	#define DEFAULT_TONE_PIN 21
-	static const char cincoEdgePin[DIGITAL_PINS] = {
-		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
-		 2, 27, 32,  9,  5,  4, 33, 255, 255, 0,
-		 1, 13, 12, 15,  7, 11,  54, 42,  47, 52};
-	static const char pixoEdgePin[DIGITAL_PINS] = {
-		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
-		 2, 27,  7,  9,  5,  4, 33, 255, 255, 0,
-		 1, 13, 12, 15, 14, 29,  32, 42,  47, 52};
-	static const char dueStandardPin[DIGITAL_PINS] = {
-		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
-		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
-		28,  8,  2, 27, 32, 52, 47, 42, 255, 255};
-	static const int analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
-
-#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
-
-	#define BOARD_TYPE "BeagleConnect Freedom"
-	#define DIGITAL_PINS 24
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 24
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-	#define PIN_LED LED_BUILTIN
-	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
+#elif defined(COCUBE)
+	#define BOARD_TYPE "COCUBE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 4
+	#define PIN_LED -1
+	#define DEFAULT_BATTERY_PIN 34
+	#define DEFAULT_L1_PIN 9
+	#define DEFAULT_L2_PIN 10
+	#define DEFAULT_L3_PIN 26
+	#define DEFAULT_L4_PIN 25
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 38
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #else // unknown board
 
@@ -1364,6 +1349,16 @@ static void initPins(void) {
 		pinMode(5, OUTPUT); // 
 		pinMode(14, OUTPUT); // 
 		pinMode(15, OUTPUT); // 
+	#endif
+
+	#ifdef COCUBE
+		pinMode(34, INPUT); // BATTERY PIN
+		pinMode(9, OUTPUT); // L1 PIN
+		pinMode(10, OUTPUT); // L2 PIN
+		pinMode(26, OUTPUT); // L3 PIN
+		pinMode(25, OUTPUT); // L4 PIN
+		// pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
+		// pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
 	#endif
 }
 
