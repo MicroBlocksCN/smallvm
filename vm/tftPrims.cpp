@@ -67,10 +67,12 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
-	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER)
+	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
+	defined(COCUBE)
 
+	#ifndef COCUBE
 	#define BLACK 0
-	#define WHITE 65535
+	#endif // !COCUBE
 
 	#if defined(ARDUINO_CITILAB_ED1)
 		#define TFT_CS	5
@@ -920,8 +922,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	}
 
 	#elif defined(COCUBE)
-		#include <LittleFS.h>
-
+		#include <Arduino_GFX_Library.h>
 		#define TFT_MOSI 19
 		#define TFT_SCLK 27
 		#define TFT_CS -1
@@ -930,122 +931,32 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		#define TFT_BL 33
 		#define TFT_WIDTH 240
 		#define TFT_HEIGHT 240
-		#define DEFAULT_BATTERY_PIN 34
-		#define LOGO_PATH "/logo.raw"
+		#define TFT_PWR -1
 
-		void drawRawImage(const char* filename, int x0, int y0, int width, int height) {
-			if (!LittleFS.begin()) return;
+		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, -1, TFT_SCLK, TFT_MOSI, -1);
+		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 1, false, 240, 240);
 
-			File file = LittleFS.open(filename, "r");
-			if (!file) return;
+		// ArUco Marker, 4x4, 0-white, 1-black
+        const uint16_t aruco_tags[100] = {
+            0X4ACD, 0XF065, 0XCCD2, 0X66B9, 0XAB61, 0X8632, 0X61D1, 0X3B0D, 0X0125, 0X30A9, 0X066E, 0XEE58, 0XF148,
+            0XD5F0, 0XDB4E, 0XD9C1, 0XB99A, 0X99FF, 0X93A1, 0X8950, 0X7974, 0X4FD4, 0X332A, 0X227D, 0X01B8, 0X6B8E,
+            0X531B, 0X5AAB, 0XDEDC, 0XCB90, 0XBBEA, 0XA84D, 0X6130, 0X0F34, 0XF751, 0XF6D6, 0XE78A, 0XFB00, 0XF209,
+            0XE3A5, 0XE8E7, 0XD5D7, 0XCD73, 0XC74D, 0XDB17, 0XD114, 0XD2C0, 0XB49B, 0XAFD1, 0XAFEC, 0XAE6B, 0XAA97,
+            0XA2BE, 0XA068, 0X97FE, 0X9798, 0XEDB,  0X9E16, 0X94ED, 0X901A, 0X9820, 0X81E4, 0X7F5F, 0X7CBB, 0X745D,
+            0X6C85, 0X7B93, 0X7AD5, 0X7A63, 0X6376, 0X605E, 0X4483, 0X43FB, 0X49A4, 0X4037, 0X4854, 0X35E0, 0X369D,
+            0X26A7, 0X2C2A, 0X3367, 0X385F, 0X3AC8, 0X16A2, 0X06DA, 0X0444, 0X11D5, 0X08B2, 0XCA8A, 0X7552, 0X89E8,
+            0XF530, 0XF9B4, 0XD23E, 0XB627, 0XBC0B, 0XB0C9, 0XB02C, 0X961B, 0X8F38};
 
-			uint16_t lineBuf[width];
-			for (int y = 0; y < height; y++) {
-				size_t read = file.read((uint8_t*)lineBuf, width * 2);
-				if (read != width * 2) break;
-				tft->draw16bitRGBBitmap(x0, y0 + y, lineBuf, width, 1);
-			}
-			file.close();
+        void tftInit() {
+			tft.begin();
+			tft.invertDisplay(1);
+			tft.fillScreen(RGB565_BLACK);
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, HIGH);
+			useTFT = true;
 		}
 
-		void drawBatteryStatus(int percentage, int x, int y, int width, int height, int textSize) {
-			uint16_t fillColor = 0x07E0; // GREEN
-			if (percentage < 67) fillColor = 0xFD20; // YELLOW
-			if (percentage < 34) fillColor = 0xF800; // RED
-
-			uint16_t borderColor = 0x0000;	// BLACK
-			uint16_t textColor = 0x0000;	// BLACK by default
-
-			int level = map(percentage, 0, 100, 0, width - 4);
-			tft->drawRoundRect(x, y, width, height, 3, borderColor);
-			int headW = width / 10;
-			tft->fillRect(x + width, y + height / 4, headW, height / 2, 0x4208);
-			tft->fillRect(x + 2, y + 2, level, height - 4, fillColor);
-
-			char buf[6];
-			sprintf(buf, "%d%%", percentage);
-
-			int charW = 6 * textSize;
-			int charH = 8 * textSize;
-			int textLen = strlen(buf);
-
-			int textX = x + (width - textLen * charW) / 2;
-			int textY = y + (height - charH) / 2;
-
-			tft->setTextColor(textColor);
-			tft->setTextSize(textSize);
-			tft->setCursor(textX, textY);
-			tft->print(buf);
-		}
-
-		void tftInit() {
-			Arduino_DataBus *bus = new Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI);
-			tft = new Arduino_ST7789(bus, TFT_RST, 3, true,
-					TFT_WIDTH, TFT_HEIGHT, 0, 80, 0, 80);
-			if (!tft->begin()) {
-				outputString("tftInit() failed!");
-			} else {
-				pinMode(TFT_BL, OUTPUT);
-				digitalWrite(TFT_BL, HIGH); // turn on backlight
-				tftWidth = TFT_WIDTH;
-				tftHeight = TFT_HEIGHT;
-				tftClear();
-				useTFT = true;
-			}
-
-			int batteryRaw = 0;
-			for (int i = 0; i < 5; i++) {
-				batteryRaw += analogRead(DEFAULT_BATTERY_PIN);
-				delay(5);
-			}
-			int battery_percentage = constrain(((44 * batteryRaw / 105.0 - 6800) / 16.0), 0, 99);
-
-			bool logoDisplayed = false;
-			LittleFS.begin();
-			File logo = LittleFS.open(LOGO_PATH, "r");
-			if (logo) {
-				logo.close();
-				drawRawImage(LOGO_PATH, 0, 0, 240, 240);
-				drawBatteryStatus(battery_percentage, 85, 150, 70, 40, 3);
-				logoDisplayed = true;
-				delay(1000);
-			}
-
-			if (!logoDisplayed) {
-				tft->fillScreen(WHITE);
-				drawBatteryStatus(battery_percentage, 85, 100, 70, 40, 3);
-				delay(1000);
-			}
-			tft->fillScreen(BLACK);
-		}
-
-	#elif defined(M5Atom_S3_TFT)
-		#define TFT_MOSI 21
-		#define TFT_SCLK 17
-		#define TFT_CS 15
-		#define TFT_DC 33
-		#define TFT_RST 34
-		#define TFT_BL 16
-
-		void tftInit() {
-			Arduino_ESP32SPI *bus = new Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
-			tft = new Arduino_GC9107(bus, TFT_RST, 0 /* rotation */, true /* IPS */);
-			if (!tft->begin()) {
-				outputString("tftInit() failed!");
-			} else {
-				pinMode(TFT_BL, OUTPUT);
-				digitalWrite(TFT_BL, HIGH); // turn on backlight
-				tftWidth = 128;
-				tftHeight = 128;
-				tftClear();
-				useTFT = true;
-			}
-		}
-
-	#elif defined(NO_EXTERNAL_DISPLAY_PRIMS)
-		// no external display primitives
-
-		void tftInit() { } // stub; no display is initialized at startup time
+	#endif // end of board-specific sections
 
 	#else
 		// no built-in display but support external display prims
@@ -1669,6 +1580,23 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 		for (int i = 0; i < scale; i++) {
 			tft->draw16bitRGBBitmap(originX * scale, (originY + y) * scale + i, bufferPixels, originWidth * scale, 1);
 		}
+		#ifdef COCUBE
+			tft.fillRect(
+			originX * scale,
+			(originY + y) * scale,
+			originWidth * scale,
+			scale,
+			bufferPixels[0]
+		);
+		#else
+			tft.drawRGBBitmap(
+				originX * scale,
+				(originY + y) * scale,
+				bufferPixels,
+				originWidth * scale,
+				scale
+			);
+		#endif
 	}
 
 	UPDATE_DISPLAY();
