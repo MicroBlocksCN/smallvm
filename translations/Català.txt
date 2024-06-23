@@ -1822,6 +1822,9 @@ efecte 2
 play MIDI note _ for _ ms on channel _ volume _
 toca nota MIDI _ durant _ ms al canal _ volum _
 
+stop all notes on channel _
+atura totes les notes al canal _
+
 set MIDI note _ to _ on channel _ volume _
 posa la nota MIDI _ a _ al canal _ volum _
 

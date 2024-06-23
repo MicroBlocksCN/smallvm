@@ -584,7 +584,9 @@ IR transmit device _ command _
 
 Keyboard and Mouse
 
-press key _ : while holding _
+press key _
+
+while holding _
 
 hold key _
 
@@ -1257,6 +1259,8 @@ effect 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
+
+stop all notes on channel _
 
 set MIDI note _ to _ on channel _ volume _
 
