@@ -2608,54 +2608,29 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 }
 
 // CoCube Position Sensor
-
 #if defined (COCUBE)
 	#include <CoCubeSensor.h>
 	CoCubeSensor cocube;
-
-	void cocubeSensorInit() {
+	void cocubeSensorInit(){
 		cocube.Init();
 	}
 
-	void cocubeSensorUpdate() {
+	void cocubeSensorUpdate(){
 		cocube.Update();
-		cocube.EncoderUpdate();
 	}
 
-	static OBJ primPositionX(int argCount, OBJ *args) {
+	static OBJ primPositionX(int argCount, OBJ *args){
 		int result = cocube.GetX();
 		return int2obj(result);
 	}
 
-	static OBJ primPositionY(int argCount, OBJ *args) {
+	static OBJ primPositionY(int argCount, OBJ *args){
 			int result = cocube.GetY();
 			return int2obj(result);
 		}
 
-	static OBJ primPositionYaw(int argCount, OBJ *args) {
+	static OBJ primPositionYaw(int argCount, OBJ *args){
 			int result = cocube.GetAngle();
-			return int2obj(result);
-	}
-
-	static OBJ primIndex(int argCount, OBJ *args) {
-			int result = cocube.GetIndex();
-			return int2obj(result);
-	}
-
-	static OBJ primCubeStatus(int argCount, OBJ *args) {
-		if (cocube.GetState())
-			return trueObj;
-		else
-			return falseObj;
-	}
-
-	static OBJ primPositionSpeedLeft(int argCount, OBJ *args) {
-			int result = cocube.GetSpeedLeft();
-			return int2obj(result);
-	}
-
-	static OBJ primPositionSpeedRight(int argCount, OBJ *args) {
-			int result = cocube.GetSpeedRight();
 			return int2obj(result);
 	}
 #endif
@@ -2746,6 +2721,11 @@ static PrimEntry entries[] = {
 	{"setTime", primRTCSetTime},
 	{"readDate", primRTCReadDate},	
 	{"readTime", primRTCReadTime},	
+  	#endif
+	#if defined(COCUBE)
+	{"position_x", primPositionX},
+	{"position_y", primPositionY},
+	{"position_yaw", primPositionYaw},
   	#endif
 };
 
