@@ -146,6 +146,9 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(STEAMaker)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
+	#if defined(COCUBE)
+		cocubeSensorInit();
+	#endif
 }
 
 // General Purpose I/O Pins
