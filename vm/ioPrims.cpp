@@ -147,8 +147,6 @@ void hardwareInit() {
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
 	#if defined(COCUBE)
-		#include "soc/rtc_cntl_reg.h" // for brownout control
-		WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
 		cocubeSensorInit();
 	#endif
 }

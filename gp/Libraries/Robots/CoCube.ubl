@@ -1,374 +1,74 @@
 module CoCube
-author 'Liang Shuai'
-version 2 9 
-depends Tone Display TFT 'Motors/PID' 
-tags 'cocube robot' 
-choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
-choices cocube_move_Menu 'cocube;forward' 'cocube;backward' 
-description 'CoCube Robot library
+author '梁帅'
+version 1 0 
+depends Tone Ringtone TFT Display
+tags 'cocube机器人' 
+choices CarDirMenu '前进' '后退' '左转' '右转' 
+choices MotorDirMenu '前进' '后退' 
+description ''
+variables speed 
 
-CoCube is a tabletop modular multi-robot platform for education and research.
-https://www.cocubefun.com/
-sliang23@m.fudan.edu.cn
-
-v1.0 Basic functions
-v2.0 Comprehensively add encoder control motor function
-v2.1 Fix some bugs caused by broadcasting
-v2.2 Improve positioning accuracy to 1/128
-v2.3 Add blocks prompts
-v2.4 Unify positioning accuracy to 1/64
-v2.5 Adjust blocks order and delete RingTone
-v2.6 Adjust blocks order, name and default parameters
-'
-variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
-
-  spec ' ' 'CoCube move for msecs' 'move _ at _ speed (0-50) for _ msecs' 'menu.cocube_move_Menu num num' 'forward' 40 1000
-  spec ' ' 'CoCube rotate for msecs' 'rotate _ at _ speed (0-50) for _ msecs' 'menu.cocube_rotate_Menu num num' 'left' 30 1000
+  spec 'r' '[sensors:position_x]' 'positionX'
+  spec 'r' '[sensors:position_y]' 'positionY'
+  spec 'r' '[sensors:position_yaw]' 'positionYaw'
   space
-  spec ' ' 'CoCube move' 'move _ at _ speed (0-50)' 'menu.cocube_move_Menu num' 'forward' 40
-  spec ' ' 'CoCube rotate' 'rotate _ at _ speed (0-50)' 'menu.cocube_rotate_Menu num' 'left' 30
-  spec ' ' 'CoCube set wheel' 'set wheel left _ right _ (-50 to 50)' 'num num' 40 20
+  spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'auto' '0'
   space
-  spec ' ' 'CoCube wheels stop' 'wheels stop'
-  spec ' ' 'CoCube wheels break' 'wheels break'
+  spec ' ' 'ControlLeftMotor' 'Control Left Motor _' 'auto' 50
+  spec ' ' 'ControlRightMotor' 'Control Right Motor _' 'auto' 50
   space
-  spec 'r' 'CoCube position_X' 'X position'
-  spec 'r' 'CoCube position_Y' 'Y position'
-  spec 'r' 'CoCube direction' 'direction'
-  space
-  spec ' ' 'CoCube move by step' 'move _ at _ speed (0-50) by _ steps' 'menu.cocube_move_Menu num num' 'forward' 40 50
-  spec ' ' 'CoCube rotate by degree' 'rotate _ at _ speed (0-50) by _ degrees' 'menu.cocube_rotate_Menu num num' 'left' 30 90
-  space
-  spec ' ' 'CoCube rotate to angle' 'rotate to angle _ at _ speed (0-50)' 'num num' 0 30
-  spec ' ' 'CoCube point towards' 'point towards X _ Y _ at _ speed (0-50)' 'num num num' 0 0 30
-  spec ' ' 'CoCube move to' 'move to X _ Y _ at _ speed (0-50)' 'num num num' 0 0 40
-  space
-  spec 'r' 'CoCube on the mat' 'on the mat'
-  spec 'r' 'CoCube card ID' 'card ID'
-  space
-  spec ' ' 'CoCube draw ArUco marker on TFT' 'draw ArUco marker on TFT _' 'num' 0
-  spec ' ' 'CoCube draw AprilTag on TFT' 'draw AprilTag on TFT _' 'num' 0
-  spec ' ' 'CoCube set TFT backlight' 'set TFT backlight _' 'bool' false
-  space
-  spec 'r' 'CoCube battery percentage' 'battery percentage'
-  space
-  spec ' ' '_cocube_motors_speed' '_cocube_motors_speed left _ right _' 'num num' 10 10
-  spec ' ' '_cocube_pid_init' '_cocube_pid_init'
-  spec ' ' '_cocube_pid_left_motor' '_cocube_pid_left_motor'
-  spec ' ' '_cocube_pid_right_motor' '_cocube_pid_right_motor'
-  spec ' ' '_cocube_calculate_angle_error_' '_cocube_calculate_angle_error angle _' 'num' 0
-  spec ' ' '_cocube_calculate_distance_error target_x _ target_y _' '_cocube_calculate_distance_error Target_X _ Target_Y _' 'num num' 0 0
+  spec ' ' 'move_forward' 'Move Forward _' 'auto' 50
+  spec ' ' 'Move Backward' 'Move Backward _' 'auto' 50
+  spec ' ' 'Turn Left' 'Turn Left _' 'auto' 50
+  spec ' ' 'Turn Right' 'Turn Right _' 'auto' 50
 
-to 'CoCube battery percentage' {
-  return (minimum (((254 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 680000) / 1600) 100)
-}
-
-to 'CoCube card ID' {
-  return (callCustomReporter '[sensors:cube_index]')
-}
-
-to 'CoCube direction' {
-  return (callCustomReporter '[sensors:position_yaw]')
-}
-
-to 'CoCube draw AprilTag on TFT' id {
-  comment '0 <= id < 100'
-  if (id >= 100) {
-    sayIt '0 <= id < 100'
-  } else {
-    callCustomCommand '[tft:aprilTag]' ('[data:makeList]' id)
-  }
-}
-
-to 'CoCube draw ArUco marker on TFT' id {
-  comment '0 <= id < 100'
-  if (id >= 100) {
-    sayIt '0 <= id < 100'
-  } else {
-    callCustomCommand '[tft:aruco]' ('[data:makeList]' id)
-  }
-}
-
-to 'CoCube move' direction speed {
-  if (direction == 'forward') {
-    'CoCube set wheel' speed speed
-  } else {
-    'CoCube set wheel' (0 - speed) (0 - speed)
-  }
-}
-
-to 'CoCube move by step' direction speed steps {
-  if ('CoCube on the mat') {
-    local 'begin_x' ('CoCube position_X')
-    local 'begin_y' ('CoCube position_Y')
-    'CoCube move' direction speed
-    forever {
-      '_cocube_calculate_distance_error target_x _ target_y _' begin_x begin_y
-      if ((steps - _cocube_error_distance) < 2) {
-        'CoCube wheels break'
-        comment 'wait for break function 200ms'
-        waitMillis 210
-        return 0
-      }
-    }
-  } else {
-    sayIt 'Please put CoCube on Mat'
-  }
-}
-
-to 'CoCube move for msecs' direction speed time {
-  'CoCube move' direction speed
-  waitMillis time
-  'CoCube wheels break'
-}
-
-to 'CoCube move to' target_x target_y speed {
-  if ('CoCube on the mat') {
-    _cocube_target_x = target_x
-    _cocube_target_y = target_y
-    _cocube_target_speed = speed
-    forever {
-      comment 'calculate error'
-      '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
-      _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
-      '_cocube_calculate_angle_error_' _cocube_target_angle
-      if (_cocube_error_distance < 7) {
-        comment 'Arrived'
-        'CoCube wheels stop'
-        return 0
-      } else {
-        'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
-        waitMillis 10
-      }
-    }
-  } else {
-    sayIt 'Please put CoCube on Mat'
-  }
-}
-
-to 'CoCube on the mat' {
-  return (callCustomReporter '[sensors:cube_status]')
-}
-
-to 'CoCube point towards' target_x target_y speed {
-  _cocube_target_angle = (('[misc:atan2]' (target_y - ('CoCube position_Y')) (target_x - ('CoCube position_X'))) / 100)
-  'CoCube rotate to angle' _cocube_target_angle speed
-}
-
-to 'CoCube position_X' {
-  return ((callCustomReporter '[sensors:position_x]') / 64)
-}
-
-to 'CoCube position_Y' {
-  return ((callCustomReporter '[sensors:position_y]') / 64)
-}
-
-to 'CoCube rotate' direction speed {
-  if (direction == 'left') {
-    'CoCube set wheel' (0 - speed) speed
-  } else {
-    'CoCube set wheel' speed (0 - speed)
-  }
-}
-
-to 'CoCube rotate by degree' direction speed degree {
-  if ('CoCube on the mat') {
-    local 'begin_degree' ('CoCube direction')
-    forever {
-      if (direction == 'left') {
-        '_cocube_calculate_angle_error_' (begin_degree + degree)
-      } else {
-        '_cocube_calculate_angle_error_' (begin_degree - degree)
-      }
-      if (_cocube_error_angle > 1) {
-        comment 'turn left'
-        '_cocube_motors_speed' (0 - speed) speed
-      } (_cocube_error_angle < -1) {
-        comment 'turn right'
-        '_cocube_motors_speed' speed (0 - speed)
-      } else {
-        comment 'motors break'
-        '_cocube_motors_speed' -99 -99
-        return 0
-      }
-    }
-  } else {
-    sayIt 'Please put CoCube on Mat'
-  }
-}
-
-to 'CoCube rotate for msecs' direction speed time {
-  'CoCube rotate' direction speed
-  waitMillis time
-  'CoCube wheels break'
-}
-
-to 'CoCube rotate to angle' angle speed {
-  if ('CoCube on the mat') {
-    local 'abs_speed' (absoluteValue speed)
-    forever {
-      '_cocube_calculate_angle_error_' angle
-      if (_cocube_error_angle > 1) {
-        comment 'turn left'
-        '_cocube_motors_speed' (0 - abs_speed) abs_speed
-      } (_cocube_error_angle < -1) {
-        comment 'turn right'
-        '_cocube_motors_speed' abs_speed (0 - abs_speed)
-      } else {
-        comment 'motors break'
-        '_cocube_motors_speed' -99 -99
-        return 0
-      }
-    }
-  } else {
-    sayIt 'Please put CoCube on Mat'
-  }
-}
-
-to 'CoCube set TFT backlight' state {
-  if state {
-    '[tft:setBacklight]' 10
-  } else {
-    '[tft:setBacklight]' 0
-  }
-}
-
-to 'CoCube set wheel' speed_left speed_right {
-  _cocube_set_left_speed = speed_left
-  _cocube_set_right_speed = speed_right
-  sendBroadcast '_cocube_pid_left_motor'
-  sendBroadcast '_cocube_pid_right_motor'
-}
-
-to 'CoCube wheels break' {
-  'CoCube set wheel' -99 -99
-}
-
-to 'CoCube wheels stop' {
-  'CoCube set wheel' 0 0
-}
-
-to '_cocube_calculate_angle_error_' angle {
-  _cocube_error_angle = ((angle % 360) - ('CoCube direction'))
-  if (_cocube_error_angle > 180) {
-    _cocube_error_angle += -360
-  } (_cocube_error_angle < -180) {
-    _cocube_error_angle += 360
-  }
-}
-
-to '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y {
-  _cocube_error_x = (target_x - ('CoCube position_X'))
-  _cocube_error_y = (target_y - ('CoCube position_Y'))
-  _cocube_error_distance = ('[misc:sqrt]' ((_cocube_error_x * _cocube_error_x) + (_cocube_error_y * _cocube_error_y)))
-}
-
-to '_cocube_motors_speed' left_speed right_speed {
-  comment 'without pid control'
-  if (and (left_speed == 0) (right_speed == 0)) {
+to ControlLeftMotor speed {
+  if (speed == 0) {
     digitalWriteOp 9 false
     digitalWriteOp 10 false
+  } (speed > 0) {
+    analogWriteOp 9 ('[misc:rescale]' speed 0 100 75 1023)
+    digitalWriteOp 10 false
+  } else {
+    digitalWriteOp 9 false
+    analogWriteOp 10 ('[misc:rescale]' (absoluteValue speed) 0 100 75 1023)
+  }
+}
+
+to ControlRightMotor speed {
+  if (speed == 0) {
     digitalWriteOp 26 false
     digitalWriteOp 25 false
-  } (and (left_speed == -99) (right_speed == -99)) {
-    digitalWriteOp 9 true
-    digitalWriteOp 10 true
-    digitalWriteOp 26 true
-    digitalWriteOp 25 true
-    waitMillis 200
-    digitalWriteOp 9 false
-    digitalWriteOp 10 false
-    digitalWriteOp 26 false
+  } (speed > 0) {
+    analogWriteOp 26 ('[misc:rescale]' speed 0 100 75 1023)
     digitalWriteOp 25 false
   } else {
-    if (left_speed > 0) {
-      analogWriteOp 9 ((4 * (absoluteValue left_speed)) + 36)
-      digitalWriteOp 10 false
-    } else {
-      digitalWriteOp 9 false
-      analogWriteOp 10 ((4 * (absoluteValue left_speed)) + 36)
-    }
-    if (right_speed > 0) {
-      analogWriteOp 26 ((4 * (absoluteValue right_speed)) + 36)
-      digitalWriteOp 25 false
-    } else {
-      digitalWriteOp 26 false
-      analogWriteOp 25 ((4 * (absoluteValue right_speed)) + 36)
-    }
+    digitalWriteOp 26 false
+    analogWriteOp 25 ('[misc:rescale]' (absoluteValue speed) 0 100 75 1023)
   }
 }
 
-to '_cocube_pid_init' {
-  if (not _cocube_pid_initialized) {
-    _cocube_pid_p = 320
-    _cocube_pid_i = 1
-    _cocube_pid_d = 3
-    _cocube_pid_ratio = 1000
-    _cocube_pid_initialized = 1
-  }
+to 'Move Backward' speed {
+  ControlLeftMotor (0 - speed)
+  ControlRightMotor (0 - speed)
 }
 
-to '_cocube_pid_left_motor' {
-  '_cocube_pid_init'
-  pid_resetPID 1
-  local 'var' 0
-  forever {
-    if (_cocube_set_left_speed == 0) {
-      comment 'speed = 0 :motor stop'
-      digitalWriteOp 9 false
-      digitalWriteOp 10 false
-      return 0
-    } (_cocube_set_left_speed == -99) {
-      comment 'speed = -99 : motor break'
-      digitalWriteOp 9 true
-      digitalWriteOp 10 true
-      waitMillis 200
-      digitalWriteOp 9 false
-      digitalWriteOp 10 false
-      return 0
-    } else {
-      comment 'PID control'
-      var = ((((4 * (absoluteValue _cocube_set_left_speed)) + 36) + (pid_computePID 1 ((18 * (absoluteValue _cocube_set_left_speed)) - (callCustomReporter '[sensors:speed_left]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
-      if (_cocube_set_left_speed > 0) {
-        analogWriteOp 9 var
-        digitalWriteOp 10 false
-      } else {
-        analogWriteOp 10 var
-        digitalWriteOp 9 false
-      }
-    }
-  }
+to 'Turn Left' speed {
+  ControlLeftMotor (0 - speed)
+  ControlRightMotor speed
 }
 
-to '_cocube_pid_right_motor' {
-  '_cocube_pid_init'
-  pid_resetPID 2
-  local 'var' 0
-  forever {
-    if (_cocube_set_right_speed == 0) {
-      comment 'speed = 0 :motor stop'
-      digitalWriteOp 26 false
-      digitalWriteOp 25 false
-      return 0
-    } (_cocube_set_right_speed == -99) {
-      comment 'speed = -99 : motor break'
-      digitalWriteOp 26 true
-      digitalWriteOp 25 true
-      waitMillis 200
-      digitalWriteOp 26 false
-      digitalWriteOp 25 false
-      return 0
-    } else {
-      comment 'PID control'
-      var = ((((4 * (absoluteValue _cocube_set_right_speed)) + 36) + (pid_computePID 2 ((18 * (absoluteValue _cocube_set_right_speed)) - (callCustomReporter '[sensors:speed_right]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
-      if (_cocube_set_right_speed > 0) {
-        analogWriteOp 26 var
-        digitalWriteOp 25 false
-      } else {
-        analogWriteOp 25 var
-        digitalWriteOp 26 false
-      }
-    }
-  }
+to 'Turn Right' speed {
+  ControlLeftMotor speed
+  ControlRightMotor (0 - speed)
 }
 
+to 'draw Aruco Marker on TFT' id {
+  comment '0 <= id < 100'
+  '[tft:aruco]' id
+}
+
+to move_forward speed {
+  ControlLeftMotor speed
+  ControlRightMotor speed
+}
