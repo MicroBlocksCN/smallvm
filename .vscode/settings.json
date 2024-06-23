@@ -16,5 +16,9 @@
             "command": "extension.execute",
             "priority": 4
         }
-    ]
+    ],
+    "files.associations": {
+        "interp.h": "c",
+        "cocubesensor.h": "c"
+    }
 }
