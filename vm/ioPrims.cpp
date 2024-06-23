@@ -11,8 +11,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __ZEPHYR__
+#include <zephyr/random/random.h>
+#endif
+
 #include "mem.h"
 #include "interp.h"
+
+#if !defined(ARDUINO_API_VERSION)
+  // typedef PinMode as int for use on platforms that do not use the Arduino Core API
+  typedef int PinMode;
+#endif
 
 #if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 	// Redefine serial port mapping for Samw25x to use "Target USB" port
@@ -864,6 +873,15 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0};
 	#endif
 
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+
+	#define BOARD_TYPE "BeagleConnect Freedom"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 24
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define PIN_LED LED_BUILTIN
+
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
@@ -890,7 +908,7 @@ static char pwmRunning[TOTAL_PINS];
 
 #define SET_MODE(pin, newMode) { \
 	if ((newMode) != currentMode[pin]) { \
-		pinMode((pin), newMode); \
+		pinMode((pin), (PinMode) (newMode)); \
 		currentMode[pin] = newMode; \
 	} \
 }
@@ -917,7 +935,7 @@ static void initPins(void) {
 		// The analog write primitve takes a 10-bit value, as it does on all MicroBlocks boards,
 		// but on NRF52 only the 8 most signifcant bits are used.
 		analogWriteResolution(8);
-	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
+	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(__ZEPHYR__)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
@@ -1431,6 +1449,10 @@ static void initRandomSeed() {
 		}
 		*((int *) RNG_STOP) = true; // end random number generation
 		randomSeed(seed);
+	#elif defined(__ZEPHYR__)
+		unsigned long seed;
+		sys_rand_get(&seed, sizeof(seed));
+		randomSeed(seed);
 	#else
 		uint32 seed = 0;
 		for (int i = 0; i < ANALOG_PINS; i++) {
@@ -1695,6 +1717,12 @@ static void setServo(int pin, int usecs) {
 		}
 	}
 }
+
+#elif defined(__ZEPHYR__)
+
+static void setServo(int pin, int usecs) {}
+
+void stopServos() {}
 
 #else // use Arduino Servo library
 
@@ -1997,7 +2025,13 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return trueObj;
 }
 
-OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
+OBJ primHasServo(int argCount, OBJ *args) {
+	#if defined(__ZEPHYR__)
+		return falseObj;
+	#else
+		return trueObj;
+	#endif
+}
 
 OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>

@@ -64,6 +64,8 @@
   #define OBJSTORE_BYTES 100000
 #elif defined(ARDUINO_SAM_DUE)
   #define OBJSTORE_BYTES 80000
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+  #define OBJSTORE_BYTES 40000
 #else
   #define OBJSTORE_BYTES 4000
   // max that works on Wemos D1 mini (ESP8266) is 11000
