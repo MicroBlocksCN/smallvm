@@ -5,7 +5,7 @@
 
 ## 开发相关
 
-当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot)上.
+当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot) 上.
 
 开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支
 
