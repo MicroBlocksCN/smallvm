@@ -359,6 +359,10 @@ void tftClear();
 void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
 
+// CoCube Sensor Support
+void cocubeSensorInit();
+void cocubeSensorUpdate();
+
 // BLE Support
 
 extern int BLE_connected_to_IDE;
