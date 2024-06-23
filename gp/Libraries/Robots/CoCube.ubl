@@ -1,18 +1,16 @@
 module CoCube
 author '梁帅'
 version 1 0 
-depends Tone Ringtone TFT Display 
+depends Tone Ringtone TFT Display
 tags 'cocube机器人' 
 choices CarDirMenu '前进' '后退' '左转' '右转' 
 choices MotorDirMenu '前进' '后退' 
 description ''
 variables speed 
 
-  spec 'r' '[sensors:battery]' 'battery'
-  space
-  spec 'r' '[oid:position_x]' 'positionX'
-  spec 'r' '[oid:position_y]' 'positionY'
-  spec 'r' '[oid:position_yaw]' 'positionYaw'
+  spec 'r' '[sensors:position_x]' 'positionX'
+  spec 'r' '[sensors:position_y]' 'positionY'
+  spec 'r' '[sensors:position_yaw]' 'positionYaw'
   space
   spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'auto' '0'
   space
@@ -74,4 +72,3 @@ to move_forward speed {
   ControlLeftMotor speed
   ControlRightMotor speed
 }
-
