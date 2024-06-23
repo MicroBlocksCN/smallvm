@@ -3,6 +3,12 @@
 ## 帮助改进中文翻译
 欢迎帮忙改进编程界面的中文翻译, 翻译文件位于 [translations/简体中文.txt](https://github.com/MicroBlocksCN/smallvm/blob/devCN/translations/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87.txt)
 
+## 开发相关
+
+当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot)上.
+
+开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支
+
 ## MicroBlocks Website ##
 
 This repository contains the source code for MicroBlocks.
