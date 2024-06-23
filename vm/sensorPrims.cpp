@@ -2607,6 +2607,34 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+// CoCube Position Sensor
+#if defined (COCUBE)
+	#include <CoCubeSensor.h>
+	CoCubeSensor cocube;
+	void cocubeSensorInit(){
+		cocube.Init();
+	}
+
+	void cocubeSensorUpdate(){
+		cocube.Update();
+	}
+
+	static OBJ primPositionX(int argCount, OBJ *args){
+		int result = cocube.GetX();
+		return int2obj(result);
+	}
+
+	static OBJ primPositionY(int argCount, OBJ *args){
+			int result = cocube.GetY();
+			return int2obj(result);
+		}
+
+	static OBJ primPositionYaw(int argCount, OBJ *args){
+			int result = cocube.GetAngle();
+			return int2obj(result);
+	}
+#endif
+
 // Signal Capture
 
 #define MAX_PULSE_TIMES 128
@@ -2693,6 +2721,11 @@ static PrimEntry entries[] = {
 	{"setTime", primRTCSetTime},
 	{"readDate", primRTCReadDate},	
 	{"readTime", primRTCReadTime},	
+  	#endif
+	#if defined(COCUBE)
+	{"position_x", primPositionX},
+	{"position_y", primPositionY},
+	{"position_yaw", primPositionYaw},
   	#endif
 };
 
