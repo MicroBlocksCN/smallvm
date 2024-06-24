@@ -178,7 +178,7 @@ void hardwareInit() {
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 	#define PIN_BUTTON_A 34
-
+		
 #elif defined(ARDUINO_BBC_MICROBIT)
 
 	#define BOARD_TYPE "micro:bit"
@@ -642,6 +642,27 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 0,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
+#elif defined(COCUBE)
+	#define BOARD_TYPE "COCUBE"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 4
+	#define PIN_LED -1
+	#define DEFAULT_BATTERY_PIN 34
+	#define DEFAULT_L1_PIN 9
+	#define DEFAULT_L2_PIN 10
+	#define DEFAULT_R1_PIN 26
+	#define DEFAULT_R2_PIN 25
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 38
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+		
 #elif defined(ARDUINO_ESP32_PICO)
 	#define BOARD_TYPE "ESP32-Pico-D4"
 	#define DIGITAL_PINS 40
@@ -1142,27 +1163,6 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0};
 	#endif
 
-#elif defined(COCUBE)
-	#define BOARD_TYPE "COCUBE"
-	#define DIGITAL_PINS 40
-	#define ANALOG_PINS 16
-	#define TOTAL_PINS 40
-	static const int analogPin[] = {};
-	#define DEFAULT_TONE_PIN 4
-	#define PIN_LED -1
-	#define DEFAULT_BATTERY_PIN 34
-	#define DEFAULT_L1_PIN 9
-	#define DEFAULT_L2_PIN 10
-	#define DEFAULT_L3_PIN 26
-	#define DEFAULT_L4_PIN 25
-	#define PIN_BUTTON_A 37
-	#define PIN_BUTTON_B 38
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
-		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
-		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
@@ -1253,13 +1253,13 @@ static void initPins(void) {
 	#endif
 
 	#ifdef COCUBE
-		pinMode(34, INPUT); // BATTERY PIN
-		pinMode(9, OUTPUT); // L1 PIN
-		pinMode(10, OUTPUT); // L2 PIN
-		pinMode(26, OUTPUT); // L3 PIN
-		pinMode(25, OUTPUT); // L4 PIN
-		// pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
-		// pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
+		pinMode(DEFAULT_BATTERY_PIN, INPUT); // BATTERY PIN
+		pinMode(DEFAULT_L1_PIN, OUTPUT); // L1 PIN
+		pinMode(DEFAULT_L2_PIN, OUTPUT); // L2 PIN
+		pinMode(DEFAULT_R1_PIN, OUTPUT); // L3 PIN
+		pinMode(DEFAULT_R2_PIN, OUTPUT); // L4 PIN
+		pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
+		pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
 	#endif
 }
 
@@ -1494,7 +1494,7 @@ void primAnalogWrite(OBJ *args) {
 	#endif
 
 	#if defined(ESP32)
-	  #if !defined(ESP32_S3) && !defined(ESP32_C3)
+	  #if !defined(ESP32_S3) && !defined(ESP32_C3) && !defined(COCUBE)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 and ESP32-S2 DAC pins
 			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
