@@ -145,6 +145,9 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
+	#if defined(XRP)
+		delay(20); // allow ButtonA pin to settle before starting interpreter loop
+	#ndif
 }
 
 // General Purpose I/O Pins
