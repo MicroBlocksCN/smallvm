@@ -68,6 +68,7 @@ method baudForBoard ESPTool boardName {
 	} ('ESP32' == boardName) { return 230400
 	} ('handpy' == boardName) { return 230400
 	} ('未来科技盒' == boardName) { return 230400
+	} ('COCUBE' == boardName) { return 230400
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400
@@ -437,6 +438,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('ESP32' == boardName) { return 'vm_esp32.bin'
 	} ('handpy' == boardName) { return 'vm_mpython.bin'
 	} ('未来科技盒' == boardName) { return 'vm_cocorobo.bin'
+	} ('COCUBE' == boardName) { return 'vm_COCUBE.bin'
 	} ('Citilab ED1' == boardName) { return 'vm_citilab-ed1.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm_m5stack.bin'
 	} ('M5StickC' == boardName) { return 'vm_m5stick.bin'
