@@ -147,7 +147,7 @@ void hardwareInit() {
 	#endif
 	#if defined(XRP)
 		delay(20); // allow ButtonA pin to settle before starting interpreter loop
-	#ndif
+	#endif
 }
 
 // General Purpose I/O Pins
