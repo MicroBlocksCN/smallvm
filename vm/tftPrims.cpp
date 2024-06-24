@@ -1317,6 +1317,47 @@ static OBJ primClear(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+#if defined(COCUBE)
+static OBJ primAruco(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
+	int aruco_id = obj2int(args[0]);
+	    if (aruco_id >= 100) {
+        return falseObj;
+    }
+    tft.drawRect(0, 0, 240, 240, WHITE);
+    const int cellSize = 30;
+    uint16_t tag = aruco_tags[aruco_id];
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            bool isBlack = false;
+
+            if (i == 0 || i == 7 || j == 0 || j == 7) {
+                // 外层白色边框
+                isBlack = false;
+            } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                // 内层黑色边框
+                isBlack = true;
+            } else {
+                // 中央的4x4区域，用于编码信息
+                int bitIndex = (i - 2) * 4 + (j - 2);
+                isBlack = tag & (1 << (15 - bitIndex));
+            }
+            if (isBlack) {
+                tft.fillRect(j * cellSize, i * cellSize, cellSize, cellSize, BLACK);
+            } else {
+                tft.fillRect(j * cellSize, i * cellSize, cellSize, cellSize, WHITE);
+            }
+        }
+    }
+    tft.setCursor(2, 2);
+    tft.setTextColor(BLACK);
+    tft.setTextSize(2);
+    tft.print(aruco_id);
+	UPDATE_DISPLAY();
+	return falseObj;
+}
+#endif
 // display update control
 
 static OBJ primDeferUpdates(int argCount, OBJ *args) {
@@ -1605,7 +1646,7 @@ static PrimEntry entries[] = {
 	{"clear", primClear},
 	{"deferUpdates", primDeferUpdates},
 	{"resumeUpdates", primResumeUpdates},
-
+	
 	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},
 	{"drawBitmap", primDrawBitmap},
@@ -1616,6 +1657,10 @@ static PrimEntry entries[] = {
 	{"tftTouchPressure", primTftTouchPressure},
 
 	{"setVib",primSetVib},
+
+	#if defined(COCUBE)
+	{"aruco", primAruco},
+	#endif
 };
 
 void addTFTPrims() {
