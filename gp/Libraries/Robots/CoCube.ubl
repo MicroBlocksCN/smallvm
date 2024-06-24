@@ -1,7 +1,7 @@
 module CoCube
 author '梁帅'
 version 1 0 
-depends Tone Ringtone TFT Display
+depends Tone Ringtone TFT Display 
 tags 'cocube机器人' 
 choices CarDirMenu '前进' '后退' '左转' '右转' 
 choices MotorDirMenu '前进' '后退' 
@@ -21,6 +21,7 @@ variables speed
   spec ' ' 'Move Backward' 'Move Backward _' 'auto' 50
   spec ' ' 'Turn Left' 'Turn Left _' 'auto' 50
   spec ' ' 'Turn Right' 'Turn Right _' 'auto' 50
+  spec ' ' 'Motor Stop' 'Motor Stop'
 
 to ControlLeftMotor speed {
   if (speed == 0) {
@@ -48,6 +49,11 @@ to ControlRightMotor speed {
   }
 }
 
+to 'Motor Stop' {
+  ControlLeftMotor 0
+  ControlRightMotor 0
+}
+
 to 'Move Backward' speed {
   ControlLeftMotor (0 - speed)
   ControlRightMotor (0 - speed)
@@ -72,3 +78,4 @@ to move_forward speed {
   ControlLeftMotor speed
   ControlRightMotor speed
 }
+
