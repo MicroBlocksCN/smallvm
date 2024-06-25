@@ -21,6 +21,7 @@
 #if !defined(ARDUINO_API_VERSION)
   // typedef PinMode as int for use on platforms that do not use the Arduino Core API
   typedef int PinMode;
+  typedef int PinStatus;
 #endif
 
 #if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
@@ -1367,7 +1368,7 @@ void primSetUserLED(OBJ *args) {
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 		#else
-			digitalWrite(PIN_LED, output);
+			digitalWrite(PIN_LED, (PinStatus) output);
 		#endif
 	#endif
 }

@@ -340,7 +340,7 @@ static void initSPI() {
 		setPinMode(MISO, INPUT);
 		setPinMode(MOSI, OUTPUT);
 		setPinMode(SCK, OUTPUT);
-	#else
+	#elif !defined(__ZEPHYR__)
 		setPinMode(PIN_SPI_MISO, INPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 		setPinMode(PIN_SPI_MOSI, OUTPUT);

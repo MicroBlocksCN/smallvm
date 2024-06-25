@@ -7,6 +7,9 @@
 // interp.h - Simple interpreter based on 32-bit opcodes
 // John Maloney, April 2017
 
+#include "mem.h"
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
