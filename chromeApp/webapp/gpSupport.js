@@ -1082,6 +1082,7 @@ class NimBLESerial {
 	}
 
 	handle_disconnected(event) {
+		console.log("BLE disconnected");
 		this.rx_char = undefined;
 		this.connected = false;
 		this.sendInProgress = false;
@@ -1107,7 +1108,7 @@ class NimBLESerial {
 		tx_char.addEventListener("characteristicvaluechanged", this.handle_read.bind(this));
  		this.connected = true;
 		this.sendInProgress = false;
-		console.log("MicroBlocks BLE connected");
+		console.log("BLE connected");
    }
 
 	disconnect() {
@@ -1127,7 +1128,7 @@ class NimBLESerial {
 		if (this.rx_char == undefined) {
 			throw TypeError("Not connected");
 		}
-		if (this.sendInProgress) {
+		if (this.sendInProgress || !this.connected) {
 			return 0;
 		}
 		let byteCount = (data.length > BLE_PACKET_LEN) ? BLE_PACKET_LEN : data.length;
@@ -1144,9 +1145,12 @@ class NimBLESerial {
 				this.sendInProgress = false;
 				return;
 			} catch (error) {
-				// for now: print the error but keep trying to send
-				// later: check error an give up if BLE disconnected
-				console.log(error);
+				// print the error; give up if BLE has been disconnected
+				console.log("BLE write failed:\n ", error);
+				if (!this.isConnected()) {
+					this.sendInProgress = false;
+					return;
+				}
 			}
 		}
 	}
