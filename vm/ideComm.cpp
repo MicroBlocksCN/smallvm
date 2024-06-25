@@ -13,11 +13,23 @@
 #include "interp.h"
 #include "persist.h"
 
-char BLE_ThreeLetterID[4];
+// MicroBlocks IDE Service UUIDs
+
+#define MB_SERVICE_UUID				"bb37a001-b922-4018-8e74-e14824b3a638"
+#define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
+#define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
+
+// BLE Variables
+
 int BLE_connected_to_IDE = false;
 int USB_connected_to_IDE = false;
 
-// Helper function (works on all boards)
+char BLE_ThreeLetterID[4];
+static char bleDeviceName[32];
+
+extern uint32 lastRcvTime; // xxx put in hearder
+
+// Generic helper functions
 
 void BLE_initThreeLetterID() {
 	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
@@ -32,12 +44,12 @@ void BLE_initThreeLetterID() {
 	BLE_ThreeLetterID[3] = 0;
 }
 
-// MicroBlocks IDE Service UUIDs:
-#define MB_SERVICE_UUID				"bb37a001-b922-4018-8e74-e14824b3a638"
-#define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
-#define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
+static void initBLEDeviceName(const char *prefix) {
+	// Create BLE name from three letter ID.
 
-// BLE Helper Functions
+	BLE_initThreeLetterID();
+	sprintf(bleDeviceName, "%s %s", prefix, BLE_ThreeLetterID);
+}
 
 static void reportNum2(const char *label, int n) {
 	Serial.print(label);
@@ -55,7 +67,7 @@ static void flashUserLED() {
 	updateMicrobitDisplay();
 }
 
-static void displayFor(int msecs) {
+static void showShapeForMSecs(int msecs) {
 	uint32 endMSecs = millisecs() + msecs;
 	while (millisecs() < endMSecs) {
 		captureIncomingBytes();
@@ -64,13 +76,30 @@ static void displayFor(int msecs) {
 	}
 }
 
+static void show_BLE_ID() {
+	OBJ args[5]; // used to call primitives
+
+	int nameLen = strlen(bleDeviceName);
+	for (int i = nameLen - 4; i < nameLen; i++) {
+		args[0] = newStringFromBytes(&bleDeviceName[i], 1);
+		OBJ letterShape = primMBShapeForLetter(1, args);
+
+		args[0] = letterShape;
+		args[1] = int2obj(1);
+		args[2] = int2obj(1);
+		primMBDrawShape(3, args);
+		showShapeForMSecs(300);
+		primMBDisplayOff(0, args);
+		showShapeForMSecs(100);
+	}
+	primMBDisplayOff(0, args);
+}
+
 #if defined(BLE_IDE)
 
 // BLE Communications
 
 #include <NimBLEDevice.h>
-
-extern uint32 lastRcvTime;
 
 // BLE_SEND_MAX - maximum bytes to send in a single attribute write (max is 512)
 // INTER_SEND_TIME - don't send data more often than this to avoid NimBLE error & disconnect
@@ -82,7 +111,6 @@ static BLEService *pService = NULL;
 static BLEService *pUARTService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
-static char uniqueName[32];
 static bool bleRunning = false;
 static bool serviceOnline = false;
 static uint16_t connID = -1;
@@ -94,25 +122,6 @@ static int lastRC = 0;
 static uint8_t bleRecvBuf[RECV_BUF_MAX];
 static int bleBytesAvailable = 0;
 static int overRuns = 0;
-
-static void show_BLE_ID() {
-	OBJ args[5]; // used to call primitives
-
-	int nameLen = strlen(uniqueName);
-	for (int i = nameLen - 4; i < nameLen; i++) {
-		args[0] = newStringFromBytes(&uniqueName[i], 1);
-		OBJ letterShape = primMBShapeForLetter(1, args);
-
-		args[0] = letterShape;
-		args[1] = int2obj(1);
-		args[2] = int2obj(1);
-		primMBDrawShape(3, args);
-		displayFor(300);
-		primMBDisplayOff(0, args);
-		displayFor(100);
-	}
-	primMBDisplayOff(0, args);
-}
 
 static void updateConnectionState() {
 	if (USB_connected_to_IDE && !ideConnected()) {
@@ -214,10 +223,11 @@ BLEService * BLE_createUARTService(); // imported from blePrims.cpp
 void BLE_start() {
 	if (bleRunning) return; // BLE already running
 
+	// Initialize three letter ID and name
+	initBLEDeviceName("MicroBlocks");
+
 	// Create BLE Device
-	BLE_initThreeLetterID();
-	sprintf(uniqueName, "MicroBlocks %s", BLE_ThreeLetterID);
-	BLEDevice::init(uniqueName);
+	BLEDevice::init(bleDeviceName);
 
 	// Create BLE Server
 	pServer = BLEDevice::createServer();
@@ -282,10 +292,42 @@ void BLE_resumeAdvertising() {
 		return; // don't advertise if connected to IDE
 	}
 	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
-	pAdvertising->setName(uniqueName);
+	pAdvertising->setName(bleDeviceName);
 	pAdvertising->setMinInterval(50);
 	pAdvertising->setMaxInterval(100);
 	if (serviceOnline) pAdvertising->start();
+}
+
+#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
+
+void BLE_setEnabled(int enableFlag) {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
+
+		if (enableFlag) {
+			deleteFile(BLE_DISABLED_FILE);
+		} else {
+			createFile(BLE_DISABLED_FILE);
+		}
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+	#endif
+
+	if (enableFlag) {
+		BLE_start();
+	} else {
+		BLE_stop();
+	}
+}
+
+int BLE_isEnabled() {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		return !fileExists(BLE_DISABLED_FILE);
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+		return true;
+	#endif
+	return false;
 }
 
 // IDE receive and send
@@ -326,38 +368,6 @@ int sendBytes(uint8 *buf, int start, int end) {
 
 	// use BLE connection
 	return bleSendData(&buf[start], end - start);
-}
-
-#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
-
-void BLE_setEnabled(int enableFlag) {
-	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
-		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
-
-		if (enableFlag) {
-			deleteFile(BLE_DISABLED_FILE);
-		} else {
-			createFile(BLE_DISABLED_FILE);
-		}
-	#elif defined(NRF52)
-		// xxx todo: use user settings registers or Flash page just before persistent code store
-	#endif
-
-	if (enableFlag) {
-		BLE_start();
-	} else {
-		BLE_stop();
-	}
-}
-
-int BLE_isEnabled() {
-	#if defined(ARDUINO_ARCH_ESP32)
-		return !fileExists(BLE_DISABLED_FILE);
-	#elif defined(NRF52)
-		// xxx todo: use user settings registers or Flash page just before persistent code store
-		return true;
-	#endif
-	return false;
 }
 
 #elif PICO_BLUETOOTH
@@ -485,9 +495,8 @@ void BLE_start() {
 
 	if (bleRunning) return; // BLE already running
 
-	// initialize three letter ID and name
-	BLE_initThreeLetterID();
-	sprintf(picoName, "Pico %s", BLE_ThreeLetterID);
+	// Initialize three letter ID and name
+	initBLEDeviceName("Pico");
 
 	// setup GATT database
 	BTstack.addGATTService(new UUID(MB_SERVICE_UUID));
