@@ -231,20 +231,20 @@ hex _
 十六進製 _
 
 Variables
-變量
+變數
 
 # Buttons on top of "Variables" category
 
 Add a variable
-新建一個變量
+新建一個變數
 
 Delete a variable
-刪除一個變量
+刪除一個變數
 
 # New variable dialog
 
 New variable name?
-新變量的名字是？
+新變數的名字是？
 
 set _ to _
 把 _ 設為 _
@@ -253,7 +253,7 @@ change _ by _
 把 _ 增加 _
 
 initialize local _ to _
-將局部變量 _ 初始化為 _
+將局部變數 _ 初始化為 _
 
 Data
 數據
@@ -2161,7 +2161,7 @@ IP _ gateway _ subnet _
 IP 地址 _ 網關 _ 子網掩碼 _
 
 wifi create hotspot _ password _
-創建 wifi 熱點 _ 密碼 _
+建立 wifi 熱點 _ 密碼 _
 
 Network_Password
 網絡密碼
@@ -2806,7 +2806,7 @@ wifi 設置廣播分組 _ (0-255)
 
 # BLE UART server
 start BLE UART server _
-創建藍牙廣播 _
+建立藍牙廣播 _
 
 BLE Device connected
 藍牙服務器已連接
@@ -3946,13 +3946,13 @@ hide implementation blocks
 隱藏實現塊
 
 do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-不顯示積木庫私有的積木塊和變量（即那些名稱以下劃線開頭的變量）
+不顯示積木庫私有的積木塊和變數（即那些名稱以下劃線開頭的變數）
 
 show implementation blocks
 顯示實現塊
 
 show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-顯示積木庫私有的積木塊和變量（即那些名稱以下劃線開頭的變量）
+顯示積木庫私有的積木塊和變數（即那些名稱以下劃線開頭的變數）
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 連接主板時，即使當前項目為空，也不要自動將主板裏的代碼讀入 IDE
@@ -4030,7 +4030,7 @@ clear data
 清除數據
 
 clear memory and variables
-清除內存和變量
+清除內存和變數
 
 show advanced blocks
 顯示高級積木
@@ -4096,16 +4096,16 @@ rename...
 重命名...
 
 find variable accessors
-查找變量訪問器
+查找變數訪問器
 
 find scripts or block definitions where this variable is being read
-查找到正在讀取該變量的腳本或積木定義
+查找到正在讀取該變數的腳本或積木定義
 
 find variable modifiers
-查找變量修改器
+查找變數修改器
 
 find scripts or block definitions where this variable is being set or changed
-查找正在設置或修改該變量的腳本或積木定義
+查找正在設置或修改該變數的腳本或積木定義
 
 find uses of this block
 尋找當前積木在哪裏被使用
@@ -4648,7 +4648,7 @@ Do nothing. Used to add notes and documentation.
 沒有實際功能，可用來添加註釋和文字說明
 
 Repeat the enclosed blocks with the variable set to the current iteration number or item.
-以當前叠代次數或元素的變量來重復執行內嵌的積木
+以當前叠代次數或元素的變數來重復執行內嵌的積木
 
 Repeat the enclosed blocks until the condition becomes (-o) .
 重復執行內嵌積木代碼直到條件滿足 (-o)
@@ -4753,13 +4753,13 @@ Report the given number shifted right by the given number of bits (arithmetic sh
 報告輸入數字向右平移若幹位後的結果（算術位移；符號保持不變）
 
 Set a variable to the given value.
-將變量設為輸入的數值
+將變數設為輸入的數值
 
 Change a variable by the given amount.
-將輸入的數字與變量相加
+將輸入的數字與變數相加
 
 Create a variable local to the containing script with the given initial value.
-以輸入的初始值創建一個包含腳本的局部變量
+以輸入的初始值建立一個包含腳本的局部變數
 
 Report the Nth item of a list, string, or byte array.
 報告列表、字符或字節數組中的第 N 項元素
@@ -4771,7 +4771,7 @@ Join (concatenate) the given lists, strings, or byte arrays and report the resul
 將輸入的列表、字符或字節數組組合起來並報告結果
 
 Create and report a short list containing the given items. Length limited by available stack space.
-創建並報告一個包含輸入元素的短列表。長度受限於可用的堆棧空間
+建立並報告一個包含輸入元素的短列表。長度受限於可用的堆棧空間
 
 Add an item to the end of a list.
 在列表的末尾添加一項元素
