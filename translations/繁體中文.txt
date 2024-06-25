@@ -1,0 +1,4818 @@
+# MicroBlocks translation file
+# Last updated: June 25 2024
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+輸出
+
+set user LED _
+設置用戶 LED _
+
+say _
+說 _
+
+graph _
+繪圖 _
+
+Input
+輸入
+
+button A
+按鍵 A
+
+button B
+按鍵 B
+
+timer
+計時器
+
+reset timer
+計時器歸零
+
+microseconds
+微秒
+
+milliseconds
+毫秒
+
+board type
+主板類型
+
+connected to IDE
+已連接到 IDE?
+
+Pins
+引腳
+
+read digital pin _
+讀取數字引腳 _
+
+read analog pin _
+讀取模擬引腳 _
+
+pullup _
+上拉 _
+
+set digital pin _ to _
+設置數字引腳 _ 為 _
+
+set pin _ to _
+設置引腳 _ 為 _
+
+analog pins
+模擬引腳
+
+digital pins
+數字引腳
+
+Control
+控製
+
+when started
+當啟動時
+
+when button _ pressed
+當按鍵 _ 被按下
+
+forever _
+重復執行 _
+
+repeat _ _
+重復 _ 次 _
+
+wait _ millisecs
+等待 _ 毫秒
+
+if _ _
+如果 _ _
+
+if _ _ else _
+如果 _ _ 否則 _
+
+else if _ _
+否則,如果 _ _
+
+else
+否則
+
+when _
+當 _
+
+wait until _
+直到 _ 前都等待
+
+wait _ microsecs
+等待 _ 微秒
+
+return _
+返回 _
+
+when _ received
+當接收到 _
+
+go!
+--MISSING--
+
+broadcast _
+廣播 _
+
+comment _
+註釋 _
+
+How this works...
+...
+
+range _ to _
+從 _ 到 _ 的數字列表 
+
+by _
+間隔 _
+
+for _ in _ _
+重復執行 變化因子 _ 範圍 _ _
+
+repeat until _ _
+重復執行 直到 _ _
+
+stop this task
+停止當前任務
+
+stop other tasks
+停止其他任務
+
+stop all
+停止全部
+
+last message
+最後消息
+
+arg _ default _
+參數 _ 默認 _
+
+default
+默認
+
+call _
+調用 _
+
+function name
+方法名稱
+
+parameter list
+參數列表
+
+with _
+參數 _
+
+Operators
+運算
+
+_ mod _
+_ 除以 _ 的余數
+
+abs _
+絕對值 _
+
+min _ _
+最小值 _ _
+
+max _ _
+最大值 _ _
+
+random _ to _
+在 _ 到 _ 之間選取隨機數
+
+not _
+_ 不成立
+
+_ and _
+_ 且 _
+
+and _
+且 _
+
+_ or _
+_ 或 _
+
+or _
+或 _
+
+_ is a _
+_ 的類型是 _
+
+convert _ to _
+把 _ 轉化為 _
+
+boolean
+布爾
+
+number
+數字
+
+string
+字符串
+
+list
+列表
+
+byte array
+字節數組
+
+Advanced:
+高級
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+映射 _ 從 ( _ , _ ) 到 ( _ , _ )
+
+hex _
+十六進製 _
+
+Variables
+變量
+
+# Buttons on top of "Variables" category
+
+Add a variable
+新建一個變量
+
+Delete a variable
+刪除一個變量
+
+# New variable dialog
+
+New variable name?
+新變量的名字是？
+
+set _ to _
+把 _ 設為 _
+
+change _ by _
+把 _ 增加 _
+
+initialize local _ to _
+將局部變量 _ 初始化為 _
+
+Data
+數據
+
+list
+列表
+
+cat
+--MISSING--
+
+dog
+--MISSING--
+
+bird
+--MISSING--
+
+fish
+--MISSING--
+
+length of _
+_ 的長度
+
+item _ of _
+第 _ 項 _
+
+replace item _ of list _ with _
+把第 _ 項 _ 替換為 _
+
+delete item _ of list _
+刪除第 _ 項 _
+
+add _ to list _
+添加 _ 至列表 _
+
+join _ _
+連接 _ _
+
+copy _ from _
+復製 _ 從 _
+
+smiles
+--MISSING--
+
+to _
+到 _
+
+find _ in _
+查找 _ 在 _ 中
+
+starting at _
+開始於 _
+
+join items of list _
+連接列表中的項目 _
+
+separator _
+分隔符 _
+
+unicode _ of _
+Unicode 第 _ 個字符來自 _
+
+string from unicode _
+unicode為 _ 的字符
+
+new list length _
+新建長度為 _ 的列表
+
+new byte array _
+新建字節數組 _
+
+as byte array _
+作為字節數組 _
+
+aByteListOrString
+--MISSING--
+
+with all _
+填充 _
+
+free memory
+閑置內存
+
+all
+所有
+
+last
+最後
+
+random
+隨機
+
+split _ by _
+分割 _ 通過 _
+
+My Blocks
+我的積木
+
+Generic
+通用
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+新建命令積木
+
+Add a reporter block
+新建報告積木
+
+# Make a block dialog
+
+Enter function name:
+輸入積木名稱:
+
+Comm
+通信
+
+i2c get device _ register _
+i2c 讀取設備 _ 寄存器 _
+
+i2c set device _ register _ to _
+i2c 設置設備 _ 寄存器 _ 為 _
+
+i2c device _ read list _
+i2c 設備 _ 讀取列表 _
+
+i2c device _ write list _
+i2c 設備 _ 寫入列表 _
+
+spi send _
+spi 發送 _
+
+spi receive
+spi 接收
+
+spi setup speed _
+spi 設置速率 _
+
+mode _
+模式 _
+
+rpi channel _
+rpi 通道 _
+
+spi exchange bytes _
+spi 交換 字節 _
+
+aByteArray
+--MISSING--
+
+serial open _ baud
+串口打開 _ 波特率
+
+serial close
+串口關閉
+
+serial read
+串口讀取
+
+serial write _
+串口寫入 _
+
+anIntegerStringListOrByteArray
+
+
+serial write _ starting at _
+串口寫入 _ 開始於 _
+
+aStringListOrByteArray
+--MISSING--
+
+soft serial write byte _ pin _ baud _
+軟串口寫入 字節 _ 引腳 _ 速率 _
+
+print _
+打印 _
+
+no op
+no op
+
+ignore
+忽略
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+繪製形狀 _ 於 x _ y _
+
+shape for letter _
+字母 _ 的形狀
+
+send NeoPixel rgb _
+向 NeoPixel 發送 RGB _
+
+has tone support
+具有音調支持
+
+play tone pin _ frequency _
+播放音調於引腳 _ 頻率 _
+
+has WiFi support
+具有 WiFi 支持
+
+start WiFi _ password _
+開啟 WiFi _ 密碼 _
+
+stop WiFi
+停止 WiFi
+
+WiFi status
+WiFi 狀態
+
+my IP address
+我的 IP 地址
+
+radio send number _
+廣播發送數字 _
+
+radio send string _
+廣播發送字符串 _
+
+Hello!
+--MISSING--
+
+radio send pair _ = _
+廣播發送配對信息 _ = _
+
+light
+--MISSING--
+
+radio message received?
+廣播消息已收到?
+
+radio last number
+最後廣播的數字
+
+radio last string
+最後廣播的字符串
+
+radio last message type
+最後廣播的消息類型
+
+radio set group _ (0-255)
+設置廣播分組 _ (0-255)
+
+radio set channel (0-83) _
+設置廣播信道 (0-83) _
+
+radio set power (0-7) _
+設置廣播信號強度 (0-7) _
+
+radio last signal strength
+最後廣播的信號強度
+
+radio receive packet _
+廣播收到包 _
+
+radio send packet _
+廣播發送包 _
+
+disable radio
+禁止廣播
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+基礎傳感器
+
+tilt x
+傾角 x
+
+tilt y
+傾角 y
+
+tilt z
+傾角 z
+
+acceleration
+加速度
+
+light level
+光線強度
+
+temperature (°C)
+溫度 (°C)
+
+magnetic field
+磁場
+
+set acceleration range _ g = 100
+設置加速度範圍 _ g = 100
+
+####
+# NeoPixel library
+
+NeoPixel
+NeoPixel
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+設置 NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+關閉 NeoPixels
+
+set NeoPixel _ color _
+設置 NeoPixel _ 顏色 _
+
+set all NeoPixels color _
+設置所有 NeoPixels 的顏色為 _
+
+rotate NeoPixels by _
+輪轉 NeoPixel 間距 _
+
+brighten NeoPixel _ by _
+NeoPixel _ 亮度增加 _
+
+brighten all NeoPixels by _
+所有 NeoPixels 亮度增加 _
+
+color r _ g _ b _ (0-255)
+顏色 R _ G _ B _ (0-255)
+
+random color
+隨機顏色
+
+attach _ LED NeoPixel strip to pin _
+將 _ 個 LED NeoPixel 燈帶 連接到引腳 _
+
+has white _
+具有白光 _
+
+PIR
+人體紅外傳感器
+
+PIR at pin _ detected movement
+位於引腳 _ 的人體紅外傳感器探測到運動
+
+#### NeoPanel library
+
+NeoPanel
+像素屏
+
+attach NeoPixel panel width _ height _ at pin _
+將寬度 _ 高度 _ 的像素屏連接到引腳 _
+
+NeoPanel set x _ y _ color _
+像素屏設置 x _ y _ 顏色 _
+
+NeoPanel fill column _ color _
+像素屏繪製 列 _ 顏色 _
+
+NeoPanel fill row _ color _
+像素屏繪製 行 _ 顏色 _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+像素屏繪製長方形 x _ y _ 寬度 _ 高度 _ 顏色 _
+
+NeoPanel draw text _ at x _ y _ color _
+像素屏繪製文本 _ 於 x _ y _ 顏色 _
+
+NeoPanel draw BMP file _ at x _ y _
+像素屏繪製BMP圖片 _ 於 x _ y _
+
+####
+# Microphone library
+
+Microphone
+麥克風
+
+microphone
+麥克風
+
+turn on microphone
+打開麥克風
+
+loudness
+音量大小
+
+clap count
+拍手次數
+
+set clap threshold _
+設置拍手閾值 _
+
+estimate clap threshold
+估計拍手閾值
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+ED1 步進電機
+
+move motor _ _ steps _
+馬達運動 _ _ 步 _
+
+move motor 1 _ and motor 2 _ _ steps
+馬達1運動 _ 步,同時馬達2運動 _ _ 步
+
+move motor _ angle _ °
+轉動馬達 _ 角度 _ °
+
+move motor _ _ complete turns
+轉動馬達_ _ 整圈
+
+stop steppers
+停止步進電機
+
+clockwise
+順時針
+
+counter-clockwise
+逆時針
+
+ED1 Buttons
+ED1按鍵
+
+button OK
+OK按鍵
+
+button X
+X按鍵
+
+button up
+向上鍵
+
+button down
+向下鍵
+
+button left
+向左鍵
+
+button right
+向右鍵
+
+capacitive sensor _
+電容式傳感器 _
+
+set capacitive threshold to _
+將電容門限值設為 _
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 彩色LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+Hummingbird 位置伺服 _ _ °
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird 旋轉伺服 _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird 電池 (mV)
+
+Light
+亮度
+
+Distance (cm)
+距離 (cm)
+
+Dial
+Dial
+
+Sound
+聲音
+
+Other
+其他
+
+Finch Beak Red _ Green _ Blue _
+Finch 喙部 紅 _ 綠 _ 藍 _
+
+Finch Tail _ Red _ Green _ Blue _
+Finch 尾部 紅 _ 綠 _ 藍 _
+
+Finch Move _ _ cm at _ %
+Finch 移動 _ _ 厘米 位於 _ %
+
+Finch Turn _ _ ° at _ %
+Finch 旋轉 _ _ ° 位於 _ %
+
+Finch Wheels L _ % R _ %
+Finch 輪子 左 _ % 右 _ %
+
+Finch Stop
+停止 Finch
+
+Finch Distance (cm)
+Finch 距離 (厘米)
+
+Finch _ Light
+Finch _ 光線
+
+Finch _ Line
+Finch _ 畫線
+
+Finch Reset Encoders
+Finch 重置編碼器
+
+Finch _ Encoder
+Finch _ 編碼器
+
+Finch Accelerometer _
+Finch 加速度 _
+
+Finch Battery
+Finch 電池量
+
+All
+全部
+
+Forward
+前進
+
+Backward
+後退
+
+Right
+右轉
+
+Left
+左轉
+
+Beak Up
+喙部上方
+
+Beak Down
+喙部下方
+
+Tilt Left
+左側傾角
+
+Tilt Right
+右側傾角
+
+Level
+級別
+
+Upside Down
+顛倒
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+強度
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+距離 (cm) 觸發 _ 回聲 _
+
+####
+# Infrared remote library
+
+IR Remote
+紅外線
+
+receive IR code
+接收紅外編碼
+
+receive IR code from device _
+從設備 _ 接收紅外編碼
+
+test IR
+測試紅外
+
+attach IR receiver to pin _
+連接紅外接收器至引腳 _
+
+IR transmit device _ command _
+紅外發射 設備 _ 指令 _
+
+####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+鍵盤與鼠標
+
+press key _
+按下 _ 鍵
+
+while holding _
+同時按住 _ 鍵
+
+hold key _
+持續按住 _ 鍵
+
+release key _
+松開 _ 鍵
+
+release all keys
+松開所有按鍵
+
+Shift
+Shift
+
+Control
+控製
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+enter
+
+return
+return
+
+tab
+tab
+
+backspace
+backspace
+
+delete
+delete
+
+insert
+insert
+
+home
+home
+
+end
+end
+
+PgUp
+PgUp
+
+PgDown
+PgDown
+
+CapsLock
+CapsLock
+
+NumLock
+NumLock
+
+ScrollLock
+ScrollLock
+
+PrintScreen
+PrintScreen
+
+ESC
+ESC
+
+_ mouse click
+點擊鼠標 _ 鍵
+
+left
+左
+
+right
+右
+
+middle
+中鍵
+
+both
+全部
+
+move mouse pointer by _ , _
+移動鼠標箭頭 變化量 _ , _
+
+scroll mouse by _
+滾動鼠標 變化量 _
+
+hold _ mouse button
+持續按住鼠標 _ 鍵
+
+release mouse buttons
+松開鼠標按鍵
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+列表
+
+list _ contains _
+列表 _ 包含 _
+
+
+circular item _ of _
+列表項 _ 屬於 _
+
+aListOrString
+--MISSING--
+
+map _ over _
+映射 _ 與 _
+
+aFunction
+aFunction
+
+filter _ with _
+過濾 _ 用 _
+
+pick _ from _
+選擇 _ 從 _
+
+
+a few
+a few
+
+some
+some
+
+most
+most
+
+reverse _
+顛倒 _
+
+shuffle _
+打亂 _
+
+sort _
+排序 _
+
+shuffled _
+已打亂的 _
+
+reversed _
+已顛倒的 _
+
+sorted _
+已排序的 _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+藍牙鍵盤
+
+start BLE Keyboard
+啟動藍牙鍵盤
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+廣播
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+滾動顯示
+
+scroll text _
+滾動顯示文字 _
+
+HELLO ROSA!
+--MISSING--
+
+scroll number _
+滾動顯示數字 _
+
+pausing _ ms
+暫停 _ 毫秒
+
+stop scrolling
+停止滾動
+
+display image _
+顯示圖像 _
+
+heart
+心
+
+small heart
+小心臟
+
+yes 
+好
+
+no
+不
+
+happy
+快樂
+
+sad
+悲傷
+
+confused
+困惑
+
+angry
+憤怒
+
+asleep
+睡著了
+
+surprised
+驚訝
+
+silly
+愚蠢
+
+fabulous
+美妙 
+
+meh
+嗯
+
+t-shirt
+T恤衫
+
+roller skate
+旱冰鞋
+
+duck
+鴨子
+
+house
+房子
+
+tortoise
+烏龜
+
+butterfly
+蝴蝶
+
+stick figure
+棍子
+
+ghost
+鬼 
+
+sword
+劍
+
+giraffe
+長頸鹿
+
+skull
+頭骨
+
+umbrella
+傘
+
+snake
+蛇
+
+rabbit
+兔子
+
+cow
+牛
+
+quarter note
+四分音符
+
+eight note
+八分音符
+
+pitchfork
+幹草叉
+
+target
+目標
+
+triangle
+三角形
+
+left triangle
+左三角鐵
+
+chess board
+棋盤
+
+diamond
+鉆石
+
+small diamond
+小鉆石
+
+square
+正方形
+
+small square
+小正方形
+
+scissors
+剪刀
+
+####
+# Servo motor library
+
+Servo
+舵機
+
+set servo _ to _ degrees (-90 to 90)
+設置舵機 _ 的角度為 _ 度 (-90 到 90)
+
+set servo _ to speed _ (-100 to 100)
+設置360度舵機 _ 的速度為 _ (-100 到 100)
+
+stop servo _
+停止舵機 _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+LED 顯示
+
+display _
+顯示 _
+
+clear display
+清除顯示
+
+set display color _
+設置顯示顏色 _
+
+plot x _ y _
+點亮 x _ y _
+
+unplot x _ y _
+熄滅 x _ y _
+
+display character _
+顯示字符 _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+初始化 i2c _ 地址(hex) _ 重置 pin# _ 翻轉 _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+初始化 spi _ d/c pin# _ 重置 pin# _ 翻轉 _
+
+write _ at x _ y _ inverse _
+繪製 _ 在 x _ y _ 反色 _
+
+show display buffer
+刷新顯示緩存
+
+clear
+清除屏幕
+
+set contrast (1-4) _
+設置 對比度 (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+繪製圓形在 x _ y _ 半徑 _ 擦除 _
+
+draw image _ at x _ y _
+繪製圖像 _ 在 x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+繪製直線從 x _ y _ 到 x _ y _ 擦除 _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+繪製矩形 x _ y _ 寬 _ 高 _ 擦除 _ 圓角(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+填充矩形 x _ y _ 寬 _ 高 _ 擦除 _
+
+_flip display top _
+_上下反轉顯示屏 _
+
+make image _
+製作圖片 _
+
+set pixel x _ y _ erase _
+設置像素 x _ y _ 擦除 _
+
+set video _
+設置視頻 _
+
+cursor location
+光標位置
+
+defer display updates
+推遲顯示更新
+
+####
+# TFT display library
+
+enable TFT _
+啟用 TFT _
+
+TFT width
+TFT寬度
+
+TFT height
+TFT高度
+
+set TFT pixel x _ y _ to _
+設置 TFT-像素 x _ y _ 為 _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+在TFT上繪製直線從 x _ y _ 至 x _ y _ 顏色 _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+在TFT上繪製長方形,位置 x _ y _ 寬度 _ 高度 _ 顏色 _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+在TFT上繪製圓角長方形, 位置 x _ y _ 寬度 _ 高度 _ 半徑 _ 顏色 _
+
+draw circle on TFT at x _ y _ radius _ color _
+在TFT上繪製圓形, 位置 x _ y _ 半徑 _ 顏色 _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+在TFT上繪製三角形, 位置 x _ y _ , x _ y _ , x _ y _ 顏色 _
+
+filled _
+填充 _
+
+write _ on TFT at x _ y _ color _
+在TFT上寫 _ 位置 x _ y _ 顏色 _
+
+Hello World!
+--MISSING--
+
+scale _ wrap _
+scale _ wrap _
+
+####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _ at x _ y _
+顯示 BMP 文件 _ 在 x _ y _
+
+image.bmp
+image.bmp
+
+####
+# HSV color library
+
+HSV Colors
+HSV 顏色
+
+RGB of hue _ saturation _ brightness _ (0-100)
+色相 _ 飽和度 _ 亮度 _ (0-100) 的 RGB
+
+####
+# Fractions library
+
+Fractions
+分數
+
+fract _ / _
+分數 _ / _
+
+fract _ + _
+分數 _ + _
+
+fract _ - _
+分數 _ - _
+
+fract _ × _
+分數 _ × _
+
+fract _ = _
+分數 _ = _
+
+fract _ < _
+分數 _ < _
+
+fract _ > _
+分數 _ > _
+
+simplify fraction _
+簡化分數 _
+
+integer part of fraction _
+分數的整數部分 _
+
+numerator of fraction _
+分數的分子 _
+
+denominator of fraction _
+分數的分母 _
+
+gcd _ _
+最大公約數 _ _
+
+lcm _ _
+最小公倍數 _ _
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+音調
+
+attach buzzer to pin _
+連接蜂鳴器至引腳 _
+
+play note _ octave _ for _ ms
+彈奏音符 _ 音階 _ 持續 _ 毫秒
+
+play frequency _ for _ ms
+彈奏頻率 _ 持續 _ 毫秒
+
+play midi key _ for _ ms
+彈奏midi鍵 _ 持續 _ 毫秒
+
+start tone _ Hz
+彈奏音調 _ 赫茲
+
+stop tone
+停止音調
+
+c
+c
+
+c#
+c#
+
+d
+d
+
+d#
+d#
+
+e
+e
+
+f
+f
+
+f#
+f#
+
+g
+g
+
+g#
+g#
+
+a
+a
+
+a#
+a#
+
+b
+b
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+鈴聲
+
+play ringtone _
+播放鈴聲 _
+
+current song name
+當前歌曲名
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Pluck
+
+pluck note _ octave _ for _ ms
+pluck note _ octave _ for _ ms
+
+pluck MIDI key _ for _ msecs
+pluck MIDI key _ for _ msecs
+
+set pluck pin _
+set pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+播放 WAV 文件 _
+
+filename
+文件名稱
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+節奏
+
+set tempo to _ bpm at _ / _ signature
+設置節拍 _ bpm 以 _ / _ 拍
+
+start counting _ bars
+開始計數 _ 小節
+
+stop counting
+停止計數
+
+wait until next _
+等待直到下一次 _
+
+current beat
+當前節拍
+
+current bar
+當前小節
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+原聲低音鼓
+
+Bass Drum 1
+低音鼓 1
+
+Side Stick
+小鼓邊擊
+
+Acoustic Snare
+小鼓
+
+Hand Clap
+拍手
+
+Electric Snare
+電動軍鼓
+
+Low Floor Tom
+低音落地嗵鼓
+
+Closed Hi-Hat
+封閉高音鼓
+
+High Floor Tom
+高音落地嗵鼓
+
+Pedal Hi-Hat
+踏板高音鼓
+
+Low Tom
+低音嗵鼓
+
+Open Hi-Hat
+開放高音鼓
+
+Low-Mid Tom
+中低嗵鼓
+
+Hi-Mid Tom
+中高嗵鼓
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+高音嗵鼓
+
+Ride Cymbal 1
+打擊鑔 1
+
+Chinese Cymbal
+中國鑔
+
+Ride Bell
+馬鈴
+
+Tambourine 
+小手鼓
+
+Splash Cymbal
+飛濺鈸
+
+Cowbell 
+牛鈴
+
+Crash Cymbal 2
+撞鑔 2
+
+Vibraslap 
+振動拍
+
+Ride Cymbal 2
+打擊鑔 2
+
+Hi Bongo
+高邦戈
+
+Low Bongo
+低邦戈
+
+Mute Hi Conga
+Mute Hi Conga
+
+Open Hi Conga
+低音康加
+
+Low Conga
+低音康加
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+效果 1
+
+effect 2
+效果 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
+--MISSING--
+
+####
+# Turtle geometry library
+
+Turtle
+海龜
+
+home
+回到起點
+
+move _
+前進 _
+
+turn _ degrees
+旋轉 _ 度
+
+turn _ / _ of circle
+旋轉 _ / _ 個圈
+
+pen down
+落筆
+
+pen up
+擡筆
+
+set pen color to _
+將畫筆顏色設置為 _
+
+set pen to random color
+將畫筆設置為隨機顏色
+
+fill display with _
+用 _ 填充視區
+
+go to x _ y _
+移動到 x _ y _
+
+point in direction _
+面向 _
+
+####
+# File system library
+
+Files
+文件
+
+open file _
+打開文件 _
+
+close file _
+關閉文件 _
+
+delete file _
+刪除文件 _
+
+append line _ to file _
+將行 _ 添加至文件 _
+
+append bytes _ to file _
+將字節 _ 添加至文件 _
+
+end of file _
+文件 _ 結束
+
+next line of file _
+文件 _ 的下一行
+
+next _ bytes of file _
+接下來的 _ 字節 從文件 _
+
+read into _ from file _
+讀入到 _ 從文件 _
+
+a ByteArray
+a ByteArray
+
+starting at _
+開始於 _
+
+file names
+文件名
+
+in directory _
+在字典 _
+
+size of file _
+文件 _ 的大小
+
+file system info
+文件系統信息
+
+####
+# Strings
+# string (text) processing functions
+
+Strings
+字符串
+
+_ is a digit
+_ 是數字
+
+_ is lowercase
+_ 是小寫字母
+
+_ is uppercase
+_ 是大寫字母
+
+_ begins with _
+_ 以 _ 開頭
+
+prefix
+prefix
+
+pre
+pre
+
+_ ends with _
+_ 以 _ 結尾
+
+suffix
+suffix
+
+fix
+fix
+
+_ contains _
+_ 包含 _
+
+lowercase _
+小寫 _
+
+THIS is a String! :)
+THIS is a String! :)
+
+uppercase _
+大寫 _
+
+Hello, world!
+Hello, world!
+
+_ without white space
+_ 移除空格
+
+join string list _ separator _
+連接成字符串 列表 _ 分隔符 _
+
+unicodes _
+unicodes _
+
+aString
+aString
+
+string from unicodes _
+將 unicodes _ 轉為字符串
+
+aList
+aList
+
+num2str _
+數字 _ 轉為字符串
+
+str2num _
+字符串 _ 轉為數字
+
+####
+# WiFi library
+
+WiFi
+WiFi
+
+wifi connect to _ password _
+連接 wifi 至 _ 密碼 _
+
+Network_Name
+網絡名稱
+
+IP _ gateway _ subnet _
+IP 地址 _ 網關 _ 子網掩碼 _
+
+wifi create hotspot _ password _
+創建 wifi 熱點 _ 密碼 _
+
+Network_Password
+網絡密碼
+
+IP address
+IP 地址
+
+MAC address
+MAC 地址
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+運動
+
+motion
+運動
+
+start step counter
+啟動計步器
+
+step count
+步數
+
+clear step count
+清除步數
+
+set step threshold _ (0-50)
+設置計步閾值 _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+按鍵事件
+
+button _ double pressed
+按鍵 _ 被雙擊
+
+button _ long pressed
+按鍵 _ 被長按
+
+button _ pressed
+按鍵 _ 被點擊
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+Calliope 設置 LED 紅 _ 綠 _ 藍 _
+
+Calliope set speaker _
+Calliope 設置揚聲器 _
+
+Calliope loudness
+Calliope 響度
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+Circuit Playground 設置揚聲器 _
+
+Circuit Playground slide switch
+Circuit Playground 滑動開關
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+連接 _ DotStar LEDs 至數據引腳 _ 時鐘引腳 _
+
+set all DotStar LEDs to r _ g _ b _
+設置所有 DotStar LEDs 為 r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+設置 DotStar LED _ 為 r _ g _ b _
+
+set DotStar brightness _
+設置 DotStar 亮度 _
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+bme280 已連接
+
+bmp280 connected
+bmp280 已連接
+
+bmx280 temperature
+bmx280 溫度
+
+bmx280 pressure
+bmx280 壓力
+
+bme280 humidity
+bme280 濕度
+
+bmx280 set base altitude _ meters
+bmx280 設置基準高度 _ 米
+
+bmx280 altitude (cm)
+BMX280 高度（厘米）
+
+bmx280 altitude (feet)
+BMX280 高度（英尺）
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+TCS34725 已連接
+
+TCS34725 rgb
+TCS34725 RGB
+
+color _ name
+顏色 _ 名字
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+溫度 (Celsius) DHT11 引腳 _
+
+humidity DHT11 pin _
+濕度 DHT11 引腳 _
+
+temperature (Celsius) DHT22 pin _
+溫度 (Celsius) DHT22 引腳 _
+
+humidity DHT22 pin _
+濕度 DHT22 引腳 _
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+讀取 PN532 RFID
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+PN532 固件版本
+
+####
+# Touch Screen
+
+Touch Screen
+觸摸屏
+
+TFT touched
+TFT被點擊
+
+TFT touch X position
+TFT點擊 X 坐標
+
+TFT touch Y position
+TFT點擊 Y 坐標
+
+TFT touch pressure
+TFT 點擊力度
+
+####
+# HTTP Client
+
+HTTP client
+HTTP 客戶端
+
+_ data _ to http܃// _
+_ 數據 _ 到 http܃// _
+
+port _
+端口 _
+
+####
+# HTTP Server
+
+HTTP server
+HTTP 服務器
+
+start HTTP server
+啟動 HTTP 服務器
+
+HTTP server request
+HTTP 服務器請求
+
+respond _ to HTTP request
+回應 _ 至HTTP請求
+
+with body _
+with body _
+
+Welcome to the MicroBlocks HTTP server
+歡迎使用 MicroBlocks HTTP 服務器
+
+and headers _
+and headers _
+
+body of request _
+請求體 _
+
+path of request _
+請求路徑 _
+
+headers of request _
+請求頭 _
+
+method of request _
+請求方法 _
+
+content length of request _
+請求內容長度 _
+
+####
+# WebSocket server
+
+WebSocket server
+WebSocket 服務器
+
+start WebSocket server
+啟動 WebSocket 服務器
+
+last WebSocket event
+最後的 WebSocket 事件
+
+client ID for WebSocket event _
+WebSocket 事件 _ 的客戶端 ID
+
+payload for WebSocket event _
+WebSocket 事件 _ 的載荷
+
+type of WebSocket event _
+WebSocket 事件 _ 的類型
+
+send _ to WebSocket client _
+發送 _ 到 WebSocket 客戶端 _
+
+Hello, Client!
+Hello, Client!
+
+####
+# Web Things library
+
+Web Thing
+Web Thing
+
+set thing name to _
+設置 Thing 的名字為 _
+
+set thing capability to _
+設置 thing 的能力為 _
+
+set boolean property _ title _ @Type _
+設置邏輯屬性 _ 名字 _ @類型 _
+
+set string property _ title _ @Type _
+設置字符串屬性 _ 名字 _ @類型 _
+
+set number property _ title _ @Type _
+設置數字屬性 _ 名字 _ @類型 _
+
+set number property _ title _ min _ max _ @Type _
+設置數字屬性 _ 名字 _ 最小 _ 最大 _ @類型 _
+
+read only _
+只讀 _
+
+register event _ type _
+註冊事件 _ 類型 _
+
+start WebThing server
+啟動 WebThing 服務器
+
+trigger event _
+觸發事件 _
+
+thing description JSON
+Thing 的 JSON 描述
+
+properties JSON
+屬性 JSON
+
+event definitions JSON
+事件定義 JSON
+
+events JSON
+事件 JSON
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+--MISSING--
+
+MiKe _ obstacle ?
+--MISSING--
+
+MiKe black line on _ ?
+--MISSING--
+
+MiKe back light
+--MISSING--
+
+MiKe IR
+--MISSING--
+
+MiKe digital D8 sensor
+--MISSING--
+
+MiKe stop motors
+--MISSING--
+
+MiKe Robot go _ at _ %
+--MISSING--
+
+MiKe Robot speed _ %
+--MISSING--
+
+MiKe Robot direction _
+--MISSING--
+
+MiKe turn _ motor _
+--MISSING--
+
+MiKe speed _ motor at _ %
+--MISSING--
+
+MiKe front lights off
+--MISSING--
+
+MiKe front lights to _
+--MISSING--
+
+MiKe circle lights off
+--MISSING--
+
+MiKe circle ligths to _
+--MISSING--
+
+MiKe circle light _ (1-18) to _
+--MISSING--
+
+MiKe rotate lights by _
+--MISSING--
+
+MiKe digital D8 to _
+--MISSING--
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+--MISSING--
+
+plotter move _ steps
+--MISSING--
+
+plotter turn _ degrees
+--MISSING--
+
+plotter turn _ / _ of circle
+--MISSING--
+
+plotter point in direction _
+--MISSING--
+
+plotter pen down
+--MISSING--
+
+plotter pen up
+--MISSING--
+
+plotter stop
+--MISSING--
+
+set plotter speed to _ %
+--MISSING--
+
+####
+# Innova Didactic libraries
+
+red
+--MISSING--
+
+yellow
+--MISSING--
+
+green
+--MISSING--
+
+forward
+--MISSING--
+
+backward
+--MISSING--
+
+turn right
+--MISSING--
+
+turn left
+--MISSING--
+
+stop
+--MISSING--
+
+right sensor
+--MISSING--
+
+left sensor
+--MISSING--
+
+both sensors
+--MISSING--
+
+TdR test buzzer
+--MISSING--
+
+TdR set blue LED _
+--MISSING--
+
+TdR set red LED _
+--MISSING--
+
+TdR set RGB LED _
+--MISSING--
+
+TdR clear RGB LED
+--MISSING--
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+--MISSING--
+
+TdR rotation
+--MISSING--
+
+TdR light level
+--MISSING--
+
+TdR button 1
+--MISSING--
+
+TdR button 2
+--MISSING--
+
+TdR receive IR code
+--MISSING--
+
+Imagina set _ led to _
+--MISSING--
+
+Imagina play _ octave _ for _ ms
+--MISSING--
+
+Imagina temperature (°C)
+--MISSING--
+
+Imagina light
+--MISSING--
+
+Imagina distance (cm)
+--MISSING--
+
+Imagina button (D2) pressed?
+--MISSING--
+
+Imagina digital reading _
+--MISSING--
+
+Imagina analog reading A1
+--MISSING--
+
+Imagina set digital pin _ to _
+--MISSING--
+
+Imagina stop servo _
+--MISSING--
+
+Imagina set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Imagina set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Imagina set _ speed to _ %
+--MISSING--
+
+Imagina set _ to _
+--MISSING--
+
+Imagina IR reading
+--MISSING--
+
+Imagina IR transmit device _ command _
+--MISSING--
+
+_ steps
+--MISSING--
+
+at _ % speed
+--MISSING--
+
+3dBot set speed at _ %
+--MISSING--
+
+3dBot obstacle < _ cm?
+--MISSING--
+
+3dBot line on _ ?
+--MISSING--
+
+####
+# MQTT
+
+MQTT connect to broker _
+連接到 MQTT 服務器 _
+
+buffer sizes _ client id _
+緩存大小 _ 客戶端 id _
+
+username _ password _
+用戶名 _ 密碼 _
+
+MQTT connected
+MQTT 服務器已連接
+
+MQTT disconnect
+斷開 MQTT 服務器連接
+
+MQTT sub _
+訂閱主題 _
+
+testTopic
+testTopic
+
+MQTT unsub _
+取消訂閱主題 _
+
+MQTT pub topic _ payload _
+向主題 _ 發布載荷 _
+
+Hello!
+Hello!
+
+retain _ QoS _
+保留 _ QoS _
+
+MQTT event
+MQTT 事件
+
+binary _
+二進製 _
+
+topic for MQTT event _
+MQTT 事件的主題 _
+
+payload for MQTT event _
+MQTT 事件的載荷 _
+
+MQTT set will topic _ payload _
+MQTT 設置遺囑 主題 _ 載荷 _
+
+testWill
+testWill
+
+Last will!
+Last will!
+
+buffer sizes _
+緩存大小 _
+
+####
+# UDP
+
+UDP start port _
+UDP 啟動服務器 端口 _ 
+
+UDP stop
+UDP 停止服務器
+
+UDP send packet _ to ip _ port _
+UDP 發送數據包 _ 到 ip _ 端口 _
+
+UDP receive packet
+UDP 接收數據包 
+
+binary data _
+二進製數據 _
+
+UDP remote IP address
+UDP 遠程 IP 地址
+
+UDP remote port
+UDP 遠程端口
+
+####
+# WiFi Radio
+
+WiFi Radio
+WiFi 廣播
+
+wifi send number _
+wifi 廣播發送數字 _
+
+wifi send string _
+wifi 廣播發送字符串 _
+
+wifi send pair _ = _
+wifi 廣播發送配對信息 _ = _
+
+wifi message received?
+wifi 廣播消息已收到?
+
+wifi last number
+wifi 最後廣播的數字
+
+wifi last string
+wifi 最後廣播的字符串
+
+wifi set group _ (0-255)
+wifi 設置廣播分組 _ (0-255)
+
+# BLE UART server
+start BLE UART server _
+創建藍牙廣播 _
+
+BLE Device connected
+藍牙服務器已連接
+
+last BLE UART message
+最後一次的接收到的消息
+
+BLE UART write _
+向藍牙連接的的設備發送 _
+
+stop BLE UART server
+停止藍牙廣播
+
+####
+# Cutebot
+
+Cutebot
+酷比特小車
+
+Cutebot set wheel left _ right _ (-100 to 100)
+酷比特 設置左輪速度為 _ 右輪速度為 _ (-100 ... 100)
+
+Cutebot stop wheels
+酷比特 停車
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+酷比特 設置舵機 _ 的角度為 _ (-90 ... 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+酷比特 設置舵機 _ 的速度為 _ (-100 to 100)
+
+Cutebot set headlight _ to _
+酷比特 將 _ LED 車頭燈 設為 _
+
+Cutebot set NeoPixel _ to _
+酷比特 設置 NeoPixel _ 顏色 _
+
+Cutebot _ line sensor
+酷比特 _ 巡線傳感器 狀態為
+
+Cutebot sees line on left _ right _
+酷比特 巡線傳感器狀態為 _ _
+
+Cutebot distance (cm)
+酷比特 超聲波返回距離值
+
+left
+左
+
+right
+右
+
+both
+全部
+
+# Wukong
+
+Wukong
+悟空擴展板
+
+Wukong set motor _ to _ (-100 to 100)
+悟空 設置電機 _ 速度為 _ (-100 ... 100)
+
+Wukong stop motor _
+悟空 停止電機 _ 
+
+Wukong stop all
+悟空 停止所有電機
+
+Wukong set servo _ to _ degrees (-90 to 90)
+悟空 設置 舵機 _ 角度為 _ (-90 ... 90)
+
+Wukong set servo _ to speed _ (-100 to 100)
+悟空 設置 舵機 _ 速度為 _ (-100 ... 100)
+
+Wukong set NeoPixels _ _ _ _
+悟空 設置 NeoPixel _ _ _ _
+
+Wukong set LED brightness to _
+悟空 設置氛圍燈亮度為 _
+
+####
+# Sphero-RVR
+
+wake
+喚醒
+
+sleep
+休眠
+
+reset the yaw
+重置偏航
+
+drive with speed _ and heading _
+以速度 _ 和朝向 _ 行駛
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+使用 左模式 _ 左速度 _ 右模式 _ 右速度 _ 設置原始電機
+
+stop with heading _
+以朝向 _ 停止
+
+set RGB LED _ to red _ green _ blue _
+將 RGB LED _ 設置為 紅色 _ 綠色 _ 藍色 _
+
+set all LEDs to red _ green _ blue _
+將所有 LED 設為 紅色 _ 綠色 _ 藍色 _
+
+####
+# Joystick:bit
+
+button _ is pressed
+按鍵 _ 被按下
+
+rocker value of _
+搖桿 _ 的數值
+
+motor vibrate for _ ms
+震動 _ 毫秒
+
+####
+# NeZha
+
+NeZha
+哪咤擴展板
+
+NeZha set motor _ speed to _ %
+哪咤 設置電機 _ 速度為 _ %
+
+NeZha stop motor _
+哪咤 停止電機 _
+
+NeZha stop all motors
+哪咤 停止所有電機
+
+NeZha set _ servo _ angle to _
+哪咤 設置 _ 舵機 _ 角度為 _
+
+NeZha set continuous rotation servo _ speed to _ %
+哪咤 設置 連續轉動舵機 _ 速度為 _ %
+
+#### 
+# HuskyLens
+
+HuskyLens
+二哈識圖
+
+HL set Comms i2cAddr _ serial _
+二哈 設置 I2C 地址 _ 串行 _
+
+HL change algorithm _
+二哈 切換算法 _
+
+Color Recog
+顏色識別
+
+Face Recog
+人臉識別
+
+Line Track
+巡線
+
+Obj Classify
+物體分類
+
+Obj Recog
+物體識別
+
+Obj Track
+物體追蹤
+
+Tag Recog
+標簽識別
+
+HL do _
+二哈 觸發 _
+
+Knock
+敲擊
+
+Save Picture
+保存圖片
+
+Save Screenshot
+保存截圖
+
+Forget Learned Objects
+遺忘學習數據
+
+Clear Screen
+清空截圖
+
+is pro
+pro 版
+
+firmware version
+固件版本
+
+HL request _
+二哈 請求 _
+
+Blocks
+方框
+
+Arrows
+箭頭
+
+Learned Blocks
+學習到的方框
+
+Learned Arrows
+學習到的箭頭
+
+HL request by ID _ Object _
+二哈 請求 ID _ 對象 _
+
+Blocks
+方框
+
+Arrows
+箭頭
+
+HL get info _
+二哈 獲取信息 _
+
+Object Count
+對象計數
+
+Learned Count
+學會的計數
+
+Frame Number
+幀數
+
+HL get block _ block index _
+二哈 獲取方框 _ 索引方框 _
+
+X center
+X 中心
+
+Y center
+Y 中心
+
+Width
+寬度
+
+Height
+高度
+
+id
+id
+
+HL get arrow _ arrow index _
+二哈 獲取方框 _ 索引箭頭 _
+
+X origin
+X 起點
+
+Y origin
+Y 起點
+
+X target
+X 終點
+
+Y target
+Y 終點
+
+id
+id
+
+HL learn current object as ID _
+二哈 當前學習對象的 ID _
+
+HL learn object as ID _ Name _
+二哈 學習對象的 ID _ 名稱 _
+
+HL set CustomName _ for a learned object with ID _
+二哈 設置自定義名稱 _ 給已學習對象 ID _
+
+HL write _ at x _ y _
+二哈 顯示文字 _ 在 x _ y _
+
+HL file _ file# _
+二哈 存檔 _ 文件 _
+
+Save Model
+保存模型
+
+Load Model
+加載模型
+
+####
+# WuKong2040
+
+WuKong2040
+悟空2040
+
+WuKong2040 rainbowLED _ color to _
+悟空2040 彩虹燈 _ 顏色 _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+悟空2040 彩虹燈 _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+悟空2040 關閉所有彩虹燈
+
+WuKong2040 motor _ speed to _ (-100~100)
+悟空2040 設置電機 _ 速度為 _ (-100~100)
+
+WuKong2040 stop motor _
+悟空2040 停止電機 _
+
+WuKong2040 stop all motors
+悟空2040 停止所有電機
+
+WuKong2040 buzzer beep _ ms
+悟空2040 蜂鳴器鳴叫 _ 毫秒
+
+####
+# Octopus
+
+Octopus
+八爪魚系列傳感器
+
+Octopus LED pin _ toggle to _
+八爪魚 LED引腳 _ 切換為 _
+
+Octopus LED pin _ brightness _ %
+八爪魚 LED引腳 _ 設置亮度 _ %
+
+Octopus motor fan pin _ speed to _ %
+八爪魚 電機風扇引腳 _ 設置速度 _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+八爪魚 180°舵機引腳 _ 設置角度 _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+八爪魚 超聲波測距(厘米) 觸發 _ 回聲 _
+
+Octopus value of light intensity (Lux) at pin _
+八爪魚 光照強度值（Lux）引腳 _
+
+Octopus value of DHT11 temperature (°C) at pin _
+八爪魚 DHT11 溫度(°C) 引腳 _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+八爪魚 DHT11 濕度(0~100) 引腳 _
+
+Octopus value of water level (0~40mm) at pin _
+八爪魚 水位值(0~40mm) 引腳 _
+
+Octopus value of trimpot (0~1023) at pin _
+八爪魚 電位器數值(0~1023) 引腳 _
+
+Octopus value of noise (dB) at pin _
+八爪魚 噪聲值(分貝) 引腳 _
+
+Octopus OLED show _ at x _ y _
+八爪魚 OLED 顯示 _ 於 x _ y _
+
+Octopus OLED clear
+八爪魚 OLED 清除屏幕
+
+Octopus OLED draw pixel x _ y _
+八爪魚 OLED 繪製像素 x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+八爪魚 OLED 繪製直線 從 x _ y _ 到 x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+八爪魚 OLED 繪製長方形 x _ y _ w _ h _  圓角 _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+八爪魚 OLED 填充長方形 x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+八爪魚 OLED 繪製圓形 x _ y _ 半徑 _
+
+Octopus OLED fill circle x _ y _ radius _
+八爪魚 OLED 填充圓形 x _ y _ 半徑 _
+
+####
+# OctoStudio
+
+Octo start
+Octo 啟動
+
+Octo beam to phones _
+Octo 給手機發信號 _
+
+duration _ ms
+持續 _ 毫秒
+
+Octo receive beam
+Octo 收到的信號
+
+Octo stop
+Octo 停止
+
+####
+# TM1650
+
+clear
+清除顯示
+
+set intensity _
+設置亮度為 _
+
+show digit number _ at _
+顯示單個數字 _ 在第 _ 位
+
+show dot point _ show _
+小數點在第 _ 位 顯示 _
+
+
+show number _
+顯示數字 _
+
+turn off display
+關閉屏幕
+
+turn on display
+打開屏幕
+
+#### Elite AI Training Platform
+
+Elite AI Training Platform
+英荔 AI 訓練平臺
+
+class _ > probability _ %
+類別 _ > 概率 _ %
+
+#### M5FireKits
+
+M5FireKits
+M5Fire M5Go底座
+
+buttonC
+按鍵 C
+
+LEDStripPin15
+燈帶引腳15
+
+IRTxPin
+紅外發射引腳13
+
+readMicValue
+麥克風讀數
+
+PortA _
+端口A _
+
+PortB _
+端口B _
+
+PortC _
+端口C _
+
+clearStrip
+清除燈帶
+
+setStripLED _ _ _ _ _ _ _ _ _ _
+燈帶 _ _ _ _ _ _ _ _ _ _
+
+setStripRight _ _ _ _ _
+右邊燈帶 _ _ _ _ _
+
+setStripLeft _ _ _ _ _
+左邊燈帶 _ _ _ _ _
+
+_MicPin34
+麥克風引腳34
+
+Screen _
+屏幕開關 _
+
+#### 8 Bit Graphics
+
+8 Bit Graphics
+8 Bit 圖像
+
+set scale _
+設置比例 _
+
+draw buffer : starting at x _ y _ width _ height _
+
+
+bitmap from BMP file _
+來自 BMP 文件的位圖 _
+
+bitmap of width _ from raw indexed file _
+寬度 _ 的位圖 來自 raw indexed 文件 _
+
+bitmap of width _ from string _
+寬度 _ 的位圖 來自字串 _
+
+merge bitmap _ at _ , _
+合並位圖 _ 在 _ , _
+
+merge tile _ at tile position _ , _
+合並背景圖 _ 從 背景位置 _ , _
+
+merge tile _ from _ , _ to _ , _
+合並背景圖 _ 從 _ , _ 到 _ , _
+
+set palette _
+設置調色板 _
+
+set transparent color index _
+設置透明顏色索引 _
+
+palette from pal file _
+調色板來自調色板文件 _
+
+palette from BMP file _
+來自 BMP 文件的調色板 _
+
+4 bit _ palette
+4 位 _ 調色板
+
+8 bit _ palette
+8 位 _ 調色板
+
+color number for r _ g _ b _ (0-255)
+_ g _ b _ (0-255) 轉顏色數值
+
+draw palette table _
+繪製調色板表 _
+
+screen width
+屏幕寬度
+
+screen height
+屏幕高度
+
+#### OLED Graphics
+
+OLED Graphics
+OLED 屏幕
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+初始化 i2c _ 地址(hex) _ 重置引腳# _ 翻轉 _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+初始化 spi _ d/c 引腳# _ 重置引腳# _ 翻轉 _
+
+write _ at x _ y _ inverse _
+輸入字符 _ 在 x _ y _ 反色 _
+
+show display buffer
+刷新顯示緩存
+
+set contrast (1-4) _
+對比度 (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+繪製圓形在 x _ y _ 處，半徑為 _ 擦除 _
+
+draw image _ at x _ y _
+繪製 _ 圖，在 x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+畫線 從 x _ y _ 到 x _ y _ 擦除 _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+繪製矩形 x _ y _ 寬 _ 高 _ 擦除 _ 圓角(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+填充矩形 x _ y _ 寬 _ 高 _ 擦除 _
+
+_flip display top _
+反轉顯示 上 _
+
+make image _
+做 _ 圖
+
+set pixel x _ y _ erase _
+繪製像素點 x _ y _ 擦除 _
+
+set video _
+圖像設置 _
+
+Inverse
+反色
+
+Normal
+正常
+
+cursor location
+光標位置
+
+defer display updates
+推遲顯示更新
+
+#### XGO-nano
+
+Left Front
+左前
+
+Right Front
+右前
+
+Right Rear
+右後
+
+Left Rear
+左後
+
+Upper(-65°~65°)
+上(-65°~65°)
+
+Middle(-115°~70°)
+中(-115°~70°)
+
+Lower(-90°~105°)
+下(-90°~105°)
+
+Upper(-30°~30°)
+上(-30°~30°)
+
+Middle(-70°~90°)
+中(-70°~90°)
+
+Lower(-85°~50°)
+下(-85°~50°)
+
+Fast
+快速
+
+Slow
+慢速
+
+Trot
+對角
+
+Walk
+行走
+
+High Walk
+高擡腿
+
+Micro Trot
+微調
+
+Forward(0mm~25mm)
+前平移(0mm~25mm)
+
+Backward(-25mm~0mm)
+後平移(-25mm~0mm)
+
+Left Shift(0mm~18mm)
+左平移(0mm~18mm)
+
+Right Shift(-18mm~0mm)
+右平移(-18mm~0mm)
+
+roll
+翻滾
+
+pitch
+俯仰
+
+yaw
+偏航
+
+Lie Down
+趴下
+
+Stand Up
+站起
+
+Crawl
+匍匐前進
+
+Turn Around
+轉圈
+
+Mark Time
+踏步
+
+Squat
+蹲起
+
+Turn Roll
+翻滾轉角
+
+Turn Pich
+俯仰轉角
+
+Turn Yaw
+偏航轉角
+
+3-axis Rotation
+三軸轉動
+
+Pee
+撒尿
+
+Sit Down
+坐下
+
+Wave Hand
+招手
+
+Stretch Oneself
+伸懶腰
+
+Wave Body
+波浪
+
+Stagger
+搖擺
+
+Begging
+乞討
+
+Hunt for food
+找食物
+
+Handshake
+握手
+
+Pigeon Head
+雞頭
+
+Push-up
+俯臥撐
+
+Look Around
+張望
+
+Dance
+跳舞
+
+Naughty
+調皮
+
+Grab Up
+上抓
+
+Grab Middle
+中抓
+
+Grab Down
+下抓
+
+XGO init
+XGO初始化
+
+XGO reset
+XGO恢復初始狀態
+
+get battery level
+讀取當前電量
+
+get all servos angle
+讀取全部舵機角度
+
+say leg _ servos angle
+讀取第 _ 腿舵機值
+
+get gyro angle _
+讀取整數姿態角度 _
+
+set towards 0
+設置當前朝向為0
+
+rotation to _
+設置轉動到角度 _
+
+set stride frequency _
+設置邁步頻率為 _
+
+set frequency _
+設置邁步頻率為 _
+
+set gait _
+設置運動步態為 _
+
+set _ leg _ joint servos to _ °
+設置 _  腿 _ 關節舵機轉動至 _ °
+
+
+set arm _ joint servos to _ °
+設置機械臂 _ 關節舵機轉動至 _ °
+
+execute action _
+執行命令 _
+
+move _ with stride _ mm for _ ms
+向 _ 步幅為 _ 毫米持續 _ 毫秒
+
+Rotate _ at speed _ degrees/second for _ ms
+向 _ 方向以速度 _ 度/秒旋轉 _ 毫秒
+
+Translation along _ _ mm
+沿 _ 軸平移 _ mm
+
+Rotate _ _ °
+沿 _ 旋轉 _ °
+
+set _ foot position to X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+設置 _ 腿足尖坐標位置為 X(-25-25) _ mm Y(-15~15) _ mm Z(60~110) _ mm
+
+set arm position X(-80~155) _ mm Z(-95~155) _ mm
+設置機械臂末端坐標位置X(-80~155) _ mm Z(-95~155) _ mm
+
+claw _
+機械爪開合 _
+
+gyros _
+陀螺儀 _
+
+performance mode _
+表演模式 _
+
+unload all servo _
+卸載所有舵機 _
+
+2Pin 5V output _
+2Pin接口 5V輸出 _
+
+digtial IO output _
+數字IO輸出 _
+
+readbutton _
+讀取按鍵 _
+
+perform action _
+執行編號 _ 動作組
+
+XGO turn towards _
+XGO轉向 _
+
+XGO-nano move _ step _
+XGO-nano 移動方向 _ 步數 _
+
+set _ foot position X _ Y _ Z _
+設置 _ 腿足尖坐標位置 X _ Y _ Z _
+
+oneservo _ _ _ _
+單個舵機 _ _ _ _
+
+set gait _
+運動步態 _
+
+servo _  angle _ °
+舵機編號 _  角度 _ °
+
+_close serial
+_串口結束
+
+_modified remainder _ _
+_修正後的余數 _ _
+
+Communication Failure!!!
+通信失敗!!!
+
+#### Four Digit Display (TM1637)
+Four Digit Display (TM1637)
+4位數碼管(TM1637)
+
+four digit initialize clock _ data _
+4位數碼管初始化 時鐘 _ 數據 _
+
+four digit show number _
+4位數碼管顯示數字 _
+
+four digit clear
+4位數碼管清屏
+
+four digit brightness _ (0 to 7)
+設置4位數碼管亮度 _ (0 to 7)
+
+four digit show colon _
+4位數碼管亮度冒號 _
+
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+新建
+
+Open
+打開
+
+Open from board
+從主板上打開
+
+Copy project URL to clipboard
+復製項目 URL 到剪貼板
+
+Information
+信息
+
+Plug in the board.
+連接主板
+
+Plug in the board and click the USB icon to connect.
+接上主板並單擊 USB 圖標進行連接。
+
+Reading project from board...
+從主板讀取項目...
+
+Loading project...
+加載項目
+
+Found a newer version of
+發現新版本
+
+Do you want me to update the one in the project?
+你希望在項目中進行升級嗎？
+
+Save
+保存
+
+Connect
+連接
+
+connect
+連接主板
+
+connect (BLE)
+無線連接 (BLE)
+
+open Boardie
+連接模擬器
+
+connect (BLE) (Experimental!)
+無線連接 (BLE) (實驗功能!)
+
+disconnect
+斷開連接
+
+Serial port:
+串口:
+
+Connect board and try again
+連接板子並重試
+
+other...
+其他...
+
+none
+無
+
+Port name?
+端口名?
+
+Board type:
+主板類型:
+
+Select board:
+選擇主板:
+
+Could not read:
+無法讀取:
+
+by
+作者
+
+Created with GP
+使用GP開發
+
+More info at http://microblocks.fun
+訪問 http://microblocks.fun 獲取更多信息
+
+Function "
+函數 "
+
+" is too large to send to board.
+" 因為太大而無法發送至主板.
+
+Script is too large to send to board.
+腳本太大，無法發送至主板.
+
+Use "Connect" button to connect to a MicroBlocks device.
+使用"連接"按鈕連接至一個 MicroBlocks 設備.
+
+No boards found; is your board plugged in?
+無法找到主板，您的主板已經連接好了麽?
+
+For AdaFruit boards, double-click reset button and try again.
+如果是AdaFruit主板，雙擊reset鍵並再次嘗試.
+
+Only recent Chrome and Edge browsers support WebSerial.
+請使用支持 WebSerial 的瀏覽器(Chrome 和 Edge 瀏覽器)
+
+The board is not responding.
+主板未響應.
+
+Try to Install MicroBlocks on the board?
+將 MicroBlocks 安裝到這塊主板上麽?
+
+The MicroBlocks in your board is not current
+主板中的 MicroBlocks 不是最新版本
+
+Try to update MicroBlocks on the board?
+是否升級主板上的 MicroBlocks?
+
+MicroBlocks
+設置
+
+Stop
+停止
+
+Start
+開始
+
+Quit MicroBlocks?
+退出 MicroBlocks?
+
+Discard current project?
+放棄當前項目?
+
+# Scripting area right-click context menu
+
+set block size...
+設置積木塊大小
+
+make blocks bigger or smaller
+將積木塊變大或變小
+
+clean up
+整理積木
+
+arrange scripts
+排列腳本
+
+undrop (ctrl-Z)
+撤銷 (ctrl-Z)
+
+undo the last block drop
+撤銷上次拖拽
+
+copy all scripts to clipboard
+將所有腳本復製到剪貼板
+
+copy all scripts to clipboard as URL
+將所有腳本作為 URL 復製到剪貼板
+
+paste all scripts
+粘貼所有腳本
+
+paste script
+粘貼腳本
+
+paste script from clipboard
+從剪貼板粘貼腳本
+
+save a picture of all visible scripts
+將所有可見腳本保存為圖片
+
+set exported script scale
+設置導出腳本的比例
+
+small (50%)
+小 (50%)
+
+normal (65%)
+正常 (65%)
+
+large (100%)
+大 (100%)
+
+printable (200%)
+可打印 (200%)
+
+duplicate selection
+復製選擇的積木
+
+drag selection
+拖拽選擇的積木
+
+delete selection
+刪除選擇的積木
+
+about...
+關於...
+
+About MicroBlocks
+關於 MicroBlocks
+
+virtual machine version
+虛擬機版本
+
+update firmware on board
+升級主板固件
+
+enable or disable BLE
+打開或關閉 BLE
+
+Allow the attached board to be connected via BLE?
+允許通過 BLE 對板子進行無線編程?
+
+show data graph
+顯示數據圖表
+
+set serial delay
+設置串口延遲
+
+firmware version
+固件版本
+
+start WebThing server
+啟動WebThing服務器
+
+stop WebThing server
+停止WebThing服務器
+
+HTTP Server
+HTTP 服務器
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP 服務器正在監聽端口 6473
+
+disable autoloading board libraries
+禁止自動加載和主板相關的積木庫
+
+compact code store
+緊湊代碼存儲
+
+enable autoloading board libraries
+允許自動加載和主板相關的積木庫
+
+enable PlugShare when project empty
+允許項目為空時從主板裏獲取代碼
+
+disable PlugShare when project empty
+禁止項目為空時從主板裏獲取代碼
+
+hide implementation blocks
+隱藏實現塊
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+不顯示積木庫私有的積木塊和變量（即那些名稱以下劃線開頭的變量）
+
+show implementation blocks
+顯示實現塊
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+顯示積木庫私有的積木塊和變量（即那些名稱以下劃線開頭的變量）
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+連接主板時，即使當前項目為空，也不要自動將主板裏的代碼讀入 IDE
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+連接主板時，如果當前項目為空，則自動將主板裏的代碼讀入IDE
+
+erase flash and update firmware on ESP board
+擦除信息並升級 ESP 固件
+
+install ESP firmware from URL
+從 URL 安裝 ESP 固件
+
+Use board type
+使用主板類型信息
+
+connected to IDE
+已連接到 IDE?
+
+Firmware Install
+安裝固件
+
+Firmware Installed
+完成固件安裝
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+點擊 '連接' 按鈕 (USB 圖標) 重新連接主板。
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+按住白色 BOOTSEL 按鈕的同時連接 USB 線。
+
+You will be asked to save the firmware file.
+請安裝固件文件。
+
+Select
+選擇
+
+as the destination drive, then click Save.
+作為目標驅動器，然後點擊保存。
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+如果 micro:bit 顯示一個悲傷的表情，請先將 firmware.hex 文件保存到電腦上，然後再將它拖放到 MICROBIT 驅動器上。
+
+Installing firmware...
+正在安裝固件...
+
+Plug in the board.
+插上主板。
+
+Board not connected
+未連接主板
+
+Wiping board...
+擦除主板...
+
+(press ESC to cancel)
+(按下ESC鍵取消)
+
+Done!
+完成!
+
+download and install latest VM
+下載並且安裝最新版的 VM
+
+Select board type:
+選擇主板類型:
+
+Uploading MicroBlocks to board...
+將 MicroBlocks 上傳至主板...
+
+copy data to clipboard
+將數據復製至剪貼板
+
+clear data
+清除數據
+
+clear memory and variables
+清除內存和變量
+
+show advanced blocks
+顯示高級積木
+
+export functions as library
+將積木導出為庫
+
+hide advanced blocks
+隱藏高級積木
+
+put file on board
+把文件上傳到主板
+
+get file from board
+從主板獲取文件
+
+uploaded
+已上傳
+
+downloaded
+已下載
+
+Data Graph
+數據圖表
+
+Graph
+圖表
+
+clear graph
+清除圖表
+
+zero at bottom
+底部為零
+
+zero in middle
+中部為零
+
+export data to CSV file
+將數據導出到 CSV 文件
+
+import data from CSV file
+從 CSV 文件導入數據
+
+copy graph data to clipboard
+將圖形數據復製到剪貼板
+
+show instructions
+顯示指令
+
+show compiled bytes
+顯示字節代碼
+
+show call tree
+顯示調用樹
+
+expand
+擴展
+
+collapse
+折疊
+
+rename...
+重命名...
+
+find variable accessors
+查找變量訪問器
+
+find scripts or block definitions where this variable is being read
+查找到正在讀取該變量的腳本或積木定義
+
+find variable modifiers
+查找變量修改器
+
+find scripts or block definitions where this variable is being set or changed
+查找正在設置或修改該變量的腳本或積木定義
+
+find uses of this block
+尋找當前積木在哪裏被使用
+
+find scripts or block definitions using this block
+尋找使用當前積木的腳本或積木定義
+
+show block definition...
+顯示積木定義...
+
+show the definition of this block
+顯示積木定義
+
+delete block definition...
+刪除積木定義...
+
+delete the definition of this block
+刪除對這塊積木的定義
+
+duplicate
+復製
+
+help
+幫助
+
+duplicate this block
+復製這塊積木
+
+delete block
+刪除積木
+
+delete this block
+刪除這塊積木
+
+just this one block
+僅這塊積木
+
+copy to clipboard
+復製至剪貼板
+
+copy to clipboard as URL
+作為 URL 復製到剪貼板
+
+copy these blocks to the clipboard as a URL
+將這些積木作為 URL 復製到剪貼板
+
+copy these blocks to the clipboard
+將這些積木復製至剪貼板
+
+duplicate all
+復製全部
+
+duplicate these blocks
+復製這些積木
+
+extract block
+取出積木
+
+pull out this block
+撤出積木
+
+show help for this block in a browser
+在瀏覽器中顯示積木的幫助信息
+
+save picture of script
+保存腳本圖片
+
+save picture of script with result
+保存帶結果的腳本圖片
+
+save a picture of this block definition as a PNG file
+將這塊積木的定義保存為一個 PNG 文件
+
+save a picture of these blocks as a PNG file
+將這些積木的圖片保存為一個 PNG 文件
+
+save a picture of these blocks and their result as a PNG file
+將這些積木的圖片和他們的結果保存為一個 PNG 文件
+
+copy script
+復製腳本
+
+delete
+刪除
+
+Input type:
+輸入類型:
+
+string only
+僅字符串
+
+string or number
+字符串或數字
+
+number only
+僅數字
+
+stop editing
+停止編輯
+
+cut
+剪切
+
+copy
+復製
+
+paste
+粘貼
+
+accept
+接受
+
+revert
+還原
+
+select all
+選擇全部
+
+define
+定義
+
+number/string
+數字/字符串
+
+editable number or string
+可編輯的數字或字符串
+
+boolean switch
+布爾開關
+
+color patch
+顏色
+
+label
+標簽
+
+input
+輸入
+
+hide block definition
+隱藏積木定義
+
+Are you sure you want to remove this block definition?
+您確定要刪除這個積木定義麽?
+
+Language
+語言
+
+Custom...
+定製...
+
+Obsolete
+廢棄
+
+OK
+確定
+
+Ok
+確定
+
+Yes
+是
+
+No
+否
+
+Cancel
+取消
+
+Okay
+確定
+
+Confirm
+確認
+
+duplicate selection
+復製選擇的積木
+
+drag selection
+拖拽選擇的積木
+
+delete selection
+刪除選擇的積木
+
+# Library folders
+
+Libraries
+積木庫
+
+AI
+人工智能
+
+Graphics and Displays
+圖形與顯示
+
+Kits and Boards
+套件與擴展板
+
+Network
+網絡
+
+Other
+其他
+
+Robots
+機器人
+
+Sensing
+偵測
+
+Sound
+聲音
+
+System
+系統
+
+ELECFREAKS
+恩孚
+
+# File picker and library dialogs
+
+Libraries
+積木庫
+
+New library name?
+積木庫的名字?
+
+show all block definitions
+顯示所有積木定義
+
+hide all block definitions
+隱藏所有積木定義
+
+export this library
+導出這個庫
+
+delete library
+刪除這個庫
+
+Examples
+示例
+
+Desktop
+桌面
+
+Computer
+計算機
+
+Cloud
+雲
+
+File
+文件
+
+File Open
+文件 打開
+
+File Save
+文件 保存
+
+File name:
+文件名稱:
+
+New Folder
+新建文件夾
+
+by
+作者
+
+Depends:
+依賴於:
+
+Tags:
+標簽:
+
+Path, name or URL for library?
+積木庫的路徑,名稱或URL地址?
+
+Invalid URL
+無效的鏈接地址
+
+Could not fetch library.
+無法讀取積木庫.
+
+Host does not exist or is currently down.
+主機不存在或處於關閉狀態.
+
+File not found in server.
+無法在服務器上找到該文件.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+服務器請求 HTTPS 協議，但 MicroBlocks 目前還不支持.
+
+library information
+積木庫信息
+
+built-in library
+內置積木庫
+
+Dependency path, name or URL?
+依賴的路徑,名字或 URL?
+
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+如果要添加的庫，已經內置在 MicroBlocks，只需輸入它的名稱(英文)即可，如 NeoPixel 。
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+如果要添加的庫，位於積木庫文件夾中，需要在其前面加上斜杠 (/)，如 Network/MQTT 。
+
+If the library is hosted online, please input its full URL.
+如果要添加的庫是在線托管的，請輸入完整 URL。
+
+Tag name?
+標簽名稱?
+
+user library
+用戶庫
+
+Add Library
+添加積木庫
+
+seconds remaining
+剩余秒數
+
+Decrease block size
+縮小積木
+
+Restore block size to 100%
+將積木大小恢復到100%
+
+Increase block size
+放大積木
+
+############
+# Tips Bar #
+############
+
+Button
+按鍵
+
+Boolean Input
+布爾值輸入
+
+[l] toggle value, or drop a reporter into it.
+[l] 切換布爾值，或嵌入報告類積木
+
+Color Input
+顏色輸入
+
+[l] change the color, or drop a reporter into it.
+[l] 改變顏色，或嵌入報告類積木
+
+Input
+輸入
+
+[l] edit its value, or drop a reporter into it.
+[l] 修改數值，或嵌入報告類積木
+
+Block Extension
+積木擴展
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] 點擊右箭頭添加額外的輸入框，點擊左箭頭刪除
+
+Command Block
+指令類積木
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] 點擊運行，或用鼠標拖拽出來搭建腳本。 [r] 打開菜單
+
+Hat Block
+帽子類積木
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] 點擊運行，或用鼠標拖拽出來搭建腳本。 [r] 打開菜單
+
+Reporter Block
+報告類積木
+
+[l] to see value, or drop into an input slot. [r] menu.
+[l] 點擊查看數值，或用鼠標拖拽出來嵌入輸出框內。 [r] 打開菜單
+
+Script
+腳本
+
+[l] to run. [r] menu.
+[l] 運行。 [r] 打開菜單
+
+Pane Divider
+窗格分割線
+
+Drag to change pane width.
+拖拽可修改窗格寬度
+
+Library
+積木庫
+
+[l] to show the blocks in this library. [r] menu.
+[l] 顯示此積木庫中的積木代碼。 [r] 打開菜單
+
+Block Category
+積木分類
+
+[l] to show the blocks in this category.
+[l] 顯示此分類中的積木
+
+Palette
+積木區
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+從此處拖出積木搭建腳本。將積木拖拽到此處可刪除。
+
+Scripts Pane
+腳本區
+
+Drag blocks here to build scripts. [r] menu.
+將積木拖拽到此處搭建腳本。 [r] 打開菜單
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+打開或關閉 LED 燈
+
+Display a bubble showing the value.
+用氣泡對話框顯示值
+
+Graph the value.
+為數值繪製圖表
+
+Report the state of button A ( (-o) or (o-) ).
+報告按鍵 A 的狀態（ (-o) 或 (o-) ）
+
+Report the state of button B ( (-o) or (o-) ).
+報告按鍵 B 的狀態（ (-o) 或 (o-) ）
+
+Report the milliseconds since the timer was last reset.
+報告上一次計時器歸零後的毫秒時長
+
+Reset the timer.
+重置計時器
+
+Report the milliseconds since power up.
+報告通電後的毫秒計時
+
+Report the microseconds since power up.
+報告通電後的微秒計時
+
+Report the board type.
+報告當前主板類型
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+報告一個數字引腳的電氣邏輯電平（ (-o) 或 (o-) ）
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+報告一個與模擬引腳上的電壓成比例的數字（0=接地，1023=電源電壓）
+
+Turn a pin on or off ( (-o) or (o-) ).
+打開 (-o) 或關閉 (o-) 引腳
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+以輸入的占空比（0-1023）對一個引腳進行脈沖寬度調製（PWM)
+
+Report number of analog pins on this device.
+報告當前設備上的模擬引腳數量
+
+Report number of digital pins on this device.
+報告當前設備上的數字引腳數量
+
+Report the value of a register (0-255) of an I2C device (0-127).
+報告一個 I2C 設備（0-127）上的寄存器（0-255）數值
+
+Set an I2C device and register to given value (0-255).
+設置一個 I2C 設備上的寄存器（0-255）數值
+
+Receive multiple bytes from an I2C device.
+從一個 I2C 設備上讀取多個字節
+
+Send multiple bytes to an I2C device.
+向一個 I2C 設備發送多個字節
+
+Send a byte (0-255) to an SPI device.
+向一個 SPI 設備發送一個字節（0-255）
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+從一個 SPI 設備上讀取字節的同時發送 0 字節。報告讀取到的字節
+
+Set the SPI clock speed and mode.
+設置 SPI 時鐘頻率和模式
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+通過 SPI 發送一個字節數組，將其內容替換為讀取到的字節
+
+Open the serial port at the given baud rate.
+以輸入的波特率打開串行端口
+
+Close the serial port.
+關閉串行端口
+
+Report data received from the serial port (a byte array).
+報告串行端口上讀取到的數據（一個字節數組）
+
+Send a byte array to the serial port.
+向串行端口發送一個字節數組
+
+Run when the board powers up or when the IDE start button is clicked.
+當主板通電後或者按下 IDE 開始按鈕時運行
+
+Run when buttons A, B, or A+B are pressed.
+當按鍵 A，B 或 A+B 被按下時運行
+
+Repeat the enclosed blocks indefinitely.
+重復執行內嵌的積木代碼
+
+Repeat the enclosed blocks the given number of times.
+以輸入的次數來重復執行內嵌的積木代碼
+
+Wait the given number of milliseconds.
+等待輸入的毫秒時長
+
+Run the first set of blocks whose test condition is (-o) .
+當條件滿足時 (-o) 運行第一行積木代碼
+
+Run when the condition becomes (-o) .
+當條件滿足時 (-o) 運行
+
+Wait until the condition becomes (-o) .
+一直等待直到到條件滿足 (-o)
+
+Return (report) the given value from a function or script.
+報告一個函數或腳本的數值
+
+Run when the given message is broadcast.
+當接收到輸入的廣播信息時運行
+
+Broadcast the given message.
+廣播輸入的信息
+
+Do nothing. Used to add notes and documentation.
+沒有實際功能，可用來添加註釋和文字說明
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+以當前叠代次數或元素的變量來重復執行內嵌的積木
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+重復執行內嵌積木代碼直到條件滿足 (-o)
+
+Stop this task.
+停止當前腳本
+
+Stop all tasks except this one.
+停止其他腳本
+
+Wait the given number of microseconds.
+等待輸入的微秒時長
+
+Report the last broadcast message received.
+報告接受到的最後廣播消息
+
+Call the function with the given name and optional parameter list.
+調用輸入的函數或可選列表中的函數
+
+Call the function with the given name and optional parameter list and report its return value.
+調用輸入的函數或可選列表中的函數，並報告其數值
+
+Report the sum of the given numbers.
+報告輸入的數字總和
+
+Report the first number minus the second.
+報告第一個數字減去第二個數字的值
+
+Report the product of the given numbers.
+報告輸入的數字的乘積
+
+Report the first number divided by the second.
+報告第一個數字除以第二個數字的值
+
+Report the remainder of dividing the first number by the second.
+報告第一個數字除以第二個數字的余數
+
+Report the absolute value of the given number (always >= 0).
+報告輸入數字的絕對值（永遠大於或等於0）
+
+Report the minimum of the values.
+報告輸入數字中的最小值
+
+Report the maximum of the values.
+報告輸入數字中的最大值
+
+Report a randomly chosen number in the given range.
+報告輸入的數字範圍中的一個任意隨機數
+
+Report (-o) if the first value is less than the second one.
+報告第一個數值是否小於第二個數值 (-o)
+
+Report (-o) if the first value is less than or equal to the second one.
+報告第一個數值是否小於或等於第二個數值 (-o)
+
+Report (-o) if the two values are equal.
+報告兩個數值是否相等 (-o)
+
+Report (-o) if the two values are not equal.
+報告兩個數值是否不相等 (-o)
+
+Report (-o) if the first value is greater than or equal to the second one.
+報告第一個數值是否大於或等於第二個數值 (-o)
+
+Report (-o) if the first value is greater than the second one.
+報告第一個數值是否大於第二個數值 (-o)
+
+Boolean constant ( (-o) or (o-) ).
+布爾值常量（ (-o) 或 (o-) ）
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+報告一個布爾值（ (-o) 或 (o-) ）的邏輯非數值
+
+Report (-o) if both values are (-o)
+報告兩個布爾值是否都為真 (-o)
+
+Report (-o) if either value is (-o)
+報告兩個布爾值中是否有一個為真 (-o)
+
+Report (-o) if first input is a value of the given data type.
+報告輸入的內容是否屬於選中的數據類型 (-o)
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+報告一個十六進製數的十進製數值（可輸入範圍：-0x1FFFFFFF ~ 0x1FFFFFFF）
+
+Report bitwise AND of two numbers.
+報告兩個數字的按位與運算結果
+
+Report bitwise OR of two numbers.
+報告兩個數字的按位或運算結果
+
+Report bitwise XOR (exclusive OR) of two numbers.
+報告兩個數字的按位異或運算結果
+
+Report bitwise inverse of the given number.
+報告輸入數字的按位取反運算結果
+
+Report the given number shifted left by the given number of bits.
+報告輸入數字向左平移若幹位後的結果
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+報告輸入數字向右平移若幹位後的結果（算術位移；符號保持不變）
+
+Set a variable to the given value.
+將變量設為輸入的數值
+
+Change a variable by the given amount.
+將輸入的數字與變量相加
+
+Create a variable local to the containing script with the given initial value.
+以輸入的初始值創建一個包含腳本的局部變量
+
+Report the Nth item of a list, string, or byte array.
+報告列表、字符或字節數組中的第 N 項元素
+
+Report the number of items in a list, string, or byte array.
+報告列表、字符或字節數字中的元素的數量
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+將輸入的列表、字符或字節數組組合起來並報告結果
+
+Create and report a short list containing the given items. Length limited by available stack space.
+創建並報告一個包含輸入元素的短列表。長度受限於可用的堆棧空間
+
+Add an item to the end of a list.
+在列表的末尾添加一項元素
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+用輸入的數值替換列表或字節數組中的第 N 項元素（或所有元素）
+
+Delete the Nth item (or all items) of a list.
+刪除列表中的第 N 項元素（或所有元素）
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+查找並報告列表中某一元素或字符串中某一子串的索引。如果沒有找到則報告 -1
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+報告從輸入的索引在輸入的列表、字符串或字節數組中（或可選的停止索引）的拷貝
+
+Split the given string with the given delimiter and report the result (a list of strings).
+用輸入的分隔符分割輸入的字符串，並報告結果（一個字符串的列表）
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+將一個列表中的元素合並成一個字符串，可選擇用分界符（如逗號）分隔
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+報告輸入字符串的第 N 個字符的 Unicode 值（代碼點）
+
+Report a string containing the given Unicode value ("code point") or list of values.
+報告一個包含輸入的 Unicode 值（代碼點）或值列表的字符串
+
+Report a new list of the given length filled with zero or the optional value.
+報告一個新的列表，其長度為輸入值，列表元素為 0 或可選數值
+
+Report a new byte array of the given length filled with zero or the optional value.
+報告一個新的字節數組，其長度為輸入值，數組元素為 0 或可選數值
+
+Report a byte array containing the UTF-8 bytes of the given string.
+報告一個字節數組，該數組包含輸入字符串的 UTF-8 字節
+
+Report the number of words of memory available. Stop button frees up memory.
+報告可用內存的字數。停止按鈕釋放內存
+
+#### board name cn
+
+handpy
+掌控板
