@@ -1141,7 +1141,7 @@ class NimBLESerial {
 		while (true) {
 			// try to send the given data until success
 			try {
-				await this.rx_char.writeValue(data);
+				await this.rx_char.writeValueWithoutResponse(data);
 				this.sendInProgress = false;
 				return;
 			} catch (error) {
