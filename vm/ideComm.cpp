@@ -27,7 +27,7 @@ int USB_connected_to_IDE = false;
 char BLE_ThreeLetterID[4];
 static char bleDeviceName[32];
 
-extern uint32 lastRcvTime; // xxx put in hearder
+extern uint32 lastRcvTime; // xxx put in header
 
 // Generic helper functions
 
@@ -49,22 +49,6 @@ static void initBLEDeviceName(const char *prefix) {
 
 	BLE_initThreeLetterID();
 	sprintf(bleDeviceName, "%s %s", prefix, BLE_ThreeLetterID);
-}
-
-static void reportNum2(const char *label, int n) {
-	Serial.print(label);
-	Serial.print(": ");
-	Serial.println(n);
-}
-
-static void flashUserLED() {
-	OBJ on = trueObj;
-	OBJ off = falseObj;
-	primSetUserLED(&on);
-	updateMicrobitDisplay();
-	delay(10);
-	primSetUserLED(&off);
-	updateMicrobitDisplay();
 }
 
 static void showShapeForMSecs(int msecs) {
@@ -93,6 +77,17 @@ static void show_BLE_ID() {
 		showShapeForMSecs(100);
 	}
 	primMBDisplayOff(0, args);
+}
+
+static void flashUserLED() {
+	// used for debugging
+	OBJ on = trueObj;
+	OBJ off = falseObj;
+	primSetUserLED(&on);
+	updateMicrobitDisplay();
+	delay(10);
+	primSetUserLED(&off);
+	updateMicrobitDisplay();
 }
 
 #if defined(BLE_IDE)
@@ -298,38 +293,6 @@ void BLE_resumeAdvertising() {
 	if (serviceOnline) pAdvertising->start();
 }
 
-#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
-
-void BLE_setEnabled(int enableFlag) {
-	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
-		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
-
-		if (enableFlag) {
-			deleteFile(BLE_DISABLED_FILE);
-		} else {
-			createFile(BLE_DISABLED_FILE);
-		}
-	#elif defined(NRF52)
-		// xxx todo: use user settings registers or Flash page just before persistent code store
-	#endif
-
-	if (enableFlag) {
-		BLE_start();
-	} else {
-		BLE_stop();
-	}
-}
-
-int BLE_isEnabled() {
-	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
-		return !fileExists(BLE_DISABLED_FILE);
-	#elif defined(NRF52)
-		// xxx todo: use user settings registers or Flash page just before persistent code store
-		return true;
-	#endif
-	return false;
-}
-
 // IDE receive and send
 
 int recvBytes(uint8 *buf, int count) {
@@ -381,7 +344,7 @@ static int bleRunning = false;
 static hci_con_handle_t connectionHandle = 0;
 static uint16_t txCharacteristic = 0;
 
-#define BUF_SIZE 250 // 360 works, 380 fails; making both charactistics dynamic allows larger
+#define BUF_SIZE 250 // 360 works, 380 fails; making both charactistics dynamic allows larger buffers
 
 // incoming BLE buffer
 #define RECV_BUF_MAX 1024
@@ -391,7 +354,7 @@ static int overRuns = 0;
 
 // Pico advertising
 
-static uint8_t adv_data[32]; // advertisting data limited to 31 bytes on Pico
+static uint8_t adv_data[32]; // advertisting data is limited to 31 bytes on Pico
 static int adv_data_len = 0;
 
 void setAdvertisingData(const char *name, UUID uuid) {
@@ -482,6 +445,10 @@ int recvBytes(uint8 *buf, int count) {
 int sendBytes(uint8 *buf, int start, int end) {
 	// Send bytes buf[start] through buf[end - 1] and return the number of bytes sent.
 
+// 	if (!BLE_connected_to_IDE || !connectionHandle) { // no BLE connection; use Serial
+// 		return Serial.write(&buf[start], end - start);
+// 	}
+
 	int byteCount = end - start;
 	if (byteCount > BUF_SIZE) byteCount = BUF_SIZE;
 	int status = att_server_notify(connectionHandle, txCharacteristic, &buf[start], byteCount);
@@ -491,8 +458,6 @@ int sendBytes(uint8 *buf, int start, int end) {
 void att_db_util_add_client_characteristic_configuration(uint16_t flags);
 
 void BLE_start() {
-	char picoName[8];
-
 	if (bleRunning) return; // BLE already running
 
 	// Initialize three letter ID and name
@@ -502,7 +467,8 @@ void BLE_start() {
 	BTstack.addGATTService(new UUID(MB_SERVICE_UUID));
 
 	txCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, BUF_SIZE);
-	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
+//	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
+	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BUF_SIZE);
 
 	// set callbacks
 	BTstack.setBLEDeviceConnectedCallback(deviceConnectedCallback);
@@ -511,7 +477,7 @@ void BLE_start() {
 
 	// start BLE and advertising
 	BTstack.setup();
-	setAdvertisingData(picoName, UUID(MB_SERVICE_UUID));
+	setAdvertisingData(bleDeviceName, UUID(MB_SERVICE_UUID));
 	BTstack.startAdvertising();
 
 	bleRunning = true;
@@ -520,20 +486,12 @@ void BLE_start() {
 void BLE_stop() {
 	// xxx to do
 	bleRunning = false;
-}
-
-void BLE_setEnabled(int enableFlag) {
-	// xxx to do
-}
-
-int BLE_isEnabled() {
-	// xxx to do
-	return true;
+	BLE_connected_to_IDE = false;
 }
 
 #else
 
-// Serial Communications Only
+// BLE not supported -- use serial communications only
 
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
@@ -552,8 +510,6 @@ void BLE_start() { }
 void BLE_stop() { }
 void BLE_pauseAdvertising() { }
 void BLE_resumeAdvertising() { }
-void BLE_setEnabled(int enableFlag) { }
-int BLE_isEnabled() {return false; }
 
 #endif
 
@@ -562,4 +518,38 @@ void restartSerial() {
 
 	Serial.end();
 	Serial.begin(115200);
+}
+
+// BLE enable/disable functions (do nothing on non-BLE boards)
+
+#define BLE_DISABLED_FILE "/_BLE_DISABLED_"
+
+void BLE_setEnabled(int enableFlag) {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		// Disable BLE connections from IDE if BLE_DISABLED_FILE file exists.
+
+		if (enableFlag) {
+			deleteFile(BLE_DISABLED_FILE);
+		} else {
+			createFile(BLE_DISABLED_FILE);
+		}
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+	#endif
+
+	if (enableFlag) {
+		BLE_start();
+	} else {
+		BLE_stop();
+	}
+}
+
+int BLE_isEnabled() {
+	#if defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
+		return !fileExists(BLE_DISABLED_FILE);
+	#elif defined(NRF52)
+		// xxx todo: use user settings registers or Flash page just before persistent code store
+		return true;
+	#endif
+	return false;
 }
