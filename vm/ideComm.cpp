@@ -15,9 +15,15 @@
 
 // MicroBlocks IDE Service UUIDs
 
-#define MB_SERVICE_UUID				"bb37a001-b922-4018-8e74-e14824b3a638"
-#define MB_CHARACTERISTIC_UUID_RX	"bb37a002-b922-4018-8e74-e14824b3a638"
-#define MB_CHARACTERISTIC_UUID_TX	"bb37a003-b922-4018-8e74-e14824b3a638"
+#define MB_SERVICE_UUID				"BB37A001-B922-4018-8E74-E14824B3A638"
+#define MB_CHARACTERISTIC_UUID_RX	"BB37A002-B922-4018-8E74-E14824B3A638"
+#define MB_CHARACTERISTIC_UUID_TX	"BB37A003-B922-4018-8E74-E14824B3A638"
+
+// Nordic UART Service (NUS)
+
+#define UART_SERVICE_UUID			"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_RX				"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define UART_UUID_TX				"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 // BLE Variables
 
@@ -106,6 +112,8 @@ static BLEService *pService = NULL;
 static BLEService *pUARTService = NULL;
 static BLECharacteristic *pTxCharacteristic;
 static BLECharacteristic *pRxCharacteristic;
+static BLECharacteristic *pUARTTxCharacteristic;
+static BLECharacteristic *pUARTRxCharacteristic;
 static bool bleRunning = false;
 static bool serviceOnline = false;
 static uint16_t connID = -1;
@@ -212,9 +220,22 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 	}
 };
 
-// Start/Stop BLE
+// BLE UART Support (NimBLE)
 
-BLEService * BLE_createUARTService(); // imported from blePrims.cpp
+class UARTCallbacks: public BLECharacteristicCallbacks {
+	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
+		int byteCount = pCharacteristic->getDataLength();
+		BLE_UART_ReceiveCallback((uint8 *) pCharacteristic->getValue().c_str(), byteCount);
+	}
+};
+
+void BLE_UART_Send(uint8 *data, int byteCount) {
+	pUARTTxCharacteristic->setValue(data, byteCount);
+	pUARTTxCharacteristic->notify();
+	taskSleep(15); // data will be dropped if sent too fast
+}
+
+// Start/Stop BLE
 
 void BLE_start() {
 	if (bleRunning) return; // BLE already running
@@ -236,8 +257,12 @@ void BLE_start() {
 	pRxCharacteristic = pService->createCharacteristic(MB_CHARACTERISTIC_UUID_RX, NIMBLE_PROPERTY::WRITE_NR);
 	pRxCharacteristic->setCallbacks(new MyCallbacks());
 
-	// Create UART Service
-	pUARTService = BLE_createUARTService();
+	// Create Nordic UART Service
+	BLEService *pUARTService = BLEDevice::getServer()->createService(UART_SERVICE_UUID);
+	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
+	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
+	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
 
 	// Start Services
 	pService->start();
@@ -305,6 +330,9 @@ BLEDevice *bleDevice = NULL;
 
 static hci_con_handle_t connectionHandle = 0;
 static uint16_t txCharacteristic = 0;
+static uint16_t rxCharacteristic = 0;
+static uint16_t uartTxCharacteristic = 0;
+static uint16_t uartRxCharacteristic = 0;
 static uint32 lastSendTime = 0;
 
 #define BLE_BUF_MAX 250 // 360 works, 380 fails; making both charactistics dynamic allows larger buffers
@@ -333,7 +361,7 @@ void setAdvertisingData(const char *name, UUID uuid) {
 
 	// service UUID (low byte first)
 	adv_data[pos++] = 17; // field size
-	adv_data[pos++] = 7; // "Complete List of 128-bit Service Class UUIDs"
+	adv_data[pos++] = 6; // "Incomplete List of 128-bit Service Class UUIDs"
 	const uint8_t *uuidBytes = uuid.getUuid();
 	for (int i = 0; i < 16; i++) {
 		adv_data[pos++] = uuidBytes[15 - i];
@@ -349,6 +377,19 @@ void setAdvertisingData(const char *name, UUID uuid) {
 
 	adv_data_len = pos;
 	BTstack.setAdvData(adv_data_len, adv_data);
+}
+
+void setAdvertisingInterval(int minInterval, int maxInterval) {
+	// Set the min and max advertising interval in 0.625 msec units.
+
+	// minimum interval is 20 msecs (32 units)
+	if (minInterval < 32) minInterval = 32;
+	if (maxInterval < 32) minInterval = 32;
+
+    uint8_t adv_type = 0;
+    bd_addr_t null_addr;
+    memset(null_addr, 0, 6);
+    gap_advertisements_set_params(minInterval, maxInterval, adv_type, 0, null_addr, 0x07, 0x00);
 }
 
 // Pico connect/disconnect callbacks
@@ -380,25 +421,30 @@ void bleDisconnect() {
 // Pico data receive callback
 
 static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t byteCount) {
-	int available = RECV_BUF_SIZE - bleBytesAvailable;
-	if (byteCount > available) {
-		overRuns++;
-		byteCount = available;
+	if (attribute_handle == rxCharacteristic) {
+		int available = RECV_BUF_SIZE - bleBytesAvailable;
+		if (byteCount > available) {
+			overRuns++;
+			byteCount = available;
+		}
+		memcpy(&bleRecvBuf[bleBytesAvailable], data, byteCount);
+		bleBytesAvailable += byteCount;
 	}
-	memcpy(&bleRecvBuf[bleBytesAvailable], data, byteCount);
-	bleBytesAvailable += byteCount;
+	if (attribute_handle == uartRxCharacteristic) {
+		BLE_UART_ReceiveCallback(data, byteCount);
+	}
 	return 0;
 }
 
 static void updateConnectionState() {
-	if ((BLE_connected_to_IDE || USB_connected_to_IDE) && !ideConnected()) {
-flashUserLED();
-		// we are no longer connected to the IDE
-		bleDisconnect(); // ensure BLE connection is closed
-		BTstack.startAdvertising();
-		BLE_connected_to_IDE = false;
-		USB_connected_to_IDE = false;
-	}
+// 	BTstack.loop();
+// 	if ((BLE_connected_to_IDE || USB_connected_to_IDE) && !ideConnected()) {
+// 		// we are no longer connected to the IDE
+// 		bleDisconnect(); // ensure BLE connection is closed
+// 		BTstack.startAdvertising();
+// 		BLE_connected_to_IDE = false;
+// 		USB_connected_to_IDE = false;
+// 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
 			// new serial connection; disconnect BLE if it is connected
@@ -407,7 +453,6 @@ flashUserLED();
 			BLE_connected_to_IDE = false;
 			// tell runtime that we've gotten a ping
 			lastRcvTime = microsecs();
-flashUserLED();
 			USB_connected_to_IDE = true;
 		}
 	}
@@ -418,7 +463,6 @@ static int bleSendData(uint8_t *data, int byteCount) {
 
 	// send byteCount bytes
 	if (byteCount > BLE_BUF_MAX) byteCount = BLE_BUF_MAX;
-// try: writeCharacteristicWithoutResponse
 	int err = att_server_notify(connectionHandle, txCharacteristic, data, byteCount);
 	return err ? 0 : byteCount;
 }
@@ -429,11 +473,17 @@ void BLE_start() {
 	// Initialize three letter ID and name
 	initBLEDeviceName("Pico");
 
-	// setup GATT database
+	// add BLE service
 	BTstack.addGATTService(new UUID(MB_SERVICE_UUID));
-
 	txCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, BLE_BUF_MAX);
-	BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BLE_BUF_MAX);
+	rxCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(MB_CHARACTERISTIC_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BLE_BUF_MAX);
+
+	// add Nordic UART Service
+	// xxx Note: BTstack does not appear to support multiple services
+	// For now, add the UART characteristics to the MB BLE service but don't add UART service
+//	BTstack.addGATTService(new UUID(UART_SERVICE_UUID));
+	uartTxCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(UART_UUID_TX), ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, BLE_BUF_MAX);
+	uartRxCharacteristic = BTstack.addGATTCharacteristicDynamic(new UUID(UART_UUID_RX), ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, BLE_BUF_MAX);
 
 	// set callbacks
 	BTstack.setBLEDeviceConnectedCallback(deviceConnectedCallback);
@@ -443,6 +493,7 @@ void BLE_start() {
 	// start BLE and advertising
 	BTstack.setup();
 	setAdvertisingData(bleDeviceName, UUID(MB_SERVICE_UUID)); // resume BLE advertisting
+	setAdvertisingInterval(32, 32);
 	BTstack.startAdvertising();
 
 	bleRunning = true;
@@ -452,6 +503,14 @@ void BLE_stop() {
 	bleDisconnect();
 	BLE_connected_to_IDE = false;
 	bleRunning = false;
+}
+
+// BLE UART Support (Pico)
+
+void BLE_UART_Send(uint8 *data, int byteCount) {
+	if (byteCount <= 0) return;
+	if (byteCount > BLE_BUF_MAX) byteCount = BLE_BUF_MAX;
+	int err = att_server_notify(connectionHandle, uartTxCharacteristic, data, byteCount);
 }
 
 #endif

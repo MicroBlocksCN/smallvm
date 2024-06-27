@@ -10,12 +10,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "mem.h"
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
 #if defined(BLE_IDE)
 	// include UART and OCTO primitives when BLE_IDE is enabled
 	#define BLE_OCTO 1
+	#define BLE_UART 1
+#elif defined(PICO_BLUETOOTH)
 	#define BLE_UART 1
 #endif
 
@@ -219,15 +223,10 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 
 // Original UART code was provided by Wenji Wu. Thanks!
 
-// BLE UART service and IDE service are mutually incompatible:
-// * When the board is connected to the IDE via BLE, then the UART cannot be started.
-// * When the UART is in use you cannot connect the IDE to the board via BLE.
-// However, can always connect the the board using a USB cable.
-
-#include <NimBLEDevice.h>
-
-static BLECharacteristic * pUARTTxCharacteristic;
-static BLECharacteristic * pUARTRxCharacteristic;
+// Since a board is a BLE peripheral, it can connect to only one BLE central
+// at at time. Thus, if the board is connected to the IDE then it is not
+// available for connection as a BLE UART (except in Chrome/Edge, which
+// seems to share a single BLE connection between tabs).
 
 // Empty byte array and string constants
 static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
@@ -237,34 +236,11 @@ static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
 static uint8 uartRecvBuf[256];
 static int uartBytesReceived = 0;
 
-// UUIDs for the Nordic UART Service (NUS)
-#define UART_SERVICE_UUID	"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-class UARTCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
-		int byteCount = pCharacteristic->getDataLength();
-		const char *rxValue = pCharacteristic->getValue().c_str();
-		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
-		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
-		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
-		uartBytesReceived += byteCount;
-	}
-	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
-		// noop
-	}
-};
-
-BLEService * BLE_createUARTService() {
-	// Called by BLE_start() to add UART service.
-
-	BLEService *pUARTService = BLEDevice::getServer()->createService(UART_SERVICE_UUID);
-	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
-	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
-	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
-	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
-	return pUARTService;
+void BLE_UART_ReceiveCallback(uint8 *data, int byteCount) {
+	int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
+	if (byteCount > spaceAvailable) byteCount = spaceAvailable;
+	memcpy(&uartRecvBuf[uartBytesReceived], data, byteCount);
+	uartBytesReceived += byteCount;
 }
 
 static OBJ primUART_read(int argCount, OBJ *args) {
@@ -313,14 +289,11 @@ static OBJ primUART_write(int argCount, OBJ *args) {
 	if (byteCount <= 0) return zeroObj;
 
 	if (byteCount > 240) byteCount = 240; // maximum payload for efficient transfer
-	pUARTTxCharacteristic->setValue(((uint8_t *) &FIELD(arg, 0)) + startIndex, byteCount);
-	pUARTTxCharacteristic->notify();
-	taskSleep(15); // data will be dropped if sent too fast
+	BLE_UART_Send(((uint8_t *) &FIELD(arg, 0)) + startIndex, byteCount);
 	return int2obj(byteCount);
 }
 
 #endif // BLE_UART
-
 
 #if defined(BLE_KEYBOARD)
 

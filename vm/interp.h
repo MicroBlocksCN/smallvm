@@ -371,6 +371,9 @@ void BLE_resumeAdvertising();
 void BLE_setEnabled(int enableFlag);
 int BLE_isEnabled();
 
+void BLE_UART_ReceiveCallback(uint8 *data, int byteCount);
+void BLE_UART_Send(uint8 *data, int byteCount);
+
 void getMACAddress(uint8 *sixBytes);
 
 // Primitive Sets
