@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include "mem.h"
-#include "interp.h" // must be included *after* ESP8266WiFi.h
+#include "interp.h"
 
 #if defined(BLE_IDE)
 	#include <NimBLEDevice.h>
@@ -21,11 +21,13 @@
 	// include UART and OCTO primitives when BLE_IDE is enabled
 	#define BLE_OCTO 1
 	#define BLE_UART 1
-#elif defined(BLE_PICO)
+#endif
+
+#if defined(BLE_PICO)
 	#include <BTstackLib.h>
 	#include <ble/att_server.h>
 
-	// include UART and OCTO primitives when BLE_IDE is enabled
+	// include UART and OCTO primitives when BLE_PICO is enabled
 	#define BLE_OCTO 1
 	#define BLE_UART 1
 #endif
@@ -148,6 +150,10 @@ static int hasOctoName(const uint8_t *advertData, char *octoName) {
 static void BLEScannerCallback(BLEAdvertisement *advert) {
 	char octoName[20];
 	if (hasOctoName(advert->getAdvData(), octoName)) {
+		// Since BTstack does not yet support extended advertisements, we do not have
+		// the UUID available (because it doesn't fit). Instead, we just assume that any
+		// advertistement with a 16-character hexadecimal name is Octo beam message.
+
 		octoMsgID id;
 		memcpy(&id, octoName, 8);
 		if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
@@ -339,7 +345,7 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 
 // Original UART code was provided by Wenji Wu. Thanks!
 
-// Since a board is a BLE peripheral, it can connect to only one BLE central
+// A board is a BLE Peripheral, so it can connect to only one BLE Central
 // at at time. Thus, if the board is connected to the IDE then it is not
 // available for connection as a BLE UART (except in Chrome/Edge, which
 // seems to share a single BLE connection between tabs).
