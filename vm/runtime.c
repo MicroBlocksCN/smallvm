@@ -13,7 +13,7 @@
 #include <string.h>
 #include <string.h>
 
-#ifdef GNUBLOCKS
+#if defined(GNUBLOCKS) && !defined(EMSCRIPTEN)
 #include "../linux+pi/linux.h"
 #endif
 
