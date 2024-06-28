@@ -319,7 +319,7 @@ void BLE_resumeAdvertising() {
 	if (serviceOnline) pAdvertising->start();
 }
 
-#elif defined(PICO_BLUETOOTH)
+#elif defined(BLE_PICO)
 
 // uncomment these to test BLE
 #include <BTstackLib.h>
@@ -345,10 +345,10 @@ static int overRuns = 0;
 
 // Pico advertising
 
-static uint8_t adv_data[32]; // advertisting data is limited to 31 bytes on Pico
+static uint8_t adv_data[31]; // advertisting data is limited to 31 bytes on Pico
 static int adv_data_len = 0;
 
-void setAdvertisingData(const char *name, UUID uuid) {
+void BLE_setPicoAdvertisingData(char *name, const char *uuidString) {
 	// See Common Data Types in:
 	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Assigned_Numbers/out/en/Assigned_Numbers.pdf?v=1716217306904
 
@@ -360,14 +360,17 @@ void setAdvertisingData(const char *name, UUID uuid) {
 	pos += sizeof(flags);
 
 	// service UUID (low byte first)
-	adv_data[pos++] = 17; // field size
-	adv_data[pos++] = 6; // "Incomplete List of 128-bit Service Class UUIDs"
-	const uint8_t *uuidBytes = uuid.getUuid();
-	for (int i = 0; i < 16; i++) {
-		adv_data[pos++] = uuidBytes[15 - i];
+	if (uuidString) {
+		adv_data[pos++] = 17; // field size
+		adv_data[pos++] = 6; // "Incomplete List of 128-bit Service Class UUIDs"
+		const uint8_t *uuidBytes = UUID(uuidString).getUuid();
+		for (int i = 0; i < 16; i++) {
+			adv_data[pos++] = uuidBytes[15 - i];
+		}
 	}
 
 	// name
+	// Note: BTstack only supports 31-byte adverstising packets
 	int nameBytes = strlen(name);
 	if (nameBytes > (29 - pos)) nameBytes = 29 - pos; // truncate name to fit
 	adv_data[pos++] = nameBytes + 1; // field size
@@ -392,6 +395,20 @@ void setAdvertisingInterval(int minInterval, int maxInterval) {
     gap_advertisements_set_params(minInterval, maxInterval, adv_type, 0, null_addr, 0x07, 0x00);
 }
 
+// Stop and resume advertising (for use by Octo primitives)
+
+void BLE_pauseAdvertising() {
+	BTstack.stopAdvertising();
+	setAdvertisingInterval(32, 32); // set mimimal advertising interval for Octo
+}
+
+void BLE_resumeAdvertising() {
+	BTstack.stopAdvertising();
+	BLE_setPicoAdvertisingData(bleDeviceName, MB_SERVICE_UUID); // resume BLE advertisting
+	setAdvertisingInterval(50, 100);
+	BTstack.startAdvertising();
+}
+
 // Pico connect/disconnect callbacks
 
 static void deviceConnectedCallback(BLEStatus status, BLEDevice *device) {
@@ -406,7 +423,7 @@ static void deviceConnectedCallback(BLEStatus status, BLEDevice *device) {
 
 static void deviceDisconnectedCallback(BLEDevice *device) {
 	connectionHandle = 0;
-	BTstack.startAdvertising();
+	BLE_resumeAdvertising();
 	BLE_connected_to_IDE = false;
 }
 
@@ -437,14 +454,6 @@ static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t 
 }
 
 static void updateConnectionState() {
-// 	BTstack.loop();
-// 	if ((BLE_connected_to_IDE || USB_connected_to_IDE) && !ideConnected()) {
-// 		// we are no longer connected to the IDE
-// 		bleDisconnect(); // ensure BLE connection is closed
-// 		BTstack.startAdvertising();
-// 		BLE_connected_to_IDE = false;
-// 		USB_connected_to_IDE = false;
-// 	}
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
 			// new serial connection; disconnect BLE if it is connected
@@ -492,10 +501,7 @@ void BLE_start() {
 
 	// start BLE and advertising
 	BTstack.setup();
-	setAdvertisingData(bleDeviceName, UUID(MB_SERVICE_UUID)); // resume BLE advertisting
-	setAdvertisingInterval(32, 32);
-	BTstack.startAdvertising();
-
+	BLE_resumeAdvertising();
 	bleRunning = true;
 }
 
@@ -515,7 +521,7 @@ void BLE_UART_Send(uint8 *data, int byteCount) {
 
 #endif
 
-#if defined(BLE_IDE) || defined(PICO_BLUETOOTH)
+#if defined(BLE_IDE) || defined(BLE_PICO)
 
 // IDE receive and send (same for both version of BLE)
 
