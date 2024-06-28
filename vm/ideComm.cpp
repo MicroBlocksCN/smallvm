@@ -321,12 +321,13 @@ void BLE_resumeAdvertising() {
 
 #elif defined(BLE_PICO)
 
+extern bool __isPicoW;
+
 // uncomment these to test BLE
 #include <BTstackLib.h>
 #include <ble/att_server.h>
 
 static int bleRunning = false;
-BLEDevice *bleDevice = NULL;
 
 static hci_con_handle_t connectionHandle = 0;
 static uint16_t txCharacteristic = 0;
@@ -351,6 +352,8 @@ static int adv_data_len = 0;
 void BLE_setPicoAdvertisingData(char *name, const char *uuidString) {
 	// See Common Data Types in:
 	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Assigned_Numbers/out/en/Assigned_Numbers.pdf?v=1716217306904
+
+	if (!__isPicoW) return;
 
 	int pos = 0;
 
@@ -398,11 +401,15 @@ void setAdvertisingInterval(int minInterval, int maxInterval) {
 // Stop and resume advertising (for use by Octo primitives)
 
 void BLE_pauseAdvertising() {
+	if (!__isPicoW) return;
+
 	BTstack.stopAdvertising();
 	setAdvertisingInterval(32, 32); // set mimimal advertising interval for Octo
 }
 
 void BLE_resumeAdvertising() {
+	if (!__isPicoW) return;
+
 	BTstack.stopAdvertising();
 	BLE_setPicoAdvertisingData(bleDeviceName, MB_SERVICE_UUID); // resume BLE advertisting
 	setAdvertisingInterval(50, 100);
@@ -412,7 +419,6 @@ void BLE_resumeAdvertising() {
 // Pico connect/disconnect callbacks
 
 static void deviceConnectedCallback(BLEStatus status, BLEDevice *device) {
-	bleDevice = device;
 	if (BLE_STATUS_OK == status) {
 		connectionHandle = device->getHandle();
 		BTstack.stopAdvertising();
@@ -477,6 +483,7 @@ static int bleSendData(uint8_t *data, int byteCount) {
 }
 
 void BLE_start() {
+	if (!__isPicoW) return;
 	if (bleRunning) return; // BLE already running
 
 	// Initialize three letter ID and name
@@ -506,6 +513,8 @@ void BLE_start() {
 }
 
 void BLE_stop() {
+	if (!__isPicoW) return;
+
 	bleDisconnect();
 	BLE_connected_to_IDE = false;
 	bleRunning = false;
@@ -514,6 +523,8 @@ void BLE_stop() {
 // BLE UART Support (Pico)
 
 void BLE_UART_Send(uint8 *data, int byteCount) {
+	if (!__isPicoW) return;
+
 	if (byteCount <= 0) return;
 	if (byteCount > BLE_BUF_MAX) byteCount = BLE_BUF_MAX;
 	int err = att_server_notify(connectionHandle, uartTxCharacteristic, data, byteCount);
