@@ -188,6 +188,9 @@ void hardwareInit() {
 	#if defined(HAS_LED_MATRIX) && !defined(GNUBLOCKS)
 		mbDisplayColor = (150 << 16); // red (not full brightness)
 	#endif
+	#if defined(XRP)
+		delay(20); // allow ButtonA pin to settle before starting interpreter loop
+	#endif
 	#if defined(COCUBE)
 		cocubeSensorInit();
 	#endif
@@ -1363,6 +1366,14 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 	#endif
+
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+	#define BOARD_TYPE "BeagleConnect Freedom"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 24
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define PIN_LED LED_BUILTIN
 
 #else // unknown board
 
