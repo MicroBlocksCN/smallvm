@@ -1,6 +1,6 @@
 module CoCube
 author '梁帅'
-version 1 0 
+version 1 1 
 depends Tone Ringtone TFT Display 
 tags 'cocube机器人' 
 choices CarDirMenu '前进' '后退' '左转' '右转' 
@@ -12,15 +12,17 @@ variables speed
   spec 'r' '[sensors:position_y]' 'positionY'
   spec 'r' '[sensors:position_yaw]' 'positionYaw'
   space
+  spec ' ' 'set TFT backlight' 'set TFT backlight _' 'bool' true
   spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'auto' '0'
+  spec ' ' 'draw AprilTag on TFT' 'draw AprilTag on TFT _' 'auto' '0'
   space
   spec ' ' 'ControlLeftMotor' 'Control Left Motor _' 'auto' 50
   spec ' ' 'ControlRightMotor' 'Control Right Motor _' 'auto' 50
   space
   spec ' ' 'move_forward' 'Move Forward _' 'auto' 50
   spec ' ' 'Move Backward' 'Move Backward _' 'auto' 50
-  spec ' ' 'Turn Left' 'Turn Left _' 'auto' 50
-  spec ' ' 'Turn Right' 'Turn Right _' 'auto' 50
+  spec ' ' 'Turn Left' 'Turn Left _' 'auto' 10
+  spec ' ' 'Turn Right' 'Turn Right _' 'auto' 10
   spec ' ' 'Motor Stop' 'Motor Stop'
 
 to ControlLeftMotor speed {
@@ -69,9 +71,22 @@ to 'Turn Right' speed {
   ControlRightMotor (0 - speed)
 }
 
+to 'draw AprilTag on TFT' id {
+  comment '0 <= id < 100'
+  if (id >= 100) {
+    sayIt '0 <= id < 100'
+  } else {
+    '[tft:aprilTag]' id
+  }
+}
+
 to 'draw Aruco Marker on TFT' id {
   comment '0 <= id < 100'
-  '[tft:aruco]' id
+  if (id >= 100) {
+    sayIt '0 <= id < 100'
+  } else {
+    '[tft:aruco]' id
+  }
 }
 
 to move_forward speed {
@@ -79,3 +94,10 @@ to move_forward speed {
   ControlRightMotor speed
 }
 
+to 'set TFT backlight' state {
+  if state {
+    '[tft:setBacklight]' 10
+  } else {
+    '[tft:setBacklight]' 0
+  }
+}
