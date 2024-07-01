@@ -8,9 +8,9 @@ choices MotorDirMenu '前进' '后退'
 description ''
 variables speed 
 
-  spec 'r' 'position_x' 'positionX'
+  spec 'r' 'position_X' 'positionX'
   spec 'r' 'position_Y' 'positionY'
-  spec 'r' 'positionYaw' 'positionYaw'
+  spec 'r' 'position_Yaw' 'positionYaw'
   space
   spec ' ' 'set TFT backlight' 'set TFT backlight _' 'bool' true
   spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'num' 0
@@ -94,7 +94,7 @@ to move_forward speed {
   ControlRightMotor speed
 }
 
-to position_x {
+to position_X {
   return (callCustomReporter '[sensors:position_x]')
 }
 
@@ -102,7 +102,7 @@ to position_Y {
   return (callCustomReporter '[sensors:position_y]')
 }
 
-to positionYaw {
+to position_Yaw {
   return (callCustomReporter '[sensors:position_yaw]')
 }
 
