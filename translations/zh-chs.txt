@@ -3728,6 +3728,47 @@ _修正后的余数 _ _
 Communication Failure!!!
 通信失败!!!
 
+#### CoCube
+
+positionX
+位姿X
+
+positionY
+位姿Y
+
+positionYaw
+位姿Yaw
+
+set TFT backlight _
+设置TFT背光 _
+
+draw Aruco Marker on TFT _
+TFT绘制ArUco标签 _
+
+draw AprilTag on TFT _
+TFT绘制AprilTag标签 _
+
+Control Left Motor _
+控制左电机 _
+
+Control Right Motor _
+控制右电机 _
+
+Move Forward _
+前进 _
+
+Move Backward _
+后退 _
+
+Turn Left _
+左转 _
+
+Turn Right _
+右转 _
+
+Motor Stop
+电机停转
+
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
 4位数码管(TM1637)
