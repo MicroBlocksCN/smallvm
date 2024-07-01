@@ -25,7 +25,6 @@ variables speed
   spec ' ' 'Turn Right' 'Turn Right _' 'auto' 10
   spec ' ' 'Motor Stop' 'Motor Stop'
 
-
 to ControlLeftMotor speed {
   if (speed == 0) {
     digitalWriteOp 9 false
