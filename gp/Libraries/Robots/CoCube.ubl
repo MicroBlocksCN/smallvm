@@ -8,21 +8,21 @@ choices MotorDirMenu '前进' '后退'
 description ''
 variables speed 
 
-  spec 'r' '[sensors:position_x]' 'positionX'
-  spec 'r' '[sensors:position_y]' 'positionY'
-  spec 'r' '[sensors:position_yaw]' 'positionYaw'
+  spec 'r' 'position_x' 'positionX'
+  spec 'r' 'position_Y' 'positionY'
+  spec 'r' 'positionYaw' 'positionYaw'
   space
   spec ' ' 'set TFT backlight' 'set TFT backlight _' 'bool' true
-  spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'auto' '0'
-  spec ' ' 'draw AprilTag on TFT' 'draw AprilTag on TFT _' 'auto' '0'
+  spec ' ' 'draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'num' 0
+  spec ' ' 'draw AprilTag on TFT' 'draw AprilTag on TFT _' 'num' 0
   space
-  spec ' ' 'ControlLeftMotor' 'Control Left Motor _' 'auto' 50
-  spec ' ' 'ControlRightMotor' 'Control Right Motor _' 'auto' 50
+  spec ' ' 'ControlLeftMotor' 'Control Left Motor _' 'num' 50
+  spec ' ' 'ControlRightMotor' 'Control Right Motor _' 'num' 50
   space
-  spec ' ' 'move_forward' 'Move Forward _' 'auto' 50
-  spec ' ' 'Move Backward' 'Move Backward _' 'auto' 50
-  spec ' ' 'Turn Left' 'Turn Left _' 'auto' 10
-  spec ' ' 'Turn Right' 'Turn Right _' 'auto' 10
+  spec ' ' 'move_forward' 'Move Forward _' 'num' 50
+  spec ' ' 'Move Backward' 'Move Backward _' 'num' 50
+  spec ' ' 'Turn Left' 'Turn Left _' 'num' 10
+  spec ' ' 'Turn Right' 'Turn Right _' 'num' 10
   spec ' ' 'Motor Stop' 'Motor Stop'
 
 to ControlLeftMotor speed {
@@ -76,7 +76,7 @@ to 'draw AprilTag on TFT' id {
   if (id >= 100) {
     sayIt '0 <= id < 100'
   } else {
-    '[tft:aprilTag]' id
+    callCustomCommand '[tft:aprilTag]' ('[data:makeList]' id)
   }
 }
 
@@ -85,13 +85,25 @@ to 'draw Aruco Marker on TFT' id {
   if (id >= 100) {
     sayIt '0 <= id < 100'
   } else {
-    '[tft:aruco]' id
+    callCustomCommand '[tft:aruco]' ('[data:makeList]' id)
   }
 }
 
 to move_forward speed {
   ControlLeftMotor speed
   ControlRightMotor speed
+}
+
+to position_x {
+  return (callCustomReporter '[sensors:position_x]')
+}
+
+to position_Y {
+  return (callCustomReporter '[sensors:position_y]')
+}
+
+to positionYaw {
+  return (callCustomReporter '[sensors:position_yaw]')
 }
 
 to 'set TFT backlight' state {
