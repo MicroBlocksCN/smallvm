@@ -246,6 +246,7 @@ void startAll() {
 	// stop running tasks, reset, and clear memory
 	stopAllTasks();
 	softReset(true);
+	resetTimer();
 
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		uint8 chunkType = chunks[i].chunkType;
