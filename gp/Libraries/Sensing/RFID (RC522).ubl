@@ -1,6 +1,6 @@
 module 'RFID (RC522)' Input
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Support for RC522 RFID card with I2C and SPI interfaces.
 Based on José Garcia RC522 MicroBlocks library which itself was based on:
         https://github.com/m5stack/UIFlow-Code/blob/master/units/_rfid.py
@@ -33,7 +33,7 @@ variables _rc522_mode _rc522_i2cAddr _rc522_initialized _rc522_nssPin
 
 to '_rc522_antenna_on' {
   local 'value' ('_rc522_read_reg' (hexToInt '14'))
-  if (and (value >= 0) (value & 3)) {
+  if (and (value >= 0) ((value & 3) != 3)) {
     '_rc522_write_reg' (hexToInt '14') (value | 3)
   }
 }

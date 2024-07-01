@@ -1,6 +1,6 @@
 module MIDI Output
 author MicroBlocks
-version 1 9 
+version 1 11 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
@@ -46,13 +46,31 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   space
   spec ' ' '_MIDI command' '_MIDI command _ channel _ arg1 _ : arg2 _' 'num num num num' 9 1 60 127
   spec ' ' '_MIDI send bytes' '_MIDI send bytes _' 'auto' ''
+  spec ' ' '_MIDI_NRPN' '_set MIDI NRPN MSB _ LSB _ on channel _ to _' 'auto auto auto auto auto auto' 1 33 1 100
+  spec ' ' '_MIDI_Roland_control' '_set Roland control _ to _ on channel _' 'auto auto auto' 72 64 1
   space
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to 'MIDI_change MIDI control' control channel value {
   local 'controlChangeCmd' 11
   local 'controller' (at (ifExpression (isType control 'number') control ('[data:find]' control ('[data:makeList]' 'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2'))) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93))
+  comment 'Make sure Roland synths get these as NRPN messages'
+  _MIDI_Roland_control controller value channel
   '_MIDI command' controlChangeCmd channel controller value
+}
+
+to _MIDI_Roland_control control value channel {
+  if (control == 71) {
+    '_MIDI_NRPN' 1 33 channel value
+  } (control == 72) {
+    '_MIDI_NRPN' 1 102 channel value
+  } (control == 73) {
+    '_MIDI_NRPN' 1 99 channel value
+  } (control == 74) {
+    '_MIDI_NRPN' 1 32 channel value
+  } (control == 75) {
+    '_MIDI_NRPN' 1 100 channel value
+  }
 }
 
 to 'MIDI_drum note' instrument {
@@ -87,9 +105,13 @@ to 'MIDI_play MIDI drum' drumName duration volume {
 }
 
 to 'MIDI_play MIDI note' 'midi note' duration channel volume {
-  'MIDI_send note' (v 'midi note') true channel volume
-  waitMillis (duration - 3)
-  'MIDI_send note' (v 'midi note') false channel 0
+  if (isType (v 'midi note') 'string') {
+    waitMillis duration
+  } else {
+    'MIDI_send note' (v 'midi note') true channel volume
+    waitMillis (duration - 3)
+    'MIDI_send note' (v 'midi note') false channel 0
+  }
 }
 
 to 'MIDI_select MIDI drum kit' drumkit {
@@ -109,6 +131,7 @@ to 'MIDI_send MIDI continue playing' {
 to 'MIDI_send MIDI reset' {
   '_MIDI send bytes' (hexToInt 'FF')
   '_MIDI send bytes' ('[data:makeList]' (hexToInt 'F0') (hexToInt '7E') (hexToInt '7F') (hexToInt '09') (hexToInt '01') (hexToInt 'F7'))
+  '_MIDI send bytes' ('[data:makeList]' (hexToInt 'F0') (hexToInt '41') (hexToInt '10') (hexToInt '42') (hexToInt '12') (hexToInt '40') (hexToInt '00') (hexToInt '7F') (hexToInt '00') (hexToInt '41') (hexToInt 'F7'))
   comment 'Turn off all notes on all channels'
   for chan 16 {
     for key 128 {
@@ -153,6 +176,12 @@ to 'MIDI_set MIDI pin' pin {
   }
   _MIDI_initialized = (booleanConstant false)
   '_MIDI init'
+}
+
+to 'MIDI_stop all notes in channel' channel {
+  for i 127 {
+    'MIDI_send note' i false channel 0
+  }
 }
 
 to '_MIDI command' cmd channel arg1 arg2 {
@@ -213,6 +242,12 @@ to '_MIDI send bytes' byteList {
   }
 }
 
+to '_MIDI_NRPN' msb lsb channel value {
+  '_MIDI command' 11 channel 99 msb
+  '_MIDI command' 11 channel 98 lsb
+  '_MIDI command' 11 channel 6 value
+}
+
 to '_trimmedLowercase' s {
   comment 'Return a copy of the given string without whitespace
 or periods and all lowercase.'
@@ -226,11 +261,5 @@ or periods and all lowercase.'
     }
   }
   return ('[data:unicodeString]' result)
-}
-
-to 'MIDI_stop all notes in channel' channel {
-  for i 127 {
-    'MIDI_send note' i false channel 0
-  }
 }
 

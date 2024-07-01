@@ -7,6 +7,9 @@
 // interp.h - Simple interpreter based on 32-bit opcodes
 // John Maloney, April 2017
 
+#include "mem.h"
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -368,9 +371,13 @@ void BLE_stop();
 
 void BLE_pauseAdvertising();
 void BLE_resumeAdvertising();
+void BLE_setPicoAdvertisingData(char *name, const char *uuidString);
 
 void BLE_setEnabled(int enableFlag);
 int BLE_isEnabled();
+
+void BLE_UART_ReceiveCallback(uint8 *data, int byteCount);
+void BLE_UART_Send(uint8 *data, int byteCount);
 
 void getMACAddress(uint8 *sixBytes);
 

@@ -52,7 +52,7 @@
 #elif defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(HALOCODE) 
   #define OBJSTORE_BYTES 200000 // will be allocated from PSRAM
 #elif defined(HAS_CAMERA)
-  #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
+  #define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
 #elif defined(ESP32_S3) || defined(ESP32_C3)
   #define OBJSTORE_BYTES 80000
 #elif defined(ARDUINO_ARCH_ESP32)
@@ -68,6 +68,8 @@
   #define OBJSTORE_BYTES 100000
 #elif defined(ARDUINO_SAM_DUE)
   #define OBJSTORE_BYTES 80000
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+  #define OBJSTORE_BYTES 40000
 #else
   #define OBJSTORE_BYTES 4000
   // max that works on Wemos D1 mini (ESP8266) is 11000

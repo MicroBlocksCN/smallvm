@@ -10,11 +10,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "mem.h"
-#include "interp.h" // must be included *after* ESP8266WiFi.h
+#include "interp.h"
 
 #if defined(BLE_IDE)
+	#include <NimBLEDevice.h>
+
 	// include UART and OCTO primitives when BLE_IDE is enabled
+	#define BLE_OCTO 1
+	#define BLE_UART 1
+#endif
+
+#if defined(BLE_PICO)
+	#include <BTstackLib.h>
+	#include <ble/att_server.h>
+
+	// include UART and OCTO primitives when BLE_PICO is enabled
 	#define BLE_OCTO 1
 	#define BLE_UART 1
 #endif
@@ -25,15 +38,6 @@ static OBJ primBLE_connected(int argCount, OBJ *args) {
 
 	return BLE_connected_to_IDE ? trueObj : falseObj;
 }
-
-#if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
-
-#include <NimBLEDevice.h>
-
-NimBLEUUID ANDROID_OCTO_UUID	= NimBLEUUID("2540b6b0-0001-4538-bcd7-7ecfb51297c1");
-NimBLEUUID iOS_OCTO_UUID		= NimBLEUUID("2540b6b0-0002-4538-bcd7-7ecfb51297c1");
-
-static BLEAdvertising* pAdvertising = NULL;
 
 static bool bleScannerRunning = false;
 static bool hasOctoMessage = false;
@@ -65,11 +69,9 @@ octoMsgID octoIDHistory[OCTO_ID_HISTORY_SIZE];
 int searchStartIndex = 0;
 
 static int octoIDNotYetSeen(octoMsgID id) {
-int steps = 0;
 	int endIndex = (searchStartIndex - 1) & (OCTO_ID_HISTORY_SIZE - 1);
 	for (int i = searchStartIndex; i != endIndex; i = ((i + 1) % OCTO_ID_HISTORY_SIZE)) {
 		if (octoIDHistory[i] == id) return false;
-		steps++;
 	}
 	return true;
 }
@@ -77,6 +79,141 @@ int steps = 0;
 static void addIDToOctoHistory(octoMsgID id) {
 	searchStartIndex = (searchStartIndex - 1) & (OCTO_ID_HISTORY_SIZE - 1);
 	octoIDHistory[searchStartIndex] = id;
+}
+
+#if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
+
+#define iOS_OCTO_UUID_STRING		"2540b6b0-0002-4538-bcd7-7ecfb51297c1"
+#define ANDROID_OCTO_UUID_STRING	"2540b6b0-0001-4538-bcd7-7ecfb51297c1"
+
+#if defined(BLE_PICO) // Pico OCTO primitive support
+
+static void startOctoBeam(char *msg) {
+	// Note: This does not work with the current BTstack library because it limits
+	// advertisements to 31 bytes and an Octo beam requires at at least 34 bytes
+	// for the name and the UUID fields.
+	// It should work once BTstack supports extended advertising.
+
+	BLE_pauseAdvertising();
+	BLE_setPicoAdvertisingData(msg, iOS_OCTO_UUID_STRING);
+}
+
+static void stopOctoBeam() {
+	BLE_pauseAdvertising();
+	BLE_resumeAdvertising();
+}
+
+static int advertLength(const uint8_t *advertData) {
+	// Return the length of the given advertisment by scanning for a zero length entry.
+
+	int maxLen = LE_ADVERTISING_DATA_SIZE + 10; // from BTstack.h (41 bytes)
+	int i = 0;
+	while (i < maxLen) {
+		if (!advertData[i]) return i; // entry with zero length indicates end of data
+		i += advertData[i] + 1; // jump to next entry
+	}
+	return maxLen;
+}
+
+static int isOctoName(const uint8_t *sixteenBytes) {
+	// Return true if the given 16-byte string contains only digits 0-9 and capital letters A-F.
+
+	for (int i = 0; i < 16; i++) {
+		int ch = sixteenBytes[i];
+		if (!((('0' <= ch) && (ch <= '9')) ||
+			  (('A' <= ch) && (ch <= 'F')))) {
+			 	return false;
+		}
+	}
+	return true;
+}
+
+static int hasOctoName(const uint8_t *advertData, char *octoName) {
+	// Return true and fill in octoName if the given advertisment has a 16-character
+	// hexadecimal name field.
+
+	int maxLen = LE_ADVERTISING_DATA_SIZE + 10; // from BTstack.h (41 bytes)
+	int i = 0;
+	while (i < maxLen) {
+		if (!advertData[i]) return false; // entry with zero length indicates end of data
+		if ((17 == advertData[i]) &&
+			(9 == advertData[i+1]) &&
+			isOctoName(&advertData[i+2])) {
+				memcpy(octoName, &advertData[i+2], 16);
+				return true;
+		}
+		i += advertData[i] + 1; // jump to next entry
+	}
+	return false;
+}
+
+static void BLEScannerCallback(BLEAdvertisement *advert) {
+	char octoName[20];
+	if (hasOctoName(advert->getAdvData(), octoName)) {
+		// Since BTstack does not yet support extended advertisements, we do not have
+		// the UUID available (because it doesn't fit). Instead, we just assume that any
+		// advertistement with a 16-character hexadecimal name is Octo beam message.
+
+		octoMsgID id;
+		memcpy(&id, octoName, 8);
+		if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
+			addIDToOctoHistory(id);
+			shape_id = octoName[15] - '0';
+			if (shape_id < 0) shape_id = 255; // ensure shape_id is positive
+			hasOctoMessage = true;
+		}
+	}
+
+	if (lastScanPayloadLen != 0) return; // last capture has not been consumed
+
+	// capture scan payload
+	lastScanPayloadLen = advertLength(advert->getAdvData());
+	if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
+	memcpy(lastScanPayload, advert->getAdvData(), lastScanPayloadLen);
+
+	// capture RSSI and address
+	lastScanRSSI = advert->getRssi();
+	BD_ADDR *bdAddr = advert->getBdAddr();
+	lastScanAddressType = bdAddr->getAddressType();
+	memcpy(lastScanAddress, bdAddr->getAddress(), 6);
+}
+
+static void startBLEScanner() {
+	// initialize allZeroMessageID; ignore messages with that ID sent by iOS OctoStudio
+	memcpy(&allZeroMessageID, "00000000", 8);
+
+	BTstack.setBLEAdvertisementCallback(BLEScannerCallback);
+	BTstack.bleStartScanning();
+}
+
+static void stopBLEScanner() {
+	BTstack.bleStopScanning();
+}
+
+#else // NimBLE OCTO primitive support
+
+NimBLEUUID ANDROID_OCTO_UUID	= NimBLEUUID(ANDROID_OCTO_UUID_STRING);
+NimBLEUUID iOS_OCTO_UUID		= NimBLEUUID(iOS_OCTO_UUID_STRING);
+
+static BLEAdvertising* pAdvertising = NULL;
+
+static void startOctoBeam(char *msg) {
+	// Mimic iOS beam; data is encoded in name
+	BLE_pauseAdvertising();
+	pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->reset();
+	pAdvertising->addServiceUUID(iOS_OCTO_UUID);
+	pAdvertising->setName(msg);
+	pAdvertising->setMinInterval(32);
+	pAdvertising->setMaxInterval(32);
+	pAdvertising->start();
+}
+
+static void stopOctoBeam() {
+	if (!pAdvertising) return; // not initialized thus not beaming
+
+	BLEDevice::getAdvertising()->removeServiceUUID(iOS_OCTO_UUID);
+	BLE_resumeAdvertising();
 }
 
 class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
@@ -151,28 +288,17 @@ static void stopBLEScanner() {
 	}
 }
 
+#endif
+
 static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
 
-	char *msg = obj2str(args[0]);
-
-	// Mimic iOS beam; data is encoded in name
-	BLE_pauseAdvertising();
-	pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->reset();
-	pAdvertising->addServiceUUID(iOS_OCTO_UUID);
-	pAdvertising->setName(msg);
-	pAdvertising->setMinInterval(32);
-	pAdvertising->setMaxInterval(32);
-	pAdvertising->start();
+	startOctoBeam(obj2str(args[0]));
 	return falseObj;
 }
 
 static OBJ primOctoStopBeam(int argCount, OBJ *args) {
-	if (!pAdvertising) return falseObj; // not initialized thus not beaming
-
-	BLEDevice::getAdvertising()->removeServiceUUID(iOS_OCTO_UUID);
-	BLE_resumeAdvertising();
+	stopOctoBeam();
 	return falseObj;
 }
 
@@ -219,15 +345,10 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 
 // Original UART code was provided by Wenji Wu. Thanks!
 
-// BLE UART service and IDE service are mutually incompatible:
-// * When the board is connected to the IDE via BLE, then the UART cannot be started.
-// * When the UART is in use you cannot connect the IDE to the board via BLE.
-// However, can always connect the the board using a USB cable.
-
-#include <NimBLEDevice.h>
-
-static BLECharacteristic * pUARTTxCharacteristic;
-static BLECharacteristic * pUARTRxCharacteristic;
+// A board is a BLE Peripheral, so it can connect to only one BLE Central
+// at at time. Thus, if the board is connected to the IDE then it is not
+// available for connection as a BLE UART (except in Chrome/Edge, which
+// seems to share a single BLE connection between tabs).
 
 // Empty byte array and string constants
 static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
@@ -237,34 +358,11 @@ static uint32 emptyMBString[2] = { HEADER(StringType, 1), 0 };
 static uint8 uartRecvBuf[256];
 static int uartBytesReceived = 0;
 
-// UUIDs for the Nordic UART Service (NUS)
-#define UART_SERVICE_UUID	"6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_RX		"6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define UART_UUID_TX		"6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-class UARTCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic, ble_gap_conn_desc* desc) {
-		int byteCount = pCharacteristic->getDataLength();
-		const char *rxValue = pCharacteristic->getValue().c_str();
-		int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
-		if (byteCount > spaceAvailable) byteCount = spaceAvailable;
-		memcpy(&uartRecvBuf[uartBytesReceived], rxValue, byteCount);
-		uartBytesReceived += byteCount;
-	}
-	void onStatus(NimBLECharacteristic* pCharacteristic, Status s, int code) {
-		// noop
-	}
-};
-
-BLEService * BLE_createUARTService() {
-	// Called by BLE_start() to add UART service.
-
-	BLEService *pUARTService = BLEDevice::getServer()->createService(UART_SERVICE_UUID);
-	pUARTTxCharacteristic = pUARTService->createCharacteristic(UART_UUID_TX, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
-	pUARTTxCharacteristic->setCallbacks(new UARTCallbacks());
-	pUARTRxCharacteristic = pUARTService->createCharacteristic(UART_UUID_RX, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::WRITE);
-	pUARTRxCharacteristic->setCallbacks(new UARTCallbacks());
-	return pUARTService;
+void BLE_UART_ReceiveCallback(uint8 *data, int byteCount) {
+	int spaceAvailable = sizeof(uartRecvBuf) - uartBytesReceived;
+	if (byteCount > spaceAvailable) byteCount = spaceAvailable;
+	memcpy(&uartRecvBuf[uartBytesReceived], data, byteCount);
+	uartBytesReceived += byteCount;
 }
 
 static OBJ primUART_read(int argCount, OBJ *args) {
@@ -313,14 +411,11 @@ static OBJ primUART_write(int argCount, OBJ *args) {
 	if (byteCount <= 0) return zeroObj;
 
 	if (byteCount > 240) byteCount = 240; // maximum payload for efficient transfer
-	pUARTTxCharacteristic->setValue(((uint8_t *) &FIELD(arg, 0)) + startIndex, byteCount);
-	pUARTTxCharacteristic->notify();
-	taskSleep(15); // data will be dropped if sent too fast
+	BLE_UART_Send(((uint8_t *) &FIELD(arg, 0)) + startIndex, byteCount);
 	return int2obj(byteCount);
 }
 
 #endif // BLE_UART
-
 
 #if defined(BLE_KEYBOARD)
 

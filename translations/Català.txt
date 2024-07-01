@@ -1822,6 +1822,9 @@ efecte 2
 play MIDI note _ for _ ms on channel _ volume _
 toca nota MIDI _ durant _ ms al canal _ volum _
 
+stop all notes on channel _
+atura totes les notes al canal _
+
 set MIDI note _ to _ on channel _ volume _
 posa la nota MIDI _ a _ al canal _ volum _
 
@@ -2719,6 +2722,129 @@ al _ % de la velocitat
 3dBot _ en la línia?
 
 ####
+# ESP32 Smart Farm
+
+voltage (V)
+voltatge (V)
+
+current (mA)
+corrent (mA)
+
+power (mW)
+potència (mW)
+
+open
+obre
+
+close
+tanca
+
+on
+obre
+
+off
+tanca
+
+Farm fan _
+Farm ventilador _
+
+start
+encén
+
+Farm display _ in line _
+Farm envia a la pantalla el text _ a la línia _
+
+Farm _ the trapdoor
+Farm _ la portella
+
+Farm play _ octave _ for _ ms
+Farm toca la nota _ a l'octava _ durant _ ms
+
+Farm set light _
+Farm _ el llum
+
+Farm watter pump _
+Farm _ la bomba d'aigua
+
+Farm temperature ºC
+Farm temperatura ºC
+
+Farm humidity
+Farm humitat
+
+Farm movement detected?
+Farm es detecta moviment?
+
+Farm button pressed?
+Farm botó premut?
+
+Farm distance (cm)
+Farm distància (cm)
+
+Farm light level
+Farm nivell de llum ambiental
+
+Farm water level
+Farm nivell d'aigua
+
+Farm soil moisture
+Farm humitat del sol
+
+Farm steam level
+Farm nivell de vapor
+
+Farm electric consumption _
+Farm consum elèctric _
+
+Home fan _
+Home _ el ventilador
+
+Home display _ in line _
+Home envia a la pantalla el text _ a la línia _
+
+Home _ the window
+Home _ la finestra
+
+Home activate the door
+Home activa la porta giratòria
+
+Home play _ octave _ for _ ms
+Home toca la nota _ a l'octava _ durant _ ms
+
+Home set light _
+Home _ el llum
+
+Home temperature ºC
+Home temperatura ºC
+
+Home humidity
+Home humitat
+
+Home steam level
+Home nivell de vapor
+
+Home read RFID card
+Home llegeix la targeta RFID
+
+Home movement detected?
+Home es detecta moviment?
+
+Home _ button pressed?
+Home botó _ premut?
+
+Home gas detected?
+Home es detecta gas?
+
+Home set NeoPixels _ _ _ _
+Home posa _ _ _ _ als Neopixels
+
+Home clear leds
+Home apaga els Neopixels
+
+Home electric consumption _
+Home consum elèctric _
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -2860,7 +2986,7 @@ Cutebot distance (cm)
 Distància frontal (cm)
 
 left
-esquerre
+esquerra
 
 right
 dret
@@ -4159,5 +4285,6 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
+
 
 

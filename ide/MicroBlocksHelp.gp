@@ -7,7 +7,7 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
-// PM edited on 2024-06-02
+// PM edited on 2024-06-16
 
 defineClass MicroBlocksHelp opDict
 
@@ -247,7 +247,7 @@ method initialize MicroBlocksHelp {
 		(array 'defer display updates' '/extension_libraries/oled#defer-display-updates' 'Delay display updates during pixel level operations.')
 
 		// MAQUEEN
-		(array 'Maqueen beep' 'en/extension_libraries/maqueen/#maqueen-beep' 'Make a beep sound.')
+		(array 'Maqueen beep' '/extension_libraries/maqueen/#maqueen-beep' 'Make a beep sound.')
 		(array 'Maqueen distance (cm)' '/extension_libraries/maqueen/#maqueen-distance' 'Return the distance to a wall or obstacle.')
 		(array 'Maqueen IR keycode' '/extension_libraries/maqueen/#maqueen-ir-keycode' 'Return the last received IR keycode.')
 		(array 'Maqueen LED' '/extension_libraries/maqueen/#maqueen-led' 'Turn the left and/or right LEDs on (-o) or off (o-) .')
@@ -371,6 +371,26 @@ method initialize MicroBlocksHelp {
         (array '_cbpro_clearEncodersAndOrientation' '/extension_libraries/cutebotpro#_cbpro_clearencodersandorientation' 'Clears encoder value and orientation variables.')
         (array '_cbpro_getOrientation' '/extension_libraries/cutebotpro#_cbpro_getorientation' 'Returns orientation of car.')
         (array '_cbpro_readEncoders' '/extension_libraries/cutebotpro#_cbpro_readencoders' 'Reads encoder values and sets variables _cbpro_leftCount and _cbpro_rightCount.')
+
+		// PID
+		(array 'pid_computePID' '/extension_libraries/pid#compute-pid' 'Compute the next PID correction for the specified PID loop.')
+		(array 'pid_resetPID' '/extension_libraries/pid#reset-pid' 'Reset the specified PID loop.')
+		(array 'pid_constrainValue' '/extension_libraries/pid#constrain-value' 'Limit the range of a value, typically a drive signal.')
+		(array 'pid_applySign' '/extension_libraries/pid#apply-sign-to-value' 'Apply the sign of one value to another value.')
+
+        // XRP
+		(array 'xrp_driveAtSpeed' '/extension_libraries/xrp#drive-at-speed' 'Drive the robot at a specified speed (mm/sec).')
+        (array 'xrp_driveDistance' '/extension_libraries/xrp#drive-distance' 'Drive the robot a specified distance (mm) at a specified speed (mm/sec).')
+        (array 'xrp_stopWheels' '/extension_libraries/xrp#stop-both-wheels' 'Stop both wheels.')
+        (array 'xrp_turnAngle' '/extension_libraries/xrp#turn-angle' 'Turn the robot the specified amount (deg) at the specified speed (deg/sec).')
+        (array 'xrp_waitForWheelsToStop' '/extension_libraries/xrp#wait-for-wheels-to-stop' 'Wait for both wheels to stop.')
+        (array 'xrp_setServo' '/extension_libraries/xrp#set-servo-to-angle' 'Set the specified servo to the specified angle.')
+        (array 'xrp_readRollRate' '/extension_libraries/xrp#read-roll-rate' 'Read roll rate (deg/sec).')
+        (array 'xrp_readPitchRate' '/extension_libraries/xrp#read-pitch-rate' 'Read pitch rate (deg/sec).')
+        (array 'xrp_readYawRate' '/extension_libraries/xrp#read-yaw-rate' 'Read yaw rate (deg/sec).')
+        (array 'xrp_readDistanceSensor' '/extension_libraries/xrp#read-distance-sensor' 'Read the distance sensor (cm).')
+        (array 'xrp_readLineSensors' '/extension_libraries/xrp#read-left-right-line-sensors' 'Read the left and right line sensors.')
+        (array 'edcmotors_getNumMotors' '/extension_libraries/xrp#get-the-number-of-encoded-dc-motors' 'Get the number of encoded DC motors.')
 
 	)
 

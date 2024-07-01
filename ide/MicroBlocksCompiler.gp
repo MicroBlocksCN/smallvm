@@ -177,16 +177,18 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
+		'-'
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
+		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' 'a list of strings' ' ')
 	'Data-Advanced'
-		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
+		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
+		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		'-'
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
 		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
-		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
-		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
+		'-'
 		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly

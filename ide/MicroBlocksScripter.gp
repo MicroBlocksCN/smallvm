@@ -1367,7 +1367,7 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
   scriptString = (normalizeLineEndings scriptString)
   for entry (parse scriptString) {
     args = (argList entry)
-    if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
+    if (and ('script' == (primName entry)) ((count args) >= 3) (notNil (last args))) {
       script = (last args)
       if ('to' == (primName script)) {
         funcName = (first (argList script))
