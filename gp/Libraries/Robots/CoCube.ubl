@@ -1,13 +1,15 @@
 module CoCube
 author '梁帅'
-version 1 1 
-depends Tone Ringtone TFT Display 
+version 1 2 
+depends Tone Ringtone TFT Display
 tags 'cocube机器人' 
 choices CarDirMenu '前进' '后退' '左转' '右转' 
 choices MotorDirMenu '前进' '后退' 
 description ''
 variables speed 
 
+  spec 'r' 'Battery Percentage' 'Battery Percentage'
+  space
   spec 'r' 'position_X' 'positionX'
   spec 'r' 'position_Y' 'positionY'
   spec 'r' 'position_Yaw' 'positionYaw'
@@ -24,6 +26,10 @@ variables speed
   spec ' ' 'Turn Left' 'Turn Left _' 'num' 10
   spec ' ' 'Turn Right' 'Turn Right _' 'num' 10
   spec ' ' 'Motor Stop' 'Motor Stop'
+
+to 'Battery Percentage' {
+  return (minimum (((13 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 33000) / 90) 100)
+}
 
 to ControlLeftMotor speed {
   if (speed == 0) {
