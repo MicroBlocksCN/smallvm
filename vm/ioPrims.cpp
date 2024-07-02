@@ -146,9 +146,6 @@ void hardwareInit() {
 	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
-	#if defined(XRP)
-		delay(20); // allow ButtonA pin to settle before starting interpreter loop
-	#endif
 }
 
 // General Purpose I/O Pins
@@ -946,6 +943,12 @@ static void initPins(void) {
 	for (int i = 0; i < TOTAL_PINS; i++) {
 		currentMode[i] = MODE_NOT_SET;
 	}
+
+	#if defined(XRP)
+		// Fixes the problem with "when ButtonA" scripts being trigged on startup
+		// on Russell's XRP board. It's not clear why this works.
+		setPinMode(PIN_BUTTON_A, INPUT);
+	#endif
 
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
