@@ -3667,6 +3667,9 @@ Communication Failure!!!
 
 #### CoCube
 
+Battery Percentage
+电量百分比
+
 positionX
 位姿X
 
