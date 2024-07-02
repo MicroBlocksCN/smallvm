@@ -39,6 +39,11 @@ static OBJ primBLE_connected(int argCount, OBJ *args) {
 	return BLE_connected_to_IDE ? trueObj : falseObj;
 }
 
+#if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
+
+#define iOS_OCTO_UUID_STRING		"2540b6b0-0002-4538-bcd7-7ecfb51297c1"
+#define ANDROID_OCTO_UUID_STRING	"2540b6b0-0001-4538-bcd7-7ecfb51297c1"
+
 static bool bleScannerRunning = false;
 static bool hasOctoMessage = false;
 static int shape_id = 0;
@@ -80,11 +85,6 @@ static void addIDToOctoHistory(octoMsgID id) {
 	searchStartIndex = (searchStartIndex - 1) & (OCTO_ID_HISTORY_SIZE - 1);
 	octoIDHistory[searchStartIndex] = id;
 }
-
-#if defined(BLE_OCTO) //Octo primtives; included in standard BLE release
-
-#define iOS_OCTO_UUID_STRING		"2540b6b0-0002-4538-bcd7-7ecfb51297c1"
-#define ANDROID_OCTO_UUID_STRING	"2540b6b0-0001-4538-bcd7-7ecfb51297c1"
 
 #if defined(BLE_PICO) // Pico OCTO primitive support
 
