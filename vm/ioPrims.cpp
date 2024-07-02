@@ -603,6 +603,21 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
 
+#elif defined(ARDUINO_M5Atom_Lite_ESP32)
+
+	#define BOARD_TYPE "M5Atom-Lite"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	#define PIN_LED 27
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 39
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
+
 #elif defined(ARDUINO_M5STACK_Core2)
 	#define BOARD_TYPE "M5StackCore2"
 	#define DIGITAL_PINS 40
@@ -1379,7 +1394,7 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(M5STAMP)
+		#if defined(M5STAMP) || defined(ARDUINO_M5Atom_Lite_ESP32)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 		#else
