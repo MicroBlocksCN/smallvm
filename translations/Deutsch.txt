@@ -32,6 +32,9 @@ Stoppuhr
 reset timer
 Stoppuhr zurücksetzen
 
+seconds
+Sekunden
+
 microseconds
 Mikrosekunden
 
@@ -41,8 +44,26 @@ Millisekunden
 board type
 Board-Typ
 
+BLE id
+BLE-ID
+
+BLE connected
+BLE verbunden
+
+version
+Version
+
+milliseconds since _
+Millisekunden seit _
+
+microseconds since _
+Mikrosekunden seit _
+
+end time _
+endet _
+
 connected to IDE
---MISSING--
+mit IDE verbunden
 
 Pins
 Pins
@@ -54,7 +75,7 @@ read analog pin _
 lies analogen Pin _
 
 pullup _
---MISSING--
+pullup _
 
 set digital pin _ to _
 setze digitalen Pin _ auf _
@@ -114,7 +135,7 @@ when _ received
 Wenn _ empfangen
 
 go!
---MISSING--
+los!
 
 broadcast _
 sende _
@@ -123,13 +144,13 @@ comment _
 Kommentar _
 
 How this works...
---MISSING--
+Es funktioniert so ...
 
 range _ to _
---MISSING--
+Bereich von _ bis _
 
 by _
---MISSING--
+Schrittweite _
 
 for _ in _ _
 für _ in _ _
@@ -150,37 +171,37 @@ last message
 letzte Nachricht
 
 arg _ default _
---MISSING--
+Argument _ Standard _
 
 default
---MISSING--
+Standardwert
 
 call _
---MISSING--
+rufe _
 
 function name
---MISSING--
+Funktionsname
 
 parameter list
---MISSING--
+Parameterliste
 
 with _
---MISSING--
+mit _
 
 Operators
 Operatoren
 
 _ mod _
-_ modulo _
+_ mod _
 
 abs _
 abs _
 
 min _ _
---MISSING--
+min _ _
 
 max _ _
---MISSING--
+max _ _
 
 random _ to _
 Zufallszahl von _ bis _
@@ -204,28 +225,28 @@ _ is a _
 _ ist ein(e) _
 
 convert _ to _
---MISSING--
+wandle _ in _ um
 
 boolean
-Boole
+Wahrheitswert
 
 number
 Zahl
 
 string
-Zeichenkette
+Zeichenfolge
 
 list
 Liste
 
 byte array
---MISSING--
+Byte-Array
 
 Advanced:
 Fortgeschrittene Blöcke:
 
 rescale _ from ( _ , _ ) to ( _ , _ )
---MISSING--
+verteile _ von ( _ , _ ) auf ( _ , _ )
 
 hex _
 hex _
@@ -262,16 +283,16 @@ list
 Liste
 
 cat
---MISSING--
+Katze
 
 dog
---MISSING--
+Hund
 
 bird
---MISSING--
+Vogel
 
 fish
---MISSING--
+Fisch
 
 length of _
 Länge von _
@@ -295,13 +316,13 @@ copy _ from _
 kopiere _ beginnend bei _
 
 smiles
---MISSING--
+smiles
 
 to _
 bis _
 
 find _ in _
-finde _ in _
+suche _ in _
 
 starting at _
 beginnend bei _
@@ -316,7 +337,7 @@ unicode _ of _
 Unicode _ von _
 
 string from unicode _
-Zeichenkette aus Unicode _
+Zeichenfolge aus Unicode _
 
 new list length _
 neue Liste Länge _
@@ -325,25 +346,25 @@ new byte array _
 neues Byte-Array _
 
 as byte array _
---MISSING--
+als Byte-Array _
 
 aByteListOrString
---MISSING--
+ByteListeOderZeichenfolge
 
 with all _
---MISSING--
+mit allen _
 
 free memory
 freier Speicher
 
 all
---MISSING--
+alle
 
 last
---MISSING--
+letztes
 
 random
---MISSING--
+zufälliges
 
 split _ by _
 trenne _ nach _
@@ -352,7 +373,7 @@ My Blocks
 Meine Blöcke
 
 Generic
---MISSING--
+Allgemein
 
 # Buttons on top of "My Blocks" category
 
@@ -360,78 +381,78 @@ Add a command block
 Füge Befehlsblock hinzu
 
 Add a reporter block
-Füge Reporterblock hinzu
+Füge Rückgabeblock hinzu
 
 # Make a block dialog
 
 Enter function name:
-Gib einen Namen für die Funktion ein:
+Gib der Funktion einen Namen:
 
 Comm
 Kommunikation
 
 i2c get device _ register _
-i2c lies Gerät _ an Register _
+i2c lies Gerät _ Register _
 
 i2c set device _ register _ to _
-i2c setze Gerät _ an Register _ auf _
+i2c setze Gerät _ Register _ auf _
 
 i2c device _ read list _
-i2c Gerät _ lies list _
+i2c Gerät _ lies Liste _
 
 i2c device _ write list _
-i2c Gerät _ schreibe list _
+i2c Gerät _ schreibe Liste _
 
 spi send _
-sende mit SPI _
+spi sende _
 
 spi receive
-empfange mit SPI
+spi empfange
 
 spi setup speed _
---MISSING--
+spi setze Geschwindigkeit _
 
 mode _
---MISSING--
+Modus _
 
 rpi channel _
---MISSING--
+rpi Kanal _
 
 spi exchange bytes _
---MISSING--
+spi tausche Bytes _
 
 aByteArray
---MISSING--
+Byte-Array
 
 serial open _ baud
---MISSING--
+serial öffne mit _ Baud
 
 serial close
---MISSING--
+serial schließen
 
 serial read
---MISSING--
+serial lies
 
 serial write _
---MISSING--
+serial schreibe _
 
 anIntegerStringListOrByteArray
---MISSING--
+GanzzahlZeichenfolgeListeOderByteArray
 
 serial write _ starting at _
---MISSING--
+serial schreibe _ starte bei _
 
 aStringListOrByteArray
---MISSING--
+ZeichenfolgeListeOderByteArray
 
 soft serial write byte _ pin _ baud _
---MISSING--
+soft serial schreibe Byte _ Pin _ Baud _
 
 print _
 drucke _
 
 no op
-no op
+kein Befehl
 
 ignore
 ignoriere
@@ -467,25 +488,25 @@ stop WiFi
 stoppe WiFi
 
 WiFi status
-WiFi status
+WiFi-Status
 
 my IP address
-meine IP Adresse
+meine IP-Adresse
 
 radio send number _
 Radio sende Zahl _
 
 radio send string _
-Radio sende Zeichenkette _
+Radio sende Zeichenfolge _
 
 Hello!
---MISSING--
+Hallo!
 
 radio send pair _ = _
 Radio sende Paar _ = _
 
 light
---MISSING--
+Licht
 
 radio message received?
 Radio Nachricht erhalten?
@@ -494,19 +515,19 @@ radio last number
 Radio letzte Zahl
 
 radio last string
-Radio letzte Zeichenkette
+Radio letzte Zeichenfolge
 
 radio last message type
 Radio Typ der letzten Nachricht
 
 radio set group _ (0-255)
---MISSING--
+radio setze Gruppe _ (0-255)
 
 radio set channel (0-83) _
-Radio setze Kanal (0-83) _
+Radio setze Kanal _ (0-83)
 
 radio set power (0-7) _
-Radio setze Stärke (0-7) _
+Radio setze Stärke _ (0-7)
 
 radio last signal strength
 Radio letzte Signalstärke
@@ -546,10 +567,10 @@ temperature (°C)
 Temperatur (°C)
 
 magnetic field
---MISSING--
+Magnetfeldstärke
 
 set acceleration range _ g = 100
---MISSING--
+setze Beschleunigungsbereich auf _ g = 100
 
 ####
 # NeoPixel library
@@ -561,7 +582,7 @@ set NeoPixels _ _ _ _ _ _ _ _ _ _
 setze NeoPixel _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-lösche NeoPixel
+lösche alle NeoPixel
 
 set NeoPixel _ color _
 setze NeoPixel _ Farbe _
@@ -573,10 +594,10 @@ rotate NeoPixels by _
 rotiere NeoPixel um _
 
 brighten NeoPixel _ by _
---MISSING--
+helle NeoPixel _ um _ auf
 
 brighten all NeoPixels by _
---MISSING--
+helle alle NeoPixel um _ auf
 
 color r _ g _ b _ (0-255)
 Farbe R _ G _ B _ (0-255)
@@ -585,7 +606,7 @@ random color
 zufällige Farbe
 
 attach _ LED NeoPixel strip to pin _
-verbinde _ LED NeoPixel Streifen mit Pin _
+verbinde _ NeoPixel-Streifen mit Pin _
 
 has white _
 mit Weiß _
@@ -594,54 +615,54 @@ PIR
 PIR
 
 PIR at pin _ detected movement
-PIR an PIN _ erkennt Bewegung
+PIR an PIN _ Bewegung erkennt
 
 #### NeoPanel library
 
 NeoPanel
---MISSING--
+NeoPanel
 
 attach NeoPixel panel width _ height _ at pin _
---MISSING--
+verbinde NeoPixel-Panel Breite _ Höhe _ an Pin _
 
 NeoPanel set x _ y _ color _
---MISSING--
+NeoPanel setze x _ y _ Farbe _
 
 NeoPanel fill column _ color _
---MISSING--
+NeoPanel fülle Spalte _ Farbe _
 
 NeoPanel fill row _ color _
---MISSING--
+NeoPanel fülle Zeile _ Farbe _
 
 NeoPanel fill rectangle x _ y _ width _ height _ color _
---MISSING--
+NeoPanel fülle Rechteck x _ y _ Breite _ Höhe _ Farbe _
 
 NeoPanel draw text _ at x _ y _ color _
---MISSING--
+NeoPanel schreibe Text _ auf x _ y _ Farbe _
 
 NeoPanel draw BMP file _ at x _ y _
---MISSING--
+NeoPanel zeichne BMP-Datei _ auf x _ y _
 
 ####
 # Microphone library
 
 Microphone
---MISSING--
+Mikrofon
 
 microphone
---MISSING--
+Mikrofon
 
 turn on microphone
---MISSING--
+schalte Mikrofon ein
 
 loudness
---MISSING--
+Lautstärke
 
 clap count
---MISSING--
+Klattschzählwert
 
 set clap threshold _
---MISSING--
+setze Klattschschwellwert _
 
 estimate clap threshold
 --MISSING--
@@ -764,7 +785,7 @@ Finch _ Line
 Finch _ Linie
 
 Finch Reset Encoders
-Finch Kodierer Zurücksetzen
+Finch setze Kodierer zurück
 
 Finch _ Encoder
 Finch _ Kodierer
@@ -830,149 +851,149 @@ Entfernung (cm) Auslöser _ Echo _
 # Infrared remote library
 
 IR Remote
-IR Fernzugriff
+IR-Fernzugriff
 
 receive IR code
-empfange IR Code
+empfange IR-Code
 
 receive IR code from device _
-empfange IR Code von Gerät _
+empfange IR-Code vom Gerät _
 
 test IR
 teste IR
 
 attach IR receiver to pin _
-schließe IR Empfänger an Pin _ an
+verbinde IR-Empfänger an Pin _
 
 IR transmit device _ command _
---MISSING--
+IR übertrage an Gerät _ Befehl _
 
 ####
 # Keyboard and Mouse library
 
 Keyboard and Mouse
---MISSING--
+Tastatur und Maus
 
 press key _ : while holding _
---MISSING--
+drücke Taste _ : solange _ gehalten
 
 hold key _
---MISSING--
+halte Taste _
 
 release key _
---MISSING--
+lasse Taste _ los
 
 release all keys
---MISSING--
+lasse alle Tasten los
 
 Shift
---MISSING--
+Umschalttaste
 
 Control
 Steuerung
 
 Alt / ⌥
---MISSING--
+Alt
 
 Logo / ⌘
---MISSING--
+Logo
 
 AltGr 
---MISSING--
+AltGr
 
 enter
---MISSING--
+Enter
 
 return
---MISSING--
+Return
 
 tab
---MISSING--
+Tab
 
 backspace
---MISSING--
+Backspace
 
 delete
-löschen
+Löschen
 
 insert
---MISSING--
+Einfügen
 
 home
 Ursprung
 
 end
---MISSING--
+Ende
 
 PgUp
---MISSING--
+Bild auf
 
 PgDown
---MISSING--
+Bild ab
 
 CapsLock
---MISSING--
+Feststelltaste
 
 NumLock
---MISSING--
+NumLock
 
 ScrollLock
---MISSING--
+ScrollLock
 
 PrintScreen
---MISSING--
+Druck
 
 ESC
---MISSING--
+ESC
 
 _ mouse click
---MISSING--
+_ Mausklick
 
 left
---MISSING--
+links
 
 right
---MISSING--
+rechts
 
 middle
---MISSING--
+Mitte
 
 both
---MISSING--
+beide
 
 move mouse pointer by _ , _
---MISSING--
+bewege Mauszeiger zu _ , _
 
 scroll mouse by _
---MISSING--
+scrolle Maus zu _
 
 hold _ mouse button
---MISSING--
+Halte _ Mausknopf
 
 release mouse buttons
---MISSING--
+Lasse Mausknopf los
 
 ####
 # Lists library
 # Extra utilities for list manipulation and access
 
 Lists
---MISSING--
+Listen
 
 list _ contains _
---MISSING--
+Liste _ enthält _ 
 
 circular item _ of _
---MISSING--
+zyklisches Element _ von _
 
 aListOrString
---MISSING--
+ListeOderZeichenfolge
 
 map _ over _
 --MISSING--
 
 aFunction
---MISSING--
+eineFunktion
 
 filter _ with _
 --MISSING--
@@ -990,31 +1011,50 @@ most
 --MISSING--
 
 reverse _
---MISSING--
+kehre _ um
 
 shuffle _
---MISSING--
+mische _
 
 sort _
+sortiere _
+
+unique _
 --MISSING--
 
 shuffled _
---MISSING--
+_ gemischt
 
 reversed _
---MISSING--
+_ umgekehrt
 
 sorted _
+_ sortiert
+
+uniqued _
+_ eindeutig
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudozufallszahl
+
+pseudorandom _ to _ with seed _
+--MISSING--
+
+_ pseudorandom numbers _ to _ with seed _
 --MISSING--
 
 ####
 # BLE Keyboard library
 
 BLE Keyboard
---MISSING--
+BLE-Tastatur
 
 start BLE Keyboard
---MISSING--
+starte BLE-Tastatur
 
 ####
 # Radio comm library
@@ -1035,7 +1075,7 @@ scroll text _
 scrolle Text _
 
 HELLO ROSA!
---MISSING--
+HALLO ROSA!
 
 scroll number _
 scrolle Zahl _
@@ -1056,10 +1096,10 @@ set servo _ to _ degrees (-90 to 90)
 setze Servo _ auf _ Grad (-90 bis 90)
 
 set servo _ to speed _ (-100 to 100)
-setze Servo _ auf _ Geschwindigkeit (-100 bis 100)
+setze Servo _ auf Geschwindigkeit _ (-100 bis 100)
 
 stop servo _
-Stoppe Servo
+stoppe Servo _
 
 ####
 # 5x5 LED display library
@@ -1067,16 +1107,19 @@ Stoppe Servo
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
-LED Anzeige
+LED-Anzeige
 
 display _
-Display _
+Anzeige _
+
+display image _
+zeige Bild _
 
 clear display
-lösche Display
+lösche Anzeige
 
 set display color _
---MISSING--
+setze Anzeigefarbe _
 
 plot x _ y _
 plotte x _ y _
@@ -1086,6 +1129,129 @@ lösche x _ y _
 
 display character _
 zeige Buchstaben _
+
+# Image names for the "display image" block
+
+heart
+Herz
+
+small heart
+kleines Herz
+
+yes
+ja
+
+no
+nein
+
+happy
+glücklich
+
+sad
+traurig
+
+confused
+verwirrt
+
+angry
+wütend
+
+asleep
+schlafend
+
+surprised
+überrascht
+
+silly
+albern
+
+fabulous
+fabelhaft
+
+meh
+egal
+
+t-shirt
+T-Shirt
+
+roller skate
+Rollschuh
+
+duck
+Ente
+
+house
+Haus
+
+tortoise
+Schildkröte
+
+butterfly
+Schmetterling
+
+stick figure
+Strichmännchen
+
+ghost
+Geist
+
+sword
+Schwert
+
+giraffe
+Giraffe
+
+skull
+Totenkopf
+
+umbrella
+Regenschirm
+
+snake
+Schlange
+
+rabbit
+Kaninchen
+
+cow
+Kuh
+
+quarter note
+Viertelnote
+
+eight note
+Achtelnote
+
+pitchfork
+Heugabel
+
+target
+Ziel
+
+triangle
+Dreieck
+
+left triangle
+rechtwinkliges Dreieck
+
+chess board
+Schachbrett
+
+diamond
+Diamant
+
+small diamond
+kleiner Diamant
+
+square
+Quadrat
+
+small square
+kleines Quadrat
+
+scissors
+Schere
+
 
 ####
 # OLED Graphics library
@@ -1144,14 +1310,17 @@ defer display updates
 ####
 # TFT display library
 
+clear TFT display
+lösche TFT-Display
+
 enable TFT _
 aktiviere TFT
 
 TFT width
-TFT Breite
+TFT-Breite
 
 TFT height
-TFT Höhe
+TFT-Höhe
 
 set TFT pixel x _ y _ to _
 setze TFT-Pixel x _ y _ auf _
@@ -1178,7 +1347,7 @@ write _ on TFT at x _ y _ color _
 Schreibe _ auf TFT bei x _ y _ Farbe _
 
 Hello World!
---MISSING--
+Hello Welt!
 
 scale _ wrap _
 Größe _ Zeilenumbruch _
@@ -1188,25 +1357,25 @@ Größe _ Zeilenumbruch _
 # Can display BMP image files on a TFT display
 
 display BMP file _ at x _ y _
---MISSING--
+zeige BMP-Datei _ bei x _ y _
 
 image.bmp
---MISSING--
+bild.bmp
 
 ####
 # HSV color library
 
 HSV Colors
---MISSING--
+HSV-Farben
 
 RGB of hue _ saturation _ brightness _ (0-100)
---MISSING--
+RGB of Farbton _ Sättigung _ Helligkeit _ (0-100)
 
 ####
 # Fractions library
 
 Fractions
---MISSING--
+Brüche
 
 fract _ / _
 --MISSING--
@@ -1242,10 +1411,10 @@ denominator of fraction _
 --MISSING--
 
 gcd _ _
---MISSING--
+ggT _ _
 
 lcm _ _
---MISSING--
+kgV _ _
 
 ####
 # Tone library
@@ -1261,65 +1430,65 @@ play note _ octave _ for _ ms
 spiele Note _ Oktave _ für _ ms
 
 play frequency _ for _ ms
-spiele Frequenz _ für _ Millisekunden
+spiele Frequenz _ Hz für _ ms
 
 play midi key _ for _ ms
-spiele MIDI Note _ für _ Millisekunden
+spiele MIDI-Note _ für _ ms
 
 start tone _ Hz
---MISSING--
+spiele Ton mit _ Hz
 
 stop tone
---MISSING--
+stoppe Ton
 
 c
---MISSING--
+c
 
 c#
---MISSING--
+c#
 
 d
---MISSING--
+d
 
 d#
---MISSING--
+d#
 
 e
---MISSING--
+e
 
 f
---MISSING--
+f
 
 f#
---MISSING--
+f#
 
 g
---MISSING--
+g
 
 g#
---MISSING--
+g#
 
 a
---MISSING--
+a
 
 a#
---MISSING--
+a#
 
 b
---MISSING--
+b
 
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
 
 Ringtone
---MISSING--
+Klingelton
 
 play ringtone _
---MISSING--
+spiele Klingelton _
 
 current song name
---MISSING--
+aktueller Klingelton
 
 ####
 # Pluck
@@ -1342,10 +1511,10 @@ set pluck pin _
 # Play WAV sound files
 
 play WAV file _
---MISSING--
+spiele WAV-Datei _
 
 filename
---MISSING--
+Dateiname
 
 ####
 # Rhythm
@@ -1353,25 +1522,28 @@ filename
 # Useful to create musical patterns
 
 Rhythm
---MISSING--
+Rythmus
 
 set tempo to _ bpm at _ / _ signature
---MISSING--
+setze Tempo auf _ bpm bei _ / _ Signatur
 
-start counting _ bars
---MISSING--
-
-stop counting
---MISSING--
-
-wait until next _
---MISSING--
+set pattern to _ bars
+setze Muster auf _ Takte
 
 current beat
---MISSING--
+aktueller Schlag
 
 current bar
+aktueller Takt
+
+wait until next _ duration
 --MISSING--
+
+wait until beat _
+warte bis Schlag _
+
+wait until bar _
+warte bis Takt _
 
 ####
 # MIDI
@@ -1673,10 +1845,10 @@ effect 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
---MISSING--
+spiele MIDI-Note _ für _ ms auf Kanal _ Lautstärke _
 
 set MIDI note _ to _ on channel _ volume _
---MISSING--
+setze MIDI-Note _ auf _ auf Kanal _ Lautstärke _
 
 note _ octave _ to MIDI key
 --MISSING--
@@ -1801,6 +1973,9 @@ _ chord for root _
 arpeggiate _ in order _ duration _ and volume _ on _ _
 --MISSING--
 
+improvised arpeggio over _ for _ bars with durations _
+--MISSING--
+
 improvise over _ for _ bars with durations _ on _ _ volume _
 --MISSING--
 
@@ -1861,7 +2036,7 @@ Turtle
 Turtle
 
 home
-Ursprung
+gehe zum Ursprung
 
 move _
 gehe _
@@ -1870,7 +2045,7 @@ turn _ degrees
 drehe _ Grad
 
 turn _ / _ of circle
-drehe _/ _ eines Kreises
+drehe _ / _ eines Kreises
 
 pen down
 Stift runter
@@ -1939,7 +2114,7 @@ in directory _
 --MISSING--
 
 size of file _
-Dateigröße
+Größe der Datei _
 
 file system info
 Dateisystem-Information
@@ -1949,73 +2124,73 @@ Dateisystem-Information
 # string (text) processing functions
 
 Strings
---MISSING--
+Zeichenfolgen
 
 _ is a digit
---MISSING--
+_ ist eine Zahl
 
 _ is lowercase
---MISSING--
+_ ist in Kleinbuchstaben
 
 _ is uppercase
---MISSING--
+_ ist in Großbuchstaben
 
 _ begins with _
---MISSING--
+_ begint mit _
 
 prefix
---MISSING--
+Prefix
 
 pre
---MISSING--
+Pre
 
 _ ends with _
---MISSING--
+_ endet auf _
 
 suffix
---MISSING--
+Suffix
 
 fix
---MISSING--
+fix
 
 _ contains _
---MISSING--
+_ enthält _
 
 lowercase _
---MISSING--
+_ in Kleinbuchstaben
 
 THIS is a String! :)
---MISSING--
+DAS ist ein Text! :)
 
 uppercase _
---MISSING--
+_ in Großbuchstaben
 
 Hello, world!
---MISSING--
+Hallo, Welt!
 
 _ without white space
---MISSING--
+_ ohne Leerzeichen
 
 join string list _ separator _
 --MISSING--
 
 unicodes _
---MISSING--
+Unicode von _
 
 aString
---MISSING--
+Zeichenfolge
 
 string from unicodes _
---MISSING--
+Zeichenfolge aus Unicode _
 
 aList
---MISSING--
+Liste
 
 num2str _
---MISSING--
+num2str _
 
 str2num _
---MISSING--
+str2num _
 
 ####
 # WiFi library
@@ -2024,25 +2199,25 @@ WiFi
 WiFi
 
 wifi connect to _ password _
---MISSING--
+WiFi-Verbindung zu _ Passwort _
 
 Network_Name
---MISSING--
+Netzwerkname
 
 IP _ gateway _ subnet _
---MISSING--
+IP _ Gateway _ Netzmaske _
 
 wifi create hotspot _ password _
 WiFi öffne Hotspot _ Passwort _
 
 Network_Password
---MISSING--
+Netzwerkpasswort
 
 IP address
-IP Addresse
+IP-Adresse
 
 MAC address
---MISSING--
+MAC-Adresse
 
 ####
 # Motion library
@@ -2106,7 +2281,7 @@ Circuit Playground Schiebeschalter
 # DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
-schließe _ DotStar LEDs an Daten-Pin _ Uhr-Pin _ an
+verbinde _ DotStar LEDs an Daten-Pin _ Uhr-Pin _
 
 set all DotStar LEDs to r _ g _ b _
 setze alle DotStar LEDs auf r _ g _ b _
@@ -2121,28 +2296,28 @@ setze DotStar Helligkeit _
 # BME280 environmental sensor
 
 bme280 connected
-bme280 verbunden
+BME280 verbunden
 
 bmp280 connected
-bmp280 verbunden
+BMP280 verbunden
 
 bmx280 temperature
-bmx280 Temperatur
+BMX280 Temperatur
 
 bmx280 pressure
-bmx280 Luftdruck
+BMX280 Luftdruck
 
 bme280 humidity
-bme280 Luftfeuchtigkeit
+BME280 Luftfeuchtigkeit
 
 bmx280 set base altitude _ meters
---MISSING--
+bmx280 setze Grundhöhe _ Meter
 
 bmx280 altitude (cm)
---MISSING--
+BMX280 Höhe (cm)
 
 bmx280 altitude (feet)
---MISSING--
+BMX280 Höhe (Fuß)
 
 ####
 # TCS34725 color sensor
@@ -2187,25 +2362,25 @@ PN532 firmware version
 # Touch Screen
 
 Touch Screen
---MISSING--
+Touch Screen
 
 TFT touched
---MISSING--
+TFT berührt
 
 TFT touch X position
---MISSING--
+TFT Berührungsstelle x-Position
 
 TFT touch Y position
---MISSING--
+TFT Berührungsstelle y-Position
 
 TFT touch pressure
---MISSING--
+TFT Berührungsdruck
 
 ####
 # HTTP Client
 
 HTTP client
-HTTP Client
+HTTP-Client
 
 _ data _ to http܃// _
 _ Daten _ URL http:// _
@@ -2214,28 +2389,28 @@ MicroBlocks is fun
 --MISSING--
 
 port _
---MISSING--
+Port _
 
 ####
 # HTTP Server
 
 HTTP server
-HTTP Server
+HTTP-Server
 
 start HTTP server
-starte HTTP Server
+starte HTTP-Server
 
 HTTP server request
-HTTP Server Anfrage
+HTTP-Server-Anfrage
 
 respond _ to HTTP request
-antworte _ auf HTTP Anfrage
+antworte _ auf HTTP-Anfrage
 
 with body _
 mit Body _
 
 Welcome to the MicroBlocks HTTP server
---MISSING--
+Willkommen auf dem MicroBlocks HTTP-Server
 
 and headers _
 und Header _
@@ -2247,40 +2422,40 @@ path of request _
 Pfad der Anfrage _
 
 headers of request _
---MISSING--
+Kopf der Anfrage _
 
 method of request _
 Methode der Anfrage _
 
 content length of request _
---MISSING--
+Länge des Inhalts der Anfrage _
 
 ####
 # WebSocket server
 
 WebSocket server
---MISSING--
+WebSocket-Server
 
 start WebSocket server
---MISSING--
+sterte WebSocket-Server
 
 last WebSocket event
---MISSING--
+letztes WebSocket-Ereignis
 
 client ID for WebSocket event _
---MISSING--
+Client-ID für das WebSocket-Ereignis _
 
 payload for WebSocket event _
 --MISSING--
 
 type of WebSocket event _
---MISSING--
+Typ des WebSocket-Ereignisses _
 
 send _ to WebSocket client _
---MISSING--
+sende _ zum WebSocket-Client _
 
 Hello, Client!
---MISSING--
+Hallo, Client!
 
 ####
 # Web Things library
@@ -2298,7 +2473,7 @@ set boolean property _ title _ @Type _
 setze Boole Eigenschaft _ Name _ @Typ _
 
 set string property _ title _ @Type _
-setze Zeichenkette Eigenschaft _ Name _ @Typ _
+setze Zeichenfolge Eigenschaft _ Name _ @Typ _
 
 set number property _ title _ @Type _
 setze Zahl Eigenschaft _ Name _ @Typ _
@@ -2334,10 +2509,10 @@ Ereignisse JSON
 # Citilab Fantàstic Robot
 
 turn fantàstic _ degrees
---MISSING--
+drehe fantàstic _ Grad
 
 move fantàstic _ mm
---MISSING--
+bewege fantàstic _ mm
 
 ####
 # MiKe Robot library
@@ -2929,7 +3104,7 @@ Open from board
 Vom Board öffnen
 
 Copy project URL to clipboard
---MISSING--
+kopiere Projekt-URL in Zwischenablage
 
 Information
 Information
@@ -2938,7 +3113,7 @@ Plug in the board.
 Schließe das Board an.
 
 Plug in the board and click the USB icon to connect.
---MISSING--
+Schließe das Board an und klicke zum Verbinden auf das USB-Icon.
 
 Reading project from board...
 Projekt wird vom Board gelesen...
@@ -2947,7 +3122,7 @@ Loading project...
 Projekt wird geladen...
 
 Found a newer version of
-Neuere Version gefunden von
+Gefunden wurde eine neuere Version von
 
 Do you want me to update the one in the project?
 Möchtest du sie im Projekt updaten?
@@ -2959,13 +3134,13 @@ Connect
 Verbinden
 
 connect
---MISSING--
+verbunden
 
 connect (BLE)
---MISSING--
+verbunden (BLE)
 
 open Boardie
---MISSING--
+Boardie öffnen
 
 disconnect
 trennen
@@ -2974,7 +3149,7 @@ Serial port:
 Serieller Anschluss:
 
 Connect board and try again
---MISSING--
+Board anschließen und nochmals versuchen
 
 other...
 sonstige...
@@ -3022,7 +3197,7 @@ For AdaFruit boards, double-click reset button and try again.
 Für AdaFruit Boards den Reset Knopf drücken und erneut versuchen
 
 Only recent Chrome and Edge browsers support WebSerial.
---MISSING--
+Nur neuste Chrome- and Edge-Browser unterstützen WebSerial.
 
 The board is not responding.
 Das Board reagiert nicht.
@@ -3034,10 +3209,10 @@ The MicroBlocks in your board is not current
 Die MicroBlocks-Version auf deinem Board ist nicht aktuell
 
 Try to update MicroBlocks on the board?
-MicroBlocks auf dem Board updaten?
+MicroBlocks auf dem Board aktualisieren?
 
 MicroBlocks
---MISSING--
+MicroBlocks
 
 Stop
 Stop
@@ -3049,15 +3224,15 @@ Quit MicroBlocks?
 MicroBlocks beenden?
 
 Discard current project?
-Aktuelles Projekt verwerfen
+Aktuelles Projekt verwerfen?
 
 # Scripting area right-click context menu
 
 set block size...
---MISSING--
+setze Blockgröße auf ...
 
 make blocks bigger or smaller
---MISSING--
+stellt Blöcke größer oder kleiner dar
 
 clean up
 aufräumen
@@ -3069,88 +3244,88 @@ undrop (ctrl-Z)
 zurücknehmen (Strg-Z)
 
 undo the last block drop
---MISSING--
+letzte Blockverschiebung zurücknehmen
 
 copy all scripts to clipboard
-alle Skripte in die Zwischenablage kopieren
+kopiere alle Skripte in die Zwischenablage
 
 copy all scripts to clipboard as URL
---MISSING--
+kopiere alle Skripte als URL in die Zwischenablage
 
 paste all scripts
-alle Skripte einfügen
+füge alle Skripte ein
 
 paste script
-Skript einfügen
+füge Skript ein
 
 paste script from clipboard
---MISSING--
+füge Skript aus Zwischenablage ein
 
 save a picture of all visible scripts
---MISSING--
+speichere ein Bild aller sichtbaren Skripts
 
 set exported script scale
---MISSING--
+setze Größenmaßstab für Export auf ...
 
 small (50%)
---MISSING--
+klein (50%)
 
 normal (65%)
---MISSING--
+normal (65%)
 
 large (100%)
---MISSING--
+groß (100%)
 
 printable (200%)
---MISSING--
+druckbar (200%)
 
 duplicate selection
---MISSING--
+dupliziere Auswahl
 
 drag selection
---MISSING--
+verschiebe Auswahl
 
 delete selection
---MISSING--
+lösche Auswahl
 
 about...
 über...
 
 About MicroBlocks
---MISSING--
+Über MicroBlocks
 
 virtual machine version
 Virtual Machine Version
 
 update firmware on board
-Firmware auf dem Board updaten
+aktualisiere Board-Firmware
 
 enable or disable BLE
---MISSING--
+aktiviere oder deaktivere BLE
 
 Allow the attached board to be connected via BLE?
---MISSING--
+Verbindung des angeschlossenen Boards via BLE erlauben?
 
 show data graph
-Daten als Diagramm anzeigen
+zeige Daten als Diagramm
 
 set serial delay
 setze serielle Verzögerung
 
 firmware version
-Firmware Version
+zeige Firmware-Version
 
 start WebThing server
-starte WebThing Server starten
+starte WebThing-Server
 
 stop WebThing server
-stoppe WebThing Server
+stoppe WebThing-Server
 
 HTTP Server
 HTTP Server
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP Server lauscht an Port 6473
+MicroBlocks HTTP-Server überwacht Port 6473
 
 disable autoloading board libraries
 deaktiviere automatisches Laden von Board-Modulen
@@ -3162,70 +3337,70 @@ enable autoloading board libraries
 aktiviere automatisches Laden von Board-Modulen
 
 enable PlugShare when project empty
-aktiviere PlugShare, wenn Projekt leer ist
+aktiviere PlugShare, falls Projekt leer ist
 
 disable PlugShare when project empty
-deaktiviere PlugShare, wenn Projekt leer ist
+deaktiviere PlugShare, falls Projekt leer ist
 
 hide implementation blocks
---MISSING--
+verstecke Implementationsblöcke
 
 do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
---MISSING--
+zeige keine Blöcke und Variablen aus internen Bibliotheken an (d. h. solche, deren Name mit einem Unterstrich beginnt)
 
 show implementation blocks
---MISSING--
+zeige Implementationsblöcke
 
 show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
---MISSING--
+zeige Blöcke und Variablen aus internen Bibliotheken an (d. h. solche, deren Name mit einem Unterstrich beginnt)
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
---MISSING--
+Inhalt des Boards nach Anschließen nicht automatisch in die IDE einlesen, auch wenn das aktuelle Projekt leer ist
 
 when plugging a board, automatically read its contents into the IDE if the current project is empty
---MISSING--
+Wenn das aktuelle Projekt leer ist den Inhalt des Boards nach Anschließen automatisch in die IDE einlesen. 
 
 erase flash and update firmware on ESP board
-lösche und repartitioniere ESP
+lösche Flash und aktualisiere Firmware auf ESP-Board
 
 install ESP firmware from URL
---MISSING--
+installiere ESP-Firmware von URL
 
 Use board type
 Verwende Board-Typ
 
 Firmware Install
---MISSING--
+Firmwareinstallation
 
 Firmware Installed
---MISSING--
+Firmware installiert
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
---MISSING--
+Verbinde das Board durch Klicken des Connect-Buttons (USB-Icon) neu.
 
 Connect USB cable while holding down the white BOOTSEL button before proceeding.
---MISSING--
+halte während des Anschließens des USB-Kabels den weißen BOOTSEL-Button gedrückt, fahre dann hier fort.
 
 You will be asked to save the firmware file.
---MISSING--
+Du wirst aufgefordert, die Firmware-Datei zu speichern.
 
 Select
---MISSING--
+Auswahl
 
 as the destination drive, then click Save.
---MISSING--
+als Ziellaufwerk, und klicke dann auf Speichern.
 
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
---MISSING--
+Wenn dein Micro:bit ein trauriges Gesicht zeigt, speichere die Datei Firmware.hex auf deine Festplatte und lege sie dann auf dem MICROBIT-Laufwerk ab.
 
 Installing firmware...
---MISSING--
+Installiere Firmware...
 
 Plug in the board.
 Schließe das Board an.
 
 Board not connected
---MISSING--
+Board nicht verbunden
 
 Wiping board...
 Board löschen...
@@ -3255,55 +3430,55 @@ clear memory and variables
 Variablen und Speicher zurücksetzen
 
 show advanced blocks
-Fortgeschrittene Blöcke anzeigen
+zeige fortgeschrittene Blöcke
 
 export functions as library
-Funktionen als Modul exportieren
+exportiere Funktionen als Modul
 
 hide advanced blocks
-Fortgeschrittene Blöcke ausblenden
+verstecke fortgeschrittene Blöcke
 
 put file on board
---MISSING--
+sende Datei ans Board
 
 get file from board
---MISSING--
+lade Datei vom Board
 
 uploaded
---MISSING--
+hochgeladen
 
 downloaded
---MISSING--
+heruntergeladen
 
 Data Graph
 Daten-Graph
 
 Graph
---MISSING--
+Graph
 
 clear graph
---MISSING--
+lösche Graphen
 
 zero at bottom
---MISSING--
+setze Nulllinie nach unten
 
 zero in middle
---MISSING--
+setze Nulllinie mittig
 
 export data to CSV file
---MISSING--
+exportiere Daten in CSV-Datei
 
 import data from CSV file
---MISSING--
+importiere Daten aus CSV-Datei
 
 copy graph data to clipboard
---MISSING--
+kopiere Graph in Zwischenablage
 
 show instructions
-Op-Code anzeigen
+zeige Op-Code
 
 show compiled bytes
-Byte-Code anzeigen
+zeige Byte-Code
 
 expand
 ausklappen
@@ -3315,22 +3490,22 @@ rename...
 umbenennen...
 
 find variable accessors
---MISSING--
+suche Variablenzugriff
 
 find scripts or block definitions where this variable is being read
---MISSING--
+sucht Skript- oder Blockdefinitionen, in denen diese Variable lesen wird
 
 find variable modifiers
---MISSING--
+suche Variablenänderung
 
 find scripts or block definitions where this variable is being set or changed
---MISSING--
+sucht Skript- oder Blockdefinitionen, in denen diese Variable gesetzt oder geändert wird
 
 find uses of this block
---MISSING--
+suche Blockverwendung 
 
 find scripts or block definitions using this block
---MISSING--
+sucht Skript- oder Blockdefinitionen, in denen dieser Block verwendet wird
 
 show block definition...
 Blockdefinition anzeigen...
@@ -3348,7 +3523,7 @@ duplicate
 duplizieren
 
 help
---MISSING--
+zeige Hilfe
 
 duplicate this block
 Diesen Block duplizieren
@@ -3363,49 +3538,49 @@ just this one block
 nur diesen Block
 
 copy to clipboard
-in Zwischenablage kopieren
+kopiere in Zwischenablage
 
 copy to clipboard as URL
---MISSING--
+kopiere als URL in Zwischenablage
 
 copy these blocks to the clipboard as a URL
---MISSING--
+kopiere diese Blöcke als URL in die Zwischenablage 
 
 copy these blocks to the clipboard
-diese Blöcke in die Zwischenablage kopieren
+kopiere diese Blöcke in die Zwischenablage
 
 duplicate all
-alles duplizieren
+dupliziere alles
 
 duplicate these blocks
-diese Blöcke duplizieren
+dupliziere diese Blöcke
 
 extract block
-Block extrahieren
+extrahiere Block 
 
 pull out this block
-diesen Block herausziehen
+ziehe diesen Block heraus
 
 show help for this block in a browser
---MISSING--
+zeige Hilfe für diesen Block im Browser
 
 save picture of script
-Skriptbild speichern
+speichere Bild des Skripts
 
 save picture of script with result
---MISSING--
+speichere Bild des Skripts mit Ergebnis
 
 save a picture of this block definition as a PNG file
-Bild dieser Blockdefinition als PNG-Datei speichern
+speichere Bild dieser Blockdefinition als PNG-Datei
 
 save a picture of these blocks as a PNG file
-Bild dieser Blöcke als PNG-Datei speichern
+speichere Bild dieser Blöcke als PNG-Datei
 
 save a picture of these blocks and their result as a PNG file
---MISSING--
+speichere Bild dieser Blöcke und deren Ergebnis als PNG-Datei
 
 copy script
-Skript duplizieren
+dupliziere Skript
 
 delete
 löschen
@@ -3414,43 +3589,43 @@ Input type:
 Eingabetyp:
 
 string only
-nur Zeichenketten
+nur Zeichenfolgen
 
 string or number
-Zeichenkette oder Zahl
+Zeichenfolge oder Zahl
 
 number only
 nur Zahlen
 
 stop editing
---MISSING--
+stoppe Bearbeitung
 
 cut
---MISSING--
+schneide aus
 
 copy
---MISSING--
+kopiere
 
 paste
---MISSING--
+füge ein
 
 accept
---MISSING--
+akzeptiere
 
 revert
---MISSING--
+zurücknehmen
 
 select all
---MISSING--
+alles Auswählen
 
 define
 definiere
 
 number/string
-Zahl/Zeichenkette
+Zahl/Zeichenfolge
 
 editable number or string
-editierbare Zahl oder Zeichenkette
+editierbare Zahl oder Zeichenfolge
 
 label
 Beschriftung
@@ -3459,7 +3634,7 @@ input
 Eingabe
 
 hide block definition
-Blockdefinition verstecken
+verstecke Blockdefinition
 
 Are you sure you want to remove this block definition?
 Bist du sicher, dass du diese Blockdefinition löschen möchtest?
@@ -3500,48 +3675,51 @@ Libraries
 Module
 
 AI
---MISSING--
+KI
 
 Graphics and Displays
---MISSING--
+Displays und Anzeigen
 
 Kits and Boards
---MISSING--
+Kits und Boards
+
+Motors
+Motoren
 
 Network
---MISSING--
+Netzwerk
 
 Other
 Sonstige
 
 Robots
---MISSING--
+Roboter
 
 Sensing
---MISSING--
+Sensoren
 
 Sound
 Klang
 
 System
---MISSING--
+System
 
 # File picker and library dialogs
 
 New library name?
---MISSING--
+Neuer Name der Bibliothek?
 
 show all block definitions
---MISSING--
+zeige alle Blockdefinitionen
 
 hide all block definitions
---MISSING--
+verstecke alle Blockdefinitionen
 
 export this library
---MISSING--
+exportiere diese Bibliothek
 
 delete library
---MISSING--
+lösche Bibliothek
 
 Examples
 Beispiele
@@ -3598,7 +3776,7 @@ Server expects HTTPS, and MicroBlocks doesn't currently support it.
 Server erwartet HTTPS, was von MicroBlocks momentan nicht unterstützt wird.
 
 library information
-Modulinformation
+zeige Modulinformation
 
 built-in library
 Integriertes Modul
@@ -3607,407 +3785,407 @@ Dependency path, name or URL?
 Abhängigkeit Pfad, Name oder URL?
 
 If you are adding a library that's built into MicroBlocks, you can just enter its name.
---MISSING--
+Wenn du eine Bibliothek hinzufügst, die in MicroBlocks integriert ist, kannst Du ihren Namen eingeben.
 
 If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
---MISSING--
+Wenn sich deine Bibliothek im Ordner "Bibliotheken" im lokalen MicroBlocks-Projektordner befindet, dann muss du ihr einen Schrägstrich (/) vorangestellen.
 
 If the library is hosted online, please input its full URL.
---MISSING--
+Wenn die Bibliothek online gehostet wird, ist die vollständige URL einzugeben.
 
 Tag name?
 Schlagwort?
 
 user library
---MISSING--
+Benutzerbibliothek
 
 Add Library
---MISSING--
+Bibliothek hinzufügen
 
 seconds remaining
---MISSING--
+Sekunden verbleiben
 
 Decrease block size
---MISSING--
+verkleinere Blockgröße
 
 Restore block size to 100%
---MISSING--
+setze Blockgröße auf 100% zurück
 
 Increase block size
---MISSING--
+vergößere Blockgröße
 
 ############
 # Tips Bar #
 ############
 
 Button
---MISSING--
+Knopf
 
 Boolean Input
---MISSING--
+Eingabe Wahrheitswert
 
 [l] toggle value, or drop a reporter into it.
---MISSING--
+[l] Wert auswählen, oder zum Hineinziehen eines Rückgabeblocks.
 
 Color Input
---MISSING--
+Eingabe Farbe
 
 [l] change the color, or drop a reporter into it.
---MISSING--
+[l] Farbe auswählen, oder zum Hineinziehen eines Rückgabeblocks
 
 Input
 Eingabe
 
 [l] edit its value, or drop a reporter into it.
---MISSING--
+[l] zum Ändern des Wertes, oder zum Hineinziehen eines Rückgabeblocks.
 
 Block Extension
---MISSING--
+Blockerweiterung
 
 [l] right arrow to show optional inputs, left arrow to hide.
---MISSING--
+[l] Rechtspfeil zur Anzeige optionaler Eingaben, Linkspfeil zum Verstecken.
 
 Command Block
---MISSING--
+Befehlsblock
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] zum Starten oder Ziehen zum Bauen eines Skipts. [r] Menü.
 
 Hat Block
---MISSING--
+Kopfblock
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] zum Starten oder Ziehen zum Bauen eines Skipts. [r] Menü.
 
 Reporter Block
---MISSING--
+Rückgabeblock
 
 [l] to see value, or drop into an input slot. [r] menu.
---MISSING--
+[l] zur Werteanzeige oder zum Ziehen in einen Eingabebereich. [r] Menü.
 
 Script
---MISSING--
+Skipt
 
 [l] to run. [r] menu.
---MISSING--
+[l] zum Starten. [r] Menü.
 
 Pane Divider
---MISSING--
+Bereichsteiler
 
 Drag to change pane width.
---MISSING--
+Verschiebe um die Größe des Bereichs zu ändern.
 
 Library
---MISSING--
+Bibliothek
 
 [l] to show the blocks in this library. [r] menu.
---MISSING--
+[l] zum Zeigen der Blöcke in dieser Bibliothek. [r] Menü.
 
 Block Category
---MISSING--
+Blockkategorie
 
 [l] to show the blocks in this category.
---MISSING--
+[l] zum Zeigen der Blöcke in dieser Kategorie.
 
 Palette
---MISSING--
+Palette
 
 Drag blocks from here to build scripts. Drop scripts here to delete them.
---MISSING--
+Ziehe Blöcke von hier in den Skriptbereich. Schiebe Skripte hierher um sie zu löschen.
 
 Scripts Pane
---MISSING--
+Skriptbereich
 
 Drag blocks here to build scripts. [r] menu.
---MISSING--
+Ziehe Blöcke hierher um Skripts zu bauen. [r] Menü.
 
 #################################
 # Block Descriptions for TipBar #
 #################################
 
 Turn the user LED on or off.
---MISSING--
+Schaltet die Benutzer-LED ein oder aus.
 
 Display a bubble showing the value.
---MISSING--
+Zeigt in einer Sprechblase den Wert an.
 
 Graph the value.
---MISSING--
+Zeigt den Wert grafisch an.
 
 Report the state of button A ( (-o) or (o-) ).
---MISSING--
+Gibt den Zustand der Taste A zurück ( (-o) oder (o-) ).
 
 Report the state of button B ( (-o) or (o-) ).
---MISSING--
+Gibt den Zustand von Taste B zurück ( (-o) oder (o-) ).
 
 Report the milliseconds since the timer was last reset.
---MISSING--
+Gibt die Zeit in ms seit dem Zurücksetzen des Zeitgebers zurück.
 
 Reset the timer.
---MISSING--
+Setzt den Zeitgeber zurück.
 
 Report the milliseconds since power up.
---MISSING--
+Gibt die Zeit in ms seit dem Einschalten zurück.
 
 Report the microseconds since power up.
---MISSING--
+Gibt die Zeit in µs seit dem Einschalten zurück.
 
 Report the board type.
---MISSING--
+Gibt den Typ des Boards zurück.
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
---MISSING--
+Gibt den Logikpegel eines digitalen Pins zurück ( (-o) or (o-) ).
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
---MISSING--
+Gibt eine Zahl proportional zur Spannung an einem analogen Pin zurück (0 = Masse, 1023 = Versorgungsspannung).
 
 Turn a pin on or off ( (-o) or (o-) ).
---MISSING--
+Schaltet einen Pin ein oder aus ( (-o) or (o-) ).
 
 Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
---MISSING--
+Erzeugt ein pulsweitenmoduliertes Signal (PWM) an einem Pin mit dem angegebenen Zyklus (0 - 1023).
 
 Report number of analog pins on this device.
---MISSING--
+Gibt die Anzahl analoger Pins auf dem Gerät zurück.
 
 Report number of digital pins on this device.
---MISSING--
+Gibt die Anzahl digitaler Pins auf dem Gerät zurück.
 
 Report the value of a register (0-255) of an I2C device (0-127).
---MISSING--
+Gibt den Wert eines Registers (0-255) auf einem I2C-Gerät (0-127) zurück.
 
 Set an I2C device and register to given value (0-255).
---MISSING--
+Legt den Wert eines Registers (0-255) auf einem I2C-Gerät fest.
 
 Receive multiple bytes from an I2C device.
---MISSING--
+Empfängt mehrere Byte von einem I2C-Gerät.
 
 Send multiple bytes to an I2C device.
---MISSING--
+Sendet mehrere Byte an ein I2C-Gerät.
 
 Send a byte (0-255) to an SPI device.
---MISSING--
+Sendet ein Byte (0-255) an ein SPI-Gerät.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
 --MISSING--
 
 Set the SPI clock speed and mode.
---MISSING--
+Setzt die SPI-Taktgeschwindigkeit und den Modus.
 
 Send a byte array via SPI, replacing its contents with the bytes received.
 --MISSING--
 
 Open the serial port at the given baud rate.
---MISSING--
+Öffnet einen seriellen Anschluss mit der angegebenen Baudrate.
 
 Close the serial port.
---MISSING--
+Schließt den seriellen Anschluss.
 
 Report data received from the serial port (a byte array).
---MISSING--
+Gibt die empfangenen Daten vom seriellen Anschluss (als Byte-Array) an.
 
 Send a byte array to the serial port.
---MISSING--
+Sendet ein Byte-Array zum seriellen Anschluss.
 
 Run when the board powers up or when the IDE start button is clicked.
---MISSING--
+Wird ausgeführt, falls das Board an die Stromversorgung angeschlossen oder der IDE-Start-Knopf gedrückt wird.
 
 Run when buttons A, B, or A+B are pressed.
---MISSING--
+Wird ausgeführt, falls der Knopf A, B oder A+B gedrückt wurde.
 
 Repeat the enclosed blocks indefinitely.
---MISSING--
+Wiederholt die umschlossenen Blöcke dauerhaft.
 
 Repeat the enclosed blocks the given number of times.
---MISSING--
+Wiederholt die umschlossenen Blöcke so oft wie angegeben.
 
 Wait the given number of milliseconds.
---MISSING--
+Wartet die in Millisekunden angegebene Zeit.
 
 Run the first set of blocks whose test condition is (-o) .
---MISSING--
+Es wird der Blockbereich ausgeführt, für den die Bedinung (-o) ist.
 
 Run when the condition becomes (-o) .
---MISSING--
+Wird ausgeführt, falls die Bedingung (-o) wird.
 
 Wait until the condition becomes (-o) .
---MISSING--
+Wartet bis die Bedingung (-o) wird.
 
 Return (report) the given value from a function or script.
---MISSING--
+Gibt den angegebenen Wert einer Funktion oder eines Skripts zurück.
 
 Run when the given message is broadcast.
---MISSING--
+Wird ausgeführt, wenn die angegebene Nachricht empfangen wurde.
 
 Broadcast the given message.
---MISSING--
+Sendet die angegebene Nachricht.
 
 Do nothing. Used to add notes and documentation.
---MISSING--
+Macht nichts. Wird zum Kommentieren und Dokumentieren genutzt.
 
 Repeat the enclosed blocks with the variable set to the current iteration number or item.
---MISSING--
+Wiederholt die umschlossenen Blöcke unter Verwendung einer Laufvariable, die auf die aktuelle Iterationsnummer oder das aktuelle Element gesetzt ist.
 
 Repeat the enclosed blocks until the condition becomes (-o) .
---MISSING--
+Wiederholt die umschlossenen Blöcke bis die Bedingung (-o) wird.
 
 Stop this task.
---MISSING--
+Beendet das Skript
 
 Stop all tasks except this one.
---MISSING--
+Beendet alle Skripte außer diesem.
 
 Wait the given number of microseconds.
---MISSING--
+Wartet die in Mikrosekunden angegebene Zeit.
 
 Report the last broadcast message received.
---MISSING--
+Gibt die zuletzt empfangene Nachricht zurück.
 
 Call the function with the given name and optional parameter list.
---MISSING--
+Ruft die Funktion mit dem angegebenen Namen und den optionalen Parametern auf.
 
 Call the function with the given name and optional parameter list and report its return value.
---MISSING--
+Ruft die Funktion mit dem angegebenen Namen sowie den optionalen Parametern auf und gibt einen Wert zurück.
 
 Report the sum of the given numbers.
---MISSING--
+Gibt die Summe der gegebenen Zahlen zurück.
 
 Report the first number minus the second.
---MISSING--
+Gibt die Differenz der beiden Zahlen zurück (erste Zahl minus zweite Zahl).
 
 Report the product of the given numbers.
---MISSING--
+Gibt das Produkt der beiden Zahlen zurück.
 
 Report the first number divided by the second.
---MISSING--
+Gibt den Quotienten der beiden Zahlen zurück (erste Zahl durch zweite Zahl).
 
 Report the remainder of dividing the first number by the second.
---MISSING--
+Gibt den Rest bei Division der ersten Zahl durch die zweite Zahl zurück.
 
 Report the absolute value of the given number (always >= 0).
---MISSING--
+Gibt den absoluten Betrag der Zahl zurück (stets >= 0).
 
 Report the minimum of the values.
---MISSING--
+Gibt das Minimum der Werte zurück.
 
 Report the maximum of the values.
---MISSING--
+Gibt das Maximum der Werte zurück.
 
 Report a randomly chosen number in the given range.
---MISSING--
+Gibt eine zufälligen Wert aus dem gegebenen Bereich zurück.
 
 Report (-o) if the first value is less than the second one.
---MISSING--
+Gibt (-o) zurück, falls der erste Wert kleiner als der zweite Wert ist.
 
 Report (-o) if the first value is less than or equal to the second one.
---MISSING--
+Gibt (-o) zurück, falls der erste Wert kleiner oder gleich dem zweiten Wert ist.
 
 Report (-o) if the two values are equal.
---MISSING--
+Gibt (-o) zurück, falls beide Werte identisch sind.
 
 Report (-o) if the two values are not equal.
---MISSING--
+Gibt (-o) zurück, falls beide Werte ungleich sind.
 
 Report (-o) if the first value is greater than or equal to the second one.
---MISSING--
+Gibt (-o) zurück, falls der erste Wert größer oder gleich dem zweiten Wert ist.
 
 Report (-o) if the first value is greater than the second one.
---MISSING--
+Gibt (-o) zurück, falls der erste Wert größer als der zweite Wert ist.
 
 Boolean constant ( (-o) or (o-) ).
---MISSING--
+Wahrheitswert ( (-o) oder (o-) ).
 
 Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
---MISSING--
+Gibt die logische Umkehrung des Wahrheitswerts ( (-o) oder (o-) ) zurück.
 
 Report (-o) if both values are (-o)
---MISSING--
+Gibt (-o) zurück, falls beide Werte (-o) sind.
 
 Report (-o) if either value is (-o)
---MISSING--
+Gibt (-o) zurück, falls mindestens einer der beiden Werte (-o) ist.
 
 Report (-o) if first input is a value of the given data type.
---MISSING--
+Gibt (-o) zurück, falls die Eingabe ein Wert des angegebenen Datentyps ist.
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
---MISSING--
+Gibt den numerischen Wert einer hexadezimalen Zeichenfolge zurück (Bereich: -0x1FFFFFFF bis 0x1FFFFFFF).
 
 Report bitwise AND of two numbers.
---MISSING--
+Gibt die bitweise UND-Verknüpfung zweier Zahlen zurück.
 
 Report bitwise OR of two numbers.
---MISSING--
+Gibt die bitweise ODER-Verknüpfung zweier Zahlen zurück.
 
 Report bitwise XOR (exclusive OR) of two numbers.
---MISSING--
+Gibt die bitweise XOR-Verknüpfung (exklusives ODER) zweier Zahlen zurück.
 
 Report bitwise inverse of the given number.
---MISSING--
+Gibt die bitweise Negation der Zahl zurück.
 
 Report the given number shifted left by the given number of bits.
---MISSING--
+Gibt die Zahl zurück, die aus der bitweisen Verschiebung der Eingabe um die angegebene Anzahl von Bits nach links entsteht.
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
---MISSING--
+Gibt die Zahl zurück, die aus der bitweisen Verschiebung der Eingabe um die angegebene Anzahl von Bits nach rechts entsteht (arithmetische Verschiebung; Vorzeichen bleibt erhalten).
 
 Set a variable to the given value.
---MISSING--
+Weist der Variable den angegebenen Wert zu.
 
 Change a variable by the given amount.
---MISSING--
+Ändert den Wert der Variable um den angegebenen Wert.
 
 Create a variable local to the containing script with the given initial value.
---MISSING--
+Erzeugt eine lokale Variable im enthaltenen Skript mit dem angegebenen Anfangswert.
 
 Report the Nth item of a list, string, or byte array.
---MISSING--
+Gibt das angegebene Element aus der Liste, der Zeichenfolge oder dem Byte-Array zurück.
 
 Report the number of items in a list, string, or byte array.
---MISSING--
+Gibt die Anzahl der Elemente der Liste, der Zeichenfolge oder des Byte-Arrays zurück.
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
---MISSING--
+Verbindet (verkettet) die angegebenen Listen, Zeichenfolgen oder Byte-Array und gibt das Ergebnis zurück.
 
 Create and report a short list containing the given items. Length limited by available stack space.
---MISSING--
+Erstellt eine kurze Liste mit den angegebenen Elementen und gibt diese zurück. Die Größe ist durch den Stack-Speicher begrenzt.
 
 Add an item to the end of a list.
---MISSING--
+Fügt ein Element an das Ende der Liste an.
 
 Replace the Nth item (or all items) of a list or byte array with the given value.
---MISSING--
+Ersetzt das angegebene Element (oder alle Elemente) in der Liste oder dem Byte-Array durch den gegebenen Wert.
 
 Delete the Nth item (or all items) of a list.
---MISSING--
+Lösche das angegebene Element (oder alle Elemente) aus der Liste.
 
 Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
---MISSING--
+Gib die Stelle des Elements in der Liste oder der Teilzeichenfolge in der Zeichenfolge zurück. Gibt -1 zurück, falls nichts gefunden.
 
 Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
---MISSING--
+Gibt eine Kopie vom angegebenen Index bis zum Ende (oder optional zum Stopindex) der Liste, der Zeichenfolge oder des Byte-Array zurück.
 
 Split the given string with the given delimiter and report the result (a list of strings).
---MISSING--
+teilt die gegebene Zeichenfolge mit dem angegebenen Trennzeichen und gibt dies als Liste von Zeichenfolgen zurück.
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
---MISSING--
+verbindet die Elemente der Liste zu einer Zeichenfolge, optional mit Trennzeichen getrennt.
 
 Report the Unicode value ("code point") of the Nth character of the given string.
---MISSING--
+Gibt den Unicode-Wert ("Codepunkt") des N-ten Zeichens der angegebenen Zeichenfolge an.
 
 Report a string containing the given Unicode value ("code point") or list of values.
---MISSING--
+Gibt eine Zeichenfolge zurück, die den angegebenen Unicode-Wert oder eine Liste von Werten enthält.
 
 Report a new list of the given length filled with zero or the optional value.
---MISSING--
+Gibt eine neue Liste der angegebenen Länge zurück, die mit Nullen oder dem optionalen Wert gefüllt ist.
 
 Report a new byte array of the given length filled with zero or the optional value.
---MISSING--
+Gibt ein neues Byte-Array der angegebenen Länge zurück, das mit Nullen oder dem optionalen Wert gefüllt ist.
 
 Report a byte array containing the UTF-8 bytes of the given string.
---MISSING--
+Gibt ein Byte-Array zurück, das die UTF-8-Bytes der angegebenen Zeichenfolge enthält.
 
 Report the number of words of memory available. Stop button frees up memory.
---MISSING--
+Gibt die Größe des verfügbaren Speichers zurück. Der Stopp-Knopf gibt Speicher frei.
 
 
