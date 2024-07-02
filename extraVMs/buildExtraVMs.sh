@@ -13,6 +13,8 @@ pio run -e pico-xrp
 cp .pio/build/pico-xrp/firmware.uf2 extraVMs/vm_pico_xrp.uf2
 pio run -e makerportV2
 python precompiled/uf2conv.py -c .pio/build/makerportV2/firmware.bin -o extraVMs/vm_makerport_v2.uf2
+pio run -e makerportV3
+python precompiled/uf2conv.py -c .pio/build/makerportV3/firmware.bin -o extraVMs/vm_makerport_v3.uf2
 pio run -e m5atom
 cp .pio/build/m5atom/firmware.bin extraVMs/vm_m5atom.bin
 

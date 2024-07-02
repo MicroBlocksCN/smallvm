@@ -20,6 +20,10 @@
 	#define Wire Wire1
 #endif
 
+#if defined(MAKERPORT_V2) || defined(MAKERPORT_V3)
+	#define MAKERPORT_ACCEL
+#endif
+
 // Override the default i2c pins on some boards
 
 #if defined(PICO_ED) || defined(XRP)
@@ -681,12 +685,12 @@ static void setAccelRange(int range) {
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_V2)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_ACCEL)
 
 #define LIS3DH_ID 25
 
-#if defined(MAKERPORT_V2)
-  // use Wire on MakerPort_v2
+#if defined(MAKERPORT_ACCEL)
+  // use Wire on MakerPort_v2/v3
   #define Wire1 Wire
   #undef LIS3DH_ID
   #define LIS3DH_ID 24
@@ -706,7 +710,7 @@ static int readAcceleration(int registerID) {
 		Wire1.endTransmission();
 		delay(2);
 		setAccelRange(0); // also disables block data update
-		#if defined(MAKERPORT_V2)
+		#if defined(MAKERPORT_ACCEL)
 			writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
 		#endif
 		accelStarted = true;
@@ -740,7 +744,7 @@ static int readTemperature() {
 
 	int adc = 0;
 
-	#if defined(MAKERPORT_V2)
+	#if defined(MAKERPORT_ACCEL)
 		int degreesC = 0;
 		uint8 regValue = readI2CReg(LIS3DH_ID, 0x23);
 		writeI2CReg(LIS3DH_ID, 0x23, regValue | 0x80); // enable block data update (needed for temperature)

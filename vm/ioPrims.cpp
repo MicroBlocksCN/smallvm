@@ -436,6 +436,14 @@ void hardwareInit() {
 	#define TOTAL_PINS 26
 	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 14};
 
+#elif defined(MAKERPORT_V3) // must come before Zero
+
+	#define BOARD_TYPE "MakerPort V3"
+	#define DIGITAL_PINS 26
+	#define ANALOG_PINS 9
+	#define TOTAL_PINS 26
+	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 15};
+
 #elif defined(MAKERPORT) // must come before Zero
 
 	#define BOARD_TYPE "MakerPort"
@@ -1079,6 +1087,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#if defined(MAKERPORT) || defined(MAKERPORT_V2)
 		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
 		if (14 == pinNum) pinNum = 8; // map pin 14 to A8
+	#endif
+	#if defined(MAKERPORT_V3)
+		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
+		if (15 == pinNum) pinNum = 8; // map pin 15 to A8
 	#endif
 
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
