@@ -29,9 +29,9 @@
 #if defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
-#elif defined(GIZMO_MECHATRONICS)
-	#define PIN_WIRE_SCL 3
-	#define PIN_WIRE_SDA 2
+#elif defined(COCUBE)
+	#define PIN_WIRE_SCL 22
+	#define PIN_WIRE_SDA 21
 #elif defined(WUKONG2040)
 	#define PIN_WIRE_SCL 17
 	#define PIN_WIRE_SDA 16
