@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 2 29 
+version 3 00 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -15,7 +15,7 @@ choices button_Menu A B
 choices attitude_Menu R P Y 
 choices move_Menu '前平移（0mm~25mm）' '后平移（-25mm~0mm）' '左平移（0mm~18mm）' '右平移（-18mm~0mm）' 
 choices angle_Menu roll pitch yaw 
-choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' '爬双层楼梯' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
 variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata '动作列表' _buttons 
@@ -391,7 +391,7 @@ to '将当前朝向设置为0' {
 }
 
 to '执行命令' foo {
-  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动ROLL,转动PITCH,转动YAW,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮,上抓,中抓,下抓,爬楼梯' ',')}
+  if (not (isType 动作列表 'list')) {动作列表 = ('[data:split]' '趴下,站起,匍匐前进,转圈,踏步,蹲起,转动ROLL,转动PITCH,转动YAW,三轴转动,撒尿,坐下,招手,伸懒腰,波浪,摇摆,乞讨,找食物,握手,鸡头,俯卧撑,张望,跳舞,调皮,上抓,中抓,下抓,爬楼梯,爬双层楼梯' ',')}
   local 'an' ('[data:find]' foo 动作列表)
   if (an == 25) {
     '_执行动作组编号' 128
@@ -401,6 +401,8 @@ to '执行命令' foo {
     '_执行动作组编号' 130
   } (an == 28) {
     '_执行动作组编号' 144
+  } (an == 29) {
+    '_执行动作组编号' 145
   } else {
     '_执行动作组编号' an
   }
