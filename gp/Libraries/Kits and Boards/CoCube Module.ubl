@@ -15,7 +15,7 @@ description 'External modules of CoCube'
   spec 'r' 'ToF distance (mm)' 'ToF distance (mm)'
   space
   spec ' ' 'attach NeoPixel' 'attach NeoPixel'
-  spec ' ' 'set all NeoPixel color' 'set all NeoPixel color _' 'color'
+  spec ' ' 'set all NeoPixels color' 'set all NeoPixels color _' 'color'
   spec ' ' 'clear NeoPixels' 'clear NeoPixels'
 
 to 'Power off module' {
@@ -62,7 +62,7 @@ to 'clear NeoPixels' {
   clearNeoPixels
 }
 
-to 'set all NeoPixel color' color {
+to 'set all NeoPixels color' color {
   neoPixelSetAllToColor color
 }
 
