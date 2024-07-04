@@ -3772,6 +3772,41 @@ Turn Right _
 Motor Stop
 电机停转
 
+Motor Break
+电机刹车
+
+#### CoCube Module
+
+Power on module
+开启外接模块电源
+
+Power off module
+关闭外接模块电源
+
+Gripper open _ milliseces
+夹爪张开 _ 毫秒
+
+ripper close  _ milliseces
+夹爪闭合 _ 毫秒
+
+Gripper release
+夹爪释放
+
+ToF connected
+ToF已连接
+
+ToF distance (mm)
+ToF距离(mm)
+
+attach NeoPixel
+连接NeoPixel
+
+set all NeoPixels color _
+设置所有NeoPixel颜色为
+
+clear NeoPixels
+清除NeoPixel显示
+
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
 4位数码管(TM1637)
