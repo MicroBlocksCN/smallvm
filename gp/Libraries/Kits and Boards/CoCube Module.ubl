@@ -1,0 +1,68 @@
+module 'CoCube Module'
+author 'Liang Shuai'
+version 1 0 
+depends NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Other/System/sensorPrims' 
+description 'External modules of CoCube'
+
+  spec ' ' 'Start Connection' 'Power on module'
+  spec ' ' 'End Connection' 'Power off module'
+  space
+  spec ' ' 'Gripper open' 'Gripper open _ milliseces' 'num' 100
+  spec ' ' 'Gripper close' 'Gripper close  _ milliseces' 'num' 100
+  spec ' ' 'Gripper release' 'Gripper release'
+  space
+  spec 'r' 'ToF connected' 'ToF connected'
+  spec 'r' 'ToF distance (mm)' 'ToF distance (mm)'
+  space
+  spec ' ' 'attach NeoPixel' 'attach NeoPixel'
+  spec ' ' 'set all NeoPixel color' 'set all NeoPixel color _' 'color'
+  spec ' ' 'clear NeoPixels' 'clear NeoPixels'
+
+to 'End Connection' {
+  digitalWriteOp 13 false
+}
+
+to 'Gripper close' duration {
+  '[sensors:i2cSetPins]' 21 22
+  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '01')
+  waitMillis duration
+  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
+}
+
+to 'Gripper open' duration {
+  '[sensors:i2cSetPins]' 21 22
+  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '02')
+  waitMillis duration
+  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
+}
+
+to 'Gripper release' {
+  '[sensors:i2cSetPins]' 21 22
+  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
+}
+
+to 'Start Connection' {
+  digitalWriteOp 13 true
+}
+
+to 'ToF connected' {
+  '[sensors:i2cSetPins]' 21 22
+  return ('VL53L0X connected')
+}
+
+to 'ToF distance (mm)' {
+  return ('VL53L0X distance (mm)')
+}
+
+to 'attach NeoPixel' {
+  neoPixelAttach 64 22
+}
+
+to 'clear NeoPixels' {
+  clearNeoPixels
+}
+
+to 'set all NeoPixel color' color {
+  neoPixelSetAllToColor color
+}
+
