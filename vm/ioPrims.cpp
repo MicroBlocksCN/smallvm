@@ -663,7 +663,7 @@ void hardwareInit() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
-		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 		
 #elif defined(ARDUINO_ESP32_PICO)
