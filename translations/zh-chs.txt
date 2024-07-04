@@ -3775,6 +3775,12 @@ Motor Stop
 Motor Break
 电机刹车
 
+Rotate to Angle _ Speed _
+转向角度 _ 速度 _
+
+Rotate to Target X _ Y _ Speed _
+转向目标点 X _ Y _ 速度 _
+
 #### CoCube Module
 
 Power on module
