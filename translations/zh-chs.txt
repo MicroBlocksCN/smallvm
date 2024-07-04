@@ -3793,19 +3793,19 @@ Gripper release
 夹爪释放
 
 ToF connected
-ToF已连接
+ToF 已连接
 
 ToF distance (mm)
-ToF距离(mm)
+ToF 距离(mm)
 
 attach NeoPixel
 连接NeoPixel
 
 set all NeoPixels color _
-设置所有NeoPixel颜色为
+设置所有 NeoPixels 的颜色为 _
 
 clear NeoPixels
-清除NeoPixel显示
+关闭 NeoPixels
 
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
