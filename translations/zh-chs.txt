@@ -3786,7 +3786,7 @@ Power off module
 Gripper open _ milliseces
 夹爪张开 _ 毫秒
 
-ripper close  _ milliseces
+Gripper close  _ milliseces
 夹爪闭合 _ 毫秒
 
 Gripper release
@@ -3799,7 +3799,7 @@ ToF distance (mm)
 ToF 距离(mm)
 
 attach NeoPixel
-连接NeoPixel
+连接 NeoPixel
 
 set all NeoPixels color _
 设置所有 NeoPixels 的颜色为 _
