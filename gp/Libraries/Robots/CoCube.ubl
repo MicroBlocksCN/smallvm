@@ -1,7 +1,7 @@
 module CoCube
 author '梁帅'
 version 1 4 
-depends Tone Ringtone TFT Display 'Other/System/miscPrims' 
+depends Tone Ringtone TFT Display
 tags 'cocube机器人' 
 description ''
 variables speed error_angle target_angle 
@@ -26,8 +26,8 @@ variables speed error_angle target_angle
   spec ' ' 'Motor Stop' 'Motor Stop'
   spec ' ' 'Motor Break' 'Motor Break'
   space
-  spec ' ' 'Rotate to Angle' 'Rotate to Angle _ Speed _' 'auto auto' 0 '10'
-  spec ' ' 'Rotate to Target' 'Rotate to Target X _ Y _ Speed _' 'auto auto auto' '10' '10' '10'
+  spec ' ' 'Rotate to Angle' 'Rotate to Angle _ Speed _' 'num num' 0 '10'
+  spec ' ' 'Rotate to Target' 'Rotate to Target X _ Y _ Speed _' 'num num num' '10' '10' '10'
 
 to 'Battery Percentage' {
   return (minimum (((13 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 33000) / 90) 100)
@@ -94,14 +94,14 @@ to 'Rotate to Angle' angle speed {
     } (error_angle < -180) {
       error_angle += 360
     } else {
-      if (error_angle > 1) {
-        'Turn Left' speed
-      } (error_angle < -1) {
-        'Turn Right' speed
-      } else {
-        'Motor Break'
-        return 0
-      }
+    }
+    if (error_angle > 1) {
+      'Turn Left' speed
+    } (error_angle < -1) {
+      'Turn Right' speed
+    } else {
+      'Motor Break'
+      return 0
     }
   }
 }
