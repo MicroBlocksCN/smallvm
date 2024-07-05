@@ -1,10 +1,10 @@
 module CoCube
 author '梁帅'
 version 1 4 
-depends Tone Ringtone TFT Display
+depends Tone Ringtone TFT Display 
 tags 'cocube机器人' 
 description ''
-variables speed error_angle target_angle 
+variables speed error_angle target_angle error_y angle error_distance error_x 
 
   spec 'r' 'Battery Percentage' 'Battery Percentage'
   space
@@ -28,6 +28,9 @@ variables speed error_angle target_angle
   space
   spec ' ' 'Rotate to Angle' 'Rotate to Angle _ Speed _' 'num num' 0 '10'
   spec ' ' 'Rotate to Target' 'Rotate to Target X _ Y _ Speed _' 'num num num' '10' '10' '10'
+  spec ' ' 'Move to Target X _ Y _ Speed _' 'Move to Target X _ Y _ Speed _' 'num num num' 10 10 50
+  spec ' ' '_calculate_angle_error_' '_calculate_angle_error_ angle _' 'num' '10'
+  spec ' ' '_calculate_distance_error target_x _ target_y _' '_calculate_distance_error Target_X _ Target_Y _' 'num num' 10 10
 
 to 'Battery Percentage' {
   return (minimum (((13 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 33000) / 90) 100)
@@ -86,15 +89,37 @@ to 'Move Forward' speed {
   ControlRightMotor speed
 }
 
+to 'Move to Target X _ Y _ Speed _' target_x target_y speed {
+  forever {
+    comment 'calculate error'
+    '_calculate_distance_error target_x _ target_y _' target_x target_y
+    target_angle = (('[misc:atan2]' error_y error_x) / 100)
+    '_calculate_angle_error_' target_angle
+    comment 'angle_error_ > 10° : rotate to Target'
+    if (or rotate_mode_ (and ((absoluteValue error_angle) > 10) (error_distance > 25))) {
+      rotate_mode_ = 1
+      'Rotate to Target' target_x target_y 10
+    }
+    comment 'angle_error_ <= 10° : Move to Target'
+    if (not rotate_mode_) {
+      if (error_distance < 5) {
+        'Motor Break'
+        return 0
+      }
+    }
+    comment 'P control'
+    if (and (error_distance > 5) (error_distance < 100)) {
+      ControlLeftMotor (speed + ((speed * error_angle) / 25))
+      ControlRightMotor (speed - ((speed * error_angle) / 25))
+    } else {
+      'Move Forward' speed
+    }
+  }
+}
+
 to 'Rotate to Angle' angle speed {
   forever {
-    error_angle = ((angle % 360) - (position_Yaw))
-    if (error_angle > 180) {
-      error_angle += -360
-    } (error_angle < -180) {
-      error_angle += 360
-    } else {
-    }
+    '_calculate_angle_error_' angle
     if (error_angle > 1) {
       'Turn Left' speed
     } (error_angle < -1) {
@@ -119,6 +144,21 @@ to 'Turn Left' speed {
 to 'Turn Right' speed {
   ControlLeftMotor speed
   ControlRightMotor (0 - speed)
+}
+
+to '_calculate_distance_error target_x _ target_y _' target_x target_y {
+  error_x = (target_x - (position_X))
+  error_y = (target_y - (position_Y))
+  error_distance = ('[misc:sqrt]' ((error_x * error_x) + (error_y * error_y)))
+}
+
+to '_calculate_angle_error_' angle {
+  error_angle = ((angle % 360) - (position_Yaw))
+  if (error_angle > 180) {
+    error_angle += -360
+  } (error_angle < -180) {
+    error_angle += 360
+  }
 }
 
 to 'draw AprilTag on TFT' id {
