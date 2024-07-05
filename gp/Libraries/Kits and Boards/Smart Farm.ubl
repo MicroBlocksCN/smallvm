@@ -1,25 +1,31 @@
 module 'Smart Farm'
-author 'Josep Ferràndiz & José Garcia'
-version 1 1 
-depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo 'Distance (HC-SR04)' 
-choices smartfarm_onoff on off 
-choices smartfarm_startstop start stop 
-choices smartfarm_fan clockwise 'counter-clockwise' stop 
-choices smartfarm_trapdoor open close 
-choices smartfarm_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
-choices smartfarm_power 'voltage (V)' 'current (mA)' 'power (mW)' 
-description 'Library for ESP32 Smart Farm
-Connexion values----------------------------------
+author 'Josep Ferràndiz'
+version 1 2
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo 'Distance (HC-SR04)'
+choices smartfarm_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
+choices smartfarm_startstop start stop
+choices smartfarm_fan clockwise 'counter-clockwise' stop
+choices smartfarm_trapdoor open close
+choices smartfarm_power 'voltage (V)' 'current (mA)' 'power (mW)'
+choices smartfarm_onoff on off
+description 'Library for Keyestudio ESP32 IoT Control Smart Farm Starter Kit
+
+Pin Connection Values
+------------------------------------------
 Fan: -IN io18, +IN io19    Led: io27
-Steam sensor: io35         Relay: io25
+Steam sensor: io35         Relay (water pump): io25
 PIR: io23                         Light Sensor: io34
-Trigger: io12                    Echo: io13
 Button: io5                       Water level: io4
 DHT11: io17                    Buzzer: io16
 Servo (window): io14      Soil moisture: io2
-RFID: I2C                        LCD: I2C
---------------------------------------------------
-'
+LCD display: I2C
+
+HC-SR04 ultrasound distance sensor:
+Trigger: io12                    Echo: io13
+-------------------------------------------
+
+https://shop.innovadidactic.com/ca/standard-placas-shields-y-kits/1666-keyestudio-kit-smart-farm-para-arduino-con-placa-esp32-steamakers.html
+https://www.keyestudio.com/products/keyestudio-esp32-iot-control-smart-farm-starter-kit-for-arduino-scratch-30-graphical-programming'
 
   spec ' ' 'smartFarm_setFan' 'Farm fan _' 'menu.smartfarm_fan' 'clockwise'
   spec ' ' 'smartFarm_displayText' 'Farm display _ in line _' 'auto auto' 'ESP32 Smart Farm' 1

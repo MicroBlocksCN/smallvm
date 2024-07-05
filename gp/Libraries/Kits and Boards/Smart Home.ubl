@@ -1,28 +1,30 @@
 module 'Smart Home'
-author 'Josep Ferràndiz'
-version 1 1 
-depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo NeoPixel 'RFID (RC522)' 
-choices smarthome_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
-choices smarthome_window open close 
-choices smarthome_onoff on off 
-choices smarthome_power 'voltage (V)' 'current (mA)' 'power (mW)' 
-choices smarthome_lr left right 
-choices smarthome_fan clockwise 'counter-clockwise' stop 
-description 'Library for Keyestudio IoT Smart Home Kit for ESP32
+author 'Josep Ferràndiz & José García'
+version 1 2
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo NeoPixel 'RFID (RC522)'
+choices smarthome_fan clockwise 'counter-clockwise' stop
+choices smarthome_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
+choices smarthome_onoff on off
+choices smarthome_power 'voltage (V)' 'current (mA)' 'power (mW)'
+choices smarthome_lr left right
+choices smarthome_window open close
+description 'Library for Keyestudio IoT Smart Home Kit for ESP32 STEAMakers
 
-Connexion values----------------------------------
+Pin Connection Values
+----------------------------------
 Fan: -IN io18, +IN io19    Led: io12
-Steam sensor: io34         NeoPixel (4 leds): io26
-PIR: 14                            Gas sensor: io23
+Steam sensor: io34         NeoPixel (4 leds): io4
+PIR: io14                         Gas sensor: io23
 Left button: io16              Right button: io27
 DHT11: io17                    Buzzer: io25
 Servo (window): io5        Servo (door): io13
 RFID: I2C                        LCD: I2C
---------------------------------------------------
+-----------------------------------
 
-https://docs.keyestudio.com/projects/KS5009/en/latest/docs/index.html#
+https://shop.innovadidactic.com/ca/standard-placas-shields-y-kits/1626-keyestudio-kit-smart-home-para-arduino-con-placa-esp32-steamakers-8436574314069.html
+https://www.keyestudio.com/products/keyestudio-esp32-smart-home-kit-for-esp32-diy-starter-kit-edu
 '
-variables _smarthomeInitialized 
+variables _smarthomeInitialized
 
   spec ' ' 'smarthome_setFan' 'Home fan _' 'menu.smarthome_fan' 'clockwise'
   spec ' ' 'smarthome_displayText' 'Home display _ in line _' 'str num' 'ESP32 Smart Home' 1
@@ -49,7 +51,7 @@ to '_initialize' {
   if (not _smarthomeInitialized) {
     local '_pinBuzzer' 25
     'attach buzzer to pin' _pinBuzzer
-    local '_pinNeopixel' 26
+    local '_pinNeopixel' 4
     neoPixelAttach 4 _pinNeopixel
     local '_addrRFID' 40
     rc522_initialize_I2C _addrRFID
