@@ -3781,6 +3781,15 @@ Rotate to Angle _ Speed _
 Rotate to Target X _ Y _ Speed _
 转向目标点 X _ Y _ 速度 _
 
+Move to Target X _ Y _ Speed _
+移动到目标点 X _ Y _ 速度 _
+
+_calculate_angle_error_ angle _
+_计算角度误差_ 目标角度 _
+
+_calculate_distance_error Target_X _ Target_Y _
+_计算距离误差 目标X _ Y _
+
 #### CoCube Module
 
 Power on module
