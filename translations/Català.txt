@@ -1235,40 +1235,40 @@ tisores
 # OLED Graphics library
 
 initialize i2c _ address(hex) _ reset pin# _ flip _
---MISSING--
+inicialitzar i2c _ adreça(hex) _ reset pin# _ girar _
 
 initialize spi _ d/c pin# _ reset pin# _ flip _
---MISSING--
+inicialitzar spi _ d/c pin# _ reset pin# _ girar _
 
 write _ at x _ y _ inverse _
---MISSING--
+mostrar _ a x _ y _ invertir _
 
 show display buffer
---MISSING--
+mostrar memòria intermèdia de visualització
 
 clear
---MISSING--
+netejar
 
 set contrast (1-4) _
---MISSING--
+configurar el contrast (1-4) _
 
 draw circle at x _ y _ radius _ erase _
---MISSING--
+dibuixar cercle en x _ i _ radi _ esborrar _
 
 draw image _ at x _ y _
---MISSING--
+dibuixar la imatge _ a x _ y _
 
 draw line from x _ y _ to x _ y _ erase _
---MISSING--
+dibuixar una línia de x _ y _ a x _ y _ esborrar _
 
 draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
---MISSING--
+dibuixar un rectangle x _ y _ amplada _ alçada _ esborrar _ arrodoniment (3-15) _
 
 fill rectangle x _ y _ w _ h _ erase _
---MISSING--
+dibuixar un rectangle sòlid x _ y _ amplada _ alçada _ esborrar _
 
 _flip display top _
---MISSING--
+_girar la part superior de la pantalla _
 
 make image _
 --MISSING--
@@ -1277,13 +1277,13 @@ set pixel x _ y _ erase _
 --MISSING--
 
 set video _
---MISSING--
+configurar el vídeo _
 
 cursor location
---MISSING--
+posició del cursor
 
 defer display updates
---MISSING--
+ajornar les actualitzacions de la pantalla
 
 ####
 # TFT display library
@@ -1822,9 +1822,6 @@ efecte 2
 play MIDI note _ for _ ms on channel _ volume _
 toca nota MIDI _ durant _ ms al canal _ volum _
 
-stop all notes on channel _
-atura totes les notes al canal _
-
 set MIDI note _ to _ on channel _ volume _
 posa la nota MIDI _ a _ al canal _ volum _
 
@@ -1999,13 +1996,13 @@ hihat for _ ms on DAC pin _
 # Play chords on 3 digital pins
 
 Square Wave Chords
---MISSING--
+Acords d'onda quadrada
 
 play chord _ for _ ms
---MISSING--
+reproduir acord _ durant _ ms
 
 set digital chord pins _ _ _
---MISSING--
+establir pins digitals _ _ _ per a acord
 
 ####
 # Turtle geometry library
@@ -2289,13 +2286,13 @@ bme280 humidity
 humitat del bme280
 
 bmx280 set base altitude _ meters
---MISSING--
+bmx280 estableix l'altitud de referència en _ metres
 
 bmx280 altitude (cm)
---MISSING--
+bmx280 altitud (cm)
 
 bmx280 altitude (feet)
---MISSING--
+bmx280 altitud (peus)
 
 ####
 # TCS34725 color sensor
@@ -2763,7 +2760,7 @@ Farm toca la nota _ a l'octava _ durant _ ms
 Farm set light _
 Farm _ el llum
 
-Farm watter pump _
+Farm water pump _
 Farm _ la bomba d'aigua
 
 Farm temperature ºC
@@ -2795,6 +2792,9 @@ Farm nivell de vapor
 
 Farm electric consumption _
 Farm consum elèctric _
+
+####
+# ESP32 Smart Home
 
 Home fan _
 Home _ el ventilador
@@ -2932,25 +2932,25 @@ port remot UDP
 # WiFi Radio
 
 wifi send number _
---MISSING--
+wifi envia numero _
 
 wifi send string _
---MISSING--
+wifi envia text _
 
 wifi send pair _ = _
---MISSING--
+wifi envia parell _ = _
 
 wifi message received?
---MISSING--
+wifi missatge rebut?
 
 wifi last number
---MISSING--
+wifi últim número
 
 wifi last string
---MISSING--
+wifi últim text
 
 wifi set group _ (0-255)
---MISSING--
+wifi establir el grup _ (0-255)
 
 ####
 # Cutebot
@@ -3114,62 +3114,61 @@ Octopus
 --MISSING--
 
 Octopus LED pin _ toggle to _
---MISSING--
+Octopus pin LED _ canviar a _
 
 Octopus LED pin _ brightness _ %
---MISSING--
+Octopus pin LED _ brillantor al _ %
 
 Octopus motor fan pin _ speed to _ %
---MISSING--
+Octopus motor del ventilador al pin _ velocitat al _ %
 
 Octopus 180° servo pin _ angle to _ ° (0~180)
---MISSING--
+Octopus servo de 180° al pin _ angle a _ ° (0~180)
 
 Octopus sonar trig _ echo _ distance (cm)
---MISSING--
+Octopus sensor de distància (cm) trigger _ echo _
 
 Octopus value of light intensity (Lux) at pin _
---MISSING--
+Octopus valor de la intensitat lluminosa (Lux) al pin _
 
 Octopus value of DHT11 temperature (°C) at pin _
---MISSING--
+Octopus temperatura (°C) del DHT11 al pin _
 
 Octopus value of DHT11 humidity (0~100) at pin _
---MISSING--
+Octopus humitat (0~100) del DHT11 al pin _
 
 Octopus value of water level (0~40mm) at pin _
---MISSING--
+Octopus nivell d'aigua (0~40mm) al pin _
 
 Octopus value of trimpot (0~1023) at pin _
---MISSING--
+Octopus valor del potenciòmetre (0~1023) al pin _
 
 Octopus value of noise (dB) at pin _
---MISSING--
+Octopus nivell de so (dB) al pin _
 
 Octopus OLED show _ at x _ y _
---MISSING--
+Octopus OLED mostra _ a les coordenades x _ y _
 
 Octopus OLED clear
---MISSING--
+Octopus esborra pantalla OLED
 
 Octopus OLED draw pixel x _ y _
---MISSING--
+Octopus OLED pinta un píxel a les coordenades x _ y _
 
 Octopus OLED draw line from x _ y _ to x _ y _
---MISSING--
+Octopus dibuixa una línia des de les coordenades x _ y _ a x _ y _ a la pantalla OLED
 
 Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
---MISSING--
+Octopus OLED dibuixa un rectangle x _ y _ amplada _ alçada _ arrodonit _ (3~15)
 
 Octopus OLED fill rectangle x _ y _ w _ h _
---MISSING--
+Octopus OLED dibuixa un rectangle sòlid x _ y _ amplada _ alçada _
 
 Octopus OLED draw circle x _ y _ radius _
---MISSING--
+Octopus OLED dibbuixa un cercle x _ y _ radi _
 
 Octopus OLED fill circle x _ y _ radius _
---MISSING--
-
+Octopus OLED dibbuixa un cercle sòlid x _ y _ radi _
 
 ####
 # OctoStudio
@@ -4285,6 +4284,7 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
+
 
 
 
