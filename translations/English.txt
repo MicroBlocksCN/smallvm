@@ -6,190 +6,169 @@
 #########################
 
 Output
-Ausgabe
+Output
 
 set user LED _
-setze Nutzer-LED _
+set user LED _
 
 say _
-sage _
+say _
 
 graph _
-Diagramm _
+graph _
 
 Input
-Eingabe
+Input
 
 button A
-Knopf A
+button A
 
 button B
-Knopf B
+button B
 
 timer
-Stoppuhr
+timer
 
 reset timer
-Stoppuhr zurücksetzen
-
-seconds
-Sekunden
+reset timer
 
 microseconds
-Mikrosekunden
+microseconds
 
 milliseconds
-Millisekunden
+milliseconds
 
 board type
-Board-Typ
-
-BLE id
-BLE-ID
-
-BLE connected
-BLE verbunden
-
-version
-Version
-
-milliseconds since _
-Millisekunden seit _
-
-microseconds since _
-Mikrosekunden seit _
-
-end time _
-endet _
+board type
 
 connected to IDE
-mit IDE verbunden
+connected to IDE
 
 Pins
 Pins
 
 read digital pin _
-lies digitalen Pin _
+read digital pin _
 
 read analog pin _
-lies analogen Pin _
+read analog pin _
 
 pullup _
 pullup _
 
 set digital pin _ to _
-setze digitalen Pin _ auf _
+set digital pin _ to _
 
 set pin _ to _
-setze Pin _ auf _
+set pin _ to _
 
 analog pins
-analoge Pins
+analog pins
 
 digital pins
-digitale Pins
+digital pins
 
 Control
-Steuerung
+Control
 
 when started
-Wenn gestartet
+when started
 
 when button _ pressed
-Wenn Knopf _ gedrückt
+when button _ pressed
 
 forever _
-fortlaufend _
+forever _
 
 repeat _ _
-wiederhole _ mal _
+repeat _ _
 
 wait _ millisecs
-warte _ Millisekunden
+wait _ millisecs
 
 if _ _
-falls _ _
+if _ _
 
 if _ _ else _
-falls _ _ sonst _
+if _ _ else _
 
 else if _ _
-sonst falls _ _
+else if _ _
 
 else
-sonst
+else
 
 when _
-Wenn _
+when _
 
 wait until _
-warte bis _
+wait until _
 
 wait _ microsecs
-warte _ Mikrosekunden
+wait _ microsecs
 
 return _
-berichte _
+return _
 
 when _ received
-Wenn _ empfangen
+when _ received
 
 go!
-los!
+go!
 
 broadcast _
-sende _
+broadcast _
 
 comment _
-Kommentar _
+comment _
 
 How this works...
-Es funktioniert so ...
+How this works...
 
 range _ to _
-Bereich von _ bis _
+range _ to _
 
 by _
-Schrittweite _
+by _
 
 for _ in _ _
-für _ in _ _
+for _ in _ _
 
 repeat until _ _
-wiederhole bis _ _
+repeat until _ _
 
 stop this task
-stoppe dieses Skript
+stop this task
 
 stop other tasks
-stoppe andere Skripte
+stop other tasks
 
 stop all
-stoppe alles
+stop all
 
 last message
-letzte Nachricht
+last message
 
 arg _ default _
-Argument _ Standard _
+arg _ default _
 
 default
-Standardwert
+default
 
 call _
-rufe _
+call _
 
 function name
-Funktionsname
+function name
 
 parameter list
-Parameterliste
+parameter list
 
 with _
-mit _
+with _
 
 Operators
-Operatoren
+Operators
 
 _ mod _
 _ mod _
@@ -204,258 +183,258 @@ max _ _
 max _ _
 
 random _ to _
-Zufallszahl von _ bis _
+random _ to _
 
 not _
-nicht _
+not _
 
 _ and _
-_ und _
+_ and _
 
 and _
-und _
+and _
 
 _ or _
-_ oder _
+_ or _
 
 or _
-oder _
+or _
 
 _ is a _
-_ ist ein(e) _
+_ is a _
 
 convert _ to _
-wandle _ in _ um
+convert _ to _
 
 boolean
-Wahrheitswert
+boolean
 
 number
-Zahl
+number
 
 string
-Zeichenfolge
+string
 
 list
-Liste
+list
 
 byte array
-Byte-Array
+byte array
 
 Advanced:
-Fortgeschrittene Blöcke:
+Advanced:
 
 rescale _ from ( _ , _ ) to ( _ , _ )
-verteile _ von ( _ , _ ) auf ( _ , _ )
+rescale _ from ( _ , _ ) to ( _ , _ )
 
 hex _
 hex _
 
 Variables
-Variablen
+Variables
 
 # Buttons on top of "Variables" category
 
 Add a variable
-Variable hinzufügen
+Add a variable
 
 Delete a variable
-Variable löschen
+Delete a variable
 
 # New variable dialog
 
 New variable name?
-Neuer Variablenname?
+New variable name?
 
 set _ to _
-setze _ auf _
+set _ to _
 
 change _ by _
-ändere _ um _
+change _ by _
 
 initialize local _ to _
-initialisiere lokale _ mit _
+initialize local _ to _
 
 Data
-Daten
+Data
 
 list
-Liste
+list
 
 cat
-Katze
+cat
 
 dog
-Hund
+dog
 
 bird
-Vogel
+bird
 
 fish
-Fisch
+fish
 
 length of _
-Länge von _
+length of _
 
 item _ of _
-Element _ von _
+item _ of _
 
 replace item _ of list _ with _
-ersetze Element _ in Liste _ durch _
+replace item _ of list _ with _
 
 delete item _ of list _
-entferne Element aus Liste _
+delete item _ of list _
 
 add _ to list _
-füge _ zu Liste _ hinzu
+add _ to list _
 
 join _ _
-verbinde _ _
+join _ _
 
 copy _ from _
-kopiere _ beginnend bei _
+copy _ from _
 
 smiles
 smiles
 
 to _
-bis _
+to _
 
 find _ in _
-suche _ in _
+find _ in _
 
 starting at _
-beginnend bei _
+starting at _
 
 join items of list _
-verbinde Elemente von Liste _
+join items of list _
 
 separator _
-Separator _
+separator _
 
 unicode _ of _
-Unicode _ von _
+unicode _ of _
 
 string from unicode _
-Zeichenfolge aus Unicode _
+string from unicode _
 
 new list length _
-neue Liste Länge _
+new list length _
 
 new byte array _
-neues Byte-Array _
+new byte array _
 
 as byte array _
-als Byte-Array _
+as byte array _
 
 aByteListOrString
-ByteListeOderZeichenfolge
+aByteListOrString
 
 with all _
-mit allen _
+with all _
 
 free memory
-freier Speicher
+free memory
 
 all
-alle
+all
 
 last
-letztes
+last
 
 random
-zufälliges
+random
 
 split _ by _
-trenne _ nach _
+split _ by _
 
 My Blocks
-Meine Blöcke
+My Blocks
 
 Generic
-Allgemein
+Generic
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
-Füge Befehlsblock hinzu
+Add a command block
 
 Add a reporter block
-Füge Rückgabeblock hinzu
+Add a reporter block
 
 # Make a block dialog
 
 Enter function name:
-Gib der Funktion einen Namen:
+Enter function name:
 
 Comm
-Kommunikation
+Comm
 
 i2c get device _ register _
-i2c lies Gerät _ Register _
+i2c get device _ register _
 
 i2c set device _ register _ to _
-i2c setze Gerät _ Register _ auf _
+i2c set device _ register _ to _
 
 i2c device _ read list _
-i2c Gerät _ lies Liste _
+i2c device _ read list _
 
 i2c device _ write list _
-i2c Gerät _ schreibe Liste _
+i2c device _ write list _
 
 spi send _
-spi sende _
+spi send _
 
 spi receive
-spi empfange
+spi receive
 
 spi setup speed _
-spi setze Geschwindigkeit _
+spi setup speed _
 
 mode _
-Modus _
+mode _
 
 rpi channel _
-rpi Kanal _
+rpi channel _
 
 spi exchange bytes _
-spi tausche Bytes _
+spi exchange bytes _
 
 aByteArray
-Byte-Array
+aByteArray
 
 serial open _ baud
-serial öffne mit _ Baud
+serial open _ baud
 
 serial close
-serial schließen
+serial close
 
 serial read
-serial lies
+serial read
 
 serial write _
-serial schreibe _
+serial write _
 
 anIntegerStringListOrByteArray
-GanzzahlZeichenfolgeListeOderByteArray
+anIntegerStringListOrByteArray
 
 serial write _ starting at _
-serial schreibe _ starte bei _
+serial write _ starting at _
 
 aStringListOrByteArray
-ZeichenfolgeListeOderByteArray
+aStringListOrByteArray
 
 soft serial write byte _ pin _ baud _
-soft serial schreibe Byte _ Pin _ Baud _
+soft serial write byte _ pin _ baud _
 
 print _
-drucke _
+print _
 
 no op
-kein Befehl
+no op
 
 ignore
-ignoriere
+ignore
 
 ##############
 # Primitives #
@@ -464,113 +443,113 @@ ignoriere
 # These are all mostly hidden from end users
 
 draw shape _ at x _ y _
-zeichne Form _ bei x _ y _
+draw shape _ at x _ y _
 
 shape for letter _
-Form für Buchstabe _
+shape for letter _
 
 send NeoPixel rgb _
-sende NeoPixel RGB _
+send NeoPixel rgb _
 
 has tone support
-unterstützt Klänge
+has tone support
 
 play tone pin _ frequency _
-spiele Ton Pin _ Frequenz _
+play tone pin _ frequency _
 
 has WiFi support
-unterstützt WiFi
+has WiFi support
 
 start WiFi _ password _
-starte WiFi _ Passwort _
+start WiFi _ password _
 
 stop WiFi
-stoppe WiFi
+stop WiFi
 
 WiFi status
-WiFi-Status
+WiFi status
 
 my IP address
-meine IP-Adresse
+my IP address
 
 radio send number _
-Radio sende Zahl _
+radio send number _
 
 radio send string _
-Radio sende Zeichenfolge _
+radio send string _
 
 Hello!
-Hallo!
+Hello!
 
 radio send pair _ = _
-Radio sende Paar _ = _
+radio send pair _ = _
 
 light
-Licht
+light
 
 radio message received?
-Radio Nachricht erhalten?
+radio message received?
 
 radio last number
-Radio letzte Zahl
+radio last number
 
 radio last string
-Radio letzte Zeichenfolge
+radio last string
 
 radio last message type
-Radio Typ der letzten Nachricht
+radio last message type
 
 radio set group _ (0-255)
-radio setze Gruppe _ (0-255)
+radio set group _ (0-255)
 
 radio set channel (0-83) _
-Radio setze Kanal _ (0-83)
+radio set channel (0-83) _
 
 radio set power (0-7) _
-Radio setze Stärke _ (0-7)
+radio set power (0-7) _
 
 radio last signal strength
-Radio letzte Signalstärke
+radio last signal strength
 
 radio receive packet _
-Radio empfange Paket _
+radio receive packet _
 
 radio send packet _
-Radio sende Paket _
+radio send packet _
 
 disable radio
-deaktiviere Radio
+disable radio
 
 #############
 # Libraries #
 #############
 
 Basic Sensors
-Einfache Sensoren
+Basic Sensors
 
 tilt x
-Neigung x
+tilt x
 
 tilt y
-Neigung y
+tilt y
 
 tilt z
-Neigung z
+tilt z
 
 acceleration
-Beschleunigung
+acceleration
 
 light level
-Lichtstärke
+light level
 
 temperature (°C)
-Temperatur (°C)
+temperature (°C)
 
 magnetic field
-Magnetfeldstärke
+magnetic field
 
 set acceleration range _ g = 100
-setze Beschleunigungsbereich auf _ g = 100
+set acceleration range _ g = 100
 
 ####
 # NeoPixel library
@@ -579,43 +558,43 @@ NeoPixel
 NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-setze NeoPixel _ _ _ _ _ _ _ _ _ _
+set NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-lösche alle NeoPixel
+clear NeoPixels
 
 set NeoPixel _ color _
-setze NeoPixel _ Farbe _
+set NeoPixel _ color _
 
 set all NeoPixels color _
-setze alle NeoPixel auf Farbe _
+set all NeoPixels color _
 
 rotate NeoPixels by _
-rotiere NeoPixel um _
+rotate NeoPixels by _
 
 brighten NeoPixel _ by _
-helle NeoPixel _ um _ auf
+brighten NeoPixel _ by _
 
 brighten all NeoPixels by _
-helle alle NeoPixel um _ auf
+brighten all NeoPixels by _
 
 color r _ g _ b _ (0-255)
-Farbe R _ G _ B _ (0-255)
+color r _ g _ b _ (0-255)
 
 random color
-zufällige Farbe
+random color
 
 attach _ LED NeoPixel strip to pin _
-verbinde _ NeoPixel-Streifen mit Pin _
+attach _ LED NeoPixel strip to pin _
 
 has white _
-mit Weiß _
+has white _
 
 PIR
 PIR
 
 PIR at pin _ detected movement
-PIR an PIN _ Bewegung erkennt
+PIR at pin _ detected movement
 
 #### NeoPanel library
 
@@ -623,103 +602,103 @@ NeoPanel
 NeoPanel
 
 attach NeoPixel panel width _ height _ at pin _
-verbinde NeoPixel-Panel Breite _ Höhe _ an Pin _
+attach NeoPixel panel width _ height _ at pin _
 
 NeoPanel set x _ y _ color _
-NeoPanel setze x _ y _ Farbe _
+NeoPanel set x _ y _ color _
 
 NeoPanel fill column _ color _
-NeoPanel fülle Spalte _ Farbe _
+NeoPanel fill column _ color _
 
 NeoPanel fill row _ color _
-NeoPanel fülle Zeile _ Farbe _
+NeoPanel fill row _ color _
 
 NeoPanel fill rectangle x _ y _ width _ height _ color _
-NeoPanel fülle Rechteck x _ y _ Breite _ Höhe _ Farbe _
+NeoPanel fill rectangle x _ y _ width _ height _ color _
 
 NeoPanel draw text _ at x _ y _ color _
-NeoPanel schreibe Text _ auf x _ y _ Farbe _
+NeoPanel draw text _ at x _ y _ color _
 
 NeoPanel draw BMP file _ at x _ y _
-NeoPanel zeichne BMP-Datei _ auf x _ y _
+NeoPanel draw BMP file _ at x _ y _
 
 ####
 # Microphone library
 
 Microphone
-Mikrofon
+Microphone
 
 microphone
-Mikrofon
+microphone
 
 turn on microphone
-schalte Mikrofon ein
+turn on microphone
 
 loudness
-Lautstärke
+loudness
 
 clap count
-Klattschzählwert
+clap count
 
 set clap threshold _
-setze Klattschschwellwert _
+set clap threshold _
 
 estimate clap threshold
---MISSING--
+estimate clap threshold
 
 ####
 # Citilab ED1 board libraries
 
 ED1 Stepper Motor
-ED1 Schrittmotor
+ED1 Stepper Motor
 
 move motor _ _ steps _
-bewege Motor _ _ Schritte _
+move motor _ _ steps _
 
 move motor 1 _ and motor 2 _ _ steps
-bewege Motor 1 _ und Motor 2 _ _ Schritte
+move motor 1 _ and motor 2 _ _ steps
 
 move motor _ angle _ °
-bewege Motor _ Winkel _ °
+move motor _ angle _ °
 
 move motor _ _ complete turns
-bewege Motor _ _ komplette Runden
+move motor _ _ complete turns
 
 stop steppers
-stoppe Schrittmotoren
+stop steppers
 
 clockwise
-im Uhrzeigersinn
+clockwise
 
 counter-clockwise
-gegen Uhrzeigersinn
+counter-clockwise
 
 ED1 Buttons
-ED1 Knöpfe
+ED1 Buttons
 
 button OK
-Knopf OK
+button OK
 
 button X
-Knopf X
+button X
 
 button up
-Knopf Pfeil nach oben
+button up
 
 button down
-Knopf Pfeil nach unten
+button down
 
 button left
-Knopf Pfeil nach links
+button left
 
 button right
-Knopf Pfeil nach rechts
+button right
 
 capacitive sensor _
-kapazitiver Sensor _
+capacitive sensor _
 
 set capacitive threshold to _
-setze kapazitiven Schwellenwert auf _
+set capacitive threshold to _
 
 ####
 # BirdBrain Technologies libraries
@@ -728,106 +707,106 @@ Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Dreifarben-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
 Hummingbird Position Servo _ _ °
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Drehung Servo _ _ %
+Hummingbird Rotation Servo _ _ %
 
 Hummingbird _ _
 Hummingbird _ _
 
 Hummingbird Battery (mV)
-Hummingbird Batterie (mV)
+Hummingbird Battery (mV)
 
 Light
-Licht
+Light
 
 Distance (cm)
-Entfernung (cm)
+Distance (cm)
 
 Dial
-Drehknopf
+Dial
 
 Sound
-Klang
+Sound
 
 Other
-Sonstige
+Other
 
 Finch Beak Red _ Green _ Blue _
-Finch Schnabel Rot _ Grün _ Blau _
+Finch Beak Red _ Green _ Blue _
 
 Finch Tail _ Red _ Green _ Blue _
-Finch Schwanz _ Rot _ Grün _ Blau _ 
+Finch Tail _ Red _ Green _ Blue _
 
 Finch Move _ _ cm at _ %
-Finch Gehe _ _ cm mit _ %
+Finch Move _ _ cm at _ %
 
 Finch Turn _ _ ° at _ %
-Finch Drehe _ _ ° mit _ %
+Finch Turn _ _ ° at _ %
 
 Finch Wheels L _ % R _ %
-Finch Räder L _ % R _ %
+Finch Wheels L _ % R _ %
 
 Finch Stop
-Finch Stoppen
+Finch Stop
 
 Finch Distance (cm)
-Finch Entfernung (cm)
+Finch Distance (cm)
 
 Finch _ Light
-Finch _ Licht
+Finch _ Light
 
 Finch _ Line
-Finch _ Linie
+Finch _ Line
 
 Finch Reset Encoders
-Finch setze Kodierer zurück
+Finch Reset Encoders
 
 Finch _ Encoder
-Finch _ Kodierer
+Finch _ Encoder
 
 Finch Accelerometer _
-Finch Beschleunigungssensor _
+Finch Accelerometer _
 
 Finch Battery
-Finch Batterie
+Finch Battery
 
 All
-Alle
+All
 
 Forward
-Vorwärts
+Forward
 
 Backward
-Rückwärts
+Backward
 
 Right
-Rechts
+Right
 
 Left
-Links
+Left
 
 Beak Up
-Schnabel oben
+Beak Up
 
 Beak Down
-Schnabel unten
+Beak Down
 
 Tilt Left
-Neigung Links
+Tilt Left
 
 Tilt Right
-Neigung Rechts
+Tilt Right
 
 Level
-Eben
+Level
 
 Upside Down
-Umgedreht
+Upside Down
 
 x
 x
@@ -839,100 +818,100 @@ z
 z
 
 strength
-Stärke
+strength
 
 ####
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
-Entfernung (cm) Auslöser _ Echo _
+distance (cm) trigger _ echo _
 
 ####
 # Infrared remote library
 
 IR Remote
-IR-Fernzugriff
+IR Remote
 
 receive IR code
-empfange IR-Code
+receive IR code
 
 receive IR code from device _
-empfange IR-Code vom Gerät _
+receive IR code from device _
 
 test IR
-teste IR
+test IR
 
 attach IR receiver to pin _
-verbinde IR-Empfänger an Pin _
+attach IR receiver to pin _
 
 IR transmit device _ command _
-IR übertrage an Gerät _ Befehl _
+IR transmit device _ command _
 
 ####
 # Keyboard and Mouse library
 
 Keyboard and Mouse
-Tastatur und Maus
+Keyboard and Mouse
 
 press key _ : while holding _
-drücke Taste _ : solange _ gehalten
+press key _ : while holding _
 
 hold key _
-halte Taste _
+hold key _
 
 release key _
-lasse Taste _ los
+release key _
 
 release all keys
-lasse alle Tasten los
+release all keys
 
 Shift
-Umschalttaste
+Shift
 
 Control
-Steuerung
+Control
 
 Alt / ⌥
-Alt
+Alt / ⌥
 
 Logo / ⌘
-Logo
+Logo / ⌘
 
 AltGr 
-AltGr
+AltGr 
 
 enter
-Enter
+enter
 
 return
-Return
+return
 
 tab
-Tab
+tab
 
 backspace
-Backspace
+backspace
 
 delete
-Löschen
+delete
 
 insert
-Einfügen
+insert
 
 home
-Ursprung
+home
 
 end
-Ende
+end
 
 PgUp
-Bild auf
+PgUp
 
 PgDown
-Bild ab
+PgDown
 
 CapsLock
-Feststelltaste
+CapsLock
 
 NumLock
 NumLock
@@ -941,120 +920,101 @@ ScrollLock
 ScrollLock
 
 PrintScreen
-Druck
+PrintScreen
 
 ESC
 ESC
 
 _ mouse click
-_ Mausklick
+_ mouse click
 
 left
-links
+left
 
 right
-rechts
+right
 
 middle
-Mitte
+middle
 
 both
-beide
+both
 
 move mouse pointer by _ , _
-bewege Mauszeiger zu _ , _
+move mouse pointer by _ , _
 
 scroll mouse by _
-scrolle Maus zu _
+scroll mouse by _
 
 hold _ mouse button
-Halte _ Mausknopf
+hold _ mouse button
 
 release mouse buttons
-Lasse Mausknopf los
+release mouse buttons
 
 ####
 # Lists library
 # Extra utilities for list manipulation and access
 
 Lists
-Listen
+Lists
 
 list _ contains _
-Liste _ enthält _ 
+list _ contains _
 
 circular item _ of _
-zyklisches Element _ von _
+circular item _ of _
 
 aListOrString
-ListeOderZeichenfolge
+aListOrString
 
 map _ over _
---MISSING--
+map _ over _
 
 aFunction
-eineFunktion
+aFunction
 
 filter _ with _
---MISSING--
+filter _ with _
 
 pick _ from _
---MISSING--
+pick _ from _
 
 a few
---MISSING--
+a few
 
 some
---MISSING--
+some
 
 most
---MISSING--
+most
 
 reverse _
-kehre _ um
+reverse _
 
 shuffle _
-mische _
+shuffle _
 
 sort _
-sortiere _
-
-unique _
---MISSING--
+sort _
 
 shuffled _
-_ gemischt
+shuffled _
 
 reversed _
-_ umgekehrt
+reversed _
 
 sorted _
-_ sortiert
-
-uniqued _
-_ eindeutig
-
-####
-# Pseudorandomness
-# Creates pseudorandom numbers and lists of numbers given a particular seed
-
-Pseudorandomness
-Pseudozufallszahl
-
-pseudorandom _ to _ with seed _
---MISSING--
-
-_ pseudorandom numbers _ to _ with seed _
---MISSING--
+sorted _
 
 ####
 # BLE Keyboard library
 
 BLE Keyboard
-BLE-Tastatur
+BLE Keyboard
 
 start BLE Keyboard
-starte BLE-Tastatur
+start BLE Keyboard
 
 ####
 # Radio comm library
@@ -1069,22 +1029,22 @@ Radio
 # Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
-Scrollen
+Scrolling
 
 scroll text _
-scrolle Text _
+scroll text _
 
 HELLO ROSA!
-HALLO ROSA!
+HELLO ROSA!
 
 scroll number _
-scrolle Zahl _
+scroll number _
 
 pausing _ ms
-pausiere _ ms
+pausing _ ms
 
 stop scrolling
-stoppe Scrollen
+stop scrolling
 
 ####
 # Servo motor library
@@ -1093,13 +1053,13 @@ Servo
 Servo
 
 set servo _ to _ degrees (-90 to 90)
-setze Servo _ auf _ Grad (-90 bis 90)
+set servo _ to _ degrees (-90 to 90)
 
 set servo _ to speed _ (-100 to 100)
-setze Servo _ auf Geschwindigkeit _ (-100 bis 100)
+set servo _ to speed _ (-100 to 100)
 
 stop servo _
-stoppe Servo _
+stop servo _
 
 ####
 # 5x5 LED display library
@@ -1107,339 +1067,210 @@ stoppe Servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
-LED-Anzeige
+LED Display
 
 display _
-Anzeige _
-
-display image _
-zeige Bild _
+display _
 
 clear display
-lösche Anzeige
+clear display
 
 set display color _
-setze Anzeigefarbe _
+set display color _
 
 plot x _ y _
-plotte x _ y _
+plot x _ y _
 
 unplot x _ y _
-lösche x _ y _
+unplot x _ y _
 
 display character _
-zeige Buchstaben _
-
-# Image names for the "display image" block
-
-heart
-Herz
-
-small heart
-kleines Herz
-
-yes
-ja
-
-no
-nein
-
-happy
-glücklich
-
-sad
-traurig
-
-confused
-verwirrt
-
-angry
-wütend
-
-asleep
-schlafend
-
-surprised
-überrascht
-
-silly
-albern
-
-fabulous
-fabelhaft
-
-meh
-egal
-
-t-shirt
-T-Shirt
-
-roller skate
-Rollschuh
-
-duck
-Ente
-
-house
-Haus
-
-tortoise
-Schildkröte
-
-butterfly
-Schmetterling
-
-stick figure
-Strichmännchen
-
-ghost
-Geist
-
-sword
-Schwert
-
-giraffe
-Giraffe
-
-skull
-Totenkopf
-
-umbrella
-Regenschirm
-
-snake
-Schlange
-
-rabbit
-Kaninchen
-
-cow
-Kuh
-
-quarter note
-Viertelnote
-
-eight note
-Achtelnote
-
-pitchfork
-Heugabel
-
-target
-Ziel
-
-triangle
-Dreieck
-
-left triangle
-rechtwinkliges Dreieck
-
-chess board
-Schachbrett
-
-diamond
-Diamant
-
-small diamond
-kleiner Diamant
-
-square
-Quadrat
-
-small square
-kleines Quadrat
-
-scissors
-Schere
-
+display character _
 
 ####
 # OLED Graphics library
 
 initialize i2c _ address(hex) _ reset pin# _ flip _
---MISSING--
+initialize i2c _ address(hex) _ reset pin# _ flip _
 
 initialize spi _ d/c pin# _ reset pin# _ flip _
---MISSING--
+initialize spi _ d/c pin# _ reset pin# _ flip _
 
 write _ at x _ y _ inverse _
---MISSING--
+write _ at x _ y _ inverse _
 
 show display buffer
---MISSING--
+show display buffer
 
 clear
---MISSING--
+clear
 
 set contrast (1-4) _
---MISSING--
+set contrast (1-4) _
 
 draw circle at x _ y _ radius _ erase _
---MISSING--
+draw circle at x _ y _ radius _ erase _
 
 draw image _ at x _ y _
---MISSING--
+draw image _ at x _ y _
 
 draw line from x _ y _ to x _ y _ erase _
---MISSING--
+draw line from x _ y _ to x _ y _ erase _
 
 draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
---MISSING--
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
 
 fill rectangle x _ y _ w _ h _ erase _
---MISSING--
+fill rectangle x _ y _ w _ h _ erase _
 
 _flip display top _
---MISSING--
+_flip display top _
 
 make image _
---MISSING--
+make image _
 
 set pixel x _ y _ erase _
---MISSING--
+set pixel x _ y _ erase _
 
 set video _
---MISSING--
+set video _
 
 cursor location
---MISSING--
+cursor location
 
 defer display updates
---MISSING--
+defer display updates
 
 ####
 # TFT display library
 
-clear TFT display
-lösche TFT-Display
-
 enable TFT _
-aktiviere TFT
+enable TFT _
 
 TFT width
-TFT-Breite
+TFT width
 
 TFT height
-TFT-Höhe
+TFT height
 
 set TFT pixel x _ y _ to _
-setze TFT-Pixel x _ y _ auf _
+set TFT pixel x _ y _ to _
 
 draw line on TFT from x _ y _ to x _ y _ color _
-zeichne Linie auf TFT von x _ y _ nach x _ y _ Farbe _
+draw line on TFT from x _ y _ to x _ y _ color _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
-zeichne Rechteck auf TFT bei x _ y _ Breite _ Höhe _ Farbe _
+draw rectangle on TFT at x _ y _ width _ height _ color _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
-zeichne abgerundetes Rechteck auf TFT bei x _ y _ Breite _ Höhe _ Radius _ Farbe _
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
 
 draw circle on TFT at x _ y _ radius _ color _
-zeichne Kreis auf TFT bei x _ y _ Radius _ Farbe _
+draw circle on TFT at x _ y _ radius _ color _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-zeichne Dreieck auf TFT bei x _ y_ , x _ y, x _ y _ Farbe _
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
 
 filled _
-ausgefüllt _
+filled _
 
 write _ on TFT at x _ y _ color _
-Schreibe _ auf TFT bei x _ y _ Farbe _
+write _ on TFT at x _ y _ color _
 
 Hello World!
-Hello Welt!
+Hello World!
 
 scale _ wrap _
-Größe _ Zeilenumbruch _
+scale _ wrap _
 
 ####
 # BMP library
 # Can display BMP image files on a TFT display
 
 display BMP file _ at x _ y _
-zeige BMP-Datei _ bei x _ y _
+display BMP file _ at x _ y _
 
 image.bmp
-bild.bmp
+image.bmp
 
 ####
 # HSV color library
 
 HSV Colors
-HSV-Farben
+HSV Colors
 
 RGB of hue _ saturation _ brightness _ (0-100)
-RGB of Farbton _ Sättigung _ Helligkeit _ (0-100)
+RGB of hue _ saturation _ brightness _ (0-100)
 
 ####
 # Fractions library
 
 Fractions
-Brüche
+Fractions
 
 fract _ / _
---MISSING--
+fract _ / _
 
 fract _ + _
---MISSING--
+fract _ + _
 
 fract _ - _
---MISSING--
+fract _ - _
 
 fract _ × _
---MISSING--
+fract _ × _
 
 fract _ = _
---MISSING--
+fract _ = _
 
 fract _ < _
---MISSING--
+fract _ < _
 
 fract _ > _
---MISSING--
+fract _ > _
 
 simplify fraction _
---MISSING--
+simplify fraction _
 
 integer part of fraction _
---MISSING--
+integer part of fraction _
 
 numerator of fraction _
---MISSING--
+numerator of fraction _
 
 denominator of fraction _
---MISSING--
+denominator of fraction _
 
 gcd _ _
-ggT _ _
+gcd _ _
 
 lcm _ _
-kgV _ _
+lcm _ _
 
 ####
 # Tone library
 # Generates music tones on buzzers
 
 Tone
-Klang
+Tone
 
 attach buzzer to pin _
-verbinde Summer mit Pin _
+attach buzzer to pin _
 
 play note _ octave _ for _ ms
-spiele Note _ Oktave _ für _ ms
+play note _ octave _ for _ ms
 
 play frequency _ for _ ms
-spiele Frequenz _ Hz für _ ms
+play frequency _ for _ ms
 
 play midi key _ for _ ms
-spiele MIDI-Note _ für _ ms
+play midi key _ for _ ms
 
 start tone _ Hz
-spiele Ton mit _ Hz
+start tone _ Hz
 
 stop tone
-stoppe Ton
+stop tone
 
 c
 c
@@ -1482,39 +1313,39 @@ b
 # Can play Nokring-formatted music. Also known as RTTTL.
 
 Ringtone
-Klingelton
+Ringtone
 
 play ringtone _
-spiele Klingelton _
+play ringtone _
 
 current song name
-aktueller Klingelton
+current song name
 
 ####
 # Pluck
 # Generate music with plucked-string resembling sounds
 
 Pluck
---MISSING--
+Pluck
 
 pluck note _ octave _ for _ ms
---MISSING--
+pluck note _ octave _ for _ ms
 
 pluck MIDI key _ for _ msecs
---MISSING--
+pluck MIDI key _ for _ msecs
 
 set pluck pin _
---MISSING--
+set pluck pin _
 
 ####
 # WAV
 # Play WAV sound files
 
 play WAV file _
-spiele WAV-Datei _
+play WAV file _
 
 filename
-Dateiname
+filename
 
 ####
 # Rhythm
@@ -1522,28 +1353,25 @@ Dateiname
 # Useful to create musical patterns
 
 Rhythm
-Rythmus
+Rhythm
 
 set tempo to _ bpm at _ / _ signature
-setze Tempo auf _ bpm bei _ / _ Signatur
+set tempo to _ bpm at _ / _ signature
 
-set pattern to _ bars
-setze Muster auf _ Takte
+start counting _ bars
+start counting _ bars
+
+stop counting
+stop counting
+
+wait until next _
+wait until next _
 
 current beat
-aktueller Schlag
+current beat
 
 current bar
-aktueller Takt
-
-wait until next _ duration
---MISSING--
-
-wait until beat _
-warte bis Schlag _
-
-wait until bar _
-warte bis Takt _
+current bar
 
 ####
 # MIDI
@@ -1552,482 +1380,479 @@ warte bis Takt _
 # General MIDI drum instrument names
 
 Acoustic Bass Drum
---MISSING--
+Acoustic Bass Drum
 
 Bass Drum 1
---MISSING--
+Bass Drum 1
 
 Side Stick
---MISSING--
+Side Stick
 
 Acoustic Snare
---MISSING--
+Acoustic Snare
 
 Hand Clap
---MISSING--
+Hand Clap
 
 Electric Snare
---MISSING--
+Electric Snare
 
 Low Floor Tom
---MISSING--
+Low Floor Tom
 
 Closed Hi-Hat
---MISSING--
+Closed Hi-Hat
 
 High Floor Tom
---MISSING--
+High Floor Tom
 
 Pedal Hi-Hat
---MISSING--
+Pedal Hi-Hat
 
 Low Tom
---MISSING--
+Low Tom
 
 Open Hi-Hat
---MISSING--
+Open Hi-Hat
 
 Low-Mid Tom
---MISSING--
+Low-Mid Tom
 
 Hi-Mid Tom
---MISSING--
+Hi-Mid Tom
 
 Crash Cymbal 1
---MISSING--
+Crash Cymbal 1
 
 High Tom
---MISSING--
+High Tom
 
 Ride Cymbal 1
---MISSING--
+Ride Cymbal 1
 
 Chinese Cymbal
---MISSING--
+Chinese Cymbal
 
 Ride Bell
---MISSING--
+Ride Bell
 
 Tambourine 
---MISSING--
+Tambourine 
 
 Splash Cymbal
---MISSING--
+Splash Cymbal
 
 Cowbell 
---MISSING--
+Cowbell 
 
 Crash Cymbal 2
---MISSING--
+Crash Cymbal 2
 
 Vibraslap 
---MISSING--
+Vibraslap 
 
 Ride Cymbal 2
---MISSING--
+Ride Cymbal 2
 
 Hi Bongo
---MISSING--
+Hi Bongo
 
 Low Bongo
---MISSING--
+Low Bongo
 
 Mute Hi Conga
---MISSING--
+Mute Hi Conga
 
 Open Hi Conga
---MISSING--
+Open Hi Conga
 
 Low Conga
---MISSING--
+Low Conga
 
 High Timbale
---MISSING--
+High Timbale
 
 Low Timbale
---MISSING--
+Low Timbale
 
 High Agogo
---MISSING--
+High Agogo
 
 Low Agogo
---MISSING--
+Low Agogo
 
 Cabasa
---MISSING--
+Cabasa
 
 Maracas 
---MISSING--
+Maracas 
 
 Short Whistle
---MISSING--
+Short Whistle
 
 Long Whistle
---MISSING--
+Long Whistle
 
 Short Guiro
---MISSING--
+Short Guiro
 
 Long Guiro
---MISSING--
+Long Guiro
 
 Claves 
---MISSING--
+Claves 
 
 Hi Wood Block
---MISSING--
+Hi Wood Block
 
 Low Wood Block
---MISSING--
+Low Wood Block
 
 Mute Cuica
---MISSING--
+Mute Cuica
 
 Open Cuica
---MISSING--
+Open Cuica
 
 Mute Triangle
---MISSING--
+Mute Triangle
 
 Open Triangle
---MISSING--
+Open Triangle
 
 # General MIDI instrument categories
 
 piano 
---MISSING--
+piano 
 
 chromatic percussion
---MISSING--
+chromatic percussion
 
 organ
---MISSING--
+organ
 
 guitar
---MISSING--
+guitar
 
 bass
---MISSING--
+bass
 
 strings
---MISSING--
+strings
 
 ensemble
---MISSING--
+ensemble
 
 brass
---MISSING--
+brass
 
 reed
---MISSING--
+reed
 
 pipe 
---MISSING--
+pipe 
 
 synth lead
---MISSING--
+synth lead
 
 synth pad
---MISSING--
+synth pad
 
 synth SFX
---MISSING--
+synth SFX
 
 ethnic
---MISSING--
+ethnic
 
 percussive
---MISSING--
+percussive
 
 SFX 
---MISSING--
+SFX 
 
 # General MIDI drum sets
 
 standard
---MISSING--
+standard
 
 room
---MISSING--
+room
 
 power
---MISSING--
+power
 
 electronic 
---MISSING--
+electronic 
 
 TR-808
---MISSING--
+TR-808
 
 jazz
---MISSING--
+jazz
 
 brush
---MISSING--
+brush
 
 orchestra
---MISSING--
+orchestra
 
 SFX 
---MISSING--
+SFX 
 
 CM-64/CM-32L
---MISSING--
+CM-64/CM-32L
 
 # General MIDI control changes
 
 bank select 1
---MISSING--
+bank select 1
 
 bank select 2
---MISSING--
+bank select 2
 
 modulation 
---MISSING--
+modulation 
 
 portamento time
---MISSING--
+portamento time
 
 volume
---MISSING--
+volume
 
 pan
---MISSING--
+pan
 
 expression
---MISSING--
+expression
 
 hold
---MISSING--
+hold
 
 portamento
---MISSING--
+portamento
 
 sostenuto
---MISSING--
+sostenuto
 
 soft
---MISSING--
+soft
 
 resonance 
---MISSING--
+resonance 
 
 release time
---MISSING--
+release time
 
 attack time
---MISSING--
+attack time
 
 cutoff 
---MISSING--
+cutoff 
 
 decay time
---MISSING--
+decay time
 
 vibrato rate
---MISSING--
+vibrato rate
 
 vibrato depth
---MISSING--
+vibrato depth
 
 vibrato delay
---MISSING--
+vibrato delay
 
 portamento control
---MISSING--
+portamento control
 
 effect 1
---MISSING--
+effect 1
 
 effect 2
---MISSING--
+effect 2
 
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
-spiele MIDI-Note _ für _ ms auf Kanal _ Lautstärke _
+play MIDI note _ for _ ms on channel _ volume _
 
 set MIDI note _ to _ on channel _ volume _
-setze MIDI-Note _ auf _ auf Kanal _ Lautstärke _
+set MIDI note _ to _ on channel _ volume _
 
 note _ octave _ to MIDI key
---MISSING--
+note _ octave _ to MIDI key
 
 select MIDI instrument _ for channel _
---MISSING--
+select MIDI instrument _ for channel _
 
 instrument _ number _
---MISSING--
+instrument _ number _
 
 select MIDI drum kit _
---MISSING--
+select MIDI drum kit _
 
 play MIDI drum _ for _ ms volume _
---MISSING--
+play MIDI drum _ for _ ms volume _
 
 drum _
---MISSING--
+drum _
 
 change MIDI control _ on channel _ to _
---MISSING--
+change MIDI control _ on channel _ to _
 
 pitch bend MIDI channel _ to _ %
---MISSING--
+pitch bend MIDI channel _ to _ %
 
 send MIDI reset
---MISSING--
+send MIDI reset
 
 send MIDI start playing
---MISSING--
+send MIDI start playing
 
 send MIDI stop playing
---MISSING--
+send MIDI stop playing
 
 send MIDI continue playing
---MISSING--
+send MIDI continue playing
 
 set MIDI signal to pin _
---MISSING--
+set MIDI signal to pin _
 
 ####
 # Scales & Chords
 # Abstractions for musical theory
 
 Scales & Chords
---MISSING--
+Scales & Chords
 
 # scale names
 
 ionian
---MISSING--
+ionian
 
 dorian
---MISSING--
+dorian
 
 phrygian
---MISSING--
+phrygian
 
 lydian
---MISSING--
+lydian
 
 mixolydian
---MISSING--
+mixolydian
 
 aeolian
---MISSING--
+aeolian
 
 locrian
---MISSING--
+locrian
 
 major
---MISSING--
+major
 
 minor 
---MISSING--
+minor 
 
 # chord types
 
 major
---MISSING--
+major
 
 minor
---MISSING--
+minor
 
 diminished
---MISSING--
+diminished
 
 major 7th
---MISSING--
+major 7th
 
 minor 7th
---MISSING--
+minor 7th
 
 Maj7 
---MISSING--
+Maj7 
 
 # sound destinations for arpeggiate block
 
 MIDI channel
---MISSING--
+MIDI channel
 
 tone pin 
---MISSING--
+tone pin 
 
 # library blocks
 
 _ scale root _
---MISSING--
+_ scale root _
 
 steps _
---MISSING--
+steps _
 
 pentatonic _ scale root _
---MISSING--
+pentatonic _ scale root _
 
 _ chord root _
---MISSING--
+_ chord root _
 
 _ chord for root _
---MISSING--
+_ chord for root _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
---MISSING--
-
-improvised arpeggio over _ for _ bars with durations _
---MISSING--
+arpeggiate _ in order _ duration _ and volume _ on _ _
 
 improvise over _ for _ bars with durations _ on _ _ volume _
---MISSING--
+improvise over _ for _ bars with durations _ on _ _ volume _
 
 _ transposed _ semitones
---MISSING--
+_ transposed _ semitones
 
 chord progression _ with root _
---MISSING--
+chord progression _ with root _
 
 and _ steps per chord
---MISSING--
+and _ steps per chord
 
 rotation _ of circle of 5ths _ M _ m _ º
---MISSING--
+rotation _ of circle of 5ths _ M _ m _ º
 
 ####
 # Chiptune
 # Old-school sound generation on digital pins and DACs
 
 kick for _ ms on pin _
---MISSING--
+kick for _ ms on pin _
 
 tom for _ ms pitch shifted by _ on pin _
---MISSING--
+tom for _ ms pitch shifted by _ on pin _
 
 laser for _ ms with frequency _ speed _ on pin _
---MISSING--
+laser for _ ms with frequency _ speed _ on pin _
 
 noise for _ ms pitch shifted by _ on pin _
---MISSING--
+noise for _ ms pitch shifted by _ on pin _
 
 fade noise for _ ms pitch shifted by _ on DAC pin _
---MISSING--
+fade noise for _ ms pitch shifted by _ on DAC pin _
 
 snare for _ ms on DAC pin _
---MISSING--
+snare for _ ms on DAC pin _
 
 hihat for _ ms on DAC pin _
---MISSING--
+hihat for _ ms on DAC pin _
 
 ####
 # Square Wave Chords
 # Play chords on 3 digital pins
 
 Square Wave Chords
---MISSING--
+Square Wave Chords
 
 play chord _ for _ ms
---MISSING--
+play chord _ for _ ms
 
 set digital chord pins _ _ _
---MISSING--
+set digital chord pins _ _ _
 
 ####
 # Turtle geometry library
@@ -2036,155 +1861,155 @@ Turtle
 Turtle
 
 home
-gehe zum Ursprung
+home
 
 move _
-gehe _
+move _
 
 turn _ degrees
-drehe _ Grad
+turn _ degrees
 
 turn _ / _ of circle
-drehe _ / _ eines Kreises
+turn _ / _ of circle
 
 pen down
-Stift runter
+pen down
 
 pen up
-Stift hoch
+pen up
 
 set pen color to _
-setze Stiftfarbe auf _
+set pen color to _
 
 set pen to random color
-setze zufällige Stiftfarbe
+set pen to random color
 
 fill display with _
-fülle Display mit _
+fill display with _
 
 go to x _ y _
-gehe zu x _ y _
+go to x _ y _
 
 point in direction _
-zeige Richtung _
+point in direction _
 
 ####
 # File system library
 
 Files
-Dateien
+Files
 
 open file _
-Datei öffnen
+open file _
 
 close file _
-Datei schließen
+close file _
 
 delete file _
-Datei löschen
+delete file _
 
 append line _ to file _
-füge Zeile _ zu Datei _ hinzu
+append line _ to file _
 
 append bytes _ to file _
-füge Bytes _ zu Datei _ hinzu
+append bytes _ to file _
 
 end of file _
-Ende von Datei _
+end of file _
 
 next line of file _
-nächste Zeile von Datei _
+next line of file _
 
 next _ bytes of file _
-nächste _ Bytes von Datei _
+next _ bytes of file _
 
 read into _ from file _
---MISSING--
+read into _ from file _
 
 a ByteArray
---MISSING--
+a ByteArray
 
 starting at _
-beginnend bei _
+starting at _
 
 file names
-Dateiname
+file names
 
 in directory _
---MISSING--
+in directory _
 
 size of file _
-Größe der Datei _
+size of file _
 
 file system info
-Dateisystem-Information
+file system info
 
 ####
 # Strings
 # string (text) processing functions
 
 Strings
-Zeichenfolgen
+Strings
 
 _ is a digit
-_ ist eine Zahl
+_ is a digit
 
 _ is lowercase
-_ ist in Kleinbuchstaben
+_ is lowercase
 
 _ is uppercase
-_ ist in Großbuchstaben
+_ is uppercase
 
 _ begins with _
-_ begint mit _
+_ begins with _
 
 prefix
-Prefix
+prefix
 
 pre
-Pre
+pre
 
 _ ends with _
-_ endet auf _
+_ ends with _
 
 suffix
-Suffix
+suffix
 
 fix
 fix
 
 _ contains _
-_ enthält _
+_ contains _
 
 lowercase _
-_ in Kleinbuchstaben
+lowercase _
 
 THIS is a String! :)
-DAS ist ein Text! :)
+THIS is a String! :)
 
 uppercase _
-_ in Großbuchstaben
+uppercase _
 
 Hello, world!
-Hallo, Welt!
+Hello, world!
 
 _ without white space
-_ ohne Leerzeichen
+_ without white space
 
 join string list _ separator _
---MISSING--
+join string list _ separator _
 
 unicodes _
-Unicode von _
+unicodes _
 
 aString
-Zeichenfolge
+aString
 
 string from unicodes _
-Zeichenfolge aus Unicode _
+string from unicodes _
 
 aList
-Liste
+aList
 
 num2str _
 num2str _
@@ -2199,164 +2024,164 @@ WiFi
 WiFi
 
 wifi connect to _ password _
-WiFi-Verbindung zu _ Passwort _
+wifi connect to _ password _
 
 Network_Name
-Netzwerkname
+Network_Name
 
 IP _ gateway _ subnet _
-IP _ Gateway _ Netzmaske _
+IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
-WiFi öffne Hotspot _ Passwort _
+wifi create hotspot _ password _
 
 Network_Password
-Netzwerkpasswort
+Network_Password
 
 IP address
-IP-Adresse
+IP address
 
 MAC address
-MAC-Adresse
+MAC address
 
 ####
 # Motion library
 # Counts steps and detects motion via the internal accelerometer
 
 Motion
-Bewegung
+Motion
 
 motion
-Bewegung
+motion
 
 start step counter
-Starte Schrittzähler
+start step counter
 
 step count
-Schrittzahl
+step count
 
 clear step count
-lösche Schrittzahl
+clear step count
 
 set step threshold _ (0-50)
-setze Schritt-Schwellenwert _ (0-50)
+set step threshold _ (0-50)
 
 ####
 # Button Events library
 
 Button Events
-Knopf Ereignisse
+Button Events
 
 button _ double pressed
-Knopf _ doppelt gedrückt
+button _ double pressed
 
 button _ long pressed
-Knopf _ lange gedrückt
+button _ long pressed
 
 button _ pressed
-Knopf _ gedrückt
+button _ pressed
 
 ####
 # Calliope board library
 
 Calliope set LED red _ green _ blue _
-Calliope setze LED rot _ grün _ blau _
+Calliope set LED red _ green _ blue _
 
 Calliope set speaker _
-Calliope setze Lautsprecher _
+Calliope set speaker _
 
 Calliope loudness
-Calliope Lautstärke
+Calliope loudness
 
 ####
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
-Circuit Playground setze Lautsprecher _
+Circuit Playground set speaker _
 
 Circuit Playground slide switch
-Circuit Playground Schiebeschalter
+Circuit Playground slide switch
 
 ####
 # DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
-verbinde _ DotStar LEDs an Daten-Pin _ Uhr-Pin _
+attach _ DotStar LEDs to data pin _ clock pin _
 
 set all DotStar LEDs to r _ g _ b _
-setze alle DotStar LEDs auf r _ g _ b _
+set all DotStar LEDs to r _ g _ b _
 
 set DotStar LED _ to r _ g _ b _
-setze DotStar LED _ auf r _ g _ b _
+set DotStar LED _ to r _ g _ b _
 
 set DotStar brightness _
-setze DotStar Helligkeit _
+set DotStar brightness _
 
 ####
 # BME280 environmental sensor
 
 bme280 connected
-BME280 verbunden
+bme280 connected
 
 bmp280 connected
-BMP280 verbunden
+bmp280 connected
 
 bmx280 temperature
-BMX280 Temperatur
+bmx280 temperature
 
 bmx280 pressure
-BMX280 Luftdruck
+bmx280 pressure
 
 bme280 humidity
-BME280 Luftfeuchtigkeit
+bme280 humidity
 
 bmx280 set base altitude _ meters
-bmx280 setze Grundhöhe _ Meter
+bmx280 set base altitude _ meters
 
 bmx280 altitude (cm)
-BMX280 Höhe (cm)
+bmx280 altitude (cm)
 
 bmx280 altitude (feet)
-BMX280 Höhe (Fuß)
+bmx280 altitude (feet)
 
 ####
 # TCS34725 color sensor
 
 TCS34725 connected
-TCS34725 verbunden
+TCS34725 connected
 
 TCS34725 rgb
-TCS34725 RGB
+TCS34725 rgb
 
 color _ name
-Farbe _ Name
+color _ name
 
 ####
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
-Temperatur (Celsius) DHT11 Pin _
+temperature (Celsius) DHT11 pin _
 
 humidity DHT11 pin _
-Luftfeuchtigkeit DHT11 Pin _
+humidity DHT11 pin _
 
 temperature (Celsius) DHT22 pin _
-Temperatur (Celsius) DHT22 Pin _
+temperature (Celsius) DHT22 pin _
 
 humidity DHT22 pin _
-Luftfeuchtigkeit DHT22 Pin _
+humidity DHT22 pin _
 
 ####
 # PN532 RFID reader
 
 read PN532 RFID
-lies PN532 RFID
+read PN532 RFID
 
 RFID _ = _
 RFID _ = _
 
 get PN532 firmware version
-PN532 firmware version
+get PN532 firmware version
 
 ####
 # Touch Screen
@@ -2365,97 +2190,97 @@ Touch Screen
 Touch Screen
 
 TFT touched
-TFT berührt
+TFT touched
 
 TFT touch X position
-TFT Berührungsstelle x-Position
+TFT touch X position
 
 TFT touch Y position
-TFT Berührungsstelle y-Position
+TFT touch Y position
 
 TFT touch pressure
-TFT Berührungsdruck
+TFT touch pressure
 
 ####
 # HTTP Client
 
 HTTP client
-HTTP-Client
+HTTP client
 
 _ data _ to http܃// _
-_ Daten _ URL http:// _
+_ data _ to http܃// _
 
 MicroBlocks is fun
---MISSING--
+MicroBlocks is fun
 
 port _
-Port _
+port _
 
 ####
 # HTTP Server
 
 HTTP server
-HTTP-Server
+HTTP server
 
 start HTTP server
-starte HTTP-Server
+start HTTP server
 
 HTTP server request
-HTTP-Server-Anfrage
+HTTP server request
 
 respond _ to HTTP request
-antworte _ auf HTTP-Anfrage
+respond _ to HTTP request
 
 with body _
-mit Body _
+with body _
 
 Welcome to the MicroBlocks HTTP server
-Willkommen auf dem MicroBlocks HTTP-Server
+Welcome to the MicroBlocks HTTP server
 
 and headers _
-und Header _
+and headers _
 
 body of request _
-Body der Anfrage _
+body of request _
 
 path of request _
-Pfad der Anfrage _
+path of request _
 
 headers of request _
-Kopf der Anfrage _
+headers of request _
 
 method of request _
-Methode der Anfrage _
+method of request _
 
 content length of request _
-Länge des Inhalts der Anfrage _
+content length of request _
 
 ####
 # WebSocket server
 
 WebSocket server
-WebSocket-Server
+WebSocket server
 
 start WebSocket server
-sterte WebSocket-Server
+start WebSocket server
 
 last WebSocket event
-letztes WebSocket-Ereignis
+last WebSocket event
 
 client ID for WebSocket event _
-Client-ID für das WebSocket-Ereignis _
+client ID for WebSocket event _
 
 payload for WebSocket event _
---MISSING--
+payload for WebSocket event _
 
 type of WebSocket event _
-Typ des WebSocket-Ereignisses _
+type of WebSocket event _
 
 send _ to WebSocket client _
-sende _ zum WebSocket-Client _
+send _ to WebSocket client _
 
 Hello, Client!
-Hallo, Client!
+Hello, Client!
 
 ####
 # Web Things library
@@ -2464,629 +2289,629 @@ Web Thing
 Web Thing
 
 set thing name to _
-setze Thing Namen auf _
+set thing name to _
 
 set thing capability to _
-setze Thing Fähigkeit auf _
+set thing capability to _
 
 set boolean property _ title _ @Type _
-setze Boole Eigenschaft _ Name _ @Typ _
+set boolean property _ title _ @Type _
 
 set string property _ title _ @Type _
-setze Zeichenfolge Eigenschaft _ Name _ @Typ _
+set string property _ title _ @Type _
 
 set number property _ title _ @Type _
-setze Zahl Eigenschaft _ Name _ @Typ _
+set number property _ title _ @Type _
 
 set number property _ title _ min _ max _ @Type _
-setze Zahl Eigenschaft _ Name _ Min _ Max _ @Typ _
+set number property _ title _ min _ max _ @Type _
 
 read only _
-schreibgeschützt
+read only _
 
 register event _ type _
-registriere Ereignis _ Typ _
+register event _ type _
 
 start WebThing server
-starte WebThing Server starten
+start WebThing server
 
 trigger event _
-löse Ereignis _ aus
+trigger event _
 
 thing description JSON
-Thing Beschreibung JSON
+thing description JSON
 
 properties JSON
-Eigenschaften JSON
+properties JSON
 
 event definitions JSON
-Ereignis-Definitionen JSON
+event definitions JSON
 
 events JSON
-Ereignisse JSON
+events JSON
 
 ####
 # Citilab Fantàstic Robot
 
 turn fantàstic _ degrees
-drehe fantàstic _ Grad
+turn fantàstic _ degrees
 
 move fantàstic _ mm
-bewege fantàstic _ mm
+move fantàstic _ mm
 
 ####
 # MiKe Robot library
 
 MiKe front obstacle (cm)
---MISSING--
+MiKe front obstacle (cm)
 
 MiKe _ obstacle ?
---MISSING--
+MiKe _ obstacle ?
 
 MiKe black line on _ ?
---MISSING--
+MiKe black line on _ ?
 
 MiKe back light
---MISSING--
+MiKe back light
 
 MiKe IR
---MISSING--
+MiKe IR
 
 MiKe digital D8 sensor
---MISSING--
+MiKe digital D8 sensor
 
 MiKe stop motors
---MISSING--
+MiKe stop motors
 
 MiKe Robot go _ at _ %
---MISSING--
+MiKe Robot go _ at _ %
 
 MiKe Robot speed _ %
---MISSING--
+MiKe Robot speed _ %
 
 MiKe Robot direction _
---MISSING--
+MiKe Robot direction _
 
 MiKe turn _ motor _
---MISSING--
+MiKe turn _ motor _
 
 MiKe speed _ motor at _ %
---MISSING--
+MiKe speed _ motor at _ %
 
 MiKe front lights off
---MISSING--
+MiKe front lights off
 
 MiKe front lights to _
---MISSING--
+MiKe front lights to _
 
 MiKe circle lights off
---MISSING--
+MiKe circle lights off
 
 MiKe circle ligths to _
---MISSING--
+MiKe circle ligths to _
 
 MiKe circle light _ (1-18) to _
---MISSING--
+MiKe circle light _ (1-18) to _
 
 MiKe rotate lights by _
---MISSING--
+MiKe rotate lights by _
 
 MiKe digital D8 to _
---MISSING--
+MiKe digital D8 to _
 
 ####
 # DrawBot Library
 # A CoreXY plotter library that supports turtle geometry
 
 plotter move X _ Y _
---MISSING--
+plotter move X _ Y _
 
 plotter move _ steps
---MISSING--
+plotter move _ steps
 
 plotter turn _ degrees
---MISSING--
+plotter turn _ degrees
 
 plotter turn _ / _ of circle
---MISSING--
+plotter turn _ / _ of circle
 
 plotter point in direction _
---MISSING--
+plotter point in direction _
 
 plotter pen down
---MISSING--
+plotter pen down
 
 plotter pen up
---MISSING--
+plotter pen up
 
 plotter stop
---MISSING--
+plotter stop
 
 set plotter speed to _ %
---MISSING--
+set plotter speed to _ %
 
 ####
 # Innova Didactic libraries
 
 red
---MISSING--
+red
 
 yellow
---MISSING--
+yellow
 
 green
---MISSING--
+green
 
 forward
---MISSING--
+forward
 
 backward
---MISSING--
+backward
 
 turn right
---MISSING--
+turn right
 
 turn left
---MISSING--
+turn left
 
 stop
---MISSING--
+stop
 
 right sensor
---MISSING--
+right sensor
 
 left sensor
---MISSING--
+left sensor
 
 both sensors
---MISSING--
+both sensors
 
 TdR test buzzer
---MISSING--
+TdR test buzzer
 
 TdR set blue LED _
---MISSING--
+TdR set blue LED _
 
 TdR set red LED _
---MISSING--
+TdR set red LED _
 
 TdR set RGB LED _
---MISSING--
+TdR set RGB LED _
 
 TdR clear RGB LED
---MISSING--
+TdR clear RGB LED
 
 TdR LM35 temperature ºC
---MISSING--
+TdR LM35 temperature ºC
 
 TdR DHT11 temperature ºC
---MISSING--
+TdR DHT11 temperature ºC
 
 TdR DHT11 humidity
---MISSING--
+TdR DHT11 humidity
 
 TdR rotation
---MISSING--
+TdR rotation
 
 TdR light level
---MISSING--
+TdR light level
 
 TdR button 1
---MISSING--
+TdR button 1
 
 TdR button 2
---MISSING--
+TdR button 2
 
 TdR receive IR code
---MISSING--
+TdR receive IR code
 
 Imagina set _ led to _
---MISSING--
+Imagina set _ led to _
 
 Imagina play _ octave _ for _ ms
---MISSING--
+Imagina play _ octave _ for _ ms
 
 Imagina temperature (°C)
---MISSING--
+Imagina temperature (°C)
 
 Imagina light
---MISSING--
+Imagina light
 
 Imagina distance (cm)
---MISSING--
+Imagina distance (cm)
 
 Imagina button (D2) pressed?
---MISSING--
+Imagina button (D2) pressed?
 
 Imagina digital reading _
---MISSING--
+Imagina digital reading _
 
 Imagina analog reading A1
---MISSING--
+Imagina analog reading A1
 
 Imagina set digital pin _ to _
---MISSING--
+Imagina set digital pin _ to _
 
 Imagina stop servo _
---MISSING--
+Imagina stop servo _
 
 Imagina set servo _ to _ degrees (-90 to 90)
---MISSING--
+Imagina set servo _ to _ degrees (-90 to 90)
 
 Imagina set servo _ to speed _ (-100 to 100)
---MISSING--
+Imagina set servo _ to speed _ (-100 to 100)
 
 Imagina set _ speed to _ %
---MISSING--
+Imagina set _ speed to _ %
 
 Imagina set _ to _
---MISSING--
+Imagina set _ to _
 
 Imagina IR reading
---MISSING--
+Imagina IR reading
 
 Imagina IR transmit device _ command _
---MISSING--
+Imagina IR transmit device _ command _
 
 _ steps
---MISSING--
+_ steps
 
 at _ % speed
---MISSING--
+at _ % speed
 
 3dBot set speed at _ %
---MISSING--
+3dBot set speed at _ %
 
 3dBot obstacle < _ cm?
---MISSING--
+3dBot obstacle < _ cm?
 
 3dBot line on _ ?
---MISSING--
+3dBot line on _ ?
 
 ####
 # MQTT
 
 MQTT connect to broker _
---MISSING--
+MQTT connect to broker _
 
 buffer sizes _ client id _
---MISSING--
+buffer sizes _ client id _
 
 username _ password _
---MISSING--
+username _ password _
 
 MQTT connected
---MISSING--
+MQTT connected
 
 MQTT disconnect
---MISSING--
+MQTT disconnect
 
 MQTT sub _
---MISSING--
+MQTT sub _
 
 testTopic
---MISSING--
+testTopic
 
 MQTT unsub _
---MISSING--
+MQTT unsub _
 
 MQTT pub topic _ payload _
---MISSING--
+MQTT pub topic _ payload _
 
 Hello!
---MISSING--
+Hello!
 
 retain _ QoS _
---MISSING--
+retain _ QoS _
 
 MQTT event
---MISSING--
+MQTT event
 
 binary _
---MISSING--
+binary _
 
 topic for MQTT event _
---MISSING--
+topic for MQTT event _
 
 payload for MQTT event _
---MISSING--
+payload for MQTT event _
 
 MQTT set will topic _ payload _
---MISSING--
+MQTT set will topic _ payload _
 
 testWill
---MISSING--
+testWill
 
 Last will!
---MISSING--
+Last will!
 
 buffer sizes _
---MISSING--
+buffer sizes _
 
 ####
 # UDP
 
 UDP start port _
---MISSING--
+UDP start port _
 
 UDP stop
---MISSING--
+UDP stop
 
 UDP send packet _ to ip _ port _
---MISSING--
+UDP send packet _ to ip _ port _
 
 UDP receive packet
---MISSING--
+UDP receive packet
 
 binary data _
---MISSING--
+binary data _
 
 UDP remote IP address
---MISSING--
+UDP remote IP address
 
 UDP remote port
---MISSING--
+UDP remote port
 
 ####
 # WiFi Radio
 
 wifi send number _
---MISSING--
+wifi send number _
 
 wifi send string _
---MISSING--
+wifi send string _
 
 wifi send pair _ = _
---MISSING--
+wifi send pair _ = _
 
 wifi message received?
---MISSING--
+wifi message received?
 
 wifi last number
---MISSING--
+wifi last number
 
 wifi last string
---MISSING--
+wifi last string
 
 wifi set group _ (0-255)
---MISSING--
+wifi set group _ (0-255)
 
 ####
 # Cutebot
 
 Cutebot
---MISSING--
+Cutebot
 
 Cutebot set wheel left _ right _ (-100 to 100)
---MISSING--
+Cutebot set wheel left _ right _ (-100 to 100)
 
 Cutebot stop wheels
---MISSING--
+Cutebot stop wheels
 
 Cutebot set servo _ to _ degrees (-90 to 90)
---MISSING--
+Cutebot set servo _ to _ degrees (-90 to 90)
 
 Cutebot set servo _ to speed _ (-100 to 100)
---MISSING--
+Cutebot set servo _ to speed _ (-100 to 100)
 
 Cutebot set headlight _ to _
---MISSING--
+Cutebot set headlight _ to _
 
 Cutebot set NeoPixel _ to _
---MISSING--
+Cutebot set NeoPixel _ to _
 
 Cutebot _ line sensor
---MISSING--
+Cutebot _ line sensor
 
 Cutebot sees line on left _ right _
---MISSING--
+Cutebot sees line on left _ right _
 
 Cutebot distance (cm)
---MISSING--
+Cutebot distance (cm)
 
 left
---MISSING--
+left
 
 right
---MISSING--
+right
 
 both
---MISSING--
+both
 
 # Wukong
 
 Wukong
---MISSING--
+Wukong
 
 Wukong set motor _ to _ (-100 to 100)
---MISSING--
+Wukong set motor _ to _ (-100 to 100)
 
 Wukong stop motor _
---MISSING--
+Wukong stop motor _
 
 Wukong stop all
---MISSING--
+Wukong stop all
 
 Wukong set servo _ to _ degrees (-90 to 90)
---MISSING--
+Wukong set servo _ to _ degrees (-90 to 90)
 
 Wukong set servo _ to speed _ (-100 to 100)
---MISSING--
+Wukong set servo _ to speed _ (-100 to 100)
 
 Wukong set NeoPixels _ _ _ _
---MISSING--
+Wukong set NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
---MISSING--
+Wukong set LED brightness to _
 
 ####
 # Sphero-RVR
 
 wake
---MISSING--
+wake
 
 sleep
---MISSING--
+sleep
 
 reset the yaw
---MISSING--
+reset the yaw
 
 drive with speed _ and heading _
---MISSING--
+drive with speed _ and heading _
 
 set raw motors with left mode _ left speed _ right mode _ right speed _
---MISSING--
+set raw motors with left mode _ left speed _ right mode _ right speed _
 
 stop with heading _
---MISSING--
+stop with heading _
 
 set RGB LED _ to red _ green _ blue _
---MISSING--
+set RGB LED _ to red _ green _ blue _
 
 set all LEDs to red _ green _ blue _
---MISSING--
+set all LEDs to red _ green _ blue _
 
 ####
 # Joystick:bit
 
 button _ is pressed
---MISSING--
+button _ is pressed
 
 rocker value of _
---MISSING--
+rocker value of _
 
 motor vibrate for _ ms
---MISSING--
+motor vibrate for _ ms
 
 ####
 # NeZha
 
 NeZha
---MISSING--
+NeZha
 
 NeZha set motor _ speed to _ %
---MISSING--
+NeZha set motor _ speed to _ %
 
 NeZha stop motor _
---MISSING--
+NeZha stop motor _
 
 NeZha stop all motors
---MISSING--
+NeZha stop all motors
 
 NeZha set _ servo _ angle to _
---MISSING--
+NeZha set _ servo _ angle to _
 
 NeZha set continuous rotation servo _ speed to _ %
---MISSING--
+NeZha set continuous rotation servo _ speed to _ %
 
 ####
 # WuKong2040
 
 WuKong2040
---MISSING--
+WuKong2040
 
 WuKong2040 rainbowLED _ color to _
---MISSING--
+WuKong2040 rainbowLED _ color to _
 
 WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
---MISSING--
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
 
 WuKong2040 clear all rainbowLED
---MISSING--
+WuKong2040 clear all rainbowLED
 
 WuKong2040 motor _ speed to _ (-100~100)
---MISSING--
+WuKong2040 motor _ speed to _ (-100~100)
 
 WuKong2040 stop motor _
---MISSING--
+WuKong2040 stop motor _
 
 WuKong2040 stop all motors
---MISSING--
+WuKong2040 stop all motors
 
 WuKong2040 buzzer beep _ ms
---MISSING--
+WuKong2040 buzzer beep _ ms
 
 ####
 # Octopus
 
 Octopus
---MISSING--
+Octopus
 
 Octopus LED pin _ toggle to _
---MISSING--
+Octopus LED pin _ toggle to _
 
 Octopus LED pin _ brightness _ %
---MISSING--
+Octopus LED pin _ brightness _ %
 
 Octopus motor fan pin _ speed to _ %
---MISSING--
+Octopus motor fan pin _ speed to _ %
 
 Octopus 180° servo pin _ angle to _ ° (0~180)
---MISSING--
+Octopus 180° servo pin _ angle to _ ° (0~180)
 
 Octopus sonar trig _ echo _ distance (cm)
---MISSING--
+Octopus sonar trig _ echo _ distance (cm)
 
 Octopus value of light intensity (Lux) at pin _
---MISSING--
+Octopus value of light intensity (Lux) at pin _
 
 Octopus value of DHT11 temperature (°C) at pin _
---MISSING--
+Octopus value of DHT11 temperature (°C) at pin _
 
 Octopus value of DHT11 humidity (0~100) at pin _
---MISSING--
+Octopus value of DHT11 humidity (0~100) at pin _
 
 Octopus value of water level (0~40mm) at pin _
---MISSING--
+Octopus value of water level (0~40mm) at pin _
 
 Octopus value of trimpot (0~1023) at pin _
---MISSING--
+Octopus value of trimpot (0~1023) at pin _
 
 Octopus value of noise (dB) at pin _
---MISSING--
+Octopus value of noise (dB) at pin _
 
 Octopus OLED show _ at x _ y _
---MISSING--
+Octopus OLED show _ at x _ y _
 
 Octopus OLED clear
---MISSING--
+Octopus OLED clear
 
 Octopus OLED draw pixel x _ y _
---MISSING--
+Octopus OLED draw pixel x _ y _
 
 Octopus OLED draw line from x _ y _ to x _ y _
---MISSING--
+Octopus OLED draw line from x _ y _ to x _ y _
 
 Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
---MISSING--
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
 
 Octopus OLED fill rectangle x _ y _ w _ h _
---MISSING--
+Octopus OLED fill rectangle x _ y _ w _ h _
 
 Octopus OLED draw circle x _ y _ radius _
---MISSING--
+Octopus OLED draw circle x _ y _ radius _
 
 Octopus OLED fill circle x _ y _ radius _
---MISSING--
+Octopus OLED fill circle x _ y _ radius _
 
 
 ####
 # OctoStudio
 
 Octo start
---MISSING--
+Octo start
 
 Octo beam to phones _
---MISSING--
+Octo beam to phones _
 
 duration _ ms
---MISSING--
+duration _ ms
 
 Octo receive beam
---MISSING--
+Octo receive beam
 
 Octo stop
---MISSING--
+Octo stop
 
 ##################
 # MicroBlocks UI #
@@ -3095,121 +2920,121 @@ Octo stop
 # buttons, error & info messages, dialog boxes, etc
 
 New
-Neu
+New
 
 Open
-Öffnen
+Open
 
 Open from board
-Vom Board öffnen
+Open from board
 
 Copy project URL to clipboard
-kopiere Projekt-URL in Zwischenablage
+Copy project URL to clipboard
 
 Information
 Information
 
 Plug in the board.
-Schließe das Board an.
+Plug in the board.
 
 Plug in the board and click the USB icon to connect.
-Schließe das Board an und klicke zum Verbinden auf das USB-Icon.
+Plug in the board and click the USB icon to connect.
 
 Reading project from board...
-Projekt wird vom Board gelesen...
+Reading project from board...
 
 Loading project...
-Projekt wird geladen...
+Loading project...
 
 Found a newer version of
-Gefunden wurde eine neuere Version von
+Found a newer version of
 
 Do you want me to update the one in the project?
-Möchtest du sie im Projekt updaten?
+Do you want me to update the one in the project?
 
 Save
-Speichern
+Save
 
 Connect
-Verbinden
+Connect
 
 connect
-verbunden
+connect
 
 connect (BLE)
-verbunden (BLE)
+connect (BLE)
 
 open Boardie
-Boardie öffnen
+open Boardie
 
 disconnect
-trennen
+disconnect
 
 Serial port:
-Serieller Anschluss:
+Serial port:
 
 Connect board and try again
-Board anschließen und nochmals versuchen
+Connect board and try again
 
 other...
-sonstige...
+other...
 
 none
-kein Anschluss
+none
 
 Port name?
-Anschluss-Name?
+Port name?
 
 Board type:
-Board-Typ:
+Board type:
 
 Select board:
-Board auswählen:
+Select board:
 
 Could not read:
-Lesen nicht möglich:
+Could not read:
 
 by
-von
+by
 
 Created with GP
-Mit GP erstellt
+Created with GP
 
 More info at http://microblocks.fun
-Mehr Informationen unter http://microblocks.fun
+More info at http://microblocks.fun
 
 Function "
-Funktion "
+Function "
 
 " is too large to send to board.
-" ist zu groß, um an das Board gesendet zu werden.
+" is too large to send to board.
 
 Script is too large to send to board.
-Skript ist zu groß, um an das Board gesendet zu werden.
+Script is too large to send to board.
 
 Use "Connect" button to connect to a MicroBlocks device.
-Drücke "Verbinden", um dein MicroBlocks-Gerät zu verbinden.
+Use "Connect" button to connect to a MicroBlocks device.
 
 No boards found; is your board plugged in?
-Kein Board gefunden; ist dein Board eingesteckt?
+No boards found; is your board plugged in?
 
 For AdaFruit boards, double-click reset button and try again.
-Für AdaFruit Boards den Reset Knopf drücken und erneut versuchen
+For AdaFruit boards, double-click reset button and try again.
 
 Only recent Chrome and Edge browsers support WebSerial.
-Nur neuste Chrome- and Edge-Browser unterstützen WebSerial.
+Only recent Chrome and Edge browsers support WebSerial.
 
 The board is not responding.
-Das Board reagiert nicht.
+The board is not responding.
 
 Try to Install MicroBlocks on the board?
-MicroBlocks auf dem Board installieren?
+Try to Install MicroBlocks on the board?
 
 The MicroBlocks in your board is not current
-Die MicroBlocks-Version auf deinem Board ist nicht aktuell
+The MicroBlocks in your board is not current
 
 Try to update MicroBlocks on the board?
-MicroBlocks auf dem Board aktualisieren?
+Try to update MicroBlocks on the board?
 
 MicroBlocks
 MicroBlocks
@@ -3221,432 +3046,432 @@ Start
 Start
 
 Quit MicroBlocks?
-MicroBlocks beenden?
+Quit MicroBlocks?
 
 Discard current project?
-Aktuelles Projekt verwerfen?
+Discard current project?
 
 # Scripting area right-click context menu
 
 set block size...
-setze Blockgröße auf ...
+set block size...
 
 make blocks bigger or smaller
-stellt Blöcke größer oder kleiner dar
+make blocks bigger or smaller
 
 clean up
-aufräumen
+clean up
 
 arrange scripts
-Skripte in einer Reihe anordnen
+arrange scripts
 
 undrop (ctrl-Z)
-zurücknehmen (Strg-Z)
+undrop (ctrl-Z)
 
 undo the last block drop
-letzte Blockverschiebung zurücknehmen
+undo the last block drop
 
 copy all scripts to clipboard
-kopiere alle Skripte in die Zwischenablage
+copy all scripts to clipboard
 
 copy all scripts to clipboard as URL
-kopiere alle Skripte als URL in die Zwischenablage
+copy all scripts to clipboard as URL
 
 paste all scripts
-füge alle Skripte ein
+paste all scripts
 
 paste script
-füge Skript ein
+paste script
 
 paste script from clipboard
-füge Skript aus Zwischenablage ein
+paste script from clipboard
 
 save a picture of all visible scripts
-speichere ein Bild aller sichtbaren Skripts
+save a picture of all visible scripts
 
 set exported script scale
-setze Größenmaßstab für Export auf ...
+set exported script scale
 
 small (50%)
-klein (50%)
+small (50%)
 
 normal (65%)
 normal (65%)
 
 large (100%)
-groß (100%)
+large (100%)
 
 printable (200%)
-druckbar (200%)
+printable (200%)
 
 duplicate selection
-dupliziere Auswahl
+duplicate selection
 
 drag selection
-verschiebe Auswahl
+drag selection
 
 delete selection
-lösche Auswahl
+delete selection
 
 about...
-über...
+about...
 
 About MicroBlocks
-Über MicroBlocks
+About MicroBlocks
 
 virtual machine version
-Virtual Machine Version
+virtual machine version
 
 update firmware on board
-aktualisiere Board-Firmware
+update firmware on board
 
 enable or disable BLE
-aktiviere oder deaktivere BLE
+enable or disable BLE
 
 Allow the attached board to be connected via BLE?
-Verbindung des angeschlossenen Boards via BLE erlauben?
+Allow the attached board to be connected via BLE?
 
 show data graph
-zeige Daten als Diagramm
+show data graph
 
 set serial delay
-setze serielle Verzögerung
+set serial delay
 
 firmware version
-zeige Firmware-Version
+firmware version
 
 start WebThing server
-starte WebThing-Server
+start WebThing server
 
 stop WebThing server
-stoppe WebThing-Server
+stop WebThing server
 
 HTTP Server
 HTTP Server
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP-Server überwacht Port 6473
+MicroBlocks HTTP Server listening on port 6473
 
 disable autoloading board libraries
-deaktiviere automatisches Laden von Board-Modulen
+disable autoloading board libraries
 
 compact code store
---MISSING--
+compact code store
 
 enable autoloading board libraries
-aktiviere automatisches Laden von Board-Modulen
+enable autoloading board libraries
 
 enable PlugShare when project empty
-aktiviere PlugShare, falls Projekt leer ist
+enable PlugShare when project empty
 
 disable PlugShare when project empty
-deaktiviere PlugShare, falls Projekt leer ist
+disable PlugShare when project empty
 
 hide implementation blocks
-verstecke Implementationsblöcke
+hide implementation blocks
 
 do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-zeige keine Blöcke und Variablen aus internen Bibliotheken an (d. h. solche, deren Name mit einem Unterstrich beginnt)
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
 
 show implementation blocks
-zeige Implementationsblöcke
+show implementation blocks
 
 show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-zeige Blöcke und Variablen aus internen Bibliotheken an (d. h. solche, deren Name mit einem Unterstrich beginnt)
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
-Inhalt des Boards nach Anschließen nicht automatisch in die IDE einlesen, auch wenn das aktuelle Projekt leer ist
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 
 when plugging a board, automatically read its contents into the IDE if the current project is empty
-Wenn das aktuelle Projekt leer ist den Inhalt des Boards nach Anschließen automatisch in die IDE einlesen. 
+when plugging a board, automatically read its contents into the IDE if the current project is empty
 
 erase flash and update firmware on ESP board
-lösche Flash und aktualisiere Firmware auf ESP-Board
+erase flash and update firmware on ESP board
 
 install ESP firmware from URL
-installiere ESP-Firmware von URL
+install ESP firmware from URL
 
 Use board type
-Verwende Board-Typ
+Use board type
 
 Firmware Install
-Firmwareinstallation
+Firmware Install
 
 Firmware Installed
-Firmware installiert
+Firmware Installed
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
-Verbinde das Board durch Klicken des Connect-Buttons (USB-Icon) neu.
+Reconnect to the board by clicking the "Connect" button (USB icon).
 
 Connect USB cable while holding down the white BOOTSEL button before proceeding.
-halte während des Anschließens des USB-Kabels den weißen BOOTSEL-Button gedrückt, fahre dann hier fort.
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
 
 You will be asked to save the firmware file.
-Du wirst aufgefordert, die Firmware-Datei zu speichern.
+You will be asked to save the firmware file.
 
 Select
-Auswahl
+Select
 
 as the destination drive, then click Save.
-als Ziellaufwerk, und klicke dann auf Speichern.
+as the destination drive, then click Save.
 
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
-Wenn dein Micro:bit ein trauriges Gesicht zeigt, speichere die Datei Firmware.hex auf deine Festplatte und lege sie dann auf dem MICROBIT-Laufwerk ab.
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
 
 Installing firmware...
-Installiere Firmware...
+Installing firmware...
 
 Plug in the board.
-Schließe das Board an.
+Plug in the board.
 
 Board not connected
-Board nicht verbunden
+Board not connected
 
 Wiping board...
-Board löschen...
+Wiping board...
 
 (press ESC to cancel)
-(Drücke ESC um abzubrechen)
+(press ESC to cancel)
 
 Done!
-Fertig!
+Done!
 
 download and install latest VM
-aktuelle VM herunterladen und installieren
+download and install latest VM
 
 Select board type:
-Board-Typ auswählen:
+Select board type:
 
 Uploading MicroBlocks to board...
-MicroBlocks wird auf das Board geladen...
+Uploading MicroBlocks to board...
 
 copy data to clipboard
-Daten in der Ablage speichern
+copy data to clipboard
 
 clear data
-Daten löschen
+clear data
 
 clear memory and variables
-Variablen und Speicher zurücksetzen
+clear memory and variables
 
 show advanced blocks
-zeige fortgeschrittene Blöcke
+show advanced blocks
 
 export functions as library
-exportiere Funktionen als Modul
+export functions as library
 
 hide advanced blocks
-verstecke fortgeschrittene Blöcke
+hide advanced blocks
 
 put file on board
-sende Datei ans Board
+put file on board
 
 get file from board
-lade Datei vom Board
+get file from board
 
 uploaded
-hochgeladen
+uploaded
 
 downloaded
-heruntergeladen
+downloaded
 
 Data Graph
-Daten-Graph
+Data Graph
 
 Graph
 Graph
 
 clear graph
-lösche Graphen
+clear graph
 
 zero at bottom
-setze Nulllinie nach unten
+zero at bottom
 
 zero in middle
-setze Nulllinie mittig
+zero in middle
 
 export data to CSV file
-exportiere Daten in CSV-Datei
+export data to CSV file
 
 import data from CSV file
-importiere Daten aus CSV-Datei
+import data from CSV file
 
 copy graph data to clipboard
-kopiere Graph in Zwischenablage
+copy graph data to clipboard
 
 show instructions
-zeige Op-Code
+show instructions
 
 show compiled bytes
-zeige Byte-Code
+show compiled bytes
 
 expand
-ausklappen
+expand
 
 collapse
-einklappen
+collapse
 
 rename...
-umbenennen...
+rename...
 
 find variable accessors
-suche Variablenzugriff
+find variable accessors
 
 find scripts or block definitions where this variable is being read
-sucht Skript- oder Blockdefinitionen, in denen diese Variable lesen wird
+find scripts or block definitions where this variable is being read
 
 find variable modifiers
-suche Variablenänderung
+find variable modifiers
 
 find scripts or block definitions where this variable is being set or changed
-sucht Skript- oder Blockdefinitionen, in denen diese Variable gesetzt oder geändert wird
+find scripts or block definitions where this variable is being set or changed
 
 find uses of this block
-suche Blockverwendung 
+find uses of this block
 
 find scripts or block definitions using this block
-sucht Skript- oder Blockdefinitionen, in denen dieser Block verwendet wird
+find scripts or block definitions using this block
 
 show block definition...
-Blockdefinition anzeigen...
+show block definition...
 
 show the definition of this block
-Blockdefinition für diesen Block anzeigen
+show the definition of this block
 
 delete block definition...
-Blockdefinition löschen...
+delete block definition...
 
 delete the definition of this block
-Blockdefinition für diesen Block löschen
+delete the definition of this block
 
 duplicate
-duplizieren
+duplicate
 
 help
-zeige Hilfe
+help
 
 duplicate this block
-Diesen Block duplizieren
+duplicate this block
 
 delete block
-Block löschen
+delete block
 
 delete this block
-diesen Block löschen
+delete this block
 
 just this one block
-nur diesen Block
+just this one block
 
 copy to clipboard
-kopiere in Zwischenablage
+copy to clipboard
 
 copy to clipboard as URL
-kopiere als URL in Zwischenablage
+copy to clipboard as URL
 
 copy these blocks to the clipboard as a URL
-kopiere diese Blöcke als URL in die Zwischenablage 
+copy these blocks to the clipboard as a URL
 
 copy these blocks to the clipboard
-kopiere diese Blöcke in die Zwischenablage
+copy these blocks to the clipboard
 
 duplicate all
-dupliziere alles
+duplicate all
 
 duplicate these blocks
-dupliziere diese Blöcke
+duplicate these blocks
 
 extract block
-extrahiere Block 
+extract block
 
 pull out this block
-ziehe diesen Block heraus
+pull out this block
 
 show help for this block in a browser
-zeige Hilfe für diesen Block im Browser
+show help for this block in a browser
 
 save picture of script
-speichere Bild des Skripts
+save picture of script
 
 save picture of script with result
-speichere Bild des Skripts mit Ergebnis
+save picture of script with result
 
 save a picture of this block definition as a PNG file
-speichere Bild dieser Blockdefinition als PNG-Datei
+save a picture of this block definition as a PNG file
 
 save a picture of these blocks as a PNG file
-speichere Bild dieser Blöcke als PNG-Datei
+save a picture of these blocks as a PNG file
 
 save a picture of these blocks and their result as a PNG file
-speichere Bild dieser Blöcke und deren Ergebnis als PNG-Datei
+save a picture of these blocks and their result as a PNG file
 
 copy script
-dupliziere Skript
+copy script
 
 delete
-löschen
+delete
 
 Input type:
-Eingabetyp:
+Input type:
 
 string only
-nur Zeichenfolgen
+string only
 
 string or number
-Zeichenfolge oder Zahl
+string or number
 
 number only
-nur Zahlen
+number only
 
 stop editing
-stoppe Bearbeitung
+stop editing
 
 cut
-schneide aus
+cut
 
 copy
-kopiere
+copy
 
 paste
-füge ein
+paste
 
 accept
-akzeptiere
+accept
 
 revert
-zurücknehmen
+revert
 
 select all
-alles Auswählen
+select all
 
 define
-definiere
+define
 
 number/string
-Zahl/Zeichenfolge
+number/string
 
 editable number or string
-editierbare Zahl oder Zeichenfolge
+editable number or string
 
 label
-Beschriftung
+label
 
 input
-Eingabe
+input
 
 hide block definition
-verstecke Blockdefinition
+hide block definition
 
 Are you sure you want to remove this block definition?
-Bist du sicher, dass du diese Blockdefinition löschen möchtest?
+Are you sure you want to remove this block definition?
 
 Language
-Sprache
+Language
 
 Custom...
-Benutzerdefiniert...
+Custom...
 
 Obsolete
-obsolet
+Obsolete
 
 OK
 OK
@@ -3655,51 +3480,48 @@ Ok
 Ok
 
 Yes
-Ja
+Yes
 
 No
-Nein
+No
 
 Cancel
-Abbrechen
+Cancel
 
 Okay
 Okay
 
 Confirm
-Bestätigen
+Confirm
 
 # Library folders
 
 Libraries
-Module
+Libraries
 
 AI
-KI
+AI
 
 Graphics and Displays
-Displays und Anzeigen
+Graphics and Displays
 
 Kits and Boards
-Kits und Boards
-
-Motors
-Motoren
+Kits and Boards
 
 Network
-Netzwerk
+Network
 
 Other
-Sonstige
+Other
 
 Robots
-Roboter
+Robots
 
 Sensing
-Sensoren
+Sensing
 
 Sound
-Klang
+Sound
 
 System
 System
@@ -3707,22 +3529,22 @@ System
 # File picker and library dialogs
 
 New library name?
-Neuer Name der Bibliothek?
+New library name?
 
 show all block definitions
-zeige alle Blockdefinitionen
+show all block definitions
 
 hide all block definitions
-verstecke alle Blockdefinitionen
+hide all block definitions
 
 export this library
-exportiere diese Bibliothek
+export this library
 
 delete library
-lösche Bibliothek
+delete library
 
 Examples
-Beispiele
+Examples
 
 Desktop
 Desktop
@@ -3734,458 +3556,456 @@ Cloud
 Cloud
 
 File
-Datei
+File
 
 File Open
-Datei öffnen
+File Open
 
 File Save
-Datei speichern
+File Save
 
 File name:
-Dateiname:
+File name:
 
 New Folder
-Neuer Ordner
+New Folder
 
 by
-von
+by
 
 Depends:
-Abhängig von:
+Depends:
 
 Tags:
-Schlagworte:
+Tags:
 
 Path, name or URL for library?
-Pfad, Name oder URL des Moduls?
+Path, name or URL for library?
 
 Invalid URL
-Ungültige URL
+Invalid URL
 
 Could not fetch library.
-Modul konnte nicht geladen werden.
+Could not fetch library.
 
 Host does not exist or is currently down.
-Host existiert nicht oder ist momentan nicht erreichbar.
+Host does not exist or is currently down.
 
 File not found in server.
-Datei konnte auf dem Server nicht gefunden werden.
+File not found in server.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
-Server erwartet HTTPS, was von MicroBlocks momentan nicht unterstützt wird.
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
 
 library information
-zeige Modulinformation
+library information
 
 built-in library
-Integriertes Modul
+built-in library
 
 Dependency path, name or URL?
-Abhängigkeit Pfad, Name oder URL?
+Dependency path, name or URL?
 
 If you are adding a library that's built into MicroBlocks, you can just enter its name.
-Wenn du eine Bibliothek hinzufügst, die in MicroBlocks integriert ist, kannst Du ihren Namen eingeben.
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
 
 If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
-Wenn sich deine Bibliothek im Ordner "Bibliotheken" im lokalen MicroBlocks-Projektordner befindet, dann muss du ihr einen Schrägstrich (/) vorangestellen.
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
 
 If the library is hosted online, please input its full URL.
-Wenn die Bibliothek online gehostet wird, ist die vollständige URL einzugeben.
+If the library is hosted online, please input its full URL.
 
 Tag name?
-Schlagwort?
+Tag name?
 
 user library
-Benutzerbibliothek
+user library
 
 Add Library
-Bibliothek hinzufügen
+Add Library
 
 seconds remaining
-Sekunden verbleiben
+seconds remaining
 
 Decrease block size
-verkleinere Blockgröße
+Decrease block size
 
 Restore block size to 100%
-setze Blockgröße auf 100% zurück
+Restore block size to 100%
 
 Increase block size
-vergößere Blockgröße
+Increase block size
 
 ############
 # Tips Bar #
 ############
 
 Button
-Knopf
+Button
 
 Boolean Input
-Eingabe Wahrheitswert
+Boolean Input
 
 [l] toggle value, or drop a reporter into it.
-[l] Wert auswählen, oder zum Hineinziehen eines Rückgabeblocks.
+[l] toggle value, or drop a reporter into it.
 
 Color Input
-Eingabe Farbe
+Color Input
 
 [l] change the color, or drop a reporter into it.
-[l] Farbe auswählen, oder zum Hineinziehen eines Rückgabeblocks
+[l] change the color, or drop a reporter into it.
 
 Input
-Eingabe
+Input
 
 [l] edit its value, or drop a reporter into it.
-[l] zum Ändern des Wertes, oder zum Hineinziehen eines Rückgabeblocks.
+[l] edit its value, or drop a reporter into it.
 
 Block Extension
-Blockerweiterung
+Block Extension
 
 [l] right arrow to show optional inputs, left arrow to hide.
-[l] Rechtspfeil zur Anzeige optionaler Eingaben, Linkspfeil zum Verstecken.
+[l] right arrow to show optional inputs, left arrow to hide.
 
 Command Block
-Befehlsblock
+Command Block
 
 [l] to run, or drag to build scripts. [r] menu.
-[l] zum Starten oder Ziehen zum Bauen eines Skipts. [r] Menü.
+[l] to run, or drag to build scripts. [r] menu.
 
 Hat Block
-Kopfblock
+Hat Block
 
 [l] to run, or drag to build scripts. [r] menu.
-[l] zum Starten oder Ziehen zum Bauen eines Skipts. [r] Menü.
+[l] to run, or drag to build scripts. [r] menu.
 
 Reporter Block
-Rückgabeblock
+Reporter Block
 
 [l] to see value, or drop into an input slot. [r] menu.
-[l] zur Werteanzeige oder zum Ziehen in einen Eingabebereich. [r] Menü.
+[l] to see value, or drop into an input slot. [r] menu.
 
 Script
-Skipt
+Script
 
 [l] to run. [r] menu.
-[l] zum Starten. [r] Menü.
+[l] to run. [r] menu.
 
 Pane Divider
-Bereichsteiler
+Pane Divider
 
 Drag to change pane width.
-Verschiebe um die Größe des Bereichs zu ändern.
+Drag to change pane width.
 
 Library
-Bibliothek
+Library
 
 [l] to show the blocks in this library. [r] menu.
-[l] zum Zeigen der Blöcke in dieser Bibliothek. [r] Menü.
+[l] to show the blocks in this library. [r] menu.
 
 Block Category
-Blockkategorie
+Block Category
 
 [l] to show the blocks in this category.
-[l] zum Zeigen der Blöcke in dieser Kategorie.
+[l] to show the blocks in this category.
 
 Palette
 Palette
 
 Drag blocks from here to build scripts. Drop scripts here to delete them.
-Ziehe Blöcke von hier in den Skriptbereich. Schiebe Skripte hierher um sie zu löschen.
+Drag blocks from here to build scripts. Drop scripts here to delete them.
 
 Scripts Pane
-Skriptbereich
+Scripts Pane
 
 Drag blocks here to build scripts. [r] menu.
-Ziehe Blöcke hierher um Skripts zu bauen. [r] Menü.
+Drag blocks here to build scripts. [r] menu.
 
 #################################
 # Block Descriptions for TipBar #
 #################################
 
 Turn the user LED on or off.
-Schaltet die Benutzer-LED ein oder aus.
+Turn the user LED on or off.
 
 Display a bubble showing the value.
-Zeigt in einer Sprechblase den Wert an.
+Display a bubble showing the value.
 
 Graph the value.
-Zeigt den Wert grafisch an.
+Graph the value.
 
 Report the state of button A ( (-o) or (o-) ).
-Gibt den Zustand der Taste A zurück ( (-o) oder (o-) ).
+Report the state of button A ( (-o) or (o-) ).
 
 Report the state of button B ( (-o) or (o-) ).
-Gibt den Zustand von Taste B zurück ( (-o) oder (o-) ).
+Report the state of button B ( (-o) or (o-) ).
 
 Report the milliseconds since the timer was last reset.
-Gibt die Zeit in ms seit dem Zurücksetzen des Zeitgebers zurück.
+Report the milliseconds since the timer was last reset.
 
 Reset the timer.
-Setzt den Zeitgeber zurück.
+Reset the timer.
 
 Report the milliseconds since power up.
-Gibt die Zeit in ms seit dem Einschalten zurück.
+Report the milliseconds since power up.
 
 Report the microseconds since power up.
-Gibt die Zeit in µs seit dem Einschalten zurück.
+Report the microseconds since power up.
 
 Report the board type.
-Gibt den Typ des Boards zurück.
+Report the board type.
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
-Gibt den Logikpegel eines digitalen Pins zurück ( (-o) or (o-) ).
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
-Gibt eine Zahl proportional zur Spannung an einem analogen Pin zurück (0 = Masse, 1023 = Versorgungsspannung).
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
 
 Turn a pin on or off ( (-o) or (o-) ).
-Schaltet einen Pin ein oder aus ( (-o) or (o-) ).
+Turn a pin on or off ( (-o) or (o-) ).
 
 Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
-Erzeugt ein pulsweitenmoduliertes Signal (PWM) an einem Pin mit dem angegebenen Zyklus (0 - 1023).
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
 
 Report number of analog pins on this device.
-Gibt die Anzahl analoger Pins auf dem Gerät zurück.
+Report number of analog pins on this device.
 
 Report number of digital pins on this device.
-Gibt die Anzahl digitaler Pins auf dem Gerät zurück.
+Report number of digital pins on this device.
 
 Report the value of a register (0-255) of an I2C device (0-127).
-Gibt den Wert eines Registers (0-255) auf einem I2C-Gerät (0-127) zurück.
+Report the value of a register (0-255) of an I2C device (0-127).
 
 Set an I2C device and register to given value (0-255).
-Legt den Wert eines Registers (0-255) auf einem I2C-Gerät fest.
+Set an I2C device and register to given value (0-255).
 
 Receive multiple bytes from an I2C device.
-Empfängt mehrere Byte von einem I2C-Gerät.
+Receive multiple bytes from an I2C device.
 
 Send multiple bytes to an I2C device.
-Sendet mehrere Byte an ein I2C-Gerät.
+Send multiple bytes to an I2C device.
 
 Send a byte (0-255) to an SPI device.
-Sendet ein Byte (0-255) an ein SPI-Gerät.
+Send a byte (0-255) to an SPI device.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
---MISSING--
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
 
 Set the SPI clock speed and mode.
-Setzt die SPI-Taktgeschwindigkeit und den Modus.
+Set the SPI clock speed and mode.
 
 Send a byte array via SPI, replacing its contents with the bytes received.
---MISSING--
+Send a byte array via SPI, replacing its contents with the bytes received.
 
 Open the serial port at the given baud rate.
-Öffnet einen seriellen Anschluss mit der angegebenen Baudrate.
+Open the serial port at the given baud rate.
 
 Close the serial port.
-Schließt den seriellen Anschluss.
+Close the serial port.
 
 Report data received from the serial port (a byte array).
-Gibt die empfangenen Daten vom seriellen Anschluss (als Byte-Array) an.
+Report data received from the serial port (a byte array).
 
 Send a byte array to the serial port.
-Sendet ein Byte-Array zum seriellen Anschluss.
+Send a byte array to the serial port.
 
 Run when the board powers up or when the IDE start button is clicked.
-Wird ausgeführt, falls das Board an die Stromversorgung angeschlossen oder der IDE-Start-Knopf gedrückt wird.
+Run when the board powers up or when the IDE start button is clicked.
 
 Run when buttons A, B, or A+B are pressed.
-Wird ausgeführt, falls der Knopf A, B oder A+B gedrückt wurde.
+Run when buttons A, B, or A+B are pressed.
 
 Repeat the enclosed blocks indefinitely.
-Wiederholt die umschlossenen Blöcke dauerhaft.
+Repeat the enclosed blocks indefinitely.
 
 Repeat the enclosed blocks the given number of times.
-Wiederholt die umschlossenen Blöcke so oft wie angegeben.
+Repeat the enclosed blocks the given number of times.
 
 Wait the given number of milliseconds.
-Wartet die in Millisekunden angegebene Zeit.
+Wait the given number of milliseconds.
 
 Run the first set of blocks whose test condition is (-o) .
-Es wird der Blockbereich ausgeführt, für den die Bedinung (-o) ist.
+Run the first set of blocks whose test condition is (-o) .
 
 Run when the condition becomes (-o) .
-Wird ausgeführt, falls die Bedingung (-o) wird.
+Run when the condition becomes (-o) .
 
 Wait until the condition becomes (-o) .
-Wartet bis die Bedingung (-o) wird.
+Wait until the condition becomes (-o) .
 
 Return (report) the given value from a function or script.
-Gibt den angegebenen Wert einer Funktion oder eines Skripts zurück.
+Return (report) the given value from a function or script.
 
 Run when the given message is broadcast.
-Wird ausgeführt, wenn die angegebene Nachricht empfangen wurde.
+Run when the given message is broadcast.
 
 Broadcast the given message.
-Sendet die angegebene Nachricht.
+Broadcast the given message.
 
 Do nothing. Used to add notes and documentation.
-Macht nichts. Wird zum Kommentieren und Dokumentieren genutzt.
+Do nothing. Used to add notes and documentation.
 
 Repeat the enclosed blocks with the variable set to the current iteration number or item.
-Wiederholt die umschlossenen Blöcke unter Verwendung einer Laufvariable, die auf die aktuelle Iterationsnummer oder das aktuelle Element gesetzt ist.
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
 
 Repeat the enclosed blocks until the condition becomes (-o) .
-Wiederholt die umschlossenen Blöcke bis die Bedingung (-o) wird.
+Repeat the enclosed blocks until the condition becomes (-o) .
 
 Stop this task.
-Beendet das Skript
+Stop this task.
 
 Stop all tasks except this one.
-Beendet alle Skripte außer diesem.
+Stop all tasks except this one.
 
 Wait the given number of microseconds.
-Wartet die in Mikrosekunden angegebene Zeit.
+Wait the given number of microseconds.
 
 Report the last broadcast message received.
-Gibt die zuletzt empfangene Nachricht zurück.
+Report the last broadcast message received.
 
 Call the function with the given name and optional parameter list.
-Ruft die Funktion mit dem angegebenen Namen und den optionalen Parametern auf.
+Call the function with the given name and optional parameter list.
 
 Call the function with the given name and optional parameter list and report its return value.
-Ruft die Funktion mit dem angegebenen Namen sowie den optionalen Parametern auf und gibt einen Wert zurück.
+Call the function with the given name and optional parameter list and report its return value.
 
 Report the sum of the given numbers.
-Gibt die Summe der gegebenen Zahlen zurück.
+Report the sum of the given numbers.
 
 Report the first number minus the second.
-Gibt die Differenz der beiden Zahlen zurück (erste Zahl minus zweite Zahl).
+Report the first number minus the second.
 
 Report the product of the given numbers.
-Gibt das Produkt der beiden Zahlen zurück.
+Report the product of the given numbers.
 
 Report the first number divided by the second.
-Gibt den Quotienten der beiden Zahlen zurück (erste Zahl durch zweite Zahl).
+Report the first number divided by the second.
 
 Report the remainder of dividing the first number by the second.
-Gibt den Rest bei Division der ersten Zahl durch die zweite Zahl zurück.
+Report the remainder of dividing the first number by the second.
 
 Report the absolute value of the given number (always >= 0).
-Gibt den absoluten Betrag der Zahl zurück (stets >= 0).
+Report the absolute value of the given number (always >= 0).
 
 Report the minimum of the values.
-Gibt das Minimum der Werte zurück.
+Report the minimum of the values.
 
 Report the maximum of the values.
-Gibt das Maximum der Werte zurück.
+Report the maximum of the values.
 
 Report a randomly chosen number in the given range.
-Gibt eine zufälligen Wert aus dem gegebenen Bereich zurück.
+Report a randomly chosen number in the given range.
 
 Report (-o) if the first value is less than the second one.
-Gibt (-o) zurück, falls der erste Wert kleiner als der zweite Wert ist.
+Report (-o) if the first value is less than the second one.
 
 Report (-o) if the first value is less than or equal to the second one.
-Gibt (-o) zurück, falls der erste Wert kleiner oder gleich dem zweiten Wert ist.
+Report (-o) if the first value is less than or equal to the second one.
 
 Report (-o) if the two values are equal.
-Gibt (-o) zurück, falls beide Werte identisch sind.
+Report (-o) if the two values are equal.
 
 Report (-o) if the two values are not equal.
-Gibt (-o) zurück, falls beide Werte ungleich sind.
+Report (-o) if the two values are not equal.
 
 Report (-o) if the first value is greater than or equal to the second one.
-Gibt (-o) zurück, falls der erste Wert größer oder gleich dem zweiten Wert ist.
+Report (-o) if the first value is greater than or equal to the second one.
 
 Report (-o) if the first value is greater than the second one.
-Gibt (-o) zurück, falls der erste Wert größer als der zweite Wert ist.
+Report (-o) if the first value is greater than the second one.
 
 Boolean constant ( (-o) or (o-) ).
-Wahrheitswert ( (-o) oder (o-) ).
+Boolean constant ( (-o) or (o-) ).
 
 Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
-Gibt die logische Umkehrung des Wahrheitswerts ( (-o) oder (o-) ) zurück.
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
 
 Report (-o) if both values are (-o)
-Gibt (-o) zurück, falls beide Werte (-o) sind.
+Report (-o) if both values are (-o)
 
 Report (-o) if either value is (-o)
-Gibt (-o) zurück, falls mindestens einer der beiden Werte (-o) ist.
+Report (-o) if either value is (-o)
 
 Report (-o) if first input is a value of the given data type.
-Gibt (-o) zurück, falls die Eingabe ein Wert des angegebenen Datentyps ist.
+Report (-o) if first input is a value of the given data type.
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
-Gibt den numerischen Wert einer hexadezimalen Zeichenfolge zurück (Bereich: -0x1FFFFFFF bis 0x1FFFFFFF).
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
 
 Report bitwise AND of two numbers.
-Gibt die bitweise UND-Verknüpfung zweier Zahlen zurück.
+Report bitwise AND of two numbers.
 
 Report bitwise OR of two numbers.
-Gibt die bitweise ODER-Verknüpfung zweier Zahlen zurück.
+Report bitwise OR of two numbers.
 
 Report bitwise XOR (exclusive OR) of two numbers.
-Gibt die bitweise XOR-Verknüpfung (exklusives ODER) zweier Zahlen zurück.
+Report bitwise XOR (exclusive OR) of two numbers.
 
 Report bitwise inverse of the given number.
-Gibt die bitweise Negation der Zahl zurück.
+Report bitwise inverse of the given number.
 
 Report the given number shifted left by the given number of bits.
-Gibt die Zahl zurück, die aus der bitweisen Verschiebung der Eingabe um die angegebene Anzahl von Bits nach links entsteht.
+Report the given number shifted left by the given number of bits.
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
-Gibt die Zahl zurück, die aus der bitweisen Verschiebung der Eingabe um die angegebene Anzahl von Bits nach rechts entsteht (arithmetische Verschiebung; Vorzeichen bleibt erhalten).
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
 
 Set a variable to the given value.
-Weist der Variable den angegebenen Wert zu.
+Set a variable to the given value.
 
 Change a variable by the given amount.
-Ändert den Wert der Variable um den angegebenen Wert.
+Change a variable by the given amount.
 
 Create a variable local to the containing script with the given initial value.
-Erzeugt eine lokale Variable im enthaltenen Skript mit dem angegebenen Anfangswert.
+Create a variable local to the containing script with the given initial value.
 
 Report the Nth item of a list, string, or byte array.
-Gibt das angegebene Element aus der Liste, der Zeichenfolge oder dem Byte-Array zurück.
+Report the Nth item of a list, string, or byte array.
 
 Report the number of items in a list, string, or byte array.
-Gibt die Anzahl der Elemente der Liste, der Zeichenfolge oder des Byte-Arrays zurück.
+Report the number of items in a list, string, or byte array.
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
-Verbindet (verkettet) die angegebenen Listen, Zeichenfolgen oder Byte-Array und gibt das Ergebnis zurück.
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
 
 Create and report a short list containing the given items. Length limited by available stack space.
-Erstellt eine kurze Liste mit den angegebenen Elementen und gibt diese zurück. Die Größe ist durch den Stack-Speicher begrenzt.
+Create and report a short list containing the given items. Length limited by available stack space.
 
 Add an item to the end of a list.
-Fügt ein Element an das Ende der Liste an.
+Add an item to the end of a list.
 
 Replace the Nth item (or all items) of a list or byte array with the given value.
-Ersetzt das angegebene Element (oder alle Elemente) in der Liste oder dem Byte-Array durch den gegebenen Wert.
+Replace the Nth item (or all items) of a list or byte array with the given value.
 
 Delete the Nth item (or all items) of a list.
-Lösche das angegebene Element (oder alle Elemente) aus der Liste.
+Delete the Nth item (or all items) of a list.
 
 Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
-Gib die Stelle des Elements in der Liste oder der Teilzeichenfolge in der Zeichenfolge zurück. Gibt -1 zurück, falls nichts gefunden.
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
 
 Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
-Gibt eine Kopie vom angegebenen Index bis zum Ende (oder optional zum Stopindex) der Liste, der Zeichenfolge oder des Byte-Array zurück.
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
 
 Split the given string with the given delimiter and report the result (a list of strings).
-teilt die gegebene Zeichenfolge mit dem angegebenen Trennzeichen und gibt dies als Liste von Zeichenfolgen zurück.
+Split the given string with the given delimiter and report the result (a list of strings).
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
-verbindet die Elemente der Liste zu einer Zeichenfolge, optional mit Trennzeichen getrennt.
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
 
 Report the Unicode value ("code point") of the Nth character of the given string.
-Gibt den Unicode-Wert ("Codepunkt") des N-ten Zeichens der angegebenen Zeichenfolge an.
+Report the Unicode value ("code point") of the Nth character of the given string.
 
 Report a string containing the given Unicode value ("code point") or list of values.
-Gibt eine Zeichenfolge zurück, die den angegebenen Unicode-Wert oder eine Liste von Werten enthält.
+Report a string containing the given Unicode value ("code point") or list of values.
 
 Report a new list of the given length filled with zero or the optional value.
-Gibt eine neue Liste der angegebenen Länge zurück, die mit Nullen oder dem optionalen Wert gefüllt ist.
+Report a new list of the given length filled with zero or the optional value.
 
 Report a new byte array of the given length filled with zero or the optional value.
-Gibt ein neues Byte-Array der angegebenen Länge zurück, das mit Nullen oder dem optionalen Wert gefüllt ist.
+Report a new byte array of the given length filled with zero or the optional value.
 
 Report a byte array containing the UTF-8 bytes of the given string.
-Gibt ein Byte-Array zurück, das die UTF-8-Bytes der angegebenen Zeichenfolge enthält.
+Report a byte array containing the UTF-8 bytes of the given string.
 
 Report the number of words of memory available. Stop button frees up memory.
-Gibt die Größe des verfügbaren Speichers zurück. Der Stopp-Knopf gibt Speicher frei.
-
-
+Report the number of words of memory available. Stop button frees up memory.
