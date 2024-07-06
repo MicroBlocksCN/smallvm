@@ -421,6 +421,30 @@ void flashWriteWord(int *addr, int value) {
 		spi_flash_write(flashAddr(dst), src, 4 * wordCount);
 	}
 
+#elif defined(__ZEPHYR__)
+
+#include <zephyr/drivers/flash.h>
+#include <zephyr/storage/flash_map.h>
+
+#define PERSIST_PARTITION_LABEL persist_partition
+#define START FIXED_PARTITION_OFFSET(PERSIST_PARTITION_LABEL)
+#define HALF_SPACE (FIXED_PARTITION_SIZE(PERSIST_PARTITION_LABEL) / 2)
+
+const struct device *flash_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+
+static void flashErase(int *startAddr, int *endAddr) {
+	size_t bytes = (endAddr - startAddr) * sizeof(int);
+	flash_erase(flash_dev, (uintptr_t)startAddr, bytes);
+}
+
+void flashWriteWord(int *addr, int value) {
+	flash_write(flash_dev, (uintptr_t)addr, &value, sizeof(value));
+}
+
+void flashWriteData(int *dst, int wordCount, uint8 *src) {
+	flash_write(flash_dev, (uintptr_t)dst, src, wordCount * sizeof(int));
+}
+
 #else
 	// Simulate Flash operations using a RAM code store; allows MicroBlocks to run in RAM
 	// on platforms that do not support Flash-based persistent memory. On systems with
