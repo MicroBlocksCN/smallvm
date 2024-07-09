@@ -3822,6 +3822,9 @@ set all NeoPixels color _
 clear NeoPixels
 关闭 NeoPixels
 
+Ultrasonic distance (cm)
+超声波 距离(cm)
+
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
 4位数码管(TM1637)
