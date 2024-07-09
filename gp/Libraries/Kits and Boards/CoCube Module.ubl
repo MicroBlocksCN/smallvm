@@ -1,7 +1,7 @@
 module 'CoCube Module'
 author 'Liang Shuai'
-version 1 0 
-depends NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Other/System/sensorPrims' 
+version 1 1
+depends NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Distance (HC-SR04)' 'Other/System/sensorPrims'
 description 'External modules of CoCube'
 
   spec ' ' 'Power on module' 'Power on module'
@@ -17,10 +17,8 @@ description 'External modules of CoCube'
   spec ' ' 'attach NeoPixel' 'attach NeoPixel'
   spec ' ' 'set all NeoPixels color' 'set all NeoPixels color _' 'color'
   spec ' ' 'clear NeoPixels' 'clear NeoPixels'
-
-to 'Power off module' {
-  digitalWriteOp 13 false
-}
+  space
+  spec 'r' 'Ultrasonic distance (cm)' 'Ultrasonic distance (cm)'
 
 to 'Gripper close' duration {
   '[sensors:i2cSetPins]' 21 22
@@ -41,6 +39,10 @@ to 'Gripper release' {
   '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
 }
 
+to 'Power off module' {
+  digitalWriteOp 13 false
+}
+
 to 'Power on module' {
   digitalWriteOp 13 true
 }
@@ -52,6 +54,10 @@ to 'ToF connected' {
 
 to 'ToF distance (mm)' {
   return ('VL53L0X distance (mm)')
+}
+
+to 'Ultrasonic distance (cm)' {
+  return ('distance (cm)' 21 22)
 }
 
 to 'attach NeoPixel' {
