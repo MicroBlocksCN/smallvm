@@ -26,10 +26,10 @@ variables speed error_angle target_angle error_y angle error_distance error_x
   spec ' ' 'Motor Stop' 'Motor Stop'
   spec ' ' 'Motor Break' 'Motor Break'
   space
-  spec ' ' 'Rotate to Angle' 'Rotate to Angle _ Speed _' 'num num' 0 '10'
-  spec ' ' 'Rotate to Target' 'Rotate to Target X _ Y _ Speed _' 'num num num' '10' '10' '10'
+  spec ' ' 'Rotate to Angle' 'Rotate to Angle _ Speed _' 'num num' 0 10
+  spec ' ' 'Rotate to Target' 'Rotate to Target X _ Y _ Speed _' 'num num num' 10 10 10
   spec ' ' 'Move to Target X _ Y _ Speed _' 'Move to Target X _ Y _ Speed _' 'num num num' 10 10 50
-  spec ' ' '_calculate_angle_error_' '_calculate_angle_error_ angle _' 'num' '10'
+  spec ' ' '_calculate_angle_error_' '_calculate_angle_error_ angle _' 'num' 10
   spec ' ' '_calculate_distance_error target_x _ target_y _' '_calculate_distance_error Target_X _ Target_Y _' 'num num' 10 10
 
 to 'Battery Percentage' {
@@ -102,15 +102,15 @@ to 'Move to Target X _ Y _ Speed _' target_x target_y speed {
     }
     comment 'angle_error_ <= 10° : Move to Target'
     if (not rotate_mode_) {
-      if (error_distance < 5) {
+      if (error_distance < 10) {
         'Motor Break'
         return 0
       }
     }
     comment 'P control'
-    if (and (error_distance > 5) (error_distance < 100)) {
-      ControlLeftMotor (speed + ((speed * error_angle) / 25))
-      ControlRightMotor (speed - ((speed * error_angle) / 25))
+    if (and (error_distance > 10) (error_distance < 50)) {
+      ControlLeftMotor ((speed / 2) + ((speed * error_angle) / 50))
+      ControlRightMotor ((speed / 2) - ((speed * error_angle) / 50))
     } else {
       'Move Forward' speed
     }
