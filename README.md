@@ -7,7 +7,15 @@
 
 当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot) 上.
 
-开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支
+开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支.
+
+推荐的工作流程:
+
+1. fork 当前项目, 并将其克隆到你本地目录
+2. 将 MicroBlocksCN 仓库添加为远程仓库: `git remote add MicroBlocksCN https://github.com/MicroBlocksCN/smallvm`
+3. 每次创建开发分支之前, 拉取 MicroBlocksCN 仓库最新代码: `git fetch MicroBlocksCN` 
+4. 从最新的远程分支 MicroBlocksCN/devCN 中创建你的开发分支(以 test-xxx 为例): `git checkout -b test-xxx MicroBlocksCN/devCN`: 
+5. 提交你的开发分支, 并创建 pull request
 
 **如果你想贡献积木库(ubl文件), 但觉得使用 git 太繁琐, 可以直接将库文件发给我(wuwenjie718@gmail.com), 我来代为提交**
 
