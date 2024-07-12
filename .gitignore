@@ -32,12 +32,7 @@ JohnWorkInProgress
 *.exe
 *.deb
 *.pem
-
-# ignore snapBlocks copies of Examples and Libraries folders
-electron/src/snapBlocks/files.txt
-electron/src/snapBlocks/Examples
-electron/src/snapBlocks/Libraries
-
-electron/node_modules/*
-**/node_modules/*
-
+.vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/launch.json
+.DS_Store
