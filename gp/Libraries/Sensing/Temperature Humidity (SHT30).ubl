@@ -1,0 +1,29 @@
+module SHT30
+author Patch
+version 1 0
+description 'read temperature and humidity data from BTC Standing Base for M5 Core with SHT30'
+variables '_SHT30 data'
+
+  spec 'r' 'SHT30 humidity' 'SHT30 humidity'
+  spec 'r' 'SHT30 temperature' 'SHT30 temperature'
+  spec ' ' '_SHT30 read data' '_SHT30 read data'
+
+to 'SHT30 humidity' {
+  '_SHT30 read data'
+  return (((((at 4 (v '_SHT30 data')) * 256) + (at 5 (v '_SHT30 data'))) * 100) / 65535)
+}
+
+to 'SHT30 temperature' {
+  '_SHT30 read data'
+  return ((((((at 1 (v '_SHT30 data')) * 256) + (at 2 (v '_SHT30 data'))) * 175) / 65535) - 45)
+}
+
+to '_SHT30 read data' {
+  comment '0x2C:clock stretching enabled.
+0x06: repeatablity high.'
+  '[sensors:i2cWrite]' (hexToInt '44') ('[data:makeList]' (hexToInt '2C') (hexToInt '06'))
+  '_SHT30 data' = (newList 6)
+  waitMillis 100
+  comment 'Read all data into _SHT30 data'
+  '[sensors:i2cRead]' (hexToInt '44') (v '_SHT30 data')
+}
