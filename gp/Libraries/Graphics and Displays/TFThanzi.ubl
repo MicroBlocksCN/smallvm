@@ -1,35 +1,115 @@
-module 'TFThanzi'
+module TFThanzi
 author 'Patch & Rang'
-version 1 2
-depends TFT Files
+version 1 3 
+depends TFT Strings Files 
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.3 增加了一个大写英文字母字体
 v1.2 增加了通过文件保存和提取字模的功能
 v1.1 增加了颜色设置，增加了几个汉字和数字示例
 -------
 取模工具：
-https://create.codelab.club/projects/53070
-https://create.codelab.club/projects/53122
+32点阵汉字取模 https://create.codelab.club/projects/53122
+16点阵汉字取模 https://create.codelab.club/projects/53070
+16点阵图案设计工具 https://create.codelab.club/projects/66585
+-------
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/'
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _' 'str num num num color' 'data' 0 0 1
-  spec ' ' 'drawNumber' 'drawNumber _ x _ y _ size _ _' 'num num num num color' 112358 0 0 1
+  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
-  spec ' ' 'showChinese' 'showChinese _ x _ y _ size _ color _' 'str num num num color' 'text' 0 0 1
   space
-  spec 'r' '_numbers' 'numbers'
-  spec 'r' '_digit' 'digit _' 'num' 0
-  spec 'r' '_sample'  'sample'
-  spec 'r' '_getCodeFromFile' 'getCodeFromFile _' 'str' 'fileName'
+  spec 'r' '_getCode' '_getCode _' 'str' 'text'
+  spec 'r' '_getCodeFromFile' '_getCodeFromFile _' 'str' 'fileName'
+  spec 'r' '_numbers' '_numbers'
+  spec 'r' '_sample' '_sample'
+  spec 'r' '_l1' '_l1'
+  spec 'r' '_l2' '_l2'
+  spec 'r' '_l3' '_l3'
+  spec 'r' '_c1' '_c1'
+  spec 'r' '_c2' '_c2'
+  spec 'r' '_chars' '_chars'
 
-to _digit foo {
-  comment '获得0-9数字的字模'
-  local 'var' ('[data:convertType]' foo 'number')
-  if (var == 0) {
-    return (at 10 (_numbers))
+to '_c1' {
+  return ('[data:makeList]' '10100000000000000000000000000000000000000000000000000000000000000000,' '10100000000000000000000000000000000000000058380000000000000000000000,' '10100000000000000000000000000000000000000060600000000000000000000000,' '1010000000FEFE000000000000000000000000000067670000000000000000000000' '10100000008080808080808080800000000000000000000000000000000000000000,' '10100000000000000008080000000000000000000000000000101000000000000000,' '101000000000000000241C0000000000000000000000000000000000000000000000' '10100000000008040202028282443800000000000000000000002700000000000000,' '1010000000000000C0300804020000000000000000000000030C1020400000000000' '1010000000000002040830C000000000000000000000004020100C03000000000000')
+}
+
+to '_c2' {
+  return ('[data:makeList]' '1010000C12120CC02010101010101010200000000000001F20404040404040402000' '10100000182424180000804020100804000000002010080402010000182424180000,')
+}
+
+to '_chars' {
+  comment '符号字体，需要在这里列出所有符号，与_c1,_c2字体积木中的字体内容顺序要一致'
+  return ' ,.!-:''?()℃%'
+}
+
+to '_getCode' foo {
+  comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
+其中_l开头的是26个大写字母，_c开头的是符号，_numbers是数字。
+可以用你自己的字体替换这几个积木中的内容.每个字体积木包含10个字符'
+  local 'var' (('[data:unicodeAt]' 1 (uppercase foo)) - 65)
+  local 'num' (17 + var)
+  if (and (var > -1) (var < 26)) {
+    return (at ((var % 10) + 1) (callCustomReporter ('[data:join]' '_l' ((var / 10) + 1))))
+  } (and (num > -1) (num < 10)) {
+    if (num == 0) {num = 10}
+    return (at num ('_numbers'))
+  } else {
+    var = ('[data:find]' foo ('_chars'))
+    if (var > 0) {
+      return (at (((var - 1) % 10) + 1) (callCustomReporter ('[data:join]' '_c' (((var - 1) / 10) + 1))))
+    } (('[data:find]' foo '上海') > 0) {
+      if (foo == '上') {
+        return (at 1 ('_sample'))
+      } else {
+        return (at 2 ('_sample'))
+      }
+    } else {
+      local 'file' ('_getCodeFromFile' foo)
+      if ((size file) > 10) {
+        return file
+      } else {
+        sayIt foo 'is not in font library'
+        comment '没找到字体时返回空格'
+        return (at 1 ('_c1'))
+      }
+    }
   }
-  return (at var (_numbers))
+}
+
+to '_getCodeFromFile' file {
+  comment '从文件读取字模，文件以要显示的汉字命名'
+  if (('[data:find]' file ('file names')) > -1) {
+    '[file:open]' file
+    local 'var' ('[file:readLine]' file)
+    '[file:close]' file
+    return var
+  } else {
+    return ''
+  }
+}
+
+to '_l1' {
+  return ('[data:makeList]' '101000F8040202020202020202020200F800007F0101010101010101010101017F00' '101000FE8082828282828282828282403800007F0040404040404040404040201E00' '101000F80402020202020202020202000800001F0040404040404040404040201000' '101000FE000202020202020202020200F800007F4040404040404040404040201F00' '101000FE8082828282828282828282820200007F4040404040404040404040404000' '101000FE8082828282828282828282820200007F0000000000000000000000000000' '101000F80402020202020202020202008800001F0040404040404141414141211F00' '101000FE008080808080808080808080FE00007F0000000000000000000000007F00' '10100002020202020202FE0202020200020000404040404040407F40404040404000' '10100002020202020202FE0202020200020000404040404040201F00000000000000')
+}
+
+to '_l2' {
+  return ('[data:makeList]' '101000FE8080404060A01010080804040200007F0000000000000102040810204000' '101000FE0000000000000000000000000000003F4040404040404040404040001000' '101000FE020204081020201008040200FE00007F0000000000000000000000007F00' '101000FE000810204080000000000000FE00007F0000000000000102040810007F00' '101000F0080402020202020202020000FC00003F0000404040404040404020100F00' '101000FC0202020202020202020202807800007F0001010101010101010101000000' '101000F0080402020202020202020200F800001F0040404040404040402810284700' '101000FC0202020202020202020202807800007F0001010101010103050911204000' '10100078840202020202020202020200080000100041414141414141414141221C00' '10100002020202020202FE0202020200020000000000000000007F00000000000000')
+}
+
+to '_l3' {
+  return ('[data:makeList]' '101000FE000000000000000000000000FE00001F0040404040404040404040201F00' '10100006186080000000000000806018060000000000010618606018060100000000,' '101000FE000000000000000000000000FE00007F0040201008040408102040407F00' '10100002040810204080004020100800020000402010080402000102040810204000,' '101000020408102040800040201008000200000000000000007F0000000000000000' '10100002020202020202824222120A00020000406050484442414040404040404000')
+}
+
+to '_numbers' {
+  comment '本库设计独特的16点阵数字字体'
+  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F8040202020282820202020200F800001F0040404040414140404040201F00')
+}
+
+to '_sample' {
+  comment '两个示例汉字的32点阵字模'
+  return ('[data:makeList]' '101000000000000000FE2020202020000000004040404040407F4040404040404000' '10100042440008E416151454541414F4040000402011011F111115155151311F1101')
 }
 
 to draw data x y size color {
@@ -53,39 +133,27 @@ to draw data x y size color {
   }
 }
 
-to drawNumber number x y size color {
-  comment '以本库设计的数字字体显示数字'
-  local 'var' ('[data:convertType]' number 'string')
+to drawChar foo x y size color {
+  local 'var' ('[data:convertType]' foo 'string')
   for i (size var) {
-    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
-    draw (_digit (at i var)) (x + ((i - 1) * (size * 16))) y size color
+    local 'font' ('_getCode' (at i var))
+    local 'dz' 0
+    if (('[data:copyFromTo]' font 1 4) == ('[data:convertType]' 2020 'string')) {
+      dz = 32
+    } else {
+      dz = 16
+    }
+    '[tft:rect]' (x + ((i - 1) * (size * dz))) y (size * dz) (size * dz) (colorSwatch 0 0 0 255)
+    draw font (x + ((i - 1) * (size * dz))) y size color
   }
 }
 
 to drawSample x y size color {
   comment '自带两个汉字的显示示例'
-  for i (size (_sample)) {
-    '[tft:rect]' (x + ((i - 1) * (size * 32))) y (size * 32) (size * 32) (colorSwatch 0 0 0 255)
-    draw (at i (_sample)) (x + ((i - 1) * (size * 32))) y size color
+  for i (size ('_sample')) {
+    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
+    draw (at i ('_sample')) (x + ((i - 1) * (size * 16))) y size color
   }
-}
-
-to _getCodeFromFile file {
-  comment '从文件读取字模，文件以要显示的汉字命名'
-  '[file:open]' file
-  local 'var' ('[file:readLine]' file)
-  '[file:close]' file
-  return var
-}
-
-to _numbers {
-  comment '本库设计独特的16点阵数字字体'
-  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F8040202020202020202020200F800001F0040404040404040404040201F00')
-}
-
-to _sample {
-  comment '两个示例汉字的32点阵字模'
-  return ('[data:makeList]' '20200000000000000000c0c0808080f0fc989880808080c0c08000000000000000000000000000000000ffffff101010101010101010ffffff0000000000000000000000000000000000ffffff828282828282828282ffffff0000000000000000000000000000000000030303000000000000000000030303000000000000000000' '2020000000000000008000000000000000f8f818000000000080000000000000000000000000000000ffffff8383838383ffff838383838383ffff0300000000000000000000000000ffffff8181818181ffff818181818181ffff000000000000000000000000000007070300000000000000000000000000070300000000000000')
 }
 
 to saveFile fileName code {
@@ -96,22 +164,3 @@ to saveFile fileName code {
   '[file:close]' fileName
 }
 
-to showChinese text x y size color {
-  comment '通过文件获取字模显示汉字的方法'
-  local 'var' 0
-  local 'dz' 0
-  for i (size text) {
-    var = (_getCodeFromFile (at i text))
-    if ((size var) > 0) {
-      if ((size var) == 260) {
-        dz = 32
-      } else {
-        dz = 16
-      }
-      '[tft:rect]' (x + ((i - 1) * (dz * size))) y (dz * size) (dz * size) (colorSwatch 0 0 0 255)
-      draw var (x + ((i - 1) * (dz * size))) y size color
-    } else {
-      sayIt (at i text) '字不存在,请先用saveFile保存字模到文件'
-    }
-  }
-}
