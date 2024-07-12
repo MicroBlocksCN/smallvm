@@ -9,6 +9,8 @@
 
 开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支
 
+**如果你想贡献积木库(ubl文件), 但觉得使用 git 太繁琐, 可以直接将库文件发给我(wuwenjie718@gmail.com), 我来代为提交**
+
 ## MicroBlocks Website ##
 
 This repository contains the source code for MicroBlocks.
