@@ -1,0 +1,49 @@
+module 'Gas (PMSA003)'
+author Patch
+version 1 0
+description 'PMSA003 is a digital universal particle concentration sensor.
+Based on https://github.com/m5stack/M5Stack/tree/master/examples/KIT/PM25
+and data sheet https://www.gotronic.fr/pj2-pmsa003-series-data-manua-english-v2-5-2083.pdf
+Tested on M5STACK CORE with M5STACK PM2.5 Air Quality Module'
+
+variables airData
+
+  spec ' ' 'getAirData' 'getAirData'
+
+to getAirData {
+  airData = (newList 16)
+  comment 'airData index from 1 to 16
+airData[3]: PM1.0 concentration unit μ g/m3（CF=1，standard particle）
+airData[4]: PM2.5 concentration unit μ g/m3（CF=1，standard particle）
+airData[5]: PM10 concentration unit μ g/m3（CF=1，standard particle）
+airData[6]: PM1.0 concentration unit * μ g/m3（under atmospheric environment）
+airData[7]: PM2.5 concentration unit μ g/m3（under atmospheric environment）
+airData[8]: PM10 concentration unit （under atmospheric environment）
+airData[9]: number of particles with diameter beyond 0.3 um in 0.1 L of air
+airData[10]: number of particles with diameter beyond 0.5 um in 0.1 L of air.
+airData[11]: number of particles with diameter beyond 1.0 um in 0.1 L of air
+airData[12]: number of particles with diameter beyond 2.5 um in 0.1 L of air
+airData[13]: number of particles with diameter beyond 5.0 um in 0.1 L of air
+airData[14]: number of particles with diameter beyond 10 um  in 0.1 L of air.'
+  '[serial:open]' 9600
+  local 'rawData' 0
+  sayIt 'getting data...'
+  repeatUntil (and ((size rawData) == 32) ((at 1 rawData) == 66)) {
+    rawData = ('[serial:read]')
+    waitMillis 200
+  }
+  '[serial:close]'
+  local 'i' 1
+  local 'j' 1
+  repeat 32 {
+    if ((i % 2) == 1) {
+      atPut j airData (at i rawData)
+      atPut j airData ((at j airData) << 8)
+    } else {
+      atPut j airData ((at j airData) | (at i rawData))
+      j += 1
+    }
+    i += 1
+  }
+  sayIt 'Done'
+}
