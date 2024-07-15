@@ -93,7 +93,7 @@ comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
       local 'file' ('_getCodeFromFile' foo)
       if ((size file) > 10) {
         return file
-      } (('[data:find]' 'font' ('file names')) > 0) {
+      } (('[data:find]' 'font.bin' ('file names')) > 0) {
         local 'r' (_fromFontFile foo)
         if (r != '') {
           return r
