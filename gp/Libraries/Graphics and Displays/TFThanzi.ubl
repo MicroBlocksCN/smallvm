@@ -1,8 +1,9 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 3 
-depends TFT Strings Files 
+version 1 4
+depends TFT Strings Files
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.4 增加二进制字库文件支持
 v1.3 增加了一个大写英文字母字体
 v1.2 增加了通过文件保存和提取字模的功能
 v1.1 增加了颜色设置，增加了几个汉字和数字示例
@@ -19,7 +20,9 @@ https://www.bilibili.com/video/BV1R14y1172r/'
   spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
+  spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
   space
+  spec 'r' '_fromFontFile' '_fromFontFile _' 'auto'
   spec 'r' '_getCode' '_getCode _' 'str' 'text'
   spec 'r' '_getCodeFromFile' '_getCodeFromFile _' 'str' 'fileName'
   spec 'r' '_numbers' '_numbers'
@@ -44,8 +47,29 @@ to '_chars' {
   return ' ,.!-:''?()℃%'
 }
 
-to '_getCode' foo {
-  comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
+to dec2hex dec {
+  local 'hexDigits' '0123456789abcdef'
+  if (dec == 0) {
+    return ('[data:join]' ('[data:convertType]' 0 'string') ('[data:convertType]' 0 'string'))
+  }
+  local 'hexString' ''
+  local 'num' dec
+  repeatUntil (num <= 0) {
+    local 'remainder' (num % 16)
+    hexString = ('[data:join]' (at (remainder + 1) hexDigits) hexString)
+    num = (num / 16)
+  }
+  if ((size hexString) < 2) {
+    return ('[data:join]' '0' hexString)
+  } else {
+    return hexString
+  }
+}
+
+
+
+to _getCode foo {
+comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
 其中_l开头的是26个大写字母，_c开头的是符号，_numbers是数字。
 可以用你自己的字体替换这几个积木中的内容.每个字体积木包含10个字符'
   local 'var' (('[data:unicodeAt]' 1 (uppercase foo)) - 65)
@@ -69,12 +93,36 @@ to '_getCode' foo {
       local 'file' ('_getCodeFromFile' foo)
       if ((size file) > 10) {
         return file
+      } (('[data:find]' 'font' ('file names')) > 0) {
+        local 'r' (_fromFontFile foo)
+        if (r != '') {
+          return r
+        } else {
+          sayIt foo 'is not in font library'
+          return (at 1 ('_c1'))
+        }
       } else {
         sayIt foo 'is not in font library'
         comment '没找到字体时返回空格'
         return (at 1 ('_c1'))
       }
     }
+  }
+}
+
+to _fromFontFile foo {
+  if (and (('[data:unicodeAt]' 1 foo) >= 19968) (('[data:unicodeAt]' 1 foo) <= 40959)) {
+    local 'f' (((('[data:unicodeAt]' 1 foo) - 19968) * 32) + 0)
+    '[file:open]' 'font.bin'
+    '[file:setReadPosition]' f 'font.bin'
+    local 'a' ('[file:readBytes]' 32 'font.bin')
+    local 'fon' ''
+    for i 32 {
+      fon = ('[data:join]' fon (dec2hex (at i a)))
+    }
+    return ('[data:join]' '1010' fon)
+  } else {
+    return ''
   }
 }
 
@@ -163,4 +211,3 @@ to saveFile fileName code {
   '[file:appendLine]' code fileName
   '[file:close]' fileName
 }
-
