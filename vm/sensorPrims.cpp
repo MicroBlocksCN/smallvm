@@ -1125,13 +1125,16 @@ static AccelerometerType_t accelType = accel_unknown;
 #define ICM20948_BANK_SEL 0x7F
 #define ICM20948_FILTERING 0x11
 
-
 // MPU9250 registers (decimal, following datasheet)
 #define MPU9250_BYPASS_EN 55
 #define MPU9250_ACCEL_XOUT_H 59
 #define MPU9250_PWR_MGMT_1 107
 
 static uint8 databotData[6];
+
+// forward references
+static int databotAK09916MageneticField();
+static int databotAK8963MageneticField();
 
 static void setRegisterBank(int regBank) {
 	// Set ICM20948 register bank
@@ -1156,12 +1159,15 @@ static void startAccelerometer() {
 		setRegisterBank(2);
 		writeI2CReg(ICM20948, ICM20948_ACCEL_CONFIG, ICM20948_FILTERING);
 		setRegisterBank(0);
+		databotAK09916MageneticField(); // initialize magnetometer
 	} else {
 		accelType = accel_MPU9250;
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
 		writeI2CReg(MPU9250, MPU9250_BYPASS_EN, 2); // allows i2c access to magnetometer
+		databotAK8963MageneticField();  // initialize magnetometer
+		delay(20); // allow time for accelerometer startup
 	}
 	accelStarted = true;
 }
@@ -1273,7 +1279,6 @@ static int databotAK09916MageneticField() {
 	static uint8 magData[6];
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		setRegisterBank(0);
 		writeI2CReg(ICM20948, 3, 32);  // set up I2C communications with magnetometer
 		setRegisterBank(3);
@@ -1310,7 +1315,6 @@ static int databotAK8963MageneticField() {
 	static uint8 magData[7]; // includes ST2 register
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		delay(1);
 		writeI2CReg(AK8963, AK8963_CONTROL_1, 0); // switch to powerdown mode
 		delay(1);
