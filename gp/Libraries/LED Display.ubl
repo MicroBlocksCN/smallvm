@@ -16,7 +16,7 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' '_set display color' 'set display color _' 'color'
+  spec ' ' 'set display color' 'set display color _' 'color'
   space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
@@ -43,7 +43,7 @@ to '_led_namedImage' name {
   return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
 }
 
-to '_set display color' color {
+to 'set display color' color {
   callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
 }
 
