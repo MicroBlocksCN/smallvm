@@ -1282,6 +1282,7 @@ static int databotAK09916MageneticField() {
 		delay(10);
 		writeAK09916Register(0x31, 8); // sample magnetometer at 100 Hz
 		startReadingAK09916();
+		delay(20); // allow time to aquire the first sample
 		databotMagStarted = true;
 	}
 
