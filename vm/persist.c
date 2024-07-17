@@ -32,6 +32,11 @@
 
 void delay(unsigned long); // Arduino delay function
 
+#if defined(ARDUINO_ARCH_ESP32)
+  // use Flash codestore on all ESP32 variants
+  #define ESP32_FLASH_CODESTORE true
+#endif
+
 // flash operations for supported platforms
 
 #if defined(NRF51) || defined(NRF52) || defined(ARDUINO_NRF52_PRIMO)
@@ -914,7 +919,10 @@ static void compactRAM(int printStats) {
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord();
 
-	if (!src) return; // nothing to compact
+	if (!src) { // nothing to compact
+		if (printStats) outputString("RAM code store is empty");
+		return;
+	}
 
 	// find the most recent varsClearAll record
 	int *varsStart = src;
@@ -1040,6 +1048,8 @@ void restoreScripts() {
 		int codeFileBytes = initCodeFile(flash, HALF_SPACE);
 		int *start = current ? start1 : start0;
 		freeStart = start + (codeFileBytes / 4);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		initFileSystem();
 	#endif
 
 	updateChunkTable();
