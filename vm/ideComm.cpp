@@ -132,6 +132,7 @@ static void updateConnectionState() {
 		// lost USB connection; resume BLE service and advertisting
 		if (pServer) pServer->addService(pService);
 		USB_connected_to_IDE = false;
+		BLE_resumeAdvertising();
 	}
 	if (BLE_connected_to_IDE && pServer && (pServer->getConnectedCount() == 0)) {
 		// lost BLE connection
