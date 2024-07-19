@@ -9,6 +9,8 @@
 // Modified by John Maloney, April 2024
 // Modified by John Maloney, July 2024
 
+// To do: implement group filtering for incoming OctoStudio beams
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +55,11 @@ static int octoShapeID = 0;
 
 // Empty byte array
 static uint32 noRadioMsg = HEADER(ByteArrayType, 0);
+
+// Android Octo UUID bytes (in little-endian order)
+static uint8_t octoUUID[] = {
+	0xc1, 0x97, 0x12, 0xb5, 0xcf, 0x7e, 0xd7, 0xbc,
+	0x38, 0x45, 0x1, 0x0, 0xb0, 0xb6, 0x40, 0x25};
 
 // record last scan payload
 #define MAX_SCAN_PAYLOAD 100
@@ -150,11 +157,10 @@ static int isBLERadioMsgToGroup(const uint8_t *advertData) {
 
 static void saveRadioMsg(MsgID radioMsgID, const uint8_t *advertData) {
 	// If it is not a duplicate, extract and save the radio message from the advertising data.
-outputString("*"); // xxx
+
 	if (octoIDNotYetSeen(radioMsgID)) {
 		addIDToOctoHistory(radioMsgID);
 		int byteCount = advertData[0] - 5;
-reportNum("radio msg received, bytecount", byteCount); // xxx
 		if (byteCount > MAX_RADIO_MSG) byteCount = MAX_RADIO_MSG;
 		memcpy(lastRadioMsg, &advertData[6], byteCount);
 		lastRadioMsgLen = byteCount;
@@ -242,6 +248,15 @@ static int hasOctoName(const uint8_t *advertData, char *octoName) {
 	return false;
 }
 
+static int isAndroidOcto(const uint8_t *advertData) {
+	if (!((advertData[0] == 30) && (advertData[1] == 33))) return false;
+	// first 16 bytes must match Android Octo service UUID
+	for (int i = 0; i < 16; i++) {
+		if (advertData[i + 2] != octoUUID[i]) return false;
+	}
+	return true;
+}
+
 static void BLEScannerCallback(BLEAdvertisement *advert) {
 	char octoName[20];
 	const uint8_t *advData = advert->getAdvData();
@@ -260,6 +275,15 @@ static void BLEScannerCallback(BLEAdvertisement *advert) {
 		}
 	}
 
+	if (isAndroidOcto(advData)) {
+		MsgID id;
+		memcpy(&id, &advData[19], 8);
+		if (octoIDNotYetSeen(id)) {
+			addIDToOctoHistory(id);
+			octoShapeID = advData[25];
+			hasOctoMessage = true;
+		}
+	}
 
 	if (isBLERadioMsgToGroup(advData)) {
 		MsgID radioMsgID; // radioMsgID is 6-byte address + sequence number + group
@@ -370,7 +394,7 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 					memcpy(&id, serviceData.c_str(), 8);
 					if (octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						octoShapeID = (hexDigit(serviceData[6]) << 8) + hexDigit(serviceData[7]);
+						octoShapeID = (serviceData[6] << 8) + serviceData[7];
 						hasOctoMessage = true;
 					}
 				}
