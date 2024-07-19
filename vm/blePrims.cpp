@@ -2,11 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2023 John Maloney, Bernat Romagosa, and Jens Mönig
+// Copyright 2024 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // blePrims.cpp - MicroBlocks Bluetooth Low Energy (BLE) primitives
 // Wenjie Wu, December 2023
 // Modified by John Maloney, April 2024
+// Modified by John Maloney, July 2024
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,11 +44,12 @@ static OBJ primBLE_connected(int argCount, OBJ *args) {
 
 #define iOS_OCTO_UUID_STRING		"2540b6b0-0002-4538-bcd7-7ecfb51297c1"
 #define ANDROID_OCTO_UUID_STRING	"2540b6b0-0001-4538-bcd7-7ecfb51297c1"
-#define MICROBLOCK_MANUFACTURER_ID	0x6789
+#define MICROBLOCK_MANUFACTURER_ID	0xDE00  // in decimal, LSB first: [0, 222]
 
 static bool bleScannerRunning = false;
 static bool hasOctoMessage = false;
-static int shape_id = 0;
+static int octoGroup = 0;
+static int octoShapeID = 0;
 
 // Empty byte array
 static uint32 noRadioMsg = HEADER(ByteArrayType, 0);
@@ -70,14 +72,14 @@ static uint8 lastScanAddress[6];
 // is testing for an ID that has already been seen since OctoStudio often sends
 // the same message 50-60 times.
 
-typedef long long unsigned int octoMsgID;
-octoMsgID allZeroMessageID;
+typedef long long unsigned int MsgID;
+MsgID allZeroMessageID;
 
 #define OCTO_ID_HISTORY_SIZE 32
-octoMsgID octoIDHistory[OCTO_ID_HISTORY_SIZE];
+MsgID octoIDHistory[OCTO_ID_HISTORY_SIZE];
 int searchStartIndex = 0;
 
-static int octoIDNotYetSeen(octoMsgID id) {
+static int octoIDNotYetSeen(MsgID id) {
 	int endIndex = (searchStartIndex - 1) & (OCTO_ID_HISTORY_SIZE - 1);
 	for (int i = searchStartIndex; i != endIndex; i = ((i + 1) % OCTO_ID_HISTORY_SIZE)) {
 		if (octoIDHistory[i] == id) return false;
@@ -85,36 +87,78 @@ static int octoIDNotYetSeen(octoMsgID id) {
 	return true;
 }
 
-static void addIDToOctoHistory(octoMsgID id) {
+static void addIDToOctoHistory(MsgID id) {
 	searchStartIndex = (searchStartIndex - 1) & (OCTO_ID_HISTORY_SIZE - 1);
 	octoIDHistory[searchStartIndex] = id;
 }
 
+// Helper functions
+
+static int hexDigit(char ch) {
+	// Return the hex value of the given hexadecimal digit or zero for a non-hex character.
+	// Accepts upper or lower case letters A-F.
+
+	if (('0' <= ch) && (ch <= '9')) return ch - '0';
+	if (('A' <= ch) && (ch <= 'F')) return 10 + (ch - 'A');
+	if (('a' <= ch) && (ch <= 'f')) return 10 + (ch - 'a');
+	return 0;
+}
+
 // BLE Radio Support
 
-// last BLE radio message, including its RSSI and address
-#define MAX_BLE_RADIO_MSG 32
-static int lastRadioMsgLen = 0;
-static uint8 *lastRadioMsg[MAX_BLE_RADIO_MSG];
+// A BLE radio message is a 31-byte advertisting packet containing a manufacturer data entry:
+//	<len>
+//	255
+//	<MICROBLOCK_MANUFACTURER_ID (2 bytes, LSB)>
+//	<group number>
+//	<sequence number>
+//	<payload (remainder of packet, max 25 bytes)
 
-static void initRadioMsgHeader(uint8 *adv_data, int payloadByteCount) {
-	if (payloadByteCount > 27) payloadByteCount = 27; // max that fits in a 31-byte legacy advertising packet
+// last BLE radio message, including its RSSI and address
+#define MAX_RADIO_MSG 32
+#define MAX_RADIO_PAYLOAD 25  // maximum that fits in a 31-byte legacy advertising packet
+static uint8_t lastRadioMsg[MAX_RADIO_MSG];
+static int lastRadioMsgLen = 0;
+
+static uint8 radioGroup = 0;
+static uint8 radioSequenceNumber = 0;
+
+static void initRadioMsgHeader(uint8 *adv_data, int payloadBytes) {
+	if (payloadBytes > MAX_RADIO_PAYLOAD) payloadBytes = MAX_RADIO_PAYLOAD;
 
 	// send data as manufacturer ID tag
-	adv_data[0] = payloadByteCount + 3;
+	adv_data[0] = payloadBytes + 5;
 	adv_data[1] = 255;
 	adv_data[2] = MICROBLOCK_MANUFACTURER_ID & 255;
 	adv_data[3] = (MICROBLOCK_MANUFACTURER_ID >> 8) & 255;
+	adv_data[4] = radioGroup;
+	adv_data[5] = radioSequenceNumber;
+	radioSequenceNumber = (radioSequenceNumber + 1) & 255; // increment sequence number
 }
 
-static int isBLERadioMsg(const uint8_t *advertData) {
-	if (advertData[0] < 4) return false; // first entry is too small to be start of a radio message
+static int isBLERadioMsgToGroup(const uint8_t *advertData) {
+	if (!advertData) return false;
+	if (advertData[0] < 5) return false; // first entry is too small to be start of a radio message
 	if (advertData[1] != 255) return false; // first entry is not manufacturer data
-	if ((advertData[2] != ((MICROBLOCK_MANUFACTURER_ID >> 8) & 255)) ||
+	if ((advertData[2] != (MICROBLOCK_MANUFACTURER_ID & 255)) ||
 		(advertData[3] != ((MICROBLOCK_MANUFACTURER_ID >> 8) & 255))) {
 			return false; // not the MicroBlocks manufacturer ID
 	}
+	if (advertData[4] != radioGroup) return false; // group does not match
 	return true;
+}
+
+static void saveRadioMsg(MsgID radioMsgID, const uint8_t *advertData) {
+	// If it is not a duplicate, extract and save the radio message from the advertising data.
+outputString("*"); // xxx
+	if (octoIDNotYetSeen(radioMsgID)) {
+		addIDToOctoHistory(radioMsgID);
+		int byteCount = advertData[0] - 5;
+reportNum("radio msg received, bytecount", byteCount); // xxx
+		if (byteCount > MAX_RADIO_MSG) byteCount = MAX_RADIO_MSG;
+		memcpy(lastRadioMsg, &advertData[6], byteCount);
+		lastRadioMsgLen = byteCount;
+	}
 }
 
 #if defined(BLE_PICO) // Pico OCTO primitive support
@@ -137,23 +181,30 @@ static void startOctoBeam(char *msg) {
 void setAdvertisingInterval(int minInterval, int maxInterval);
 
 static void startRadioBeam(uint8 *msg, int msgByteCount) {
-	uint8 adv_data[32];
+	uint8_t adv_data[32];
 
-	if (msgByteCount > 27) msgByteCount = 27; // truncate to fit in 31-byte legacy advertising packet
+	// truncate to fit in 31-byte legacy advertising packet
+	if (msgByteCount > MAX_RADIO_PAYLOAD) msgByteCount = MAX_RADIO_PAYLOAD;
+
+	memset(adv_data, 0, sizeof(adv_data));
 	initRadioMsgHeader(adv_data, msgByteCount);
-	memcpy(&adv_data[4], msg, msgByteCount);
-	BTstack.setAdvData(msgByteCount + 4, adv_data);
+	memcpy(&adv_data[6], msg, msgByteCount);
+
+	BTstack.setAdvData(msgByteCount + 6, adv_data);
 	setAdvertisingInterval(32, 32);
 	BTstack.startAdvertising();
 }
 
 static int advertLength(const uint8_t *advertData) {
 	// Return the length of the given advertisment by scanning for a zero length entry.
+	// Note: There does not appear to a way to get the actual length using the BTStack API.
 
 	int maxLen = LE_ADVERTISING_DATA_SIZE + 10; // from BTstack.h (41 bytes)
 	int i = 0;
 	while (i < maxLen) {
 		if (!advertData[i]) return i; // entry with zero length indicates end of data
+		int nextEntry = i + advertData[i] + 1; // start of next entry
+		if (nextEntry >= maxLen) return i; // next entry has bad length so must be past end
 		i += advertData[i] + 1; // jump to next entry
 	}
 	return maxLen;
@@ -193,34 +244,36 @@ static int hasOctoName(const uint8_t *advertData, char *octoName) {
 
 static void BLEScannerCallback(BLEAdvertisement *advert) {
 	char octoName[20];
-	if (hasOctoName(advert->getAdvData(), octoName)) {
+	const uint8_t *advData = advert->getAdvData();
+
+	if (hasOctoName(advData, octoName)) {
 		// Since BTstack does not yet support extended advertisements, we do not have
 		// the UUID available (because it doesn't fit). Instead, we just assume that any
-		// advertistement with a 16-character hexadecimal name is Octo beam message.
+		// advertistement with a 16-character hexadecimal name is an Octo beam message.
 
-		octoMsgID id;
+		MsgID id;
 		memcpy(&id, octoName, 8);
 		if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 			addIDToOctoHistory(id);
-			shape_id = octoName[15] - '0';
-			if (shape_id < 0) shape_id = 255; // ensure shape_id is positive
+			octoShapeID = (hexDigit(octoName[14]) << 8) + hexDigit(octoName[15]);
 			hasOctoMessage = true;
 		}
 	}
 
-	if (isBLERadioMsg(advert->getAdvData())) {
-		int byteCount = advertLength(advert->getAdvData());
-		if (byteCount > MAX_BLE_RADIO_MSG) byteCount = MAX_BLE_RADIO_MSG;
-		memcpy(lastRadioMsg, advert->getAdvData(), byteCount);
-		lastRadioMsgLen = byteCount;
+
+	if (isBLERadioMsgToGroup(advData)) {
+		MsgID radioMsgID; // radioMsgID is 6-byte address + sequence number + group
+		memcpy(&radioMsgID, advert->getBdAddr()->getAddress(), 6);
+		memcpy(((uint8 *) &radioMsgID) + 6, &advData[4], 2);
+		saveRadioMsg(radioMsgID, advData);
 	}
 
 	if (lastScanPayloadLen != 0) return; // last capture has not been consumed
 
 	// capture scan payload
-	lastScanPayloadLen = advertLength(advert->getAdvData());
+	lastScanPayloadLen = advertLength(advData);
 	if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
-	memcpy(lastScanPayload, advert->getAdvData(), lastScanPayloadLen);
+	memcpy(lastScanPayload, advData, lastScanPayloadLen);
 
 	// capture RSSI and address
 	lastScanRSSI = advert->getRssi();
@@ -270,29 +323,21 @@ static void startOctoBeam(char *msg) {
 static void startRadioBeam(uint8 *msg, int msgByteCount) {
 	uint8_t adv_data[32];
 
-	if (msgByteCount > 27) msgByteCount = 27; // truncate to fit in 31-byte legacy advertising packet
+	// truncate to fit in 31-byte legacy advertising packet
+	if (msgByteCount > MAX_RADIO_PAYLOAD) msgByteCount = MAX_RADIO_PAYLOAD;
+
+	memset(adv_data, 0, sizeof(adv_data));
 	initRadioMsgHeader(adv_data, msgByteCount);
-	memcpy(&adv_data[4], msg, msgByteCount);
+	memcpy(&adv_data[6], msg, msgByteCount);
 
 	BLE_pauseAdvertising();
 	pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
 
 	// advertise using manufacturer data with msg payload
-// 	std::string manufacturerData;
-// 	manufacturerData.assign((char *) &adv_data[2], (int) msgByteCount + 2);
-// reportNum("msgByteCount", msgByteCount);
-// reportNum("manufacturerData", manufacturerData.length());
-// 	pAdvertising->setManufacturerData(manufacturerData);
-//	pAdvertising->setManufacturerData("ABC");
 	NimBLEAdvertisementData advertData;
-// both setFlags and setName seem to be needed. Why?
-advertData.setFlags(6);
-advertData.setName("A");
-	advertData.addData((char *) adv_data, msgByteCount + 4);
-reportNum("advertLen", advertData.getPayload().length());
+	advertData.addData((char *) adv_data, msgByteCount + 6);
 	pAdvertising->setAdvertisementData(advertData);
-
 	pAdvertising->setMinInterval(32);
 	pAdvertising->setMaxInterval(32);
 	pAdvertising->start();
@@ -306,12 +351,11 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 			if (iOS_OCTO_UUID.equals(uuid)) {
 				std::string deviceName = advertisedDevice->getName();
 				if (deviceName.length() == 16) {
-					octoMsgID id;
+					MsgID id;
 					memcpy(&id, deviceName.c_str(), 8);
 					if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						shape_id = deviceName.back() - '0';
-						if (shape_id < 0) shape_id = 255; // ensure shape_id is positive
+						octoShapeID = (hexDigit(deviceName[14]) << 8) + hexDigit(deviceName[15]);
 						hasOctoMessage = true;
 					}
 				}
@@ -322,22 +366,25 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 			if (ANDROID_OCTO_UUID.equals(uuid)) {
 				std::string serviceData = advertisedDevice->getServiceData();
 				if (serviceData.length() == 13) {
-					octoMsgID id;
+					MsgID id;
 					memcpy(&id, serviceData.c_str(), 8);
 					if (octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						shape_id = serviceData[7];
+						octoShapeID = (hexDigit(serviceData[6]) << 8) + hexDigit(serviceData[7]);
 						hasOctoMessage = true;
 					}
 				}
 			}
 		}
 
-		if (isBLERadioMsg(advertisedDevice->getPayload())) {
-			int byteCount = advertisedDevice->getPayloadLength();
-			if (byteCount > MAX_BLE_RADIO_MSG) byteCount = MAX_BLE_RADIO_MSG;
-			memcpy(lastRadioMsg, advertisedDevice->getPayload(), byteCount);
-			lastRadioMsgLen = byteCount;
+		const uint8_t *advData = advertisedDevice->getPayload();
+		NimBLEAddress addr = advertisedDevice->getAddress();
+
+		if (isBLERadioMsgToGroup(advData)) {
+			MsgID radioMsgID; // radioMsgID is 6-byte address + sequence number + group
+			memcpy(&radioMsgID, addr.getNative(), 6);
+			memcpy(((uint8 *) &radioMsgID) + 6, &advData[4], 2);
+			saveRadioMsg(radioMsgID, advData);
 		}
 
 		if (lastScanPayloadLen != 0) return; // last capture has not been consumed
@@ -345,11 +392,10 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 		// capture scan payload
 		lastScanPayloadLen = advertisedDevice->getPayloadLength();
 		if (lastScanPayloadLen > MAX_SCAN_PAYLOAD) lastScanPayloadLen = MAX_SCAN_PAYLOAD;
-		memcpy(lastScanPayload, advertisedDevice->getPayload(), lastScanPayloadLen);
+		memcpy(lastScanPayload, advData, lastScanPayloadLen);
 
 		// capture RSSI and address
 		lastScanRSSI = -advertisedDevice->getRSSI(); // make it positive
-		NimBLEAddress addr = advertisedDevice->getAddress();
 		lastScanAddressType = addr.getType();
 		memcpy(lastScanAddress, addr.getNative(), 6);
 	}
@@ -379,6 +425,16 @@ static void stopBLEScanner() {
 
 #endif
 
+static OBJ primOctoSetGroup(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+
+	int newGroup = obj2int(args[0]);
+	if (newGroup < 0) newGroup = 0;
+	if (newGroup > 255) newGroup = 255;
+	octoGroup = newGroup;
+	return falseObj;
+}
+
 static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
 
@@ -396,7 +452,7 @@ static OBJ primOctoReceive(int argCount, OBJ *args) {
 
 	if (hasOctoMessage) {
 		hasOctoMessage = false;
-		return int2obj(shape_id);
+		return int2obj(octoShapeID);
 	} else {
 		return falseObj;
 	}
@@ -430,10 +486,18 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 
 // BLE Radio Primitives (similar to Octo but different format)
 
+static OBJ primRadioSetGroup(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+
+	int newGroup = obj2int(args[0]);
+	if (newGroup < 0) newGroup = 0;
+	if (newGroup > 255) newGroup = 255;
+	radioGroup = newGroup;
+	return falseObj;
+}
+
 static OBJ primRadioStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], ByteArrayType)) return falseObj;
-
-reportNum("startBeam", BYTES(args[0])); // xxx
 
 	startRadioBeam((uint8 *) &FIELD(args[0], 0), BYTES(args[0]));
 	return falseObj;
@@ -703,10 +767,12 @@ static PrimEntry entries[] = {
 	{"bleConnected", primBLE_connected},
 
 	#if defined(BLE_OCTO)
+		{"octoSetGroup", primOctoSetGroup},
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
 		{"scanReceive", primScanReceive},
+		{"radioSetGroup", primRadioSetGroup},
 		{"radioStartBeam", primRadioStartBeam},
 		{"radioStopBeam", primRadioStopBeam},
 		{"radioReceive", primRadioReceive},
