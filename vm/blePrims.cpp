@@ -57,14 +57,14 @@ static int octoShapeID = 0;
 static uint32 noRadioMsg = HEADER(ByteArrayType, 0);
 
 // Android Octo UUID bytes (in little-endian order)
-static uint8_t octoUUID[] = {
+static uint8 octoUUID[] = {
 	0xc1, 0x97, 0x12, 0xb5, 0xcf, 0x7e, 0xd7, 0xbc,
 	0x38, 0x45, 0x1, 0x0, 0xb0, 0xb6, 0x40, 0x25};
 
 // record last scan payload
 #define MAX_SCAN_PAYLOAD 100
 static int lastScanPayloadLen = 0;
-static uint8 *lastScanPayload[MAX_SCAN_PAYLOAD];
+static uint8 lastScanPayload[MAX_SCAN_PAYLOAD];
 static uint8 lastScanRSSI = 0;
 static uint8 lastScanAddressType = 0;
 static uint8 lastScanAddress[6];
@@ -124,7 +124,7 @@ static int hexDigit(char ch) {
 // last BLE radio message, including its RSSI and address
 #define MAX_RADIO_MSG 32
 #define MAX_RADIO_PAYLOAD 25  // maximum that fits in a 31-byte legacy advertising packet
-static uint8_t lastRadioMsg[MAX_RADIO_MSG];
+static uint8 lastRadioMsg[MAX_RADIO_MSG];
 static int lastRadioMsgLen = 0;
 
 static uint8 radioGroup = 0;
