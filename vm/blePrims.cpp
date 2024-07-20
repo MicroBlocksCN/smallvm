@@ -56,11 +56,6 @@ static int octoShapeID = 0;
 // Empty byte array
 static uint32 noRadioMsg = HEADER(ByteArrayType, 0);
 
-// Android Octo UUID bytes (in little-endian order)
-static uint8 octoUUID[] = {
-	0xc1, 0x97, 0x12, 0xb5, 0xcf, 0x7e, 0xd7, 0xbc,
-	0x38, 0x45, 0x1, 0x0, 0xb0, 0xb6, 0x40, 0x25};
-
 // record last scan payload
 #define MAX_SCAN_PAYLOAD 100
 static int lastScanPayloadLen = 0;
@@ -248,6 +243,11 @@ static int hasOctoName(const uint8_t *advertData, char *octoName) {
 	return false;
 }
 
+// Android Octo UUID bytes (in little-endian order)
+static uint8 octoUUID[] = {
+	0xc1, 0x97, 0x12, 0xb5, 0xcf, 0x7e, 0xd7, 0xbc,
+	0x38, 0x45, 0x1, 0x0, 0xb0, 0xb6, 0x40, 0x25};
+
 static int isAndroidOcto(const uint8_t *advertData) {
 	if (!((advertData[0] == 30) && (advertData[1] == 33))) return false;
 	// first 16 bytes must match Android Octo service UUID
@@ -323,19 +323,18 @@ static void stopBLEScanner() {
 NimBLEUUID ANDROID_OCTO_UUID	= NimBLEUUID(ANDROID_OCTO_UUID_STRING);
 NimBLEUUID iOS_OCTO_UUID		= NimBLEUUID(iOS_OCTO_UUID_STRING);
 
-static BLEAdvertising* pAdvertising = NULL;
-
 static void stopBeaming() {
-	if (!pAdvertising) return; // not initialized thus not beaming
-
-	BLEDevice::getAdvertising()->removeServiceUUID(iOS_OCTO_UUID);
+	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	if (pAdvertising->isAdvertising()) pAdvertising->stop();
+	pAdvertising->removeServiceUUID(iOS_OCTO_UUID);
 	BLE_resumeAdvertising();
 }
 
 static void startOctoBeam(char *msg) {
 	// Mimic iOS beam; data is encoded in name
+
 	BLE_pauseAdvertising();
-	pAdvertising = BLEDevice::getAdvertising();
+	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
 	pAdvertising->addServiceUUID(iOS_OCTO_UUID);
 	pAdvertising->setName(msg);
@@ -355,7 +354,7 @@ static void startRadioBeam(uint8 *msg, int msgByteCount) {
 	memcpy(&adv_data[6], msg, msgByteCount);
 
 	BLE_pauseAdvertising();
-	pAdvertising = BLEDevice::getAdvertising();
+	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
 	pAdvertising->reset();
 
 	// advertise using manufacturer data with msg payload
@@ -506,6 +505,11 @@ static OBJ primScanReceive(int argCount, OBJ *args) {
 	lastScanPayloadLen = 0;
 
 	return result;
+}
+
+static OBJ primStopScanning(int argCount, OBJ *args) {
+	stopBLEScanner();
+	return falseObj;
 }
 
 // BLE Radio Primitives (similar to Octo but different format)
@@ -796,6 +800,7 @@ static PrimEntry entries[] = {
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
 		{"scanReceive", primScanReceive},
+		{"stopScanning", primStopScanning},
 		{"radioSetGroup", primRadioSetGroup},
 		{"radioStartBeam", primRadioStartBeam},
 		{"radioStopBeam", primRadioStopBeam},
