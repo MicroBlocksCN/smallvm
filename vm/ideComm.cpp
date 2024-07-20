@@ -33,8 +33,6 @@ int USB_connected_to_IDE = false;
 char BLE_ThreeLetterID[4];
 static char bleDeviceName[32];
 
-extern uint32 lastRcvTime; // xxx put in header
-
 // Generic helper functions
 
 void BLE_initThreeLetterID() {
@@ -278,7 +276,7 @@ void BLE_stop() {
 	connID = -1;
 	BLE_connected_to_IDE = false;
 
-	BLEDevice::getAdvertising()->reset()
+	BLEDevice::getAdvertising()->reset();
 	if (pServer) pServer->removeService(pService);
 	BLEDevice::deinit();
 
