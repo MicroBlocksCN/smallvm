@@ -159,6 +159,20 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primI2cExists(int argCount, OBJ *args) {
+	// Return true if there is an i2c device at the given address. Used for i2c scanning.
+
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int i2cAddress = obj2int(args[0]);
+
+	if (!wireStarted) startWire();
+	if (!wireStarted) return falseObj;
+
+	Wire.beginTransmission(i2cAddress);
+    int error = Wire.endTransmission();
+    return error ? falseObj : trueObj;
+}
+
 static OBJ primI2cRead(int argCount, OBJ *args) {
 	// Read multiple bytes from the given I2C device into the given list and return the
 	// number of bytes read. The list size determines the number of bytes to read (up to a
@@ -2075,6 +2089,7 @@ static PrimEntry entries[] = {
 	{"setAccelerometerRange", primSetAccelerometerRange},
 	{"magneticField", primMagneticField},
 	{"touchRead", primTouchRead},
+	{"i2cExists", primI2cExists},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"i2cSetClockSpeed", primI2cSetClockSpeed},

@@ -76,6 +76,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
 		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
 		'-'
+		(array 'r' '[sensors:i2cExists]' 'i2c device _ exists?' 'num')
+		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
 		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _ : bit order _' 'num num num str' 1000000 0 0 'MSB')
