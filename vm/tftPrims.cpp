@@ -1394,8 +1394,9 @@ static OBJ primAruco(int argCount, OBJ *args) {
 	    if (aruco_id >= 100) {
         return falseObj;
     }
-    tft.drawRect(0, 0, 240, 240, WHITE);
-    const int cellSize = 30;
+    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, BLACK);
+    const int cellSize = TFT_HEIGHT/8;
+	const int startX = TFT_WIDTH/2 - (4 * cellSize);
     uint16_t tag = aruco_tags[aruco_id];
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -1413,13 +1414,13 @@ static OBJ primAruco(int argCount, OBJ *args) {
                 isBlack = tag & (1 << (15 - bitIndex));
             }
             if (isBlack) {
-                tft.fillRect(j * cellSize, i * cellSize, cellSize, cellSize, BLACK);
+                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, BLACK);
             } else {
-                tft.fillRect(j * cellSize, i * cellSize, cellSize, cellSize, WHITE);
+                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, WHITE);
             }
         }
     }
-    tft.setCursor(2, 2);
+    tft.setCursor(startX + 2, 2);
     tft.setTextColor(BLACK);
     tft.setTextSize(2);
     tft.print(aruco_id);
@@ -1434,24 +1435,25 @@ static OBJ primAprilTag(int argCount, OBJ *args) {
     if (tag_id >= 100) {
         return falseObj;
     }
-    tft.drawRect(0, 0, 240, 240, WHITE);
-    const int cellSize = 24;
+    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, BLACK);
+    const int cellSize = TFT_HEIGHT/10;
+	const int startX = TFT_WIDTH/2 - (5 * cellSize);
     uint64_t codedata = april_tags[tag_id];
 
     // 绘制外圈的黑色方块
     for (int i = 1; i < 9; i++) {
-        tft.fillRect(i * cellSize, 1 * cellSize, cellSize, cellSize, BLACK);  // 左边界
-        tft.fillRect(i * cellSize, 8 * cellSize, cellSize, cellSize, BLACK);  // 右边界
-        tft.fillRect(1 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 上边界
-        tft.fillRect(8 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 下边界
+        tft.fillRect(startX + i * cellSize, 1 * cellSize, cellSize, cellSize, BLACK);  // 左边界
+        tft.fillRect(startX + i * cellSize, 8 * cellSize, cellSize, cellSize, BLACK);  // 右边界
+        tft.fillRect(startX + 1 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 上边界
+        tft.fillRect(startX + 8 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 下边界
     }
 
     // 绘制内圈的白色方块
     for (int i = 2; i < 8; i++) {
-        tft.fillRect(i * cellSize, 2 * cellSize, cellSize, cellSize, WHITE);  // 左边界
-        tft.fillRect(i * cellSize, 7 * cellSize, cellSize, cellSize, WHITE);  // 右边界
-        tft.fillRect(2 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 上边界
-        tft.fillRect(7 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 下边界
+        tft.fillRect(startX + i * cellSize, 2 * cellSize, cellSize, cellSize, WHITE);  // 左边界
+        tft.fillRect(startX + i * cellSize, 7 * cellSize, cellSize, cellSize, WHITE);  // 右边界
+        tft.fillRect(startX + 2 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 上边界
+        tft.fillRect(startX + 7 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 下边界
     }
 
     // 绘制编码的标签图像
@@ -1460,7 +1462,7 @@ static OBJ primAprilTag(int argCount, OBJ *args) {
         int y = april_bit_y[i];
         bool bit = (codedata >> (51 - i)) & 1;
         uint16_t color = bit ? WHITE : BLACK;
-        tft.fillRect(x * cellSize, y * cellSize, cellSize, cellSize, color);
+        tft.fillRect(startX + x * cellSize, y * cellSize, cellSize, cellSize, color);
     }
     UPDATE_DISPLAY();
     return falseObj;
