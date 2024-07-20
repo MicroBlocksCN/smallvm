@@ -30,6 +30,7 @@ static void softReset(int clearMemoryFlag);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
 static void sendData();
+static void deferIDEDisconnect();
 
 // debugging
 
@@ -914,6 +915,7 @@ void sendAllCRCs() {
 			delay(delayPerCRC);
 		}
 	}
+	deferIDEDisconnect();
 }
 
 // Retrieving source code
@@ -949,6 +951,7 @@ static void sendAllCode() {
 		delay(delayPerWord * chunkWords); // 2 fails on Johns Chromebook; 3 works; 5 is conservative
 		sendData();
 	}
+	deferIDEDisconnect();
 }
 
 // Variable support
@@ -993,6 +996,7 @@ static void sendVarNames() {
 		if (recType == varName) sendVarNameMessage(varID, p);
 		p = recordAfter(p);
 	}
+	deferIDEDisconnect();
 }
 
 int indexOfVarNamed(const char *s) {
@@ -1067,6 +1071,10 @@ int ideConnected() {
 }
 
 #endif
+
+static void deferIDEDisconnect() {
+	lastRcvTime = microsecs();
+}
 
 static void sendPingNow(int chunkIndex) {
 	// Used to acknowledge receipt of a command that may take time, such as sending all CRC's.
