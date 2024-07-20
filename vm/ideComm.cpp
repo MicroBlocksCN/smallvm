@@ -278,7 +278,7 @@ void BLE_stop() {
 	connID = -1;
 	BLE_connected_to_IDE = false;
 
-	BLEDevice::getAdvertising()->stop();
+	BLEDevice::getAdvertising()->reset()
 	if (pServer) pServer->removeService(pService);
 	BLEDevice::deinit();
 
@@ -296,7 +296,7 @@ void BLE_pauseAdvertising() {
 	if (!bleRunning) return;
 
 	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->stop();
+	pAdvertising->reset();
 	pAdvertising->removeServiceUUID(NimBLEUUID(MB_SERVICE_UUID));
 }
 
@@ -304,7 +304,6 @@ void BLE_resumeAdvertising() {
 	if (!bleRunning) return;
 
 	NimBLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->stop();
 	pAdvertising->reset();
 	if (BLE_connected_to_IDE || USB_connected_to_IDE) {
 		return; // don't advertise if connected to IDE
