@@ -1,10 +1,11 @@
 module 'BLE Radio' Comm
 author MicroBlocks
 version 1 0 
-description 'This library supports easy message exchange among boards the support Bluetooth Low Energy (BLE).
+description 'This library supports easy message exchange among boards that support Bluetooth Low Energy (BLE).
+
 A message can contain a string, a number, or both. Messages are received by all boards in the same BLE radio group as the sender.
 
-This library is similar to the Radio library, but messages are sent via BLE advertisments instead of the Nordic radio system.
+This library is similar to the Radio library, but messages are sent via BLE advertisements instead of the Nordic radio system.
 '
 variables _bleRadio_lastNumber _bleRadio_lastString 
 
