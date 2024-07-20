@@ -1608,15 +1608,17 @@ method boardHasSameProject SmallRuntime {
 		}
 	}
 
-	// count chunks missing from the board
-	missingCount = 0
+	// count chunks that have changed or are entirely missing from the board
+	changedOrMissingCount = 0
 	for chunkID (keys ideChunks) {
-		if (not (contains crcDict chunkID)) {
-			missingCount += 1
+		if (or
+		    (not (contains crcDict chunkID))
+		    ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
+			     changedOrMissingCount += 1
 		}
 	}
 
-	return (matchCount >= missingCount)
+	return (and (matchCount > 3) (matchCount > changedOrMissingCount))
 }
 
 method collectCRCsIndividually SmallRuntime {
