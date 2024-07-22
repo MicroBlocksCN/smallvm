@@ -6,7 +6,7 @@ description ''
 script 50 50 {
 whenStarted
 home
-'[display:mbDisplayOff]'
+'[tft:clear]'
 'pen down'
 repeat 36 {
   repeat 4 {
@@ -20,10 +20,10 @@ repeat 36 {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
@@ -102,7 +102,6 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
   spec ' ' 'pen up' 'pen up'
   spec ' ' 'set pen color to' 'set pen color to _' 'color'
   spec ' ' 'setPenToRandomColor' 'set pen to random color'
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
   spec ' ' 'clearDisplay' 'fill display with _' 'color'
   spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
   spec ' ' 'setHeading' 'point in direction _' 'auto' 0
@@ -139,7 +138,7 @@ to 'go to x' x y {
 to home {
   if (0 == _turtlePenIsDown) {
     'set pen color to' (colorSwatch 7 255 1 255)
-    '[display:mbDisplayOff]'
+    '[tft:clear]'
     'pen up'
   }
   'go to x' 0 0
