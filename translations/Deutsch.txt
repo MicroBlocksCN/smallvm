@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: March 14 2023
+# Last updated: July 21 2024
 
 #########################
 # Blocks and categories #
@@ -304,7 +304,7 @@ replace item _ of list _ with _
 ersetze Element _ in Liste _ durch _
 
 delete item _ of list _
-entferne Element aus Liste _
+entferne Element _ aus Liste _
 
 add _ to list _
 füge _ zu Liste _ hinzu
@@ -422,7 +422,7 @@ spi exchange bytes _
 spi tausche Bytes _
 
 aByteArray
-Byte-Array
+ByteArray
 
 serial open _ baud
 serial öffne mit _ Baud
@@ -521,7 +521,7 @@ radio last message type
 Radio Typ der letzten Nachricht
 
 radio set group _ (0-255)
-radio setze Gruppe _ (0-255)
+Radio setze Gruppe _ (0-255)
 
 radio set channel (0-83) _
 Radio setze Kanal _ (0-83)
@@ -606,7 +606,7 @@ random color
 zufällige Farbe
 
 attach _ LED NeoPixel strip to pin _
-verbinde _ NeoPixel-Streifen mit Pin _
+mache _ LED zum NeoPixel-Streifen an Pin _
 
 has white _
 mit Weiß _
@@ -659,13 +659,13 @@ loudness
 Lautstärke
 
 clap count
-Klattschzählwert
+Anzahl des Händeklatschens
 
 set clap threshold _
-setze Klattschschwellwert _
+setze Applausschwellwert _
 
 estimate clap threshold
---MISSING--
+Applausstärke
 
 ####
 # Citilab ED1 board libraries
@@ -1020,7 +1020,7 @@ sort _
 sortiere _
 
 unique _
---MISSING--
+mache _ eindeutig
 
 shuffled _
 _ gemischt
@@ -1110,7 +1110,7 @@ LED Display
 LED-Anzeige
 
 display _
-Anzeige _
+zeige _
 
 display image _
 zeige Bild _
@@ -1378,37 +1378,37 @@ Fractions
 Brüche
 
 fract _ / _
---MISSING--
+Bruch _ / _
 
 fract _ + _
---MISSING--
+Bruch _ + _
 
 fract _ - _
---MISSING--
+Bruch _ - _
 
 fract _ × _
---MISSING--
+Bruch _ × _
 
 fract _ = _
---MISSING--
+Bruch _ = _
 
 fract _ < _
---MISSING--
+Bruch _ < _
 
 fract _ > _
---MISSING--
+Bruch _ > _
 
 simplify fraction _
---MISSING--
+gekürzter Bruch _
 
 integer part of fraction _
---MISSING--
+ganzer Teil des Bruchs _
 
 numerator of fraction _
---MISSING--
+Zähler des Bruchs _
 
 denominator of fraction _
---MISSING--
+Nenner des Bruchs _
 
 gcd _ _
 ggT _ _
@@ -2075,34 +2075,34 @@ Files
 Dateien
 
 open file _
-Datei öffnen
+öffne Datei _
 
 close file _
-Datei schließen
+schließe Datei _
 
 delete file _
-Datei löschen
+lösche Datei _
 
 append line _ to file _
-füge Zeile _ zu Datei _ hinzu
+füge Zeile _ in Datei _ an
 
 append bytes _ to file _
-füge Bytes _ zu Datei _ hinzu
+füge Bytes _ in Datei _ an
 
 end of file _
-Ende von Datei _
+Ende der Datei _
 
 next line of file _
-nächste Zeile von Datei _
+nächste Zeile der Datei _
 
 next _ bytes of file _
-nächste _ Bytes von Datei _
+nächste _ Bytes der Datei _
 
 read into _ from file _
---MISSING--
+lies in _ aus der Datei _
 
 a ByteArray
---MISSING--
+einByteArray
 
 starting at _
 beginnend bei _
@@ -2111,7 +2111,7 @@ file names
 Dateiname
 
 in directory _
---MISSING--
+im Ordner _
 
 size of file _
 Größe der Datei _
@@ -2172,7 +2172,7 @@ _ without white space
 _ ohne Leerzeichen
 
 join string list _ separator _
---MISSING--
+Listenelemente von _ mit Seperator _
 
 unicodes _
 Unicode von _
@@ -2386,7 +2386,7 @@ _ data _ to http܃// _
 _ Daten _ URL http:// _
 
 MicroBlocks is fun
---MISSING--
+MicroBlocks macht Spaß
 
 port _
 Port _
@@ -2488,7 +2488,7 @@ register event _ type _
 registriere Ereignis _ Typ _
 
 start WebThing server
-starte WebThing Server starten
+starte WebThing Server
 
 trigger event _
 löse Ereignis _ aus
@@ -2579,67 +2579,67 @@ MiKe digital D8 to _
 # A CoreXY plotter library that supports turtle geometry
 
 plotter move X _ Y _
---MISSING--
+Plotter gehe X _ Y _
 
 plotter move _ steps
---MISSING--
+Plotter gehe _ Schritte
 
 plotter turn _ degrees
---MISSING--
+Plotter drehe _ Grad
 
 plotter turn _ / _ of circle
---MISSING--
+Plotter drehe _ / _ eines Kreises
 
 plotter point in direction _
---MISSING--
+plotter Punkt in Richtung _
 
 plotter pen down
---MISSING--
+Plotter Stift runter
 
 plotter pen up
---MISSING--
+Plotter Stift hoch
 
 plotter stop
---MISSING--
+Plotter stop
 
 set plotter speed to _ %
---MISSING--
+set Plottergeschwindigkeit auf _ %
 
 ####
 # Innova Didactic libraries
 
 red
---MISSING--
+rot
 
 yellow
---MISSING--
+gelb
 
 green
---MISSING--
+grün
 
 forward
---MISSING--
+vorwärts
 
 backward
---MISSING--
+rückwärts
 
 turn right
---MISSING--
+drehe nach rechts
 
 turn left
---MISSING--
+drehe nach links
 
 stop
---MISSING--
+stop
 
 right sensor
---MISSING--
+rechter Sensor
 
 left sensor
---MISSING--
+linker Sensor
 
 both sensors
---MISSING--
+beide Sensoren
 
 TdR test buzzer
 --MISSING--
@@ -2807,49 +2807,49 @@ buffer sizes _
 # UDP
 
 UDP start port _
---MISSING--
+UDP starte Port _
 
 UDP stop
---MISSING--
+UDP stoppe
 
 UDP send packet _ to ip _ port _
---MISSING--
+UDP sende Paket _ an IP _ Port _
 
 UDP receive packet
---MISSING--
+UDP empfangenes Paket
 
 binary data _
---MISSING--
+Binärdaten _
 
 UDP remote IP address
---MISSING--
+UDP Sender-IP-Adresse
 
 UDP remote port
---MISSING--
+UDP Sender-Port
 
 ####
 # WiFi Radio
 
 wifi send number _
---MISSING--
+wifi sende Zahl _
 
 wifi send string _
---MISSING--
+wifi sende Zeichenfolge _
 
 wifi send pair _ = _
---MISSING--
+wifi sende Paar _ = _
 
 wifi message received?
---MISSING--
+wifi Nachricht empfangen?
 
 wifi last number
---MISSING--
+wifi letzte Zahl
 
 wifi last string
---MISSING--
+wifi letzte Zeichenfolge
 
 wifi set group _ (0-255)
---MISSING--
+wifi setze Gruppe _ (0-255)
 
 ####
 # Cutebot
@@ -3095,13 +3095,13 @@ Octo stop
 # buttons, error & info messages, dialog boxes, etc
 
 New
-Neu
+neu
 
 Open
-Öffnen
+öffnen
 
 Open from board
-Vom Board öffnen
+vom Board öffnen
 
 Copy project URL to clipboard
 kopiere Projekt-URL in Zwischenablage
@@ -3122,25 +3122,25 @@ Loading project...
 Projekt wird geladen...
 
 Found a newer version of
-Gefunden wurde eine neuere Version von
+gefunden wurde eine neuere Version von
 
 Do you want me to update the one in the project?
 Möchtest du sie im Projekt updaten?
 
 Save
-Speichern
+speichern
 
 Connect
 Verbinden
 
 connect
-verbunden
+verbinden
 
 connect (BLE)
-verbunden (BLE)
+verbinden (BLE)
 
 open Boardie
-Boardie öffnen
+öffne Boardie
 
 disconnect
 trennen
@@ -3707,7 +3707,7 @@ System
 # File picker and library dialogs
 
 New library name?
-Neuer Name der Bibliothek?
+Name der neuen Bibliothek?
 
 show all block definitions
 zeige alle Blockdefinitionen
@@ -3967,13 +3967,13 @@ Send a byte (0-255) to an SPI device.
 Sendet ein Byte (0-255) an ein SPI-Gerät.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
---MISSING--
+Liest ein Byte von einem SPI-Gerät während es ein Null-Byte sendet. Gibt das Byte zurück.
 
 Set the SPI clock speed and mode.
 Setzt die SPI-Taktgeschwindigkeit und den Modus.
 
 Send a byte array via SPI, replacing its contents with the bytes received.
---MISSING--
+Sendet ein Byte-Array über SPI und ersetzt den Inhalt mit den empfangenen Bytes.
 
 Open the serial port at the given baud rate.
 Öffnet einen seriellen Anschluss mit der angegebenen Baudrate.
