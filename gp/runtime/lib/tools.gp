@@ -569,6 +569,16 @@ to allFiles rootDir suffix result {
   return result
 }
 
+to allDirectories rootDir result {
+  if (isNil rootDir) { rootDir = '.' }
+  if (isNil result) { result = (list) }
+  for dirName (listDirectories rootDir) {
+    add result (join rootDir '/' dirName '/')
+	allDirectories (join rootDir '/' dirName) result
+  }
+  return result
+}
+
 to findProjectsWithString s rootDir {
   for fileName (allFiles rootDir '.gpp') {
 	if (projectScriptsIncludesString fileName s) {

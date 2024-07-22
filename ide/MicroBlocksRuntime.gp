@@ -2690,20 +2690,15 @@ method niceBoardName SmallRuntime board {
 method collectBoardDrives SmallRuntime {
 	result = (list)
 	if ('Mac' == (platform)) {
-		for v (listDirectories '/Volumes') {
-			path = (join '/Volumes/' v '/')
-			driveName = (getBoardDriveName this path)
-			if (notNil driveName) { add result (list driveName path) }
-		}
+        for dir (allDirectories '/Volumes') {
+            driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
 	} ('Linux' == (platform)) {
-		for dir (listDirectories '/media') {
-			prefix = (join '/media/' dir)
-			for v (listDirectories prefix) {
-				path = (join prefix '/' v '/')
-				driveName = (getBoardDriveName this path)
-				if (notNil driveName) { add result (list driveName path) }
-			}
-		}
+        for dir (allDirectories '/media') {
+            driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')
