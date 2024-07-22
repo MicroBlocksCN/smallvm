@@ -41,7 +41,7 @@ to 'play note at' index {
 }
 
 to 'triangle up' index {
-  '[display:mbDisplayOff]'
+  '[tft:clear]'
   if ((at index sequence) == 1) {
     '[tft:triangle]' 0 0 63 63 126 0 (hexToInt '00FF00') true
   } ((at index sequence) == 2) {
@@ -71,7 +71,7 @@ repeatUntil (index > (v 'current index')) {
     index += 1
     waitUntil (and (and (not ('up button')) (not ('down button'))) (and (not ('left button')) (not ('right button'))))
   } ('wrong guess' index) {
-    '[display:mbDisplayOff]'
+    '[tft:clear]'
     '[tft:text]' 'Sorry' 30 45 (colorSwatch 189 191 3 255) 2 true
     '[tft:text]' 'Try again...' 25 70 (colorSwatch 184 184 184 255) 1 true
     'play tone' 'G' 1 250
@@ -104,7 +104,7 @@ sendBroadcast 'play sequence'
 script 51 234 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 10) {
-  '[display:mbDisplayOff]'
+  '[tft:clear]'
   '[tft:text]' 'You win!!' 15 45 (colorSwatch 189 8 191 255) 2 true
   repeat 2 {
     'play tone' 'C' 2 100
@@ -184,10 +184,10 @@ to 'up button' {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
