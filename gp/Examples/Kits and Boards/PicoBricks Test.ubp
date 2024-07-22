@@ -1,6 +1,6 @@
 module main
 author MicroBlocks
-version 1 0 
+version 1 0
 description ''
 
   spec ' ' 'displaySensor' 'display _ line _' 'auto auto' 123 1
@@ -16,7 +16,7 @@ to displaySensor value line {
 
 script 320 50 {
 whenBroadcastReceived 'update display'
-'[display:mbDisplayOff]'
+'[tft:clear]'
 '[tft:text]' 'PicoBricks' 0 0 (colorSwatch 35 190 30 255) 2 true
 '[tft:text]' 'Potentiometer:' 10 20 (colorSwatch 35 190 30 255) 1 true
 '[tft:text]' 'Light level:' 10 32 (colorSwatch 35 190 30 255) 1 true
@@ -65,8 +65,8 @@ pb_set_rgb_color (pb_random_color)
 
 module PicoBricks
 author MicroBlocks
-version 2 5 
-depends 'Temperature Humidity (DHT11, DHT22)' 
+version 2 5.1
+depends 'Temperature Humidity (DHT11, DHT22)'
 description 'Robotistan PicoBricks Library
 
 This library controls these Pico Bricks components:
@@ -76,8 +76,8 @@ This library controls these Pico Bricks components:
 - Piezo speaker
 - Relay Switch (5V-250V, 5A)
 - Button
-- Potentiometer (variable resistor)
-- Light sensor (light dependent resistor)
+- Potentiometer (variable resistor) -
+- Light sensor (light dependent resistor)  - FIXED !
 - Temperature and humidity sensor (DHT11)
 - switched to renamed DHT library
 
@@ -86,10 +86,10 @@ Use separate libraries to control:
 - Graphic display (OLED)
 - WIFI/Bluetooth expansion board
 
-See https://www.robotistan.com, 
+See https://www.robotistan.com,
 https://wiki.microblocks.fun/boards/pico
 '
-variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED _pb_pin_TX _pb_pin_RX _pb_i2c_Addr 
+variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED _pb_pin_TX _pb_pin_RX _pb_i2c_Addr
 
   spec ' ' 'pb_beep' 'PicoBricks beep _ ms' 'auto' 500
   spec 'r' 'pb_button' 'PicoBricks button'
@@ -145,7 +145,7 @@ to pb_light_sensor {
   comment 'Returns Light Values s a percentage:
 0: dark,  100: light'
   '_pb_init_pins'
-  return ('[misc:rescale]' (1023 - (analogReadOp _pb_pin_LDR)) 0 1023 0 100)
+  return ('[misc:rescale]' (analogReadOp _pb_pin_LDR) 0 1023 100 0)
 }
 
 to pb_potentiometer {
@@ -214,10 +214,10 @@ to pb_turn_off_RGB {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
@@ -281,10 +281,10 @@ to tft_colorSwatch color {
 
 module 'Temperature Humidity (DHT11, DHT22)' Input
 author MicroBlocks
-version 1 2 
-tags sensor dht11 dht22 temperature humidity 
+version 1 2
+tags sensor dht11 dht22 temperature humidity
 description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
-variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
+variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 
   spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
   spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
