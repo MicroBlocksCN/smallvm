@@ -3844,6 +3844,31 @@ four digit brightness _ (0 to 7)
 four digit show colon _
 4位数码管亮度冒号 _
 
+#### BLE Radio
+
+BLE Radio
+BLE 蓝牙广播
+
+ble send number _
+ble 广播发送数字 _
+
+ble send string _
+ble 广播发送字符串 _
+
+ble send pair _ = _
+ble 广播发送配对信息 _ = _
+
+ble message received?
+ble 广播消息已收到?
+
+ble last number
+ble 最后广播的数字
+
+ble last string
+ble 最后广播的字符串
+
+ble set group _ (0-255)
+ble 设置广播分组 _ (0-255)
 
 ##################
 # MicroBlocks UI #
