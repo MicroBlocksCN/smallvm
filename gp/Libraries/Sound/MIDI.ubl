@@ -6,6 +6,7 @@ choices _midiPin USB
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
 choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
+choices sfx 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' 'seashore' 'rain' 'thunder' 'wind' 'stream' 'bubble' 'bird' 'dog' 'horse' 'telephone 1' 'telephone 2' 'door creaking' 'door' 'scratch' 'windchime' 'helicopter' 'car engine' 'car stop' 'car pass' 'car crash' 'siren' 'train' 'jet plane' 'starship' 'burst noise' 'applause' 'laughing' 'screaming' 'punch' 'heart beat' 'footstep' 'gun shot' 'machine gun' 'laser gun' 'explosion'
 description 'Control MIDI devices. By default, it interfaces the hardware serial port, but it also supports software serial and USB MIDI.
 
 Software Serial Ports
@@ -24,12 +25,14 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   space
   spec 'r' 'MIDI_note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   space
-  spec ' ' 'MIDI_select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
+  spec ' ' 'MIDI_select MIDI instrument' 'select MIDI instrument _ number _ for channel _ : variation _' 'menu.instrument menu.range:1-8 auto auto' 'bass' 2 1 127
   spec 'r' 'MIDI_instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
   spec ' ' 'MIDI_select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
   space
   spec ' ' 'MIDI_play MIDI drum' 'play MIDI drum _ for _ ms volume _' 'menu.druminst num num' 'Acoustic Snare' 100 80
   spec 'r' 'MIDI_drum note' 'drum _' 'menu.druminst' 'Ride Cymbal 2'
+  space
+  spec ' ' 'MIDI_play MIDI SFX' 'play MIDI SFX _ for _ ms volume _ on channel _' 'menu.sfx num num num' 'bird' 100 80 11
   space
   spec ' ' 'MIDI_change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
   spec ' ' 'MIDI_pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
@@ -50,6 +53,10 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   spec ' ' '_MIDI_Roland_control' '_set Roland control _ to _ on channel _' 'auto auto auto' 72 64 1
   space
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to 'MIDI_play MIDI SFX' sfx duration volume channel {
+  return ('[data:makeList]' 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' 'seashore' 'rain' 'thunder' 'wind' 'stream' 'bubble' 'bird' 'dog' 'horse' 'telephone 1' 'telephone 2' 'door creaking' 'door' 'scratch' 'windchime' 'helicopter' 'car engine' 'car stop' 'car pass' 'car crash' 'siren' 'train' 'jet plane' 'starship' 'burst noise' 'applause' 'laughing' 'screaming' 'punch' 'heart beat' 'footstep' 'gun shot' 'machine gun' 'laser gun' 'explosion')
+}
 
 to 'MIDI_change MIDI control' control channel value {
   local 'controlChangeCmd' 11
@@ -119,7 +126,7 @@ to 'MIDI_select MIDI drum kit' drumkit {
   '_MIDI command' programChangeCmd 10 ((at ('[data:find]' drumkit ('[data:split]' 'standard,room,power,electronic,TR-808,jazz,brush,orchestra,SFX,CM-64/CM-32L' ',')) ('[data:split]' '1,9,17,25,26,33,41,49,57,128' ',')) - 1)
 }
 
-to 'MIDI_select MIDI instrument' 'instrument number' channel {
+to 'MIDI_select MIDI instrument' 'instrument type' 'instrument number' channel variation {
   local 'programChangeCmd' 12
   '_MIDI command' programChangeCmd channel ((v 'instrument number') - 1)
 }
