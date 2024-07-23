@@ -3120,6 +3120,20 @@ method installESPFirmwareFromURL SmallRuntime {
 		flasherPort = nil
 	}
 	flasher = (newFlasher boardName portName false false)
-	addPart (global 'page') (spinner flasher)
 	installFromURL flasher flasherPort url
+}
+
+// Install ESP firmware from file
+
+method installESPFirmwareFromFile SmallRuntime fileName data {
+	if ('Browser' == (platform)) {
+		disconnected = true
+		flasherPort = port
+		port = nil
+	} else {
+		setPort this 'disconnect'
+		flasherPort = nil
+	}
+	flasher = (newFlasher fileName portName false false)
+	installFromData flasher flasherPort fileName data
 }
