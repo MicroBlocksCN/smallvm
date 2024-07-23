@@ -576,6 +576,7 @@ method loadNewProjectFromData MicroBlocksScripter aString updateLibraries {
 
   mbProject = (newMicroBlocksProject)
   clearBoardIfConnected (smallRuntime) true
+  saveNeeded = false // don't save scripts while project is loading
   loadFromString mbProject aString updateLibraries
   restoreScripts this
 }
