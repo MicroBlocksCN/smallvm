@@ -418,17 +418,32 @@ method decTab PrettyPrinterGenerator {
 }
 
 method functionName PrettyPrinterGenerator value {
-  if (not (isClass value 'String')) {
-    error 'non string'
+  if (isClass value 'String') {
+    nextPutAllWithSpace this value
+  } else {
+    nextPutAllWithSpace this 'non_string'
+    if (isAnyClass value 'Command' 'Reporter') {
+      print 'Error: Non-string function name at' (join (fileName value) ':' (lineno value))
+    } else {
+      print 'Error: Non-string function name:' value
+    }
   }
-  nextPutAllWithSpace this value
 }
 
 method varName PrettyPrinterGenerator value {
-  if (varMustBeQuoted value) {
-    value = (printString value) // enclose in quotes
+  if (isClass value 'String') {
+    if (varMustBeQuoted value) {
+      value = (printString value) // enclose in quotes
+    }
+    nextPutAllWithSpace this value
+  } else {
+    nextPutAllWithSpace this 'non_string'
+    if (isAnyClass value 'Command' 'Reporter') {
+      print 'Error: Non-string variable name at' (join (fileName value) ':' (lineno value))
+    } else {
+      print 'Error: Non-string variable name:' value
+    }
   }
-  nextPutAllWithSpace this value
 }
 
 method nextPutAll PrettyPrinterGenerator value {

@@ -323,7 +323,14 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 		}
 		updatePrimitives lib
 		fixFunctionLocals this
-		importDependencies lib (scripter (smallRuntime))
+
+		moduleName = (moduleName lib)
+		if (notNil (libraryNamed this moduleName)) {
+			// updating an existing library: just replace it and don't import dependencies
+			removeLibraryNamed this moduleName
+		} else {
+			importDependencies lib (scripter (smallRuntime))
+		}
 		addLibrary this lib
 	}
 	return this

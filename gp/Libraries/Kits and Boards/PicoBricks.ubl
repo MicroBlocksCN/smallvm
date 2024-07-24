@@ -1,6 +1,6 @@
 module PicoBricks
 author MicroBlocks
-version 2 5 
+version 2 5.1 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -11,8 +11,8 @@ This library controls these Pico Bricks components:
 - Piezo speaker
 - Relay Switch (5V-250V, 5A)
 - Button
-- Potentiometer (variable resistor)
-- Light sensor (light dependent resistor)
+- Potentiometer (variable resistor) - 
+- Light sensor (light dependent resistor)  - FIXED !
 - Temperature and humidity sensor (DHT11)
 - switched to renamed DHT library
 
@@ -80,7 +80,7 @@ to pb_light_sensor {
   comment 'Returns Light Values s a percentage:
 0: dark,  100: light'
   '_pb_init_pins'
-  return ((minimum (analogReadOp _pb_pin_LDR) 300) / 3)
+  return ('[misc:rescale]' (analogReadOp _pb_pin_LDR) 0 1023 100 0)
 }
 
 to pb_potentiometer {

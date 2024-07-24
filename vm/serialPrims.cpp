@@ -217,6 +217,8 @@ static void serialOpen(int baudRate) {
 		int txPin = mapDigitalPinNum(1);
 		int rxPin = mapDigitalPinNum(2);
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
+	#elif defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 26);
 	#elif defined(RP2040_PHILHOWER)
 		#if defined(PICO_ED)
 			// pico:ed edge connector pins 0-3 are analog pins 26-29

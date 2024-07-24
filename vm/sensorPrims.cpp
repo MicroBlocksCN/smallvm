@@ -20,6 +20,10 @@
 	#define Wire Wire1
 #endif
 
+#if defined(MAKERPORT_V2) || defined(MAKERPORT_V3)
+	#define MAKERPORT_ACCEL
+#endif
+
 // Override the default i2c pins on some boards
 
 #if defined(PICO_ED) || defined(XRP)
@@ -153,6 +157,20 @@ OBJ primI2cSet(OBJ *args) {
 
 	writeI2CReg(deviceID, registerID, value);
 	return falseObj;
+}
+
+static OBJ primI2cExists(int argCount, OBJ *args) {
+	// Return true if there is an i2c device at the given address. Used for i2c scanning.
+
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int i2cAddress = obj2int(args[0]);
+
+	if (!wireStarted) startWire();
+	if (!wireStarted) return falseObj;
+
+	Wire.beginTransmission(i2cAddress);
+    int error = Wire.endTransmission();
+    return error ? falseObj : trueObj;
 }
 
 static OBJ primI2cRead(int argCount, OBJ *args) {
@@ -340,7 +358,7 @@ static void initSPI() {
 		setPinMode(MISO, INPUT);
 		setPinMode(MOSI, OUTPUT);
 		setPinMode(SCK, OUTPUT);
-	#else
+	#elif !defined(__ZEPHYR__)
 		setPinMode(PIN_SPI_MISO, INPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 		setPinMode(PIN_SPI_MOSI, OUTPUT);
@@ -681,12 +699,12 @@ static void setAccelRange(int range) {
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_V2)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_ACCEL)
 
 #define LIS3DH_ID 25
 
-#if defined(MAKERPORT_V2)
-  // use Wire on MakerPort_v2
+#if defined(MAKERPORT_ACCEL)
+  // use Wire on MakerPort_v2/v3
   #define Wire1 Wire
   #undef LIS3DH_ID
   #define LIS3DH_ID 24
@@ -706,7 +724,7 @@ static int readAcceleration(int registerID) {
 		Wire1.endTransmission();
 		delay(2);
 		setAccelRange(0); // also disables block data update
-		#if defined(MAKERPORT_V2)
+		#if defined(MAKERPORT_ACCEL)
 			writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
 		#endif
 		accelStarted = true;
@@ -740,7 +758,7 @@ static int readTemperature() {
 
 	int adc = 0;
 
-	#if defined(MAKERPORT_V2)
+	#if defined(MAKERPORT_ACCEL)
 		int degreesC = 0;
 		uint8 regValue = readI2CReg(LIS3DH_ID, 0x23);
 		writeI2CReg(LIS3DH_ID, 0x23, regValue | 0x80); // enable block data update (needed for temperature)
@@ -833,7 +851,8 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2 || \
+	defined(ARDUINO_M5Atom_Lite_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
 	#define Wire1 Wire
@@ -1120,13 +1139,16 @@ static AccelerometerType_t accelType = accel_unknown;
 #define ICM20948_BANK_SEL 0x7F
 #define ICM20948_FILTERING 0x11
 
-
 // MPU9250 registers (decimal, following datasheet)
 #define MPU9250_BYPASS_EN 55
 #define MPU9250_ACCEL_XOUT_H 59
 #define MPU9250_PWR_MGMT_1 107
 
 static uint8 databotData[6];
+
+// forward references
+static int databotAK09916MageneticField();
+static int databotAK8963MageneticField();
 
 static void setRegisterBank(int regBank) {
 	// Set ICM20948 register bank
@@ -1151,12 +1173,15 @@ static void startAccelerometer() {
 		setRegisterBank(2);
 		writeI2CReg(ICM20948, ICM20948_ACCEL_CONFIG, ICM20948_FILTERING);
 		setRegisterBank(0);
+		databotAK09916MageneticField(); // initialize magnetometer
 	} else {
 		accelType = accel_MPU9250;
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
 		writeI2CReg(MPU9250, MPU9250_BYPASS_EN, 2); // allows i2c access to magnetometer
+		databotAK8963MageneticField();  // initialize magnetometer
+		delay(20); // allow time for accelerometer startup
 	}
 	accelStarted = true;
 }
@@ -1268,7 +1293,6 @@ static int databotAK09916MageneticField() {
 	static uint8 magData[6];
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		setRegisterBank(0);
 		writeI2CReg(ICM20948, 3, 32);  // set up I2C communications with magnetometer
 		setRegisterBank(3);
@@ -1277,6 +1301,7 @@ static int databotAK09916MageneticField() {
 		delay(10);
 		writeAK09916Register(0x31, 8); // sample magnetometer at 100 Hz
 		startReadingAK09916();
+		delay(20); // allow time to aquire the first sample
 		databotMagStarted = true;
 	}
 
@@ -1304,7 +1329,6 @@ static int databotAK8963MageneticField() {
 	static uint8 magData[7]; // includes ST2 register
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		delay(1);
 		writeI2CReg(AK8963, AK8963_CONTROL_1, 0); // switch to powerdown mode
 		delay(1);
@@ -2065,6 +2089,7 @@ static PrimEntry entries[] = {
 	{"setAccelerometerRange", primSetAccelerometerRange},
 	{"magneticField", primMagneticField},
 	{"touchRead", primTouchRead},
+	{"i2cExists", primI2cExists},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"i2cSetClockSpeed", primI2cSetClockSpeed},

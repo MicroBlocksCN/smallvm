@@ -11,8 +11,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __ZEPHYR__
+#include <zephyr/random/random.h>
+#endif
+
 #include "mem.h"
 #include "interp.h"
+
+#if !defined(ARDUINO_API_VERSION)
+  // typedef PinMode as int for use on platforms that do not use the Arduino Core API
+  typedef int PinMode;
+  typedef int PinStatus;
+#endif
 
 #if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 	// Redefine serial port mapping for Samw25x to use "Target USB" port
@@ -426,6 +436,14 @@ void hardwareInit() {
 	#define TOTAL_PINS 26
 	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 14};
 
+#elif defined(MAKERPORT_V3) // must come before Zero
+
+	#define BOARD_TYPE "MakerPort V3"
+	#define DIGITAL_PINS 26
+	#define ANALOG_PINS 9
+	#define TOTAL_PINS 26
+	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 15};
+
 #elif defined(MAKERPORT) // must come before Zero
 
 	#define BOARD_TYPE "MakerPort"
@@ -577,6 +595,21 @@ void hardwareInit() {
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 39
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
+
+#elif defined(ARDUINO_M5Atom_Lite_ESP32)
+
+	#define BOARD_TYPE "M5Atom-Lite"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	#define PIN_LED 27
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 39
 	static const char reservedPin[TOTAL_PINS] = {
@@ -864,6 +897,15 @@ void hardwareInit() {
 			0, 0, 0, 1, 1, 1, 0, 0, 0};
 	#endif
 
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+
+	#define BOARD_TYPE "BeagleConnect Freedom"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 24
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define PIN_LED LED_BUILTIN
+
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
@@ -890,7 +932,7 @@ static char pwmRunning[TOTAL_PINS];
 
 #define SET_MODE(pin, newMode) { \
 	if ((newMode) != currentMode[pin]) { \
-		pinMode((pin), newMode); \
+		pinMode((pin), (PinMode) (newMode)); \
 		currentMode[pin] = newMode; \
 	} \
 }
@@ -917,13 +959,19 @@ static void initPins(void) {
 		// The analog write primitve takes a 10-bit value, as it does on all MicroBlocks boards,
 		// but on NRF52 only the 8 most signifcant bits are used.
 		analogWriteResolution(8);
-	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
+	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(__ZEPHYR__)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
 		currentMode[i] = MODE_NOT_SET;
 	}
+
+	#if defined(XRP)
+		// Fixes the problem with "when ButtonA" scripts being trigged on startup
+		// on Russell's XRP board. It's not clear why this works.
+		setPinMode(PIN_BUTTON_A, INPUT);
+	#endif
 
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
@@ -941,11 +989,17 @@ static void initPins(void) {
 	#endif
 }
 
+#if !defined(ARDUINO_SAM_DUE) && !defined(ESP8266)
+  #define HAS_INPUT_PULLDOWN true
+#endif
+
 void turnOffPins() {
 	for (int pin = 0; pin < TOTAL_PINS; pin++) {
-		if (OUTPUT == currentMode[pin]) digitalWrite(pin, LOW);
-		pinMode(pin, INPUT);
-		currentMode[pin] = INPUT;
+		int turnOffPin = ((OUTPUT == currentMode[pin]) || (INPUT_PULLUP == currentMode[pin]));
+		#if defined(HAS_INPUT_PULLDOWN)
+			if (INPUT_PULLDOWN == currentMode[pin]) turnOffPin = true;
+		#endif
+		if (turnOffPin) SET_MODE(pin, INPUT);
 	}
 }
 
@@ -978,7 +1032,7 @@ static int inputModeFor(OBJ pullArg) {
 	} else if (StringType == argType) {
 		char *s = obj2str(pullArg);
 		if (strcmp("up", s) == 0) return INPUT_PULLUP;
-		#if defined(INPUT_PULLDOWN)
+		#if defined(HAS_INPUT_PULLDOWN)
 			if (strcmp("down", s) == 0) return INPUT_PULLDOWN;
 		#endif
 	}
@@ -1048,6 +1102,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#if defined(MAKERPORT) || defined(MAKERPORT_V2)
 		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
 		if (14 == pinNum) pinNum = 8; // map pin 14 to A8
+	#endif
+	#if defined(MAKERPORT_V3)
+		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
+		if (15 == pinNum) pinNum = 8; // map pin 15 to A8
 	#endif
 
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
@@ -1336,11 +1394,11 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(M5STAMP)
+		#if defined(M5STAMP) || defined(ARDUINO_M5Atom_Lite_ESP32)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 		#else
-			digitalWrite(PIN_LED, output);
+			digitalWrite(PIN_LED, (PinStatus) output);
 		#endif
 	#endif
 }
@@ -1424,6 +1482,10 @@ static void initRandomSeed() {
 			*((volatile int *) RNG_VALRDY) = 0;
 		}
 		*((int *) RNG_STOP) = true; // end random number generation
+		randomSeed(seed);
+	#elif defined(__ZEPHYR__)
+		unsigned long seed;
+		sys_rand_get(&seed, sizeof(seed));
 		randomSeed(seed);
 	#else
 		uint32 seed = 0;
@@ -1689,6 +1751,12 @@ static void setServo(int pin, int usecs) {
 		}
 	}
 }
+
+#elif defined(__ZEPHYR__)
+
+static void setServo(int pin, int usecs) {}
+
+void stopServos() {}
 
 #else // use Arduino Servo library
 
@@ -1991,7 +2059,13 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return trueObj;
 }
 
-OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
+OBJ primHasServo(int argCount, OBJ *args) {
+	#if defined(__ZEPHYR__)
+		return falseObj;
+	#else
+		return trueObj;
+	#endif
+}
 
 OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>

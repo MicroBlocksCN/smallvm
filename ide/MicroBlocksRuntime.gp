@@ -201,11 +201,12 @@ method showCallTree SmallRuntime aBlock {
 		funcName = (primName (expression aBlock))
 	}
 
+    globalVars = (allVariableNames (project scripter))
 	allFunctions = (dictionary)
 	for f (allFunctions (project scripter)) { atPut allFunctions (functionName f) f }
 
 	result = (list)
-	appendCallsForFunction this funcName result '' allFunctions (array funcName)
+	appendCallsForFunction this funcName result '' globalVars allFunctions (array funcName)
 
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Call Tree'
@@ -214,11 +215,14 @@ method showCallTree SmallRuntime aBlock {
 	fixLayout ws
 }
 
-method appendCallsForFunction SmallRuntime funcName result indent allFunctions callers {
+method appendCallsForFunction SmallRuntime funcName result indent globalVars allFunctions callers {
 	func = (at allFunctions funcName)
+	updateCmdList func (cmdList func)
+	localNames = (toList (localNames func))
+	removeAll localNames globalVars
 
 	argCount = (count (argNames func))
-	localCount = (count (localNames func))
+	localCount = (count localNames)
 	stackWords = (+ 3 argCount localCount)
 	info = ''
 	if (or (argCount > 0) (localCount > 0)) {
@@ -246,7 +250,7 @@ method appendCallsForFunction SmallRuntime funcName result indent allFunctions c
 			if (contains callers op) {
 				add result (join indent '   ' funcName ' [recursive]')
 			} else {
-				appendCallsForFunction this op result indent allFunctions (copyWith callers op)
+				appendCallsForFunction this op result indent globalVars allFunctions (copyWith callers op)
 			}
 			add processed op
 		}
@@ -350,6 +354,7 @@ method analyzeProject SmallRuntime {
 	}
 	print '  Total:' totalBytes
 	print '-----------'
+	return totalBytes
 }
 
 // Decompiling
@@ -745,7 +750,9 @@ method portList SmallRuntime {
 		for fn (listFiles '/dev') {
 			if (or	(notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
 					(notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
-				add portList (join '/dev/' fn)
+			    if (isNil (nextMatchIn 'usbmon' (toLowerCase fn))) { // ignore 'usbmonX' devices
+				    add portList (join '/dev/' fn)
+				}
 			}
 		}
 		if ('Linux' == (platform)) {
@@ -1601,15 +1608,17 @@ method boardHasSameProject SmallRuntime {
 		}
 	}
 
-	// count chunks missing from the board
-	missingCount = 0
+	// count chunks that have changed or are entirely missing from the board
+	changedOrMissingCount = 0
 	for chunkID (keys ideChunks) {
-		if (not (contains crcDict chunkID)) {
-			missingCount += 1
+		if (or
+		    (not (contains crcDict chunkID))
+		    ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
+			     changedOrMissingCount += 1
 		}
 	}
 
-	return (matchCount >= missingCount)
+	return (and (matchCount > 3) (matchCount > changedOrMissingCount))
 }
 
 method collectCRCsIndividually SmallRuntime {
@@ -2188,7 +2197,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (not (connectedToBoard this)) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits' 'RP2040 XRP')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -2630,7 +2639,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (and (contains (array 'Citilab ED1' 'M5Stack-Core' 'ESP8266' 'ESP32' 'Databot') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
-		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0' 'MakerPort') {
+		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'MakerPort') {
 			adaFruitResetMessage this
 		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 			rp2040ResetMessage this
@@ -2672,8 +2681,6 @@ method niceBoardName SmallRuntime board {
 		return 'Circuit Playground Bluefruit'
 	} (beginsWith name 'CLUE') {
 		return 'Clue'
-	} (beginsWith name 'METRO') {
-		return 'Metro M0'
 	} (beginsWith name 'RPI-RP2') {
 		return 'Raspberry Pi Pico'
 	}
@@ -2683,20 +2690,15 @@ method niceBoardName SmallRuntime board {
 method collectBoardDrives SmallRuntime {
 	result = (list)
 	if ('Mac' == (platform)) {
-		for v (listDirectories '/Volumes') {
-			path = (join '/Volumes/' v '/')
-			driveName = (getBoardDriveName this path)
-			if (notNil driveName) { add result (list driveName path) }
-		}
+        for dir (allDirectories '/Volumes') {
+            driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
 	} ('Linux' == (platform)) {
-		for dir (listDirectories '/media') {
-			prefix = (join '/media/' dir)
-			for v (listDirectories prefix) {
-				path = (join prefix '/' v '/')
-				driveName = (getBoardDriveName this path)
-				if (notNil driveName) { add result (list driveName path) }
-			}
-		}
+        for dir (allDirectories '/media') {
+            driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')
@@ -2719,7 +2721,6 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
 			if (notNil (nextMatchIn 'Adafruit CLUE nRF52840' contents)) { return 'CLUEBOOT' } // bootloader 0.7
-			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
 			if (notNil (nextMatchIn 'MakerPort' contents)) { return 'MAKERBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
@@ -2760,8 +2761,6 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
 		vmFileName = 'vm_clue.uf2'
-	} ('METROBOOT' == driveName) {
-		vmFileName = 'vm_metroM0.uf2'
 	} ('MAKERBOOT' == driveName) {
 		vmFileName = 'vm_makerport.uf2'
 	} ('RPI-RP2' == driveName) {
@@ -2796,10 +2795,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
-	} ('Metro M0' == boardType) {
-		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
 	} ('MakerPort' == boardType) {
-		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'MakerPort'
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
@@ -2830,7 +2827,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'Circuit Playground Express'
 			addItem menu 'Circuit Playground Bluefruit'
 			addItem menu 'Clue'
-			addItem menu 'Metro M0'
 			addLine menu
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
@@ -2885,9 +2881,6 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Clue' == boardName) {
 		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
-	} ('Metro M0' == boardName) {
-		vmFileName = 'vm_metroM0.uf2'
-		driveName = 'METROBOOT'
 	} ('MakerPort' == boardName) {
 		vmFileName = 'vm_makerport.uf2'
 		driveName = 'MAKERBOOT'
@@ -3127,6 +3120,20 @@ method installESPFirmwareFromURL SmallRuntime {
 		flasherPort = nil
 	}
 	flasher = (newFlasher boardName portName false false)
-	addPart (global 'page') (spinner flasher)
 	installFromURL flasher flasherPort url
+}
+
+// Install ESP firmware from file
+
+method installESPFirmwareFromFile SmallRuntime fileName data {
+	if ('Browser' == (platform)) {
+		disconnected = true
+		flasherPort = port
+		port = nil
+	} else {
+		setPort this 'disconnect'
+		flasherPort = nil
+	}
+	flasher = (newFlasher fileName portName false false)
+	installFromData flasher flasherPort fileName data
 }

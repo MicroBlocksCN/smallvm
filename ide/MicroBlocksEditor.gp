@@ -753,6 +753,10 @@ method processDroppedFile MicroBlocksEditor fName data {
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   } (endsWith lcFilename '.png') {
     importFromPNG this data
+  } (endsWith lcFilename '.bin') {
+    // install ESP firmware file
+	if (isNil data) { return } // could not read file
+    installESPFirmwareFromFile (smallRuntime) fName data
   } (endsWith lcFilename '.gp') {
     // xxx for testing:
     eval (toString data) nil (topLevelModule)

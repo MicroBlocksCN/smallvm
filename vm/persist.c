@@ -30,7 +30,12 @@
 #include "interp.h"
 #include "persist.h"
 
-void delay(int); // Arduino delay function
+void delay(unsigned long); // Arduino delay function
+
+#if defined(ARDUINO_ARCH_ESP32)
+  // use Flash codestore on all ESP32 variants
+  #define ESP32_FLASH_CODESTORE true
+#endif
 
 // flash operations for supported platforms
 
@@ -394,6 +399,57 @@ void flashWriteWord(int *addr, int value) {
 	flashWriteData(addr, 1, (uint8_t *)&value);
 }
 
+#elif defined(ESP32_FLASH_CODESTORE)
+	#include "esp_partition.h"
+
+	#define START 0
+	#define HALF_SPACE (80 * 1024)
+
+	static uint32 flashBaseAddr = 0; // address of mbcode partition in Flash
+	static uint32 ramBaseAddr = 0; // virutal memory address to which mbcode partition is mapped
+
+	static size_t flashAddr(int *ramAddr) {
+		// Convert the given RAM address to a Flash address
+		return flashBaseAddr + ((uint32) ramAddr - ramBaseAddr);
+	}
+
+	static void flashErase(int *startAddr, int *endAddr) {
+		uint32 byteCount = 4 * (endAddr - startAddr);
+		spi_flash_erase_range(flashAddr(startAddr), byteCount);
+	}
+
+	void flashWriteWord(int *addr, int value) {
+		spi_flash_write(flashAddr(addr), &value, 4);
+	}
+
+	void flashWriteData(int *dst, int wordCount, uint8 *src) {
+		spi_flash_write(flashAddr(dst), src, 4 * wordCount);
+	}
+
+#elif defined(__ZEPHYR__)
+
+#include <zephyr/drivers/flash.h>
+#include <zephyr/storage/flash_map.h>
+
+#define PERSIST_PARTITION_LABEL persist_partition
+#define START FIXED_PARTITION_OFFSET(PERSIST_PARTITION_LABEL)
+#define HALF_SPACE (FIXED_PARTITION_SIZE(PERSIST_PARTITION_LABEL) / 2)
+
+const struct device *flash_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller));
+
+static void flashErase(int *startAddr, int *endAddr) {
+	size_t bytes = (endAddr - startAddr) * sizeof(int);
+	flash_erase(flash_dev, (uintptr_t)startAddr, bytes);
+}
+
+void flashWriteWord(int *addr, int value) {
+	flash_write(flash_dev, (uintptr_t)addr, &value, sizeof(value));
+}
+
+void flashWriteData(int *dst, int wordCount, uint8 *src) {
+	flash_write(flash_dev, (uintptr_t)dst, src, wordCount * sizeof(int));
+}
+
 #else
 	// Simulate Flash operations using a RAM code store; allows MicroBlocks to run in RAM
 	// on platforms that do not support Flash-based persistent memory. On systems with
@@ -458,6 +514,28 @@ static int *freeStart;	// first free word
 
 // helper functions
 
+#if defined(ESP32_FLASH_CODESTORE)
+
+static void initESP32Flash() {
+	esp_partition_iterator_t partitionIterator = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, "mbcode");
+	if (!partitionIterator) vmPanic("'mbcode' partition not found in initESP32Flash()");
+
+	const esp_partition_t* partition = esp_partition_get(partitionIterator);
+	flashBaseAddr = partition->address;
+
+	// Map the partition to data memory
+	spi_flash_mmap_handle_t map_handle; // not used
+	int err = esp_partition_mmap(partition, 0, partition->size, SPI_FLASH_MMAP_DATA, (const void**) &ramBaseAddr, &map_handle);
+	if (err) vmPanic("mmap failure in initESP32Flash()");
+
+	start0 = (int *) ramBaseAddr;
+	end0 = (int *) (ramBaseAddr + HALF_SPACE);
+	start1 = (int *) (ramBaseAddr + HALF_SPACE);
+	end1 = (int *) (ramBaseAddr + (2 * HALF_SPACE));
+}
+
+#endif
+
 static void clearHalfSpace(int halfSpace) {
 	int *startAddr = (0 == halfSpace) ? start0 : start1;
 	int *endAddr = (0 == halfSpace) ? end0 : end1;
@@ -489,6 +567,9 @@ static void initPersistentMemory() {
 		// Make starts and ends the same to allow the same code to work for either RAM or Flash
 		start0 = start1 = (int *) START;
 		end0 = end1 = (int *) (START + HALF_SPACE);
+	#elif defined(ESP32_FLASH_CODESTORE)
+		// init ESP32 for direct Flash codestore
+		initESP32Flash();
 	#endif
 
 	int c0 = cycleCount(0);
@@ -758,7 +839,7 @@ static void compactFlash() {
 	clearHalfSpace(!current);
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 
-	int *src = compactionStartRecord(NULL);
+	int *src = compactionStartRecord();
 	while (src) {
 		captureIncomingBytes();
 		int header = *src;
@@ -838,7 +919,10 @@ static void compactRAM(int printStats) {
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord();
 
-	if (!src) return; // nothing to compact
+	if (!src) { // nothing to compact
+		if (printStats) outputString("RAM code store is empty");
+		return;
+	}
 
 	// find the most recent varsClearAll record
 	int *varsStart = src;
@@ -964,6 +1048,8 @@ void restoreScripts() {
 		int codeFileBytes = initCodeFile(flash, HALF_SPACE);
 		int *start = current ? start1 : start0;
 		freeStart = start + (codeFileBytes / 4);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		initFileSystem();
 	#endif
 
 	updateChunkTable();

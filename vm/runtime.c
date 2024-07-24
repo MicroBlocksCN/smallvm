@@ -13,7 +13,7 @@
 #include <string.h>
 #include <string.h>
 
-#ifdef GNUBLOCKS
+#if defined(GNUBLOCKS) && !defined(EMSCRIPTEN)
 #include "../linux+pi/linux.h"
 #endif
 
@@ -24,12 +24,13 @@
 
 // Forward Reference Declarations
 
-void delay(int); // Arduino delay function
+void delay(unsigned long); // Arduino delay function
 
 static void softReset(int clearMemoryFlag);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 static void sendChunkCRC(int chunkID);
 static void sendData();
+static void deferIDEDisconnect();
 
 // debugging
 
@@ -246,6 +247,7 @@ void startAll() {
 	// stop running tasks, reset, and clear memory
 	stopAllTasks();
 	softReset(true);
+	resetTimer();
 
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		uint8 chunkType = chunks[i].chunkType;
@@ -913,6 +915,7 @@ void sendAllCRCs() {
 			delay(delayPerCRC);
 		}
 	}
+	deferIDEDisconnect();
 }
 
 // Retrieving source code
@@ -948,6 +951,7 @@ static void sendAllCode() {
 		delay(delayPerWord * chunkWords); // 2 fails on Johns Chromebook; 3 works; 5 is conservative
 		sendData();
 	}
+	deferIDEDisconnect();
 }
 
 // Variable support
@@ -992,6 +996,7 @@ static void sendVarNames() {
 		if (recType == varName) sendVarNameMessage(varID, p);
 		p = recordAfter(p);
 	}
+	deferIDEDisconnect();
 }
 
 int indexOfVarNamed(const char *s) {
@@ -1066,6 +1071,10 @@ int ideConnected() {
 }
 
 #endif
+
+static void deferIDEDisconnect() {
+	lastRcvTime = microsecs();
+}
 
 static void sendPingNow(int chunkIndex) {
 	// Used to acknowledge receipt of a command that may take time, such as sending all CRC's.

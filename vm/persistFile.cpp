@@ -26,15 +26,21 @@ static void closeAndOpenCodeFile() {
 	codeFile.seek(0, SeekEnd);
 }
 
-extern "C" int initCodeFile(uint8 *flash, int flashByteCount) {
-	// Called at startup on boards that store code in the file system.
-	// Initialize the file system, read the code file, and return
+extern "C" void initFileSystem() {
+	// Initialize the file system.
 
 	#if defined(ARDUINO_ARCH_ESP32)
 		myFS.begin(true);
 	#else
 		myFS.begin();
 	#endif
+}
+
+extern "C" int initCodeFile(uint8 *flash, int flashByteCount) {
+	// Called at startup on boards that store code in the file system.
+	// Initialize the file system, read the code file, and return
+
+	initFileSystem();
 	codeFile = myFS.open(FILE_NAME, "r");
 	if (!codeFile) clearCodeFile(0);
 	// read code file into simulated Flash:

@@ -7,7 +7,7 @@
 // MicroBlocksHelp.gp - Help string table.
 // John Maloney, November 2021
 
-// PM edited on 2024-05-25
+// PM edited on 2024-06-16
 
 defineClass MicroBlocksHelp opDict
 
@@ -247,7 +247,7 @@ method initialize MicroBlocksHelp {
 		(array 'defer display updates' '/extension_libraries/oled#defer-display-updates' 'Delay display updates during pixel level operations.')
 
 		// MAQUEEN
-		(array 'Maqueen beep' 'en/extension_libraries/maqueen/#maqueen-beep' 'Make a beep sound.')
+		(array 'Maqueen beep' '/extension_libraries/maqueen/#maqueen-beep' 'Make a beep sound.')
 		(array 'Maqueen distance (cm)' '/extension_libraries/maqueen/#maqueen-distance' 'Return the distance to a wall or obstacle.')
 		(array 'Maqueen IR keycode' '/extension_libraries/maqueen/#maqueen-ir-keycode' 'Return the last received IR keycode.')
 		(array 'Maqueen LED' '/extension_libraries/maqueen/#maqueen-led' 'Turn the left and/or right LEDs on (-o) or off (o-) .')
@@ -329,12 +329,12 @@ method initialize MicroBlocksHelp {
         (array 'pbmb_temperature' '/extension_libraries/picobricks-mb#picobricks-mb-temperature' 'Returns the temperature in Celsius.')
         (array 'pbmb_pir' '/extension_libraries/picobricks-mb#picobricks-mb-pir-detected' 'Returns (-o) if any motion is detected.')
         (array 'pbmb_set_relay' '/extension_libraries/picobricks-mb#picobricks-mb-set-relay' 'Sets the relay as (-o) or (o-)')
-        (array 'pbmb_set_motor_speed' '/extension_libraries/picobricks-mb#picobricks-mb-set-motor' 'Sets the DC motor speeds (0-255).')
+        (array 'pbmb_set_motor_speed' '/extension_libraries/picobricks-mb#picobricks-mb-set-motor' 'This module controls the two DC motors (M1, M2).')
         (array 'pbmb_set_servo_angle' '/extension_libraries/picobricks-mb#picobricks-mb-set-servo' 'Sets the servo ANGLE to (0-180).')
         (array 'pbmb_ir_code_received' '/extension_libraries/picobricks-mb#picobricks-mb-ir-code-received' 'Waits until IR code is received, and then returns (-o)')
         (array 'pbmb_ir_code' '/extension_libraries/picobricks-mb#picobricks-mb-ir-code' 'Returns the last IR code detected by the IR sensor.')
         (array 'pbmb_ir_recv_code' '/extension_libraries/picobricks-mb#picobricks-mb-receive-ir-code' 'Waits until IR is (-o) and returns the IR code detected.')
-        (array 'pbmb_gest_color' '/extension_libraries/picobricks-mb#picobricks-mb-gs-color' 'R,G,B light intensity results are returned in a list format.')
+        (array 'pbmb_gest_color' '/extension_libraries/picobricks-mb#picobricks-mb-gs-color' 'Returns color detected as a number derived from RGB values.')
         (array 'pbmb_gest_avail' '/extension_libraries/picobricks-mb#picobricks-mb-gs-detected' 'Returns (-o) or (o-) based on the detected motion over the sensor.')
         (array 'pbmb_gest_lastgest' '/extension_libraries/picobricks-mb#picobricks-mb-gs-last-gesture' 'Returns the last gesture detected.')
         (array 'pbmb_gest_light' '/extension_libraries/picobricks-mb#picobricks-mb-gs-light' 'Returns the light level detected by the sensor.')
@@ -346,6 +346,51 @@ method initialize MicroBlocksHelp {
         (array 'pbmb Last key touched' '/extension_libraries/picobricks-mb#picobricks-mb-last-key-touched' 'Returns the name of last key touch detected.')
         (array '_pbmb_configureTouch' '/extension_libraries/picobricks-mb#_picobricks-mb-configure-touch-options' 'Configures touch sensor area options.')
         (array '_pbmb_Config&CRC' '/extension_libraries/picobricks-mb#_picobricks-mb-show-touch-config&crc' 'Displays the configuration & CRC of the current configuration.')
+
+        // Cutebot Pro
+        (array 'cbpro_setWheelSpeed' '/extension_libraries/cutebotpro#cbpro-set-wheel-speed' 'Runs car at specified cm/s speed.')
+        (array 'cbpro_wheelSpeed' '/extension_libraries/cutebotpro#cbpro-speed-of-wheel' 'Returns speed of selected wheel in cm/s.')
+        (array 'cbpro_stopWheel' '/extension_libraries/cutebotpro#cbpro-stop-wheel' 'Stops selected wheel.')
+        (array 'cbpro_stopAll' '/extension_libraries/cutebotpro#cbpro-stop-all' 'Resets all car settings: stops car, stops external motor, turns off all lights.')
+        (array 'cbpro_move' '/extension_libraries/cutebotpro#cbpro-move' 'Moves car a specified distance (0-255cm).')
+        (array 'cbpro_turn' '/extension_libraries/cutebotpro#cbpro-turn' 'Executes a turn per selected parameters.')
+        (array 'cbpro_setHeadlight' '/extension_libraries/cutebotpro#cbpro-set-headlight' 'Sets headlights to specified color.')
+        (array 'cbpro_setNeopixels' '/extension_libraries/cutebotpro#cbpro-set-neopixel' 'Sets colors of the selected NeoPixels under the car.')
+        (array 'cbpro_distance' '/extension_libraries/cutebotpro#cbpro-distance' 'Returns distance to detected object in cm.')
+        (array 'cbpro_trackingSensorState' '/extension_libraries/cutebotpro#cbpro-tracking-state-is' 'Returns (-o) if tracking sensors match the pattern selected.')
+        (array 'cbpro_getTrackingState' '/extension_libraries/cutebotpro#cbpro-tracking-state' 'Returns the tracking state of the Line tracking sensors.')
+        (array 'cbpro_getTrackingOffset' '/extension_libraries/cutebotpro#cbpro-tracking-offset' 'Returns the tracking offset of the Line tracking sensors.')
+        (array 'cbpro_irCodeReceived' '/extension_libraries/cutebotpro#cbpro-ir-code-received' 'Returns (-o) if an IR code is detected.')
+        (array 'cbpro_irCode' '/extension_libraries/cutebotpro#cbpro-ir-code' 'Returns the value of the IR code detected.')
+        (array 'cbpro_setServoAngle' '/extension_libraries/cutebotpro#cbpro-set-servo-angle' 'Sets selected servo types to set angles.')
+        (array 'cbpro_setServoSpeed' '/extension_libraries/cutebotpro#cbpro-set-servo-speed' 'Sets continuous servos to set speed and direction.')
+        (array 'cbpro_setMotorPower' '/extension_libraries/cutebotpro#cbpro-set-external-motor-power' 'Runs external motor at specified power % and direction.')
+        (array 'cbpro_stopMotor' '/extension_libraries/cutebotpro#cbpro-stop-external-motor' 'Stops external motor.')
+        (array 'cbpro_getVersion' '/extension_libraries/cutebotpro#cbpro-version' 'Returns firmware version of the controller.')
+        (array '_cbpro_setWheelPower' '/extension_libraries/cutebotpro#_cbpro_setwheel-power' 'Runs car at specified power % and direction.')
+        (array '_cbpro_clearEncodersAndOrientation' '/extension_libraries/cutebotpro#_cbpro_clearencodersandorientation' 'Clears encoder value and orientation variables.')
+        (array '_cbpro_getOrientation' '/extension_libraries/cutebotpro#_cbpro_getorientation' 'Returns orientation of car.')
+        (array '_cbpro_readEncoders' '/extension_libraries/cutebotpro#_cbpro_readencoders' 'Reads encoder values and sets variables _cbpro_leftCount and _cbpro_rightCount.')
+
+		// PID
+		(array 'pid_computePID' '/extension_libraries/pid#compute-pid' 'Compute the next PID correction for the specified PID loop.')
+		(array 'pid_resetPID' '/extension_libraries/pid#reset-pid' 'Reset the specified PID loop.')
+		(array 'pid_constrainValue' '/extension_libraries/pid#constrain-value' 'Limit the range of a value, typically a drive signal.')
+		(array 'pid_applySign' '/extension_libraries/pid#apply-sign-to-value' 'Apply the sign of one value to another value.')
+
+        // XRP
+		(array 'xrp_driveAtSpeed' '/extension_libraries/xrp#drive-at-speed' 'Drive the robot at a specified speed (mm/sec).')
+        (array 'xrp_driveDistance' '/extension_libraries/xrp#drive-distance' 'Drive the robot a specified distance (mm) at a specified speed (mm/sec).')
+        (array 'xrp_stopWheels' '/extension_libraries/xrp#stop-both-wheels' 'Stop both wheels.')
+        (array 'xrp_turnAngle' '/extension_libraries/xrp#turn-angle' 'Turn the robot the specified amount (deg) at the specified speed (deg/sec).')
+        (array 'xrp_waitForWheelsToStop' '/extension_libraries/xrp#wait-for-wheels-to-stop' 'Wait for both wheels to stop.')
+        (array 'xrp_setServo' '/extension_libraries/xrp#set-servo-to-angle' 'Set the specified servo to the specified angle.')
+        (array 'xrp_readRollRate' '/extension_libraries/xrp#read-roll-rate' 'Read roll rate (deg/sec).')
+        (array 'xrp_readPitchRate' '/extension_libraries/xrp#read-pitch-rate' 'Read pitch rate (deg/sec).')
+        (array 'xrp_readYawRate' '/extension_libraries/xrp#read-yaw-rate' 'Read yaw rate (deg/sec).')
+        (array 'xrp_readDistanceSensor' '/extension_libraries/xrp#read-distance-sensor' 'Read the distance sensor (cm).')
+        (array 'xrp_readLineSensors' '/extension_libraries/xrp#read-left-right-line-sensors' 'Read the left and right line sensors.')
+        (array 'edcmotors_getNumMotors' '/extension_libraries/xrp#get-the-number-of-encoded-dc-motors' 'Get the number of encoded DC motors.')
 
 	)
 

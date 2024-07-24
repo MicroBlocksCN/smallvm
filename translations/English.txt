@@ -1,0 +1,4011 @@
+# MicroBlocks translation file
+# Last updated: March 14 2023
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+Output
+
+set user LED _
+set user LED _
+
+say _
+say _
+
+graph _
+graph _
+
+Input
+Input
+
+button A
+button A
+
+button B
+button B
+
+timer
+timer
+
+reset timer
+reset timer
+
+microseconds
+microseconds
+
+milliseconds
+milliseconds
+
+board type
+board type
+
+connected to IDE
+connected to IDE
+
+Pins
+Pins
+
+read digital pin _
+read digital pin _
+
+read analog pin _
+read analog pin _
+
+pullup _
+pullup _
+
+set digital pin _ to _
+set digital pin _ to _
+
+set pin _ to _
+set pin _ to _
+
+analog pins
+analog pins
+
+digital pins
+digital pins
+
+Control
+Control
+
+when started
+when started
+
+when button _ pressed
+when button _ pressed
+
+forever _
+forever _
+
+repeat _ _
+repeat _ _
+
+wait _ millisecs
+wait _ millisecs
+
+if _ _
+if _ _
+
+if _ _ else _
+if _ _ else _
+
+else if _ _
+else if _ _
+
+else
+else
+
+when _
+when _
+
+wait until _
+wait until _
+
+wait _ microsecs
+wait _ microsecs
+
+return _
+return _
+
+when _ received
+when _ received
+
+go!
+go!
+
+broadcast _
+broadcast _
+
+comment _
+comment _
+
+How this works...
+How this works...
+
+range _ to _
+range _ to _
+
+by _
+by _
+
+for _ in _ _
+for _ in _ _
+
+repeat until _ _
+repeat until _ _
+
+stop this task
+stop this task
+
+stop other tasks
+stop other tasks
+
+stop all
+stop all
+
+last message
+last message
+
+arg _ default _
+arg _ default _
+
+default
+default
+
+call _
+call _
+
+function name
+function name
+
+parameter list
+parameter list
+
+with _
+with _
+
+Operators
+Operators
+
+_ mod _
+_ mod _
+
+abs _
+abs _
+
+min _ _
+min _ _
+
+max _ _
+max _ _
+
+random _ to _
+random _ to _
+
+not _
+not _
+
+_ and _
+_ and _
+
+and _
+and _
+
+_ or _
+_ or _
+
+or _
+or _
+
+_ is a _
+_ is a _
+
+convert _ to _
+convert _ to _
+
+boolean
+boolean
+
+number
+number
+
+string
+string
+
+list
+list
+
+byte array
+byte array
+
+Advanced:
+Advanced:
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+rescale _ from ( _ , _ ) to ( _ , _ )
+
+hex _
+hex _
+
+Variables
+Variables
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Add a variable
+
+Delete a variable
+Delete a variable
+
+# New variable dialog
+
+New variable name?
+New variable name?
+
+set _ to _
+set _ to _
+
+change _ by _
+change _ by _
+
+initialize local _ to _
+initialize local _ to _
+
+Data
+Data
+
+list
+list
+
+cat
+cat
+
+dog
+dog
+
+bird
+bird
+
+fish
+fish
+
+length of _
+length of _
+
+item _ of _
+item _ of _
+
+replace item _ of list _ with _
+replace item _ of list _ with _
+
+delete item _ of list _
+delete item _ of list _
+
+add _ to list _
+add _ to list _
+
+join _ _
+join _ _
+
+copy _ from _
+copy _ from _
+
+smiles
+smiles
+
+to _
+to _
+
+find _ in _
+find _ in _
+
+starting at _
+starting at _
+
+join items of list _
+join items of list _
+
+separator _
+separator _
+
+unicode _ of _
+unicode _ of _
+
+string from unicode _
+string from unicode _
+
+new list length _
+new list length _
+
+new byte array _
+new byte array _
+
+as byte array _
+as byte array _
+
+aByteListOrString
+aByteListOrString
+
+with all _
+with all _
+
+free memory
+free memory
+
+all
+all
+
+last
+last
+
+random
+random
+
+split _ by _
+split _ by _
+
+My Blocks
+My Blocks
+
+Generic
+Generic
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+Add a command block
+
+Add a reporter block
+Add a reporter block
+
+# Make a block dialog
+
+Enter function name:
+Enter function name:
+
+Comm
+Comm
+
+i2c get device _ register _
+i2c get device _ register _
+
+i2c set device _ register _ to _
+i2c set device _ register _ to _
+
+i2c device _ read list _
+i2c device _ read list _
+
+i2c device _ write list _
+i2c device _ write list _
+
+spi send _
+spi send _
+
+spi receive
+spi receive
+
+spi setup speed _
+spi setup speed _
+
+mode _
+mode _
+
+rpi channel _
+rpi channel _
+
+spi exchange bytes _
+spi exchange bytes _
+
+aByteArray
+aByteArray
+
+serial open _ baud
+serial open _ baud
+
+serial close
+serial close
+
+serial read
+serial read
+
+serial write _
+serial write _
+
+anIntegerStringListOrByteArray
+anIntegerStringListOrByteArray
+
+serial write _ starting at _
+serial write _ starting at _
+
+aStringListOrByteArray
+aStringListOrByteArray
+
+soft serial write byte _ pin _ baud _
+soft serial write byte _ pin _ baud _
+
+print _
+print _
+
+no op
+no op
+
+ignore
+ignore
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+send NeoPixel rgb _
+send NeoPixel rgb _
+
+has tone support
+has tone support
+
+play tone pin _ frequency _
+play tone pin _ frequency _
+
+has WiFi support
+has WiFi support
+
+start WiFi _ password _
+start WiFi _ password _
+
+stop WiFi
+stop WiFi
+
+WiFi status
+WiFi status
+
+my IP address
+my IP address
+
+radio send number _
+radio send number _
+
+radio send string _
+radio send string _
+
+Hello!
+Hello!
+
+radio send pair _ = _
+radio send pair _ = _
+
+light
+light
+
+radio message received?
+radio message received?
+
+radio last number
+radio last number
+
+radio last string
+radio last string
+
+radio last message type
+radio last message type
+
+radio set group _ (0-255)
+radio set group _ (0-255)
+
+radio set channel (0-83) _
+radio set channel (0-83) _
+
+radio set power (0-7) _
+radio set power (0-7) _
+
+radio last signal strength
+radio last signal strength
+
+radio receive packet _
+radio receive packet _
+
+radio send packet _
+radio send packet _
+
+disable radio
+disable radio
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+Basic Sensors
+
+tilt x
+tilt x
+
+tilt y
+tilt y
+
+tilt z
+tilt z
+
+acceleration
+acceleration
+
+light level
+light level
+
+temperature (°C)
+temperature (°C)
+
+magnetic field
+magnetic field
+
+set acceleration range _ g = 100
+set acceleration range _ g = 100
+
+####
+# NeoPixel library
+
+NeoPixel
+NeoPixel
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+clear NeoPixels
+
+set NeoPixel _ color _
+set NeoPixel _ color _
+
+set all NeoPixels color _
+set all NeoPixels color _
+
+rotate NeoPixels by _
+rotate NeoPixels by _
+
+brighten NeoPixel _ by _
+brighten NeoPixel _ by _
+
+brighten all NeoPixels by _
+brighten all NeoPixels by _
+
+color r _ g _ b _ (0-255)
+color r _ g _ b _ (0-255)
+
+random color
+random color
+
+attach _ LED NeoPixel strip to pin _
+attach _ LED NeoPixel strip to pin _
+
+has white _
+has white _
+
+PIR
+PIR
+
+PIR at pin _ detected movement
+PIR at pin _ detected movement
+
+#### NeoPanel library
+
+NeoPanel
+NeoPanel
+
+attach NeoPixel panel width _ height _ at pin _
+attach NeoPixel panel width _ height _ at pin _
+
+NeoPanel set x _ y _ color _
+NeoPanel set x _ y _ color _
+
+NeoPanel fill column _ color _
+NeoPanel fill column _ color _
+
+NeoPanel fill row _ color _
+NeoPanel fill row _ color _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+
+NeoPanel draw text _ at x _ y _ color _
+NeoPanel draw text _ at x _ y _ color _
+
+NeoPanel draw BMP file _ at x _ y _
+NeoPanel draw BMP file _ at x _ y _
+
+####
+# Microphone library
+
+Microphone
+Microphone
+
+microphone
+microphone
+
+turn on microphone
+turn on microphone
+
+loudness
+loudness
+
+clap count
+clap count
+
+set clap threshold _
+set clap threshold _
+
+estimate clap threshold
+estimate clap threshold
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+ED1 Stepper Motor
+
+move motor _ _ steps _
+move motor _ _ steps _
+
+move motor 1 _ and motor 2 _ _ steps
+move motor 1 _ and motor 2 _ _ steps
+
+move motor _ angle _ °
+move motor _ angle _ °
+
+move motor _ _ complete turns
+move motor _ _ complete turns
+
+stop steppers
+stop steppers
+
+clockwise
+clockwise
+
+counter-clockwise
+counter-clockwise
+
+ED1 Buttons
+ED1 Buttons
+
+button OK
+button OK
+
+button X
+button X
+
+button up
+button up
+
+button down
+button down
+
+button left
+button left
+
+button right
+button right
+
+capacitive sensor _
+capacitive sensor _
+
+set capacitive threshold to _
+set capacitive threshold to _
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+Hummingbird Position Servo _ _ °
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Rotation Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Battery (mV)
+
+Light
+Light
+
+Distance (cm)
+Distance (cm)
+
+Dial
+Dial
+
+Sound
+Sound
+
+Other
+Other
+
+Finch Beak Red _ Green _ Blue _
+Finch Beak Red _ Green _ Blue _
+
+Finch Tail _ Red _ Green _ Blue _
+Finch Tail _ Red _ Green _ Blue _
+
+Finch Move _ _ cm at _ %
+Finch Move _ _ cm at _ %
+
+Finch Turn _ _ ° at _ %
+Finch Turn _ _ ° at _ %
+
+Finch Wheels L _ % R _ %
+Finch Wheels L _ % R _ %
+
+Finch Stop
+Finch Stop
+
+Finch Distance (cm)
+Finch Distance (cm)
+
+Finch _ Light
+Finch _ Light
+
+Finch _ Line
+Finch _ Line
+
+Finch Reset Encoders
+Finch Reset Encoders
+
+Finch _ Encoder
+Finch _ Encoder
+
+Finch Accelerometer _
+Finch Accelerometer _
+
+Finch Battery
+Finch Battery
+
+All
+All
+
+Forward
+Forward
+
+Backward
+Backward
+
+Right
+Right
+
+Left
+Left
+
+Beak Up
+Beak Up
+
+Beak Down
+Beak Down
+
+Tilt Left
+Tilt Left
+
+Tilt Right
+Tilt Right
+
+Level
+Level
+
+Upside Down
+Upside Down
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+strength
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+distance (cm) trigger _ echo _
+
+####
+# Infrared remote library
+
+IR Remote
+IR Remote
+
+receive IR code
+receive IR code
+
+receive IR code from device _
+receive IR code from device _
+
+test IR
+test IR
+
+attach IR receiver to pin _
+attach IR receiver to pin _
+
+IR transmit device _ command _
+IR transmit device _ command _
+
+####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+Keyboard and Mouse
+
+press key _ : while holding _
+press key _ : while holding _
+
+hold key _
+hold key _
+
+release key _
+release key _
+
+release all keys
+release all keys
+
+Shift
+Shift
+
+Control
+Control
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+enter
+
+return
+return
+
+tab
+tab
+
+backspace
+backspace
+
+delete
+delete
+
+insert
+insert
+
+home
+home
+
+end
+end
+
+PgUp
+PgUp
+
+PgDown
+PgDown
+
+CapsLock
+CapsLock
+
+NumLock
+NumLock
+
+ScrollLock
+ScrollLock
+
+PrintScreen
+PrintScreen
+
+ESC
+ESC
+
+_ mouse click
+_ mouse click
+
+left
+left
+
+right
+right
+
+middle
+middle
+
+both
+both
+
+move mouse pointer by _ , _
+move mouse pointer by _ , _
+
+scroll mouse by _
+scroll mouse by _
+
+hold _ mouse button
+hold _ mouse button
+
+release mouse buttons
+release mouse buttons
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+Lists
+
+list _ contains _
+list _ contains _
+
+circular item _ of _
+circular item _ of _
+
+aListOrString
+aListOrString
+
+map _ over _
+map _ over _
+
+aFunction
+aFunction
+
+filter _ with _
+filter _ with _
+
+pick _ from _
+pick _ from _
+
+a few
+a few
+
+some
+some
+
+most
+most
+
+reverse _
+reverse _
+
+shuffle _
+shuffle _
+
+sort _
+sort _
+
+shuffled _
+shuffled _
+
+reversed _
+reversed _
+
+sorted _
+sorted _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+BLE Keyboard
+
+start BLE Keyboard
+start BLE Keyboard
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+Scrolling
+
+scroll text _
+scroll text _
+
+HELLO ROSA!
+HELLO ROSA!
+
+scroll number _
+scroll number _
+
+pausing _ ms
+pausing _ ms
+
+stop scrolling
+stop scrolling
+
+####
+# Servo motor library
+
+Servo
+Servo
+
+set servo _ to _ degrees (-90 to 90)
+set servo _ to _ degrees (-90 to 90)
+
+set servo _ to speed _ (-100 to 100)
+set servo _ to speed _ (-100 to 100)
+
+stop servo _
+stop servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+LED Display
+
+display _
+display _
+
+clear display
+clear display
+
+set display color _
+set display color _
+
+plot x _ y _
+plot x _ y _
+
+unplot x _ y _
+unplot x _ y _
+
+display character _
+display character _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+initialize i2c _ address(hex) _ reset pin# _ flip _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+initialize spi _ d/c pin# _ reset pin# _ flip _
+
+write _ at x _ y _ inverse _
+write _ at x _ y _ inverse _
+
+show display buffer
+show display buffer
+
+clear
+clear
+
+set contrast (1-4) _
+set contrast (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+draw circle at x _ y _ radius _ erase _
+
+draw image _ at x _ y _
+draw image _ at x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+draw line from x _ y _ to x _ y _ erase _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+fill rectangle x _ y _ w _ h _ erase _
+
+_flip display top _
+_flip display top _
+
+make image _
+make image _
+
+set pixel x _ y _ erase _
+set pixel x _ y _ erase _
+
+set video _
+set video _
+
+cursor location
+cursor location
+
+defer display updates
+defer display updates
+
+####
+# TFT display library
+
+enable TFT _
+enable TFT _
+
+TFT width
+TFT width
+
+TFT height
+TFT height
+
+set TFT pixel x _ y _ to _
+set TFT pixel x _ y _ to _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+draw line on TFT from x _ y _ to x _ y _ color _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+draw rectangle on TFT at x _ y _ width _ height _ color _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+
+draw circle on TFT at x _ y _ radius _ color _
+draw circle on TFT at x _ y _ radius _ color _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+
+filled _
+filled _
+
+write _ on TFT at x _ y _ color _
+write _ on TFT at x _ y _ color _
+
+Hello World!
+Hello World!
+
+scale _ wrap _
+scale _ wrap _
+
+####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _ at x _ y _
+display BMP file _ at x _ y _
+
+image.bmp
+image.bmp
+
+####
+# HSV color library
+
+HSV Colors
+HSV Colors
+
+RGB of hue _ saturation _ brightness _ (0-100)
+RGB of hue _ saturation _ brightness _ (0-100)
+
+####
+# Fractions library
+
+Fractions
+Fractions
+
+fract _ / _
+fract _ / _
+
+fract _ + _
+fract _ + _
+
+fract _ - _
+fract _ - _
+
+fract _ × _
+fract _ × _
+
+fract _ = _
+fract _ = _
+
+fract _ < _
+fract _ < _
+
+fract _ > _
+fract _ > _
+
+simplify fraction _
+simplify fraction _
+
+integer part of fraction _
+integer part of fraction _
+
+numerator of fraction _
+numerator of fraction _
+
+denominator of fraction _
+denominator of fraction _
+
+gcd _ _
+gcd _ _
+
+lcm _ _
+lcm _ _
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+Tone
+
+attach buzzer to pin _
+attach buzzer to pin _
+
+play note _ octave _ for _ ms
+play note _ octave _ for _ ms
+
+play frequency _ for _ ms
+play frequency _ for _ ms
+
+play midi key _ for _ ms
+play midi key _ for _ ms
+
+start tone _ Hz
+start tone _ Hz
+
+stop tone
+stop tone
+
+c
+c
+
+c#
+c#
+
+d
+d
+
+d#
+d#
+
+e
+e
+
+f
+f
+
+f#
+f#
+
+g
+g
+
+g#
+g#
+
+a
+a
+
+a#
+a#
+
+b
+b
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+Ringtone
+
+play ringtone _
+play ringtone _
+
+current song name
+current song name
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Pluck
+
+pluck note _ octave _ for _ ms
+pluck note _ octave _ for _ ms
+
+pluck MIDI key _ for _ msecs
+pluck MIDI key _ for _ msecs
+
+set pluck pin _
+set pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+play WAV file _
+
+filename
+filename
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+Rhythm
+
+set tempo to _ bpm at _ / _ signature
+set tempo to _ bpm at _ / _ signature
+
+start counting _ bars
+start counting _ bars
+
+stop counting
+stop counting
+
+wait until next _
+wait until next _
+
+current beat
+current beat
+
+current bar
+current bar
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+Acoustic Bass Drum
+
+Bass Drum 1
+Bass Drum 1
+
+Side Stick
+Side Stick
+
+Acoustic Snare
+Acoustic Snare
+
+Hand Clap
+Hand Clap
+
+Electric Snare
+Electric Snare
+
+Low Floor Tom
+Low Floor Tom
+
+Closed Hi-Hat
+Closed Hi-Hat
+
+High Floor Tom
+High Floor Tom
+
+Pedal Hi-Hat
+Pedal Hi-Hat
+
+Low Tom
+Low Tom
+
+Open Hi-Hat
+Open Hi-Hat
+
+Low-Mid Tom
+Low-Mid Tom
+
+Hi-Mid Tom
+Hi-Mid Tom
+
+Crash Cymbal 1
+Crash Cymbal 1
+
+High Tom
+High Tom
+
+Ride Cymbal 1
+Ride Cymbal 1
+
+Chinese Cymbal
+Chinese Cymbal
+
+Ride Bell
+Ride Bell
+
+Tambourine 
+Tambourine 
+
+Splash Cymbal
+Splash Cymbal
+
+Cowbell 
+Cowbell 
+
+Crash Cymbal 2
+Crash Cymbal 2
+
+Vibraslap 
+Vibraslap 
+
+Ride Cymbal 2
+Ride Cymbal 2
+
+Hi Bongo
+Hi Bongo
+
+Low Bongo
+Low Bongo
+
+Mute Hi Conga
+Mute Hi Conga
+
+Open Hi Conga
+Open Hi Conga
+
+Low Conga
+Low Conga
+
+High Timbale
+High Timbale
+
+Low Timbale
+Low Timbale
+
+High Agogo
+High Agogo
+
+Low Agogo
+Low Agogo
+
+Cabasa
+Cabasa
+
+Maracas 
+Maracas 
+
+Short Whistle
+Short Whistle
+
+Long Whistle
+Long Whistle
+
+Short Guiro
+Short Guiro
+
+Long Guiro
+Long Guiro
+
+Claves 
+Claves 
+
+Hi Wood Block
+Hi Wood Block
+
+Low Wood Block
+Low Wood Block
+
+Mute Cuica
+Mute Cuica
+
+Open Cuica
+Open Cuica
+
+Mute Triangle
+Mute Triangle
+
+Open Triangle
+Open Triangle
+
+# General MIDI instrument categories
+
+piano 
+piano 
+
+chromatic percussion
+chromatic percussion
+
+organ
+organ
+
+guitar
+guitar
+
+bass
+bass
+
+strings
+strings
+
+ensemble
+ensemble
+
+brass
+brass
+
+reed
+reed
+
+pipe 
+pipe 
+
+synth lead
+synth lead
+
+synth pad
+synth pad
+
+synth SFX
+synth SFX
+
+ethnic
+ethnic
+
+percussive
+percussive
+
+SFX 
+SFX 
+
+# General MIDI drum sets
+
+standard
+standard
+
+room
+room
+
+power
+power
+
+electronic 
+electronic 
+
+TR-808
+TR-808
+
+jazz
+jazz
+
+brush
+brush
+
+orchestra
+orchestra
+
+SFX 
+SFX 
+
+CM-64/CM-32L
+CM-64/CM-32L
+
+# General MIDI control changes
+
+bank select 1
+bank select 1
+
+bank select 2
+bank select 2
+
+modulation 
+modulation 
+
+portamento time
+portamento time
+
+volume
+volume
+
+pan
+pan
+
+expression
+expression
+
+hold
+hold
+
+portamento
+portamento
+
+sostenuto
+sostenuto
+
+soft
+soft
+
+resonance 
+resonance 
+
+release time
+release time
+
+attack time
+attack time
+
+cutoff 
+cutoff 
+
+decay time
+decay time
+
+vibrato rate
+vibrato rate
+
+vibrato depth
+vibrato depth
+
+vibrato delay
+vibrato delay
+
+portamento control
+portamento control
+
+effect 1
+effect 1
+
+effect 2
+effect 2
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+play MIDI note _ for _ ms on channel _ volume _
+
+set MIDI note _ to _ on channel _ volume _
+set MIDI note _ to _ on channel _ volume _
+
+note _ octave _ to MIDI key
+note _ octave _ to MIDI key
+
+select MIDI instrument _ for channel _
+select MIDI instrument _ for channel _
+
+instrument _ number _
+instrument _ number _
+
+select MIDI drum kit _
+select MIDI drum kit _
+
+play MIDI drum _ for _ ms volume _
+play MIDI drum _ for _ ms volume _
+
+drum _
+drum _
+
+change MIDI control _ on channel _ to _
+change MIDI control _ on channel _ to _
+
+pitch bend MIDI channel _ to _ %
+pitch bend MIDI channel _ to _ %
+
+send MIDI reset
+send MIDI reset
+
+send MIDI start playing
+send MIDI start playing
+
+send MIDI stop playing
+send MIDI stop playing
+
+send MIDI continue playing
+send MIDI continue playing
+
+set MIDI signal to pin _
+set MIDI signal to pin _
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+Scales & Chords
+
+# scale names
+
+ionian
+ionian
+
+dorian
+dorian
+
+phrygian
+phrygian
+
+lydian
+lydian
+
+mixolydian
+mixolydian
+
+aeolian
+aeolian
+
+locrian
+locrian
+
+major
+major
+
+minor 
+minor 
+
+# chord types
+
+major
+major
+
+minor
+minor
+
+diminished
+diminished
+
+major 7th
+major 7th
+
+minor 7th
+minor 7th
+
+Maj7 
+Maj7 
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+MIDI channel
+
+tone pin 
+tone pin 
+
+# library blocks
+
+_ scale root _
+_ scale root _
+
+steps _
+steps _
+
+pentatonic _ scale root _
+pentatonic _ scale root _
+
+_ chord root _
+_ chord root _
+
+_ chord for root _
+_ chord for root _
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+arpeggiate _ in order _ duration _ and volume _ on _ _
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+improvise over _ for _ bars with durations _ on _ _ volume _
+
+_ transposed _ semitones
+_ transposed _ semitones
+
+chord progression _ with root _
+chord progression _ with root _
+
+and _ steps per chord
+and _ steps per chord
+
+rotation _ of circle of 5ths _ M _ m _ º
+rotation _ of circle of 5ths _ M _ m _ º
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+kick for _ ms on pin _
+
+tom for _ ms pitch shifted by _ on pin _
+tom for _ ms pitch shifted by _ on pin _
+
+laser for _ ms with frequency _ speed _ on pin _
+laser for _ ms with frequency _ speed _ on pin _
+
+noise for _ ms pitch shifted by _ on pin _
+noise for _ ms pitch shifted by _ on pin _
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+fade noise for _ ms pitch shifted by _ on DAC pin _
+
+snare for _ ms on DAC pin _
+snare for _ ms on DAC pin _
+
+hihat for _ ms on DAC pin _
+hihat for _ ms on DAC pin _
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+Square Wave Chords
+
+play chord _ for _ ms
+play chord _ for _ ms
+
+set digital chord pins _ _ _
+set digital chord pins _ _ _
+
+####
+# Turtle geometry library
+
+Turtle
+Turtle
+
+home
+home
+
+move _
+move _
+
+turn _ degrees
+turn _ degrees
+
+turn _ / _ of circle
+turn _ / _ of circle
+
+pen down
+pen down
+
+pen up
+pen up
+
+set pen color to _
+set pen color to _
+
+set pen to random color
+set pen to random color
+
+fill display with _
+fill display with _
+
+go to x _ y _
+go to x _ y _
+
+point in direction _
+point in direction _
+
+####
+# File system library
+
+Files
+Files
+
+open file _
+open file _
+
+close file _
+close file _
+
+delete file _
+delete file _
+
+append line _ to file _
+append line _ to file _
+
+append bytes _ to file _
+append bytes _ to file _
+
+end of file _
+end of file _
+
+next line of file _
+next line of file _
+
+next _ bytes of file _
+next _ bytes of file _
+
+read into _ from file _
+read into _ from file _
+
+a ByteArray
+a ByteArray
+
+starting at _
+starting at _
+
+file names
+file names
+
+in directory _
+in directory _
+
+size of file _
+size of file _
+
+file system info
+file system info
+
+####
+# Strings
+# string (text) processing functions
+
+Strings
+Strings
+
+_ is a digit
+_ is a digit
+
+_ is lowercase
+_ is lowercase
+
+_ is uppercase
+_ is uppercase
+
+_ begins with _
+_ begins with _
+
+prefix
+prefix
+
+pre
+pre
+
+_ ends with _
+_ ends with _
+
+suffix
+suffix
+
+fix
+fix
+
+_ contains _
+_ contains _
+
+lowercase _
+lowercase _
+
+THIS is a String! :)
+THIS is a String! :)
+
+uppercase _
+uppercase _
+
+Hello, world!
+Hello, world!
+
+_ without white space
+_ without white space
+
+join string list _ separator _
+join string list _ separator _
+
+unicodes _
+unicodes _
+
+aString
+aString
+
+string from unicodes _
+string from unicodes _
+
+aList
+aList
+
+num2str _
+num2str _
+
+str2num _
+str2num _
+
+####
+# WiFi library
+
+WiFi
+WiFi
+
+wifi connect to _ password _
+wifi connect to _ password _
+
+Network_Name
+Network_Name
+
+IP _ gateway _ subnet _
+IP _ gateway _ subnet _
+
+wifi create hotspot _ password _
+wifi create hotspot _ password _
+
+Network_Password
+Network_Password
+
+IP address
+IP address
+
+MAC address
+MAC address
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+Motion
+
+motion
+motion
+
+start step counter
+start step counter
+
+step count
+step count
+
+clear step count
+clear step count
+
+set step threshold _ (0-50)
+set step threshold _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+Button Events
+
+button _ double pressed
+button _ double pressed
+
+button _ long pressed
+button _ long pressed
+
+button _ pressed
+button _ pressed
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+Calliope set LED red _ green _ blue _
+
+Calliope set speaker _
+Calliope set speaker _
+
+Calliope loudness
+Calliope loudness
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+Circuit Playground set speaker _
+
+Circuit Playground slide switch
+Circuit Playground slide switch
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+attach _ DotStar LEDs to data pin _ clock pin _
+
+set all DotStar LEDs to r _ g _ b _
+set all DotStar LEDs to r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+set DotStar LED _ to r _ g _ b _
+
+set DotStar brightness _
+set DotStar brightness _
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+bme280 connected
+
+bmp280 connected
+bmp280 connected
+
+bmx280 temperature
+bmx280 temperature
+
+bmx280 pressure
+bmx280 pressure
+
+bme280 humidity
+bme280 humidity
+
+bmx280 set base altitude _ meters
+bmx280 set base altitude _ meters
+
+bmx280 altitude (cm)
+bmx280 altitude (cm)
+
+bmx280 altitude (feet)
+bmx280 altitude (feet)
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+TCS34725 connected
+
+TCS34725 rgb
+TCS34725 rgb
+
+color _ name
+color _ name
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+temperature (Celsius) DHT11 pin _
+
+humidity DHT11 pin _
+humidity DHT11 pin _
+
+temperature (Celsius) DHT22 pin _
+temperature (Celsius) DHT22 pin _
+
+humidity DHT22 pin _
+humidity DHT22 pin _
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+read PN532 RFID
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+get PN532 firmware version
+
+####
+# Touch Screen
+
+Touch Screen
+Touch Screen
+
+TFT touched
+TFT touched
+
+TFT touch X position
+TFT touch X position
+
+TFT touch Y position
+TFT touch Y position
+
+TFT touch pressure
+TFT touch pressure
+
+####
+# HTTP Client
+
+HTTP client
+HTTP client
+
+_ data _ to http܃// _
+_ data _ to http܃// _
+
+MicroBlocks is fun
+MicroBlocks is fun
+
+port _
+port _
+
+####
+# HTTP Server
+
+HTTP server
+HTTP server
+
+start HTTP server
+start HTTP server
+
+HTTP server request
+HTTP server request
+
+respond _ to HTTP request
+respond _ to HTTP request
+
+with body _
+with body _
+
+Welcome to the MicroBlocks HTTP server
+Welcome to the MicroBlocks HTTP server
+
+and headers _
+and headers _
+
+body of request _
+body of request _
+
+path of request _
+path of request _
+
+headers of request _
+headers of request _
+
+method of request _
+method of request _
+
+content length of request _
+content length of request _
+
+####
+# WebSocket server
+
+WebSocket server
+WebSocket server
+
+start WebSocket server
+start WebSocket server
+
+last WebSocket event
+last WebSocket event
+
+client ID for WebSocket event _
+client ID for WebSocket event _
+
+payload for WebSocket event _
+payload for WebSocket event _
+
+type of WebSocket event _
+type of WebSocket event _
+
+send _ to WebSocket client _
+send _ to WebSocket client _
+
+Hello, Client!
+Hello, Client!
+
+####
+# Web Things library
+
+Web Thing
+Web Thing
+
+set thing name to _
+set thing name to _
+
+set thing capability to _
+set thing capability to _
+
+set boolean property _ title _ @Type _
+set boolean property _ title _ @Type _
+
+set string property _ title _ @Type _
+set string property _ title _ @Type _
+
+set number property _ title _ @Type _
+set number property _ title _ @Type _
+
+set number property _ title _ min _ max _ @Type _
+set number property _ title _ min _ max _ @Type _
+
+read only _
+read only _
+
+register event _ type _
+register event _ type _
+
+start WebThing server
+start WebThing server
+
+trigger event _
+trigger event _
+
+thing description JSON
+thing description JSON
+
+properties JSON
+properties JSON
+
+event definitions JSON
+event definitions JSON
+
+events JSON
+events JSON
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+turn fantàstic _ degrees
+
+move fantàstic _ mm
+move fantàstic _ mm
+
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+MiKe front obstacle (cm)
+
+MiKe _ obstacle ?
+MiKe _ obstacle ?
+
+MiKe black line on _ ?
+MiKe black line on _ ?
+
+MiKe back light
+MiKe back light
+
+MiKe IR
+MiKe IR
+
+MiKe digital D8 sensor
+MiKe digital D8 sensor
+
+MiKe stop motors
+MiKe stop motors
+
+MiKe Robot go _ at _ %
+MiKe Robot go _ at _ %
+
+MiKe Robot speed _ %
+MiKe Robot speed _ %
+
+MiKe Robot direction _
+MiKe Robot direction _
+
+MiKe turn _ motor _
+MiKe turn _ motor _
+
+MiKe speed _ motor at _ %
+MiKe speed _ motor at _ %
+
+MiKe front lights off
+MiKe front lights off
+
+MiKe front lights to _
+MiKe front lights to _
+
+MiKe circle lights off
+MiKe circle lights off
+
+MiKe circle ligths to _
+MiKe circle ligths to _
+
+MiKe circle light _ (1-18) to _
+MiKe circle light _ (1-18) to _
+
+MiKe rotate lights by _
+MiKe rotate lights by _
+
+MiKe digital D8 to _
+MiKe digital D8 to _
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+plotter move X _ Y _
+
+plotter move _ steps
+plotter move _ steps
+
+plotter turn _ degrees
+plotter turn _ degrees
+
+plotter turn _ / _ of circle
+plotter turn _ / _ of circle
+
+plotter point in direction _
+plotter point in direction _
+
+plotter pen down
+plotter pen down
+
+plotter pen up
+plotter pen up
+
+plotter stop
+plotter stop
+
+set plotter speed to _ %
+set plotter speed to _ %
+
+####
+# Innova Didactic libraries
+
+red
+red
+
+yellow
+yellow
+
+green
+green
+
+forward
+forward
+
+backward
+backward
+
+turn right
+turn right
+
+turn left
+turn left
+
+stop
+stop
+
+right sensor
+right sensor
+
+left sensor
+left sensor
+
+both sensors
+both sensors
+
+TdR test buzzer
+TdR test buzzer
+
+TdR set blue LED _
+TdR set blue LED _
+
+TdR set red LED _
+TdR set red LED _
+
+TdR set RGB LED _
+TdR set RGB LED _
+
+TdR clear RGB LED
+TdR clear RGB LED
+
+TdR LM35 temperature ºC
+TdR LM35 temperature ºC
+
+TdR DHT11 temperature ºC
+TdR DHT11 temperature ºC
+
+TdR DHT11 humidity
+TdR DHT11 humidity
+
+TdR rotation
+TdR rotation
+
+TdR light level
+TdR light level
+
+TdR button 1
+TdR button 1
+
+TdR button 2
+TdR button 2
+
+TdR receive IR code
+TdR receive IR code
+
+Imagina set _ led to _
+Imagina set _ led to _
+
+Imagina play _ octave _ for _ ms
+Imagina play _ octave _ for _ ms
+
+Imagina temperature (°C)
+Imagina temperature (°C)
+
+Imagina light
+Imagina light
+
+Imagina distance (cm)
+Imagina distance (cm)
+
+Imagina button (D2) pressed?
+Imagina button (D2) pressed?
+
+Imagina digital reading _
+Imagina digital reading _
+
+Imagina analog reading A1
+Imagina analog reading A1
+
+Imagina set digital pin _ to _
+Imagina set digital pin _ to _
+
+Imagina stop servo _
+Imagina stop servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+Imagina set servo _ to _ degrees (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+Imagina set servo _ to speed _ (-100 to 100)
+
+Imagina set _ speed to _ %
+Imagina set _ speed to _ %
+
+Imagina set _ to _
+Imagina set _ to _
+
+Imagina IR reading
+Imagina IR reading
+
+Imagina IR transmit device _ command _
+Imagina IR transmit device _ command _
+
+_ steps
+_ steps
+
+at _ % speed
+at _ % speed
+
+3dBot set speed at _ %
+3dBot set speed at _ %
+
+3dBot obstacle < _ cm?
+3dBot obstacle < _ cm?
+
+3dBot line on _ ?
+3dBot line on _ ?
+
+####
+# MQTT
+
+MQTT connect to broker _
+MQTT connect to broker _
+
+buffer sizes _ client id _
+buffer sizes _ client id _
+
+username _ password _
+username _ password _
+
+MQTT connected
+MQTT connected
+
+MQTT disconnect
+MQTT disconnect
+
+MQTT sub _
+MQTT sub _
+
+testTopic
+testTopic
+
+MQTT unsub _
+MQTT unsub _
+
+MQTT pub topic _ payload _
+MQTT pub topic _ payload _
+
+Hello!
+Hello!
+
+retain _ QoS _
+retain _ QoS _
+
+MQTT event
+MQTT event
+
+binary _
+binary _
+
+topic for MQTT event _
+topic for MQTT event _
+
+payload for MQTT event _
+payload for MQTT event _
+
+MQTT set will topic _ payload _
+MQTT set will topic _ payload _
+
+testWill
+testWill
+
+Last will!
+Last will!
+
+buffer sizes _
+buffer sizes _
+
+####
+# UDP
+
+UDP start port _
+UDP start port _
+
+UDP stop
+UDP stop
+
+UDP send packet _ to ip _ port _
+UDP send packet _ to ip _ port _
+
+UDP receive packet
+UDP receive packet
+
+binary data _
+binary data _
+
+UDP remote IP address
+UDP remote IP address
+
+UDP remote port
+UDP remote port
+
+####
+# WiFi Radio
+
+wifi send number _
+wifi send number _
+
+wifi send string _
+wifi send string _
+
+wifi send pair _ = _
+wifi send pair _ = _
+
+wifi message received?
+wifi message received?
+
+wifi last number
+wifi last number
+
+wifi last string
+wifi last string
+
+wifi set group _ (0-255)
+wifi set group _ (0-255)
+
+####
+# Cutebot
+
+Cutebot
+Cutebot
+
+Cutebot set wheel left _ right _ (-100 to 100)
+Cutebot set wheel left _ right _ (-100 to 100)
+
+Cutebot stop wheels
+Cutebot stop wheels
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+Cutebot set servo _ to _ degrees (-90 to 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+Cutebot set servo _ to speed _ (-100 to 100)
+
+Cutebot set headlight _ to _
+Cutebot set headlight _ to _
+
+Cutebot set NeoPixel _ to _
+Cutebot set NeoPixel _ to _
+
+Cutebot _ line sensor
+Cutebot _ line sensor
+
+Cutebot sees line on left _ right _
+Cutebot sees line on left _ right _
+
+Cutebot distance (cm)
+Cutebot distance (cm)
+
+left
+left
+
+right
+right
+
+both
+both
+
+# Wukong
+
+Wukong
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
+Wukong set motor _ to _ (-100 to 100)
+
+Wukong stop motor _
+Wukong stop motor _
+
+Wukong stop all
+Wukong stop all
+
+Wukong set servo _ to _ degrees (-90 to 90)
+Wukong set servo _ to _ degrees (-90 to 90)
+
+Wukong set servo _ to speed _ (-100 to 100)
+Wukong set servo _ to speed _ (-100 to 100)
+
+Wukong set NeoPixels _ _ _ _
+Wukong set NeoPixels _ _ _ _
+
+Wukong set LED brightness to _
+Wukong set LED brightness to _
+
+####
+# Sphero-RVR
+
+wake
+wake
+
+sleep
+sleep
+
+reset the yaw
+reset the yaw
+
+drive with speed _ and heading _
+drive with speed _ and heading _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+set raw motors with left mode _ left speed _ right mode _ right speed _
+
+stop with heading _
+stop with heading _
+
+set RGB LED _ to red _ green _ blue _
+set RGB LED _ to red _ green _ blue _
+
+set all LEDs to red _ green _ blue _
+set all LEDs to red _ green _ blue _
+
+####
+# Joystick:bit
+
+button _ is pressed
+button _ is pressed
+
+rocker value of _
+rocker value of _
+
+motor vibrate for _ ms
+motor vibrate for _ ms
+
+####
+# NeZha
+
+NeZha
+NeZha
+
+NeZha set motor _ speed to _ %
+NeZha set motor _ speed to _ %
+
+NeZha stop motor _
+NeZha stop motor _
+
+NeZha stop all motors
+NeZha stop all motors
+
+NeZha set _ servo _ angle to _
+NeZha set _ servo _ angle to _
+
+NeZha set continuous rotation servo _ speed to _ %
+NeZha set continuous rotation servo _ speed to _ %
+
+####
+# WuKong2040
+
+WuKong2040
+WuKong2040
+
+WuKong2040 rainbowLED _ color to _
+WuKong2040 rainbowLED _ color to _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+WuKong2040 clear all rainbowLED
+
+WuKong2040 motor _ speed to _ (-100~100)
+WuKong2040 motor _ speed to _ (-100~100)
+
+WuKong2040 stop motor _
+WuKong2040 stop motor _
+
+WuKong2040 stop all motors
+WuKong2040 stop all motors
+
+WuKong2040 buzzer beep _ ms
+WuKong2040 buzzer beep _ ms
+
+####
+# Octopus
+
+Octopus
+Octopus
+
+Octopus LED pin _ toggle to _
+Octopus LED pin _ toggle to _
+
+Octopus LED pin _ brightness _ %
+Octopus LED pin _ brightness _ %
+
+Octopus motor fan pin _ speed to _ %
+Octopus motor fan pin _ speed to _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+Octopus 180° servo pin _ angle to _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+Octopus sonar trig _ echo _ distance (cm)
+
+Octopus value of light intensity (Lux) at pin _
+Octopus value of light intensity (Lux) at pin _
+
+Octopus value of DHT11 temperature (°C) at pin _
+Octopus value of DHT11 temperature (°C) at pin _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+Octopus value of DHT11 humidity (0~100) at pin _
+
+Octopus value of water level (0~40mm) at pin _
+Octopus value of water level (0~40mm) at pin _
+
+Octopus value of trimpot (0~1023) at pin _
+Octopus value of trimpot (0~1023) at pin _
+
+Octopus value of noise (dB) at pin _
+Octopus value of noise (dB) at pin _
+
+Octopus OLED show _ at x _ y _
+Octopus OLED show _ at x _ y _
+
+Octopus OLED clear
+Octopus OLED clear
+
+Octopus OLED draw pixel x _ y _
+Octopus OLED draw pixel x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+Octopus OLED draw line from x _ y _ to x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+Octopus OLED fill rectangle x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+Octopus OLED draw circle x _ y _ radius _
+
+Octopus OLED fill circle x _ y _ radius _
+Octopus OLED fill circle x _ y _ radius _
+
+
+####
+# OctoStudio
+
+Octo start
+Octo start
+
+Octo beam to phones _
+Octo beam to phones _
+
+duration _ ms
+duration _ ms
+
+Octo receive beam
+Octo receive beam
+
+Octo stop
+Octo stop
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+New
+
+Open
+Open
+
+Open from board
+Open from board
+
+Copy project URL to clipboard
+Copy project URL to clipboard
+
+Information
+Information
+
+Plug in the board.
+Plug in the board.
+
+Plug in the board and click the USB icon to connect.
+Plug in the board and click the USB icon to connect.
+
+Reading project from board...
+Reading project from board...
+
+Loading project...
+Loading project...
+
+Found a newer version of
+Found a newer version of
+
+Do you want me to update the one in the project?
+Do you want me to update the one in the project?
+
+Save
+Save
+
+Connect
+Connect
+
+connect
+connect
+
+connect (BLE)
+connect (BLE)
+
+open Boardie
+open Boardie
+
+disconnect
+disconnect
+
+Serial port:
+Serial port:
+
+Connect board and try again
+Connect board and try again
+
+other...
+other...
+
+none
+none
+
+Port name?
+Port name?
+
+Board type:
+Board type:
+
+Select board:
+Select board:
+
+Could not read:
+Could not read:
+
+by
+by
+
+Created with GP
+Created with GP
+
+More info at http://microblocks.fun
+More info at http://microblocks.fun
+
+Function "
+Function "
+
+" is too large to send to board.
+" is too large to send to board.
+
+Script is too large to send to board.
+Script is too large to send to board.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Use "Connect" button to connect to a MicroBlocks device.
+
+No boards found; is your board plugged in?
+No boards found; is your board plugged in?
+
+For AdaFruit boards, double-click reset button and try again.
+For AdaFruit boards, double-click reset button and try again.
+
+Only recent Chrome and Edge browsers support WebSerial.
+Only recent Chrome and Edge browsers support WebSerial.
+
+The board is not responding.
+The board is not responding.
+
+Try to Install MicroBlocks on the board?
+Try to Install MicroBlocks on the board?
+
+The MicroBlocks in your board is not current
+The MicroBlocks in your board is not current
+
+Try to update MicroBlocks on the board?
+Try to update MicroBlocks on the board?
+
+MicroBlocks
+MicroBlocks
+
+Stop
+Stop
+
+Start
+Start
+
+Quit MicroBlocks?
+Quit MicroBlocks?
+
+Discard current project?
+Discard current project?
+
+# Scripting area right-click context menu
+
+set block size...
+set block size...
+
+make blocks bigger or smaller
+make blocks bigger or smaller
+
+clean up
+clean up
+
+arrange scripts
+arrange scripts
+
+undrop (ctrl-Z)
+undrop (ctrl-Z)
+
+undo the last block drop
+undo the last block drop
+
+copy all scripts to clipboard
+copy all scripts to clipboard
+
+copy all scripts to clipboard as URL
+copy all scripts to clipboard as URL
+
+paste all scripts
+paste all scripts
+
+paste script
+paste script
+
+paste script from clipboard
+paste script from clipboard
+
+save a picture of all visible scripts
+save a picture of all visible scripts
+
+set exported script scale
+set exported script scale
+
+small (50%)
+small (50%)
+
+normal (65%)
+normal (65%)
+
+large (100%)
+large (100%)
+
+printable (200%)
+printable (200%)
+
+duplicate selection
+duplicate selection
+
+drag selection
+drag selection
+
+delete selection
+delete selection
+
+about...
+about...
+
+About MicroBlocks
+About MicroBlocks
+
+virtual machine version
+virtual machine version
+
+update firmware on board
+update firmware on board
+
+enable or disable BLE
+enable or disable BLE
+
+Allow the attached board to be connected via BLE?
+Allow the attached board to be connected via BLE?
+
+show data graph
+show data graph
+
+set serial delay
+set serial delay
+
+firmware version
+firmware version
+
+start WebThing server
+start WebThing server
+
+stop WebThing server
+stop WebThing server
+
+HTTP Server
+HTTP Server
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP Server listening on port 6473
+
+disable autoloading board libraries
+disable autoloading board libraries
+
+compact code store
+compact code store
+
+enable autoloading board libraries
+enable autoloading board libraries
+
+enable PlugShare when project empty
+enable PlugShare when project empty
+
+disable PlugShare when project empty
+disable PlugShare when project empty
+
+hide implementation blocks
+hide implementation blocks
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+
+show implementation blocks
+show implementation blocks
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+
+erase flash and update firmware on ESP board
+erase flash and update firmware on ESP board
+
+install ESP firmware from URL
+install ESP firmware from URL
+
+Use board type
+Use board type
+
+Firmware Install
+Firmware Install
+
+Firmware Installed
+Firmware Installed
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+Reconnect to the board by clicking the "Connect" button (USB icon).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+
+You will be asked to save the firmware file.
+You will be asked to save the firmware file.
+
+Select
+Select
+
+as the destination drive, then click Save.
+as the destination drive, then click Save.
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+
+Installing firmware...
+Installing firmware...
+
+Plug in the board.
+Plug in the board.
+
+Board not connected
+Board not connected
+
+Wiping board...
+Wiping board...
+
+(press ESC to cancel)
+(press ESC to cancel)
+
+Done!
+Done!
+
+download and install latest VM
+download and install latest VM
+
+Select board type:
+Select board type:
+
+Uploading MicroBlocks to board...
+Uploading MicroBlocks to board...
+
+copy data to clipboard
+copy data to clipboard
+
+clear data
+clear data
+
+clear memory and variables
+clear memory and variables
+
+show advanced blocks
+show advanced blocks
+
+export functions as library
+export functions as library
+
+hide advanced blocks
+hide advanced blocks
+
+put file on board
+put file on board
+
+get file from board
+get file from board
+
+uploaded
+uploaded
+
+downloaded
+downloaded
+
+Data Graph
+Data Graph
+
+Graph
+Graph
+
+clear graph
+clear graph
+
+zero at bottom
+zero at bottom
+
+zero in middle
+zero in middle
+
+export data to CSV file
+export data to CSV file
+
+import data from CSV file
+import data from CSV file
+
+copy graph data to clipboard
+copy graph data to clipboard
+
+show instructions
+show instructions
+
+show compiled bytes
+show compiled bytes
+
+expand
+expand
+
+collapse
+collapse
+
+rename...
+rename...
+
+find variable accessors
+find variable accessors
+
+find scripts or block definitions where this variable is being read
+find scripts or block definitions where this variable is being read
+
+find variable modifiers
+find variable modifiers
+
+find scripts or block definitions where this variable is being set or changed
+find scripts or block definitions where this variable is being set or changed
+
+find uses of this block
+find uses of this block
+
+find scripts or block definitions using this block
+find scripts or block definitions using this block
+
+show block definition...
+show block definition...
+
+show the definition of this block
+show the definition of this block
+
+delete block definition...
+delete block definition...
+
+delete the definition of this block
+delete the definition of this block
+
+duplicate
+duplicate
+
+help
+help
+
+duplicate this block
+duplicate this block
+
+delete block
+delete block
+
+delete this block
+delete this block
+
+just this one block
+just this one block
+
+copy to clipboard
+copy to clipboard
+
+copy to clipboard as URL
+copy to clipboard as URL
+
+copy these blocks to the clipboard as a URL
+copy these blocks to the clipboard as a URL
+
+copy these blocks to the clipboard
+copy these blocks to the clipboard
+
+duplicate all
+duplicate all
+
+duplicate these blocks
+duplicate these blocks
+
+extract block
+extract block
+
+pull out this block
+pull out this block
+
+show help for this block in a browser
+show help for this block in a browser
+
+save picture of script
+save picture of script
+
+save picture of script with result
+save picture of script with result
+
+save a picture of this block definition as a PNG file
+save a picture of this block definition as a PNG file
+
+save a picture of these blocks as a PNG file
+save a picture of these blocks as a PNG file
+
+save a picture of these blocks and their result as a PNG file
+save a picture of these blocks and their result as a PNG file
+
+copy script
+copy script
+
+delete
+delete
+
+Input type:
+Input type:
+
+string only
+string only
+
+string or number
+string or number
+
+number only
+number only
+
+stop editing
+stop editing
+
+cut
+cut
+
+copy
+copy
+
+paste
+paste
+
+accept
+accept
+
+revert
+revert
+
+select all
+select all
+
+define
+define
+
+number/string
+number/string
+
+editable number or string
+editable number or string
+
+label
+label
+
+input
+input
+
+hide block definition
+hide block definition
+
+Are you sure you want to remove this block definition?
+Are you sure you want to remove this block definition?
+
+Language
+Language
+
+Custom...
+Custom...
+
+Obsolete
+Obsolete
+
+OK
+OK
+
+Ok
+Ok
+
+Yes
+Yes
+
+No
+No
+
+Cancel
+Cancel
+
+Okay
+Okay
+
+Confirm
+Confirm
+
+# Library folders
+
+Libraries
+Libraries
+
+AI
+AI
+
+Graphics and Displays
+Graphics and Displays
+
+Kits and Boards
+Kits and Boards
+
+Network
+Network
+
+Other
+Other
+
+Robots
+Robots
+
+Sensing
+Sensing
+
+Sound
+Sound
+
+System
+System
+
+# File picker and library dialogs
+
+New library name?
+New library name?
+
+show all block definitions
+show all block definitions
+
+hide all block definitions
+hide all block definitions
+
+export this library
+export this library
+
+delete library
+delete library
+
+Examples
+Examples
+
+Desktop
+Desktop
+
+Computer
+Computer
+
+Cloud
+Cloud
+
+File
+File
+
+File Open
+File Open
+
+File Save
+File Save
+
+File name:
+File name:
+
+New Folder
+New Folder
+
+by
+by
+
+Depends:
+Depends:
+
+Tags:
+Tags:
+
+Path, name or URL for library?
+Path, name or URL for library?
+
+Invalid URL
+Invalid URL
+
+Could not fetch library.
+Could not fetch library.
+
+Host does not exist or is currently down.
+Host does not exist or is currently down.
+
+File not found in server.
+File not found in server.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+
+library information
+library information
+
+built-in library
+built-in library
+
+Dependency path, name or URL?
+Dependency path, name or URL?
+
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+
+If the library is hosted online, please input its full URL.
+If the library is hosted online, please input its full URL.
+
+Tag name?
+Tag name?
+
+user library
+user library
+
+Add Library
+Add Library
+
+seconds remaining
+seconds remaining
+
+Decrease block size
+Decrease block size
+
+Restore block size to 100%
+Restore block size to 100%
+
+Increase block size
+Increase block size
+
+############
+# Tips Bar #
+############
+
+Button
+Button
+
+Boolean Input
+Boolean Input
+
+[l] toggle value, or drop a reporter into it.
+[l] toggle value, or drop a reporter into it.
+
+Color Input
+Color Input
+
+[l] change the color, or drop a reporter into it.
+[l] change the color, or drop a reporter into it.
+
+Input
+Input
+
+[l] edit its value, or drop a reporter into it.
+[l] edit its value, or drop a reporter into it.
+
+Block Extension
+Block Extension
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] right arrow to show optional inputs, left arrow to hide.
+
+Command Block
+Command Block
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] to run, or drag to build scripts. [r] menu.
+
+Hat Block
+Hat Block
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] to run, or drag to build scripts. [r] menu.
+
+Reporter Block
+Reporter Block
+
+[l] to see value, or drop into an input slot. [r] menu.
+[l] to see value, or drop into an input slot. [r] menu.
+
+Script
+Script
+
+[l] to run. [r] menu.
+[l] to run. [r] menu.
+
+Pane Divider
+Pane Divider
+
+Drag to change pane width.
+Drag to change pane width.
+
+Library
+Library
+
+[l] to show the blocks in this library. [r] menu.
+[l] to show the blocks in this library. [r] menu.
+
+Block Category
+Block Category
+
+[l] to show the blocks in this category.
+[l] to show the blocks in this category.
+
+Palette
+Palette
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+
+Scripts Pane
+Scripts Pane
+
+Drag blocks here to build scripts. [r] menu.
+Drag blocks here to build scripts. [r] menu.
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+Turn the user LED on or off.
+
+Display a bubble showing the value.
+Display a bubble showing the value.
+
+Graph the value.
+Graph the value.
+
+Report the state of button A ( (-o) or (o-) ).
+Report the state of button A ( (-o) or (o-) ).
+
+Report the state of button B ( (-o) or (o-) ).
+Report the state of button B ( (-o) or (o-) ).
+
+Report the milliseconds since the timer was last reset.
+Report the milliseconds since the timer was last reset.
+
+Reset the timer.
+Reset the timer.
+
+Report the milliseconds since power up.
+Report the milliseconds since power up.
+
+Report the microseconds since power up.
+Report the microseconds since power up.
+
+Report the board type.
+Report the board type.
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+
+Turn a pin on or off ( (-o) or (o-) ).
+Turn a pin on or off ( (-o) or (o-) ).
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+
+Report number of analog pins on this device.
+Report number of analog pins on this device.
+
+Report number of digital pins on this device.
+Report number of digital pins on this device.
+
+Report the value of a register (0-255) of an I2C device (0-127).
+Report the value of a register (0-255) of an I2C device (0-127).
+
+Set an I2C device and register to given value (0-255).
+Set an I2C device and register to given value (0-255).
+
+Receive multiple bytes from an I2C device.
+Receive multiple bytes from an I2C device.
+
+Send multiple bytes to an I2C device.
+Send multiple bytes to an I2C device.
+
+Send a byte (0-255) to an SPI device.
+Send a byte (0-255) to an SPI device.
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+
+Set the SPI clock speed and mode.
+Set the SPI clock speed and mode.
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+Send a byte array via SPI, replacing its contents with the bytes received.
+
+Open the serial port at the given baud rate.
+Open the serial port at the given baud rate.
+
+Close the serial port.
+Close the serial port.
+
+Report data received from the serial port (a byte array).
+Report data received from the serial port (a byte array).
+
+Send a byte array to the serial port.
+Send a byte array to the serial port.
+
+Run when the board powers up or when the IDE start button is clicked.
+Run when the board powers up or when the IDE start button is clicked.
+
+Run when buttons A, B, or A+B are pressed.
+Run when buttons A, B, or A+B are pressed.
+
+Repeat the enclosed blocks indefinitely.
+Repeat the enclosed blocks indefinitely.
+
+Repeat the enclosed blocks the given number of times.
+Repeat the enclosed blocks the given number of times.
+
+Wait the given number of milliseconds.
+Wait the given number of milliseconds.
+
+Run the first set of blocks whose test condition is (-o) .
+Run the first set of blocks whose test condition is (-o) .
+
+Run when the condition becomes (-o) .
+Run when the condition becomes (-o) .
+
+Wait until the condition becomes (-o) .
+Wait until the condition becomes (-o) .
+
+Return (report) the given value from a function or script.
+Return (report) the given value from a function or script.
+
+Run when the given message is broadcast.
+Run when the given message is broadcast.
+
+Broadcast the given message.
+Broadcast the given message.
+
+Do nothing. Used to add notes and documentation.
+Do nothing. Used to add notes and documentation.
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+Repeat the enclosed blocks until the condition becomes (-o) .
+
+Stop this task.
+Stop this task.
+
+Stop all tasks except this one.
+Stop all tasks except this one.
+
+Wait the given number of microseconds.
+Wait the given number of microseconds.
+
+Report the last broadcast message received.
+Report the last broadcast message received.
+
+Call the function with the given name and optional parameter list.
+Call the function with the given name and optional parameter list.
+
+Call the function with the given name and optional parameter list and report its return value.
+Call the function with the given name and optional parameter list and report its return value.
+
+Report the sum of the given numbers.
+Report the sum of the given numbers.
+
+Report the first number minus the second.
+Report the first number minus the second.
+
+Report the product of the given numbers.
+Report the product of the given numbers.
+
+Report the first number divided by the second.
+Report the first number divided by the second.
+
+Report the remainder of dividing the first number by the second.
+Report the remainder of dividing the first number by the second.
+
+Report the absolute value of the given number (always >= 0).
+Report the absolute value of the given number (always >= 0).
+
+Report the minimum of the values.
+Report the minimum of the values.
+
+Report the maximum of the values.
+Report the maximum of the values.
+
+Report a randomly chosen number in the given range.
+Report a randomly chosen number in the given range.
+
+Report (-o) if the first value is less than the second one.
+Report (-o) if the first value is less than the second one.
+
+Report (-o) if the first value is less than or equal to the second one.
+Report (-o) if the first value is less than or equal to the second one.
+
+Report (-o) if the two values are equal.
+Report (-o) if the two values are equal.
+
+Report (-o) if the two values are not equal.
+Report (-o) if the two values are not equal.
+
+Report (-o) if the first value is greater than or equal to the second one.
+Report (-o) if the first value is greater than or equal to the second one.
+
+Report (-o) if the first value is greater than the second one.
+Report (-o) if the first value is greater than the second one.
+
+Boolean constant ( (-o) or (o-) ).
+Boolean constant ( (-o) or (o-) ).
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+
+Report (-o) if both values are (-o)
+Report (-o) if both values are (-o)
+
+Report (-o) if either value is (-o)
+Report (-o) if either value is (-o)
+
+Report (-o) if first input is a value of the given data type.
+Report (-o) if first input is a value of the given data type.
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+
+Report bitwise AND of two numbers.
+Report bitwise AND of two numbers.
+
+Report bitwise OR of two numbers.
+Report bitwise OR of two numbers.
+
+Report bitwise XOR (exclusive OR) of two numbers.
+Report bitwise XOR (exclusive OR) of two numbers.
+
+Report bitwise inverse of the given number.
+Report bitwise inverse of the given number.
+
+Report the given number shifted left by the given number of bits.
+Report the given number shifted left by the given number of bits.
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+
+Set a variable to the given value.
+Set a variable to the given value.
+
+Change a variable by the given amount.
+Change a variable by the given amount.
+
+Create a variable local to the containing script with the given initial value.
+Create a variable local to the containing script with the given initial value.
+
+Report the Nth item of a list, string, or byte array.
+Report the Nth item of a list, string, or byte array.
+
+Report the number of items in a list, string, or byte array.
+Report the number of items in a list, string, or byte array.
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+
+Create and report a short list containing the given items. Length limited by available stack space.
+Create and report a short list containing the given items. Length limited by available stack space.
+
+Add an item to the end of a list.
+Add an item to the end of a list.
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+Replace the Nth item (or all items) of a list or byte array with the given value.
+
+Delete the Nth item (or all items) of a list.
+Delete the Nth item (or all items) of a list.
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+
+Split the given string with the given delimiter and report the result (a list of strings).
+Split the given string with the given delimiter and report the result (a list of strings).
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+Report the Unicode value ("code point") of the Nth character of the given string.
+
+Report a string containing the given Unicode value ("code point") or list of values.
+Report a string containing the given Unicode value ("code point") or list of values.
+
+Report a new list of the given length filled with zero or the optional value.
+Report a new list of the given length filled with zero or the optional value.
+
+Report a new byte array of the given length filled with zero or the optional value.
+Report a new byte array of the given length filled with zero or the optional value.
+
+Report a byte array containing the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
+
+Report the number of words of memory available. Stop button frees up memory.
+Report the number of words of memory available. Stop button frees up memory.

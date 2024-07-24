@@ -151,7 +151,7 @@ OBJ primBroadcastToIDEOnly(int argCount, OBJ *args) {
 
 static uint32 timerStart = 0;
 
-static void resetTimer() { timerStart = millisecs(); }
+void resetTimer() { timerStart = millisecs(); }
 
 static int timer() {
 	// Return the number of milliseconds since the timer was last reset.

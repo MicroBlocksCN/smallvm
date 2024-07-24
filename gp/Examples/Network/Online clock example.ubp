@@ -108,11 +108,11 @@ whenStarted
 server = 'microblocks.fun'
 '[tft:text]' 'Connecting' 0 (('[tft:getHeight]') / 3) (colorSwatch 46 255 40 255) 2 true
 wifiConnect 'Network_Name' ''
-'[display:mbDisplayOff]'
+'[tft:clear]'
 '[tft:text]' 'Fetching time' 0 (('[tft:getHeight]') / 5) (colorSwatch 46 255 40 255) 2 true
 '[tft:text]' server 0 (('[tft:getHeight]') / 2) (colorSwatch 46 255 40 255) 2 true
 'fetch current time from server' server
-'[display:mbDisplayOff]'
+'[tft:clear]'
 sendBroadcast 'time received'
 }
 
@@ -276,10 +276,10 @@ to request method data url optionalPort {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true

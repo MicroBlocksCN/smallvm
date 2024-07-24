@@ -1,6 +1,6 @@
 module XRP Output
 author 'Russell Owen'
-version 0 9 
+version 0 11 
 depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
 description 'Drive the WPI XRP robot'
 variables _xrp__imuAddress 
@@ -19,13 +19,13 @@ variables _xrp__imuAddress
   spec 'r' 'xrp_readDistanceSensor' 'read distance sensor (cm)'
   spec 'r' 'xrp_readLineSensors' 'read left, right line sensors'
   space
-  spec 'r' 'xrp_mmToCounts' 'convert _ mm to encoder counts' 'num' 0
   spec 'r' 'edcmotors_getNumMotors' 'get the number of encoded DC motors'
   space
   spec ' ' '_edcmotors_checkSystem' '_edcmotors_checkSystem'
   spec ' ' '_edcmotors_initSystemVariables' '_edcmotors_initSystemVariables'
-  spec 'r' '_xrp_scaleRollPitchOrYaw' '_scale gyro raw roll, pitch, or yaw _' 'num' 10
   spec ' ' '_xrp_initGyroscope' '_init gyroscope'
+  spec 'r' '_xrp_mmToCounts' '_convert _ mm to encoder counts' 'num' 0
+  spec 'r' '_xrp_scaleRollPitchOrYaw' '_scale gyro raw roll, pitch, or yaw _' 'num' 10
 
 to '_edcmotors_checkSystem' {
   comment 'Check drive power to the XRP board.'
@@ -58,6 +58,8 @@ especially if the extra motors are not the same as the wheel motors.'
   atPut 'all' _edcmotors__maxIntegral 10
   comment 'Approximate maximum motor speed (encoder counts/second) with no load.'
   atPut 'all' _edcmotors__maxSpeed 1800
+  comment 'Acceleration for point to point moves (encoder counts/second^2)'
+  atPut 'all' _edcmotors__accel 2500
   atPut 1 _edcmotors__pinEncoderA 4
   atPut 1 _edcmotors__pinEncoderB 5
   atPut 1 _edcmotors__pinDirection 6
@@ -90,6 +92,12 @@ See section 9.16 of https://www.st.com/resource/en/datasheet/lsm6dsox.pdf for de
   i2cSet _xrp__imuAddress (hexToInt '11') (hexToInt '80')
 }
 
+to '_xrp_mmToCounts' mm {
+  comment 'Convert mm to encoder counts.
+Use a hard-coded constant to avoid having to check initialization.'
+  return ((mm * 1000) / 322)
+}
+
 to '_xrp_scaleRollPitchOrYaw' speed {
   comment 'Scale LSM6DSOX gyroscope speed data from raw to degrees/second.
 Valid raw speed values are between 0 and 255, inclusive,
@@ -114,22 +122,16 @@ override this method to return how many you are using. Never return less than 2.
 
 to xrp_driveAtSpeed leftSpeed rightSpeed {
   comment 'Drive the wheels at the specified speed (mm/sec)'
-  edcmotors_moveMotorAtSpeed 1 (xrp_mmToCounts leftSpeed)
-  edcmotors_moveMotorAtSpeed 2 (0 - (xrp_mmToCounts rightSpeed))
+  edcmotors_moveMotorAtSpeed 1 ('_xrp_mmToCounts' leftSpeed)
+  edcmotors_moveMotorAtSpeed 2 (0 - ('_xrp_mmToCounts' rightSpeed))
 }
 
 to xrp_driveDistance distance speed {
   comment 'Drive the wheels the specified distance (mm) at the specified speed (mm/second)'
-  local 'distanceCounts' (xrp_mmToCounts distance)
-  local 'speedCounts' (xrp_mmToCounts speed)
+  local 'distanceCounts' ('_xrp_mmToCounts' distance)
+  local 'speedCounts' ('_xrp_mmToCounts' speed)
   edcmotors_moveMotorDistance 1 distanceCounts speedCounts
   edcmotors_moveMotorDistance 2 (0 - distanceCounts) speedCounts
-}
-
-to xrp_mmToCounts mm {
-  comment 'Convert mm to encoder counts.
-Use a hard-coded constant to avoid having to check initialization.'
-  return ((mm * 1000) / 322)
 }
 
 to xrp_readDistanceSensor {
@@ -185,7 +187,7 @@ to xrp_turnAngle angle speed {
   comment 'Turn the robot by the specified angle (degrees),
 moving the wheel at the specified speed (mm/second).
 Rotate about a point halfway between the wheels.'
-  local 'speedCounts' (pid_applySign angle (xrp_mmToCounts speed))
+  local 'speedCounts' (pid_applySign angle ('_xrp_mmToCounts' speed))
   local 'distanceCounts' ((41978 * angle) / 10000)
   edcmotors_moveMotorDistance 1 distanceCounts speedCounts
   edcmotors_moveMotorDistance 2 distanceCounts speedCounts

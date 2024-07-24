@@ -158,7 +158,7 @@ to 'up button' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -215,7 +215,11 @@ to displayCharacter s {
 }
 
 to led_displayImage imageName optionalX optionalY {
-  '[display:mbDrawShape]' ('_led_namedImage' imageName) (argOrDefault 2 1) (argOrDefault 3 1)
+  local 'image' imageName
+  if (isType image 'string') {
+    image = ('_led_namedImage' imageName)
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
 }
 
 to scroll_text text optionalDelay {
@@ -252,10 +256,10 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
@@ -278,6 +282,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   space
   spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
   spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
 
 to '_deferMonochromeDisplayUpdates' {
   '[tft:deferUpdates]'

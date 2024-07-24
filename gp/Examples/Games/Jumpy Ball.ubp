@@ -44,14 +44,14 @@ to 'draw pipes' {
 }
 
 to 'game over' {
-  '[display:mbDisplayOff]'
+  '[tft:clear]'
   write 'GAME' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 15) (colorSwatch 255 255 255 255)
   write 'OVER' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 3) (colorSwatch 255 255 255 255)
   write ('[data:join]' 'SCORE:' score) (('[tft:getHeight]') / 80) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) (colorSwatch 255 255 255 255)
 }
 
 to 'new game' {
-  '[display:mbDisplayOff]'
+  '[tft:clear]'
   score = 0
   comment 'ball y is multiplied by 10 for precision'
   'ball y' = ((('[tft:getHeight]') / 2) * 10)
@@ -88,7 +88,7 @@ to 'step pipe' {
 }
 
 to 'welcome screen' {
-  '[display:mbDisplayOff]'
+  '[tft:clear]'
   write 'JUMPY' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 15) (colorSwatch 244 36 215 255)
   write 'BALL' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 3) (colorSwatch 244 36 215 255)
   write 'Press OK or A' (('[tft:getHeight]') / 120) (('[tft:getHeight]') - (('[tft:getHeight]') / 4)) (colorSwatch 255 255 255 255)
@@ -180,10 +180,10 @@ to 'up button' {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true

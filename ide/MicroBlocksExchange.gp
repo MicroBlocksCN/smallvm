@@ -213,6 +213,13 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 	scriptsPane = (scriptEditor aMicroBlocksScripter)
 	for entry scriptCmds {
 		args = (argList entry)
+		if (and (4 == (count args)) (isNil (at args 1))) {
+			// fix old script images on Wiki that were saved as "script nil x y { ...code... }"
+			args = (copyFromTo args 2)
+			atPut args 1 scriptsX
+			atPut args 2 scriptsY
+			print 'fixed args:' args
+		}
 		if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
 			script = (last args)
 			addGlobalsFor this script

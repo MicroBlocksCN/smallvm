@@ -76,6 +76,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
 		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
 		'-'
+		(array 'r' '[sensors:i2cExists]' 'i2c device _ exists?' 'num')
+		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
 		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _ : bit order _' 'num num num str' 1000000 0 0 'MSB')
@@ -177,16 +179,18 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
+		'-'
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
+		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' 'a list of strings' ' ')
 	'Data-Advanced'
-		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
+		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
+		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		'-'
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
 		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
-		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
-		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
+		'-'
 		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly
@@ -1144,7 +1148,9 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// add local variable names
 	varNames = (list)
 	for pair (sortedPairs localVars) {
-		add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+		if (isClass (last pair) 'String') { // skip if non-string (can happen due to syntax error)
+			add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+		}
 	}
 	add instructionList (joinStrings varNames (string 9)) // tab delimited string
 
