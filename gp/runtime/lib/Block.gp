@@ -230,15 +230,15 @@ method fixLayout Block {
     if (notEmpty each) {
       elem = (last each)
       if (not (isClass elem 'CommandSlot')) {
-        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)) + (3 * scale))
+        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)) + (* 3 scale (count lines)))
       }
     }
   }
   blockHeight = (callWith + (toArray lineHeights))
-  blockHeight += ((* (count lines) vSpace scale) + (8 * scale))
+  blockHeight += ((* (count lines) vSpace scale) + scale)
 
   // arrange label parts vertically
-  tp = (+ (top morph) (* 2 scale border) (4 * scale))
+  tp = (+ (top morph) (* 2 scale border) scale)
   if (type == 'hat') {
     tp += (hatHeight this)
   }
@@ -247,7 +247,14 @@ method fixLayout Block {
     line += 1
     bottom = (+ tp (at lineHeights line) (vSpace * scale))
     for each eachLine {
-      fastSetYCenterWithin (morph each) tp bottom
+      if (type == 'reporter') {
+        fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
+      }
+      if (isClass each 'Text') {
+        fastSetYCenterWithin (morph each) tp (bottom + (2 * scale))
+      } else {
+        fastSetYCenterWithin (morph each) tp bottom
+      }
     }
     tp = bottom
   }
@@ -355,7 +362,7 @@ method drawShape Block aShapeMaker {
 	} (type == 'reporter') {
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
-		drawReporter aShapeMaker r clr
+		drawReporter aShapeMaker r clr ((height morph) / 2)
 	} (type == 'hat') {
 		drawHatBlock aShapeMaker r color
 	}

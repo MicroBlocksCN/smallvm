@@ -328,7 +328,6 @@ method drawButton ShapeMaker x y width height buttonColor corner border isInset 
 
 // Block corner radius and reporter end radius
 method blockCorner ShapeMaker { return (4 * (blockScale)) }
-method reporterRadius ShapeMaker { return (12 * (blockScale)) }
 
 // Block dent width and inset from edge plus indent for C-shaped blocks.
 method dent ShapeMaker { return (6 * (blockScale)) } // xxx
@@ -347,7 +346,7 @@ method blockBorderColor ShapeMaker blockColor {
 }
 
 method drawReporter ShapeMaker rect blockColor radius {
-  fillRoundedRect this rect (reporterRadius this) blockColor (blockBorder this) (blockBorderColor this blockColor)
+  fillRoundedRect this rect radius blockColor (blockBorder this) (blockBorderColor this blockColor)
 }
 
 method beginBlockPath ShapeMaker rect {
