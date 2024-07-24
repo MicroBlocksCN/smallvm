@@ -132,12 +132,12 @@ method isVarSlot InputSlot {
 
 method fixLayout InputSlot {
   scale = (blockScale)
-  h = (height (morph text))
+  h = ((height (morph text)) + (6 * scale))
   w = ((width (morph text)) + (5 * scale)) // xxx
   if ('Linux' == (platform)) { h += scale }
   if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
   textX = ((left morph) + (2 * scale)) // xxx
-  textY = ((top morph) + 1)
+  textY = (+ (top morph) 1 (4 * scale))
   setPosition (morph text) textX textY
   setExtent morph w h
   pathCache = nil
