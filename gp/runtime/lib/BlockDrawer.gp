@@ -44,7 +44,7 @@ method drawOn BlockDrawer ctx {
   }
   size = (13 * (blockScale))
   unit = (half size)
-  clr = (gray 0 220)
+  clr = (gray 255 220)
 
   pen = (getShapeMaker ctx)
   x = (left morph)
