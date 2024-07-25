@@ -247,10 +247,10 @@ method fixLayout Block {
     }
   }
   // make command blocks at least 24 pixels high
-  if (and (type == 'command') (blockHeight < 24)) {
-    blockHeight = (28 * scale)
-	tp = (8 * scale)
-  }
+  //if (and (type == 'command') (blockHeight < 24)) {
+  //  blockHeight = (28 * scale)
+//	tp = (8 * scale)
+//  }
 
   line = 0
   for eachLine lines {
