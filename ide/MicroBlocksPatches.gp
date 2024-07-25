@@ -1008,6 +1008,42 @@ method showReporterDropFeedback ScriptEditor target {
   setCostume feedback bm
 }
 
+// Highlight color
+
+method highlight Morph size {
+  pe = (findProjectEditor)
+  highlightM = (getHighlight this)
+  if (notNil highlightM) { return highlightM }
+
+  if ('Browser' == (platform)) {
+	highlightM = (morph (newShadowEffect handler 'highlight'))
+  } else {
+	s2 = (size * 2)
+	bm = (fullCostume this)
+	hl = (newBitmap (+ s2 (width bm)) (+ s2 (height bm)) (color pe 'yellow'))
+
+	maskBM = (newBitmap (width hl) (height hl))
+	drawBitmap maskBM bm 0 0
+	drawBitmap maskBM bm size 0
+	drawBitmap maskBM bm s2 0
+	drawBitmap maskBM bm s2 size
+	drawBitmap maskBM bm s2 s2
+	drawBitmap maskBM bm size s2
+	drawBitmap maskBM bm 0 s2
+	drawBitmap maskBM bm 0 size
+	applyMask hl maskBM // make silhouette
+
+	fill maskBM (transparent)
+	drawBitmap maskBM bm size size
+	applyMask hl maskBM true // punch a hole the shape of fullCostume
+
+	highlightM = (newMorph)
+	setCostume highlightM hl
+	setPosition highlightM (- (left bounds) size) (- (top bounds) size)
+  }
+  setTag highlightM 'highlight'
+  return highlightM
+}
 
 // Color picker tweak
 
