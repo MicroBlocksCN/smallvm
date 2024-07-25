@@ -107,8 +107,8 @@ method fixLayout MicroBlocksTipBar {
 	page = (global 'page')
 	setExtent morph (width page) (22 * scale)
 
-	setLeft (morph title) ((left morph) + (3 * scale))
-	setLeft tipMorph ((right (morph title)) + (1 * scale))
+	setRight tipMorph ((right (morph page)) - (2 * scale))
+	setRight (morph title) ((left tipMorph) + (2 * scale))
 
 	top = (top morph)
 	if ('Linux' != (platform)) { top += (2 * scale) }
