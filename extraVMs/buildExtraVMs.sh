@@ -17,6 +17,8 @@ pio run -e makerportV3
 python precompiled/uf2conv.py -c .pio/build/makerportV3/firmware.bin -o extraVMs/vm_makerport_v3.uf2
 pio run -e m5atom
 cp .pio/build/m5atom/firmware.bin extraVMs/vm_m5atom.bin
+pio run -e m5atom-lite
+cp .pio/build/m5atom-lite/firmware.bin extraVMs/vm_m5atom_lite.bin
 
 pio run -e esp32-s2
 cp .pio/build/esp32-s2/firmware.bin extraVMs/vm_esp32-s2.bin
