@@ -7,9 +7,15 @@
 // MicroBlocksTipBar.gp - A bar that displays useful information about the item under the mouse
 // Bernat Romagosa, November 2021
 
-defineClass MicroBlocksTipBar morph title tipMorph tip contentDict iconsDict help
+defineClass MicroBlocksTipBar morph title tipMorph tip contentDict iconsDict help tipColor titleColor bgColor
 
-method initialize MicroBlocksTipBar {
+method initialize MicroBlocksTipBar editor {
+	titleColor = (color editor 'blueGray' 50)
+	tipColor = (color editor 'blueGray' 300)
+	bgColor = (color editor 'blueGray' 850)
+	print bgColor
+	print tipColor
+	print titleColor
 	morph = (newMorph this)
 	setClipping morph true
 	setFPS morph 5
@@ -21,7 +27,7 @@ method initialize MicroBlocksTipBar {
 	titleFontName = 'Arial Bold'
 	titleFontSize = (14 * (global 'scale'))
 	if ('Linux' == (platform)) { titleFontSize = (12 * (global 'scale')) }
-	title = (newText '' titleFontName titleFontSize (gray 0) 'left' nil 0 0 5 3)
+	title = (newText '' titleFontName titleFontSize titleColor 'left' nil 0 0 5 3)
 	addPart morph (morph title)
 
 	tip = (newAlignment 'centered-line' 0 'bounds')
@@ -52,7 +58,7 @@ method setTip MicroBlocksTipBar aTip {
 	for word (words (localized aTip)) {
 		if (contains (keys iconsDict) word) {
 			if ((count text) > 0) {
-				addPart tipMorph (morph (newText text fontName fontSize (gray 0) 'left' nil 0 0 5 3))
+				addPart tipMorph (morph (newText text fontName fontSize tipColor 'left' nil 0 0 5 3))
 				text = ' '
 			}
 			icon = (newMorph)
@@ -64,7 +70,7 @@ method setTip MicroBlocksTipBar aTip {
 		}
 	}
 	if ((count text) > 0) {
-		addPart tipMorph (morph (newText text fontName fontSize (gray 0) 'left' nil 0 0 5 3))
+		addPart tipMorph (morph (newText text fontName fontSize tipColor 'left' nil 0 0 5 3))
 	}
 	fixLayout tip
 }
@@ -72,7 +78,7 @@ method setTip MicroBlocksTipBar aTip {
 // drawing
 
 method drawOn MicroBlocksTipBar ctx {
-	fillRectangle (getShapeMaker ctx) (bounds morph) (gray 200)
+	fillRectangle (getShapeMaker ctx) (bounds morph) bgColor
 }
 
 // stepping

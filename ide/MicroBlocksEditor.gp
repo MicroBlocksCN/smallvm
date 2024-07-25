@@ -333,7 +333,7 @@ method fixZoomButtonsLayout MicroBlocksEditor {
 // tip bar
 
 method addTipBar MicroBlocksEditor {
-  tipBar = (initialize (new 'MicroBlocksTipBar'))
+  tipBar = (initialize (new 'MicroBlocksTipBar') this)
   setGlobal 'tipBar' tipBar
   setTitle tipBar 'an element'
   setTip tipBar 'some tip about it'
