@@ -981,11 +981,11 @@ method tryToConnect SmallRuntime {
 	lastScanMSecs = now
 
 	if (notNil connectionStartTime) {
-		waitForPing this
 		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
 			justConnected this
 			return 'connected'
 		}
+        sendMsg this 'pingMsg' // send another ping
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
 		if ((now - connectionStartTime) < connectionAttemptTimeout) { return 'not connected' } // keep trying
 	}
@@ -1119,7 +1119,7 @@ method versionReceived SmallRuntime versionString {
 
 method checkVmVersion SmallRuntime {
 	// prevent version check from running while the decompiler is working
-	if (not readFromBoard) { return }
+	if readFromBoard { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
@@ -2696,6 +2696,12 @@ method collectBoardDrives SmallRuntime {
         }
 	} ('Linux' == (platform)) {
         for dir (allDirectories '/media') {
+             // Debian variants
+           driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
+        for dir (allDirectories '/run/media') {
+            // Fedora variants
             driveName = (getBoardDriveName this dir)
             if (notNil driveName) { add result (list driveName dir) }
         }
