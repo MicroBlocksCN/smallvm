@@ -2690,21 +2690,33 @@ method niceBoardName SmallRuntime board {
 method collectBoardDrives SmallRuntime {
 	result = (list)
 	if ('Mac' == (platform)) {
-        for dir (allDirectories '/Volumes') {
-            driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
+		for v (listDirectories '/Volumes') {
+			path = (join '/Volumes/' v '/')
+			driveName = (getBoardDriveName this path)
+			if (notNil driveName) { add result (list driveName path) }
+		}
 	} ('Linux' == (platform)) {
-        for dir (allDirectories '/media') {
-             // Debian variants
-           driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
-        for dir (allDirectories '/run/media') {
-            // Fedora variants
-            driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
+        // Debian variants
+    	for dir (listDirectories '/media') {
+			prefix = (join '/media/' dir)
+			for v (listDirectories prefix) {
+				path = (join prefix '/' v '/')
+				driveName = (getBoardDriveName this path)
+				if (notNil driveName) { add result (list driveName path) }
+			}
+		}
+        // Fedora variants
+		for dir (listDirectories '/run/media') {
+	        userFolder = (join '/run/media/' dir)
+			for user (listDirectories userFolder) {
+			    prefix = (join userFolder '/' user)
+                for v (listDirectories prefix) {
+                    path = (join prefix '/' v '/')
+                    driveName = (getBoardDriveName this path)
+                    if (notNil driveName) { add result (list driveName path) }
+                }
+            }
+		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')
