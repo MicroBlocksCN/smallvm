@@ -1097,8 +1097,9 @@ method pageResized MicroBlocksEditor {
 
 // top bar drawing
 
-method topBarBlue MicroBlocksEditor { return (colorHSV 180 0.045 1.0) }
-method topBarBlueHighlight MicroBlocksEditor { return (colorHSV 180 0.17 1.0) }
+method topBarBlue MicroBlocksEditor { return (color this 'blueGray' 900) }
+// TODO get rid of highlight color once we're using SVG icons
+method topBarBlueHighlight MicroBlocksEditor { return (color this 'blueGray' 500) }
 method topBarHeight MicroBlocksEditor { return (46 * (global 'scale')) }
 
 method drawOn MicroBlocksEditor aContext {
@@ -1108,9 +1109,8 @@ method drawOn MicroBlocksEditor aContext {
   w = (width morph)
   topBarH = (topBarHeight this)
   fillRect aContext (topBarBlue this) x y w topBarH
-  grassColor = (color 137 169 31)
-  grassH = (5 * scale)
-  fillRect aContext grassColor x ((y + topBarH) - grassH) w grassH
+  // bottom border
+  fillRect aContext (color this 'blueGray' 700) x ((y + topBarH) - 2) w 2
 }
 
 // layout

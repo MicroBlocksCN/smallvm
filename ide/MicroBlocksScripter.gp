@@ -310,16 +310,14 @@ method showScrollbars MicroBlocksScripter {
 
 method drawOn MicroBlocksScripter ctx {
   scale = (global 'scale')
-  borderColor = (gray 150)
   borderWidth = (2 * scale)
+  paneColor = (color projectEditor 'blueGray' 850)
+  borderColor = (color projectEditor 'blueGray' 100)
   x = (right (morph categorySelector))
-  fillRect ctx (gray 240) 0 (top morph) x (height morph) // bg color for category/lib panes
-  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  fillRect ctx paneColor 0 (top morph) x (height morph) // bg color for category/lib panes
   x = (right (morph blocksFrame))
   fillRect ctx borderColor x (top morph) borderWidth (height morph)
   r = (bounds (morph libHeader))
-  fillRect ctx borderColor (left r) ((top r) - borderWidth) (width r) borderWidth
-  fillRect ctx borderColor (left r) (bottom r) (width r) borderWidth
 }
 
 // MicroBlocksScripter UI support
