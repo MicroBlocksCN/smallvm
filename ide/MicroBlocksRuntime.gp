@@ -1119,7 +1119,7 @@ method versionReceived SmallRuntime versionString {
 
 method checkVmVersion SmallRuntime {
 	// prevent version check from running while the decompiler is working
-	if (not readFromBoard) { return }
+	if readFromBoard { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
