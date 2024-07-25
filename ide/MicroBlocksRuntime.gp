@@ -680,6 +680,8 @@ method webSerialConnect SmallRuntime action {
 		connectionStartTime = (msecsSinceStart)
 		portName = 'webserial'
 		port = 1
+	    lastPingRecvMSecs = 0
+	    sendMsg this 'pingMsg'
 	}
 }
 
@@ -909,7 +911,7 @@ method updateConnection SmallRuntime {
 		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
 		clearRunningHighlights this
-		if (not (isWebSerial this)) { closePort this }
+        closePort this
 		return 'not connected'
 	}
 }
@@ -957,12 +959,11 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			lastPingRecvMSecs = 0
-			waitForPing this
             if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
                 justConnected this
                 return 'connected'
             }
+            sendMsg this 'pingMsg' // send another ping
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
