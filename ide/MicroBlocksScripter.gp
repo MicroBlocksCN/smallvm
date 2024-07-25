@@ -54,13 +54,13 @@ method initialize MicroBlocksScripter aProjectEditor {
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
-  blocksFrame = (scrollFrame blocksPane (gray 220))
+  blocksFrame = (scrollFrame blocksPane (color projectEditor 'blueGray' 50))
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
-  scriptsFrame = (scrollFrame scriptsPane (gray 220))
+  scriptsFrame = (scrollFrame scriptsPane (color projectEditor 'white'))
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front

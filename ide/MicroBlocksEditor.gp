@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot colorPalette
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -82,6 +82,42 @@ method initialize MicroBlocksEditor {
   newerVersion = 'unknown'
   putNextDroppedFileOnBoard = false
   return this
+}
+
+method initializeColorPalette MicroBlocksEditor {
+  colorPalette = (dictionary)
+  atPut colorPalette 'red' (colorHex 'E03B3B')
+  atPut colorPalette 'green' (colorHex '61D14E')
+  atPut colorPalette 'yellow' (colorHex 'FED722')
+  atPut colorPalette 'yellowBorder' (colorHex 'B79701')
+  atPut colorPalette 'white' (gray 255 1)
+  atPut colorPalette 'black' (colorHex '2A2A2A')
+  // gray900 in the style sheet, but it's the only gray we're using
+  atPut colorPalette 'gray' (colorHex '383838')
+  // blueGrays ahead
+  blueGrays = (dictionary)
+  atPut colorPalette 'blueGray' blueGrays
+  atPut blueGrays 50 (colorHex 'ECEDF1')
+  atPut blueGrays 75 (colorHex 'E1E3E8')
+  atPut blueGrays 100 (colorHex 'CFD1DC')
+  atPut blueGrays 200 (colorHex 'B0B3C5')
+  atPut blueGrays 300 (colorHex '9095AE')
+  atPut blueGrays 400 (colorHex '787E9C')
+  atPut blueGrays 500 (colorHex '60678B')
+  atPut blueGrays 600 (colorHex '545A7A')
+  atPut blueGrays 700 (colorHex '454A64')
+  atPut blueGrays 800 (colorHex '373B4F')
+  atPut blueGrays 850 (colorHex '2D3143')
+  atPut blueGrays 900 (colorHex '262938')
+}
+
+method color MicroBlocksEditor name value {
+  if (isNil colorPalette) { initializeColorPalette this }
+  if (name == 'blueGray') {
+    return (at (at colorPalette 'blueGray') value)
+  } else {
+    return (at colorPalette name)
+  }
 }
 
 method scaleChanged MicroBlocksEditor {

@@ -971,6 +971,44 @@ method copyScriptsToClipboardAsURL ScriptEditor {
   setClipboard (join urlPrefix '#scripts=' (urlEncode scriptsString true))
 }
 
+// Drop feedback colors
+
+method showCommandDropFeedback ScriptEditor target {
+  pe = (findProjectEditor)
+  setHeight (bounds feedback) (scale * 5)
+  if (isClass target 'Block') {
+    nb = (next target)
+    top = (bottom (morph target))
+    if (notNil nb) {top = (bottomLine target)}
+    setPosition feedback (left (morph target)) top
+  } (isClass target 'Array') {
+    target = (at target 1)
+    top = ((top (morph target)) - (height feedback))
+    setPosition feedback (left (morph target)) top
+  } (isClass target 'CommandSlot') {
+    nb = (nested target)
+    top = (+ (top (morph target)) (scaledCorner target))
+    if (isNil nb) {top += (scaledCorner target)}
+    setPosition feedback (+ (scaledCorner target) (left (morph target))) top
+  }
+  setCostume feedback (newBitmap (width (morph target)) (scale * 5) (color pe 'yellow'))
+}
+
+method showReporterDropFeedback ScriptEditor target {
+  pe = (findProjectEditor)
+  setBounds feedback (expandBy (bounds (morph target)) (12 * scale))
+  area = (rect 0 0 (width feedback) (height feedback))
+  radius = (10 * scale)
+  border = (3 * scale)
+  fillColor = (color pe 'yellow') // translucent
+  setAlpha fillColor 150
+  borderColor = (color pe 'yellow')
+  bm = (newBitmap (width area) (height area))
+  fillRoundedRect (newShapeMaker bm) area radius fillColor border borderColor borderColor
+  setCostume feedback bm
+}
+
+
 // Color picker tweak
 
 method addTransparentButton ColorPicker x y { } // don't add a transparent button
