@@ -2696,6 +2696,12 @@ method collectBoardDrives SmallRuntime {
         }
 	} ('Linux' == (platform)) {
         for dir (allDirectories '/media') {
+             // Debian variants
+           driveName = (getBoardDriveName this dir)
+            if (notNil driveName) { add result (list driveName dir) }
+        }
+        for dir (allDirectories '/run/media') {
+            // Fedora variants
             driveName = (getBoardDriveName this dir)
             if (notNil driveName) { add result (list driveName dir) }
         }
