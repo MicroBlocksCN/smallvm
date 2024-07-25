@@ -241,7 +241,17 @@ method fixLayout Block {
   tp = (+ (top morph) (* 2 scale border) scale)
   if (type == 'hat') {
     tp += (hatHeight this)
+    if (blockHeight < 24) {
+      blockHeight = (28 * scale)
+      tp += (4 * scale)
+    }
   }
+  // make command blocks at least 24 pixels high
+  if (and (type == 'command') (blockHeight < 24)) {
+    blockHeight = (28 * scale)
+	tp = (8 * scale)
+  }
+
   line = 0
   for eachLine lines {
     line += 1
@@ -251,6 +261,7 @@ method fixLayout Block {
         fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
       }
       if (isClass each 'Text') {
+        // fix vertical alignment of text labels
         fastSetYCenterWithin (morph each) tp (bottom + (2 * scale))
       } else {
         fastSetYCenterWithin (morph each) tp bottom

@@ -14,6 +14,8 @@ method initialize InputSlot default editRule blockColor slotMenu {
   scale = (blockScale)
   morph = (newMorph this)
   text = (newText '')
+  setMinWidth text (24 * scale)
+  align text 'center'
   addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
@@ -133,11 +135,15 @@ method isVarSlot InputSlot {
 method fixLayout InputSlot {
   scale = (blockScale)
   h = ((height (morph text)) + (6 * scale))
-  w = ((width (morph text)) + (5 * scale)) // xxx
+  w = ((width (morph text)) + (5 * scale))
   if ('Linux' == (platform)) { h += scale }
-  if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
   textX = ((left morph) + (2 * scale)) // xxx
   textY = (+ (top morph) 1 (4 * scale))
+  if (notNil menuSelector) {
+    // leave room for down-arrow
+    w += ((fontSize text) * 2)
+    textX += ((fontSize text) / 2)
+  }
   setPosition (morph text) textX textY
   setExtent morph w h
   pathCache = nil
@@ -184,12 +190,12 @@ method drawShape InputSlot aShapeMaker {
   if (notNil menuSelector) { // draw down-arrow
 	fontH = (fontSize text)
     border = (blockScale)
-    x = (left r)
-    y = (top r)
-    x += (((width morph) - fontH) - border)
-    y += (((height morph) / 4) + border)
     w = (fontH - (2 * border))
     h = ((fontH / 2) + border)
+    x = (left r)
+    y = (top r)
+    x += (((width morph) - (fontH * 1.5)) - border)
+    y += ((((height morph) / 2) + border) - (h / 2))
     clr = (gray 0)
 	fillArrow aShapeMaker (rect x y w h) 'down' clr
   }

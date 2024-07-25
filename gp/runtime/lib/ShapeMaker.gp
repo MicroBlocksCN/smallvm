@@ -331,7 +331,7 @@ method blockCorner ShapeMaker { return (4 * (blockScale)) }
 
 // Block dent width and inset from edge plus indent for C-shaped blocks.
 method dent ShapeMaker { return (6 * (blockScale)) } // xxx
-method notchWidth ShapeMaker { return (12 * (blockScale)) } // 12
+method notchWidth ShapeMaker { return (16 * (blockScale)) } // 12
 method notchDepth ShapeMaker { return (4 * (blockScale)) } // 3
 method inset ShapeMaker { return (8 * (blockScale)) }
 method cIndent ShapeMaker { return (8 * (blockScale)) }
