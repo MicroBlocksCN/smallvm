@@ -981,11 +981,11 @@ method tryToConnect SmallRuntime {
 	lastScanMSecs = now
 
 	if (notNil connectionStartTime) {
-		waitForPing this
 		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
 			justConnected this
 			return 'connected'
 		}
+        sendMsg this 'pingMsg' // send another ping
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
 		if ((now - connectionStartTime) < connectionAttemptTimeout) { return 'not connected' } // keep trying
 	}
