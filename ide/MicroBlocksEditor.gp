@@ -225,7 +225,6 @@ method addTopBarParts MicroBlocksEditor {
 }
 
 method addLogo MicroBlocksEditor {
-  print 'wat'
   logoM = (newMorph)
   setCostume logoM (readIcon 'logo')
   setPosition logoM 0 0

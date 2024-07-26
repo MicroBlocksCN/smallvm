@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection cornerIcon
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection cornerIcon spacer
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -40,6 +40,9 @@ method initialize MicroBlocksScripter aProjectEditor {
 
   makeLibraryHeader this
   lastLibraryFolder = 'Libraries'
+
+  spacer = (newBox (newMorph) (color transparent) 0 0 false false)
+  addPart morph (morph spacer)
 
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
@@ -276,7 +279,7 @@ method fixLayout MicroBlocksScripter {
   packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libSelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
+  packPanesV packer spacer 24 categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
