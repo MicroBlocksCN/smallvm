@@ -16,8 +16,8 @@ method initialize CategorySelector aList anAction {
 	selectAction = anAction
 	items = aList
 	selectedIndex = 0
-	setFont this 'Arial Bold' 16
-	h = ((count items) * (itemHeight this))
+	setFont this 'Arial Bold' 12
+	h = ((count items) * ((itemHeight this) + (5 * (global 'scale'))))
 	setExtent morph 300 (clamp h 100 500)
 	return this
 }
@@ -38,53 +38,39 @@ method setCollection CategorySelector itemNames {
 	oldSelection = (selection this)
 	items = itemNames
 	select this oldSelection
-	setExtent morph nil ((count items) * (itemHeight this))
+	setExtent morph nil ((count items) * ((itemHeight this) + (5 * (global 'scale'))))
 }
 
 method heightForItems CategorySelector {
-  return ((count items) * (itemHeight this))
+  return ((count items) * ((itemHeight this) + (5 * (global 'scale'))))
 }
 
 method drawOn CategorySelector ctx {
+	pe = (findProjectEditor)
 	scale = (global 'scale')
-	bgColor = (gray 240)
 	white = (gray 255)
 	black = (gray 0)
 
 	insetX = (20 * scale)
-	insetY = (2 * scale)
+	insetY = (3 * scale)
 
 	itemH = (itemHeight this)
-	swatchInsetX = (4 * scale)
-	swatchInsetY = (2 * scale)
-	swatchW = (10 * scale)
-	swatchH = (itemH - (3 * scale))
 
-	x = (left morph)
+	x = ((left morph) + (12 * scale))
 	y = ((top morph) + scale)
 	w = (width morph)
 	for i (count items) {
 		catColor = (blockColorForCategory (authoringSpecs) (at items i))
-		itemC = bgColor
-		textC = black
-		drawSwatch = true
-		if (i == selectedIndex) {
-			itemC = catColor
-			textC = white
-			drawSwatch = false
-		} (i == hoverIndex) {
-			itemC = (lighter catColor 40)
-			textC = white
-			drawSwatch = false
-		}
-		fillRect ctx itemC x (y + scale) w (itemH - scale)
 		label = (localized (at items i))
 		setFont ctx fontName fontSize
-		drawString ctx label textC (x + insetX) (y + insetY)
-		if drawSwatch {
-			fillRect ctx catColor (x + swatchInsetX) (y + swatchInsetY) swatchW swatchH
+		if (or (i == hoverIndex) (i == selectedIndex)) {
+			fillRoundedRect (getShapeMaker ctx) (rect x (y + scale) w (itemH - scale)) (itemH / 2) catColor
+			drawString ctx label white ((x + insetX) - (12 * scale)) (y + insetY)
+		} else {
+			fillRoundedRect (getShapeMaker ctx) (rect (x + (12 * scale)) (y + scale) (w - (12 * scale)) (itemH - scale)) (itemH / 2) catColor
+			drawString ctx label white (x + insetX) (y + insetY)
 		}
-		y += itemH
+		y += (itemH + (5 * scale))
 	}
 }
 
@@ -109,11 +95,11 @@ method select CategorySelector itemName {
 }
 
 method itemHeight CategorySelector {
-	return (fontSize + 10)
+	return (24 * (global 'scale'))
 }
 
 method handDownOn CategorySelector aHand {
-	i = (truncate (((y aHand) - (top morph)) / (itemHeight this)))
+	i = (truncate (((y aHand) - (top morph)) / ((itemHeight this) + ((global 'scale') * 5))))
 	if (and (i >= 0) (i < (count items))) {
 		selectedIndex = (i + 1)
 		if (notNil selectAction) { call selectAction selection }
@@ -132,7 +118,7 @@ method step CategorySelector {
 	if (not (containsPoint (bounds morph) handX handY)) {
 		hoverIndex = 0
 	} else {
-		i = (truncate ((handY - (top morph)) / (itemHeight this)))
+		i = (truncate ((handY - (top morph)) / ((itemHeight this) + ((global 'scale') * 5))))
 		if (and (i >= 0) (i < (count items))) {
 			hoverIndex = (i + 1)
 		} else {
@@ -148,7 +134,7 @@ method categoryUnderHand CategorySelector {
 	handX = (x hand)
 	handY = (y hand)
 	if (containsPoint (bounds morph) handX handY) {
-		i = (truncate ((handY - (top morph)) / (itemHeight this)))
+		i = (truncate ((handY - (top morph)) / ((itemHeight this) + ((global 'scale') * 5))))
 		if (and (i >= 0) (i < (count items))) { return (at items (i + 1)) }
 	}
 	return nil

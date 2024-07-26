@@ -26,10 +26,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   morph = (newMorph this)
   listColor = (gray 240)
   fontName = 'Arial Bold'
-  fontSize = 16
+  fontSize = 14
   if ('Linux' == (platform)) {
 	fontName = 'Liberation Sans Bold'
-	fontSize = 13
+	fontSize = 12
   }
   nextX = 0
   nextY = 0
