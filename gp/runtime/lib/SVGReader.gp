@@ -1,16 +1,21 @@
-to readSVG data x y scale {
-	reader = (initialize (new 'SVGReader') x y scale)
-	readFrom reader data
+to readIcon iconName color {
+	// returns a bitmap costume
+	print 'reading icon' iconName
+	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) 0 0 (global 'scale') color)
 }
 
-defineClass SVGReader pen index svgData originX originY scaleFactor
+to readSVG data x y scale color {
+	if (isNil scale) { scale = (global 'scale') }
+	reader = (initialize (new 'SVGReader') x y scale color)
+	readFrom reader data
+	return (bitmap reader)
+}
 
-method initialize SVGReader x y scale {
+defineClass SVGReader pen index svgData originX originY scaleFactor bitmap overridenColor
+
+method initialize SVGReader x y scale color {
 	index = 1
 
-	pen = (newVectorPenOnScreen)
-
-	setOffset pen x y
 	originX = x
 	originY = y
 	if (notNil scale) {
@@ -18,9 +23,12 @@ method initialize SVGReader x y scale {
 	} else {
 		scaleFactor = 1
 	}
+	if (notNil color) { overridenColor = color }
 
 	return this
 }
+
+method bitmap SVGReader { return bitmap }
 
 method readFrom SVGReader data {
 	svgData = data
@@ -105,6 +113,10 @@ method processSVGTag SVGReader attributes {
 			//TODO parse viewBox here. Or not!
 		}
 	}
+
+	bitmap = (newBitmap w h)
+	pen = (newVectorPen bitmap)
+	setOffset pen originX originY
 	setClipRect pen originX originY w h
 }
 
@@ -116,6 +128,8 @@ method processPath SVGReader attributes {
 			drawPath this value
 		} (name == 'fill') {
 			fill pen (parseColor this value)
+		} else {
+			print 'missing attribute' name 'in SVG parser'
 		}
 	}
 }
@@ -123,7 +137,7 @@ method processPath SVGReader attributes {
 method drawPath SVGReader pathString {
 	i = 1
 	while (i < (count pathString)) {
-		currentChar = (at pathString i)
+		currentChar = (toUpperCase (at pathString i))
 		paramList = (getPathParams this pathString (i + 1))
 		params = (at paramList 1)
 		if (currentChar == 'M') { // move to absolute point
@@ -144,27 +158,51 @@ method drawPath SVGReader pathString {
 				(at params 5)
 				(at params 6)
 			)
+		} (currentChar == 'S') { // smooth curve
+			(curveTo
+				pen
+				(at params 1)
+				(at params 2)
+				(at params 3)
+				(at params 4)
+			)
 		} (currentChar == 'Z') { // close path
+		} else {
+			print 'missing path command' currentChar 'in SVG parser'
 		}
 		i = (at paramList 2)
 	}
 }
 
 method getPathParams SVGReader pathString startIndex {
+	length = (count pathString)
 	i = startIndex
-	if (i >= (count pathString)) { return (list (list) (count pathString)) }
+	if (i >= length) { return (list (list) length) }
 	params = (list)
 	paramString = ''
-	while (not (isLetter (at pathString i))) {
+	while (and (i <= length) (not (isLetter (at pathString i)))) {
 		paramString = (join paramString (at pathString i))
 		i = (i + 1)
 	}
-	for item (splitWith (trim paramString) ' ') {
+
+	// some SVGs separate params by commas, others by spaces ¯\_(ツ)_/¯
+	delimiter = ' '
+	if ((findSubstring ',' paramString) > 0) { delimiter = ',' }
+
+	for item (splitWith (trim paramString) delimiter) {
 		add params ((toNumber item) * scaleFactor)
 	}
 	return (list params i)
 }
 
 method parseColor SVGReader colorString {
-	if (colorString == 'black') { return (gray 0) }
+	if (notNil overridenColor) { return overridenColor }
+
+	if (colorString == 'black') {
+		return (gray 0)
+	} (beginsWith colorString '#') {
+		return (colorHex (substring colorString 2))
+	} else {
+		print 'missing color' colorString 'in SVG parser'
+	}
 }

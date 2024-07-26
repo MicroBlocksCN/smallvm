@@ -40,6 +40,7 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	addVersionFileToEmbeddedFS this zip
 	libDir = (join (directoryPart (appPath)) 'runtime/lib')
 	addFolderToEmbeddedFS this libDir 'lib' zip
+	addFolderToEmbeddedFS this '../img' 'img' zip
 	addFolderToEmbeddedFS this '../ide' 'lib' zip // note: must add MicroBlocks ide after GP lib
 	addFolderToEmbeddedFS this '../gp/Examples' 'Examples' zip
 	addFolderToEmbeddedFS this '../gp/Libraries' 'Libraries' zip
