@@ -782,6 +782,22 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
+#elif defined(Elite_Core)
+#define BOARD_TYPE "Elite_Core"
+#define DIGITAL_PINS 40
+#define ANALOG_PINS 16
+#define TOTAL_PINS 40
+static const int analogPin[] = {};
+#define PIN_LED 12
+#define PIN_BUTTON_A 13
+#define PIN_BUTTON_B 34
+#define DEFAULT_TONE_PIN 23
+static const char reservedPin[TOTAL_PINS] = {
+    0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+    1, 1, 0, 0, 0, 0, 0, 1, 1, 0};	
 	
 
 #elif defined(ESP32_S2)
@@ -1654,37 +1670,43 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(HAS_LED_MATRIX)
-		// Special case: Plot or unplot one LED in the LED matrix.
-		OBJ coords[2] = { int2obj(3), int2obj(1) };
-		if (trueObj == args[0]) {
-			primMBPlot(2, coords);
-		} else {
-			primMBUnplot(2, coords);
-		}
-	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
-		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY) || defined(M5_CARDPUTER) || \
-		defined(FUTURE_LITE)
-			tftSetHugePixel(3, 1, (trueObj == args[0]));
-	#else
-		if (PIN_LED < 0) return; // board does not have a user LED
-		if (PIN_LED < TOTAL_PINS) {
-			SET_MODE(PIN_LED, OUTPUT);
-		} else {
-			pinMode(PIN_LED, OUTPUT);
-		}
-		int output = (trueObj == args[0]) ? HIGH : LOW;
-		#ifdef INVERT_USER_LED
-			output = !output;
-		#endif
-		#if defined(M5STAMP) || defined(M5_ATOMS3LITE)
-			int color = (output == HIGH) ? 255 : 0; // blue when on
-			setAllNeoPixels(PIN_LED, 1, color);
-		#else
-			digitalWrite(PIN_LED, (PinStatus) output);
-		#endif
-	#endif
+    #if defined(HAS_LED_MATRIX)
+        // Special case: Plot or unplot one LED in the LED matrix.
+        #if defined(Elite_Core)
+            OBJ coords[2] = { int2obj(3), int2obj(3) };
+        #else
+            OBJ coords[2] = { int2obj(3), int2obj(1) };
+        #endif
+
+        if (trueObj == args[0]) {
+            primMBPlot(2, coords);
+        } else {
+            primMBUnplot(2, coords);
+        }
+    #elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
+          defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY) || defined(M5_CARDPUTER) || \
+          defined(FUTURE_LITE)
+        tftSetHugePixel(3, 1, (trueObj == args[0]));
+    #else
+        if (PIN_LED < 0) return; // board does not have a user LED
+        if (PIN_LED < TOTAL_PINS) {
+            SET_MODE(PIN_LED, OUTPUT);
+        } else {
+            pinMode(PIN_LED, OUTPUT);
+        }
+        int output = (trueObj == args[0]) ? HIGH : LOW;
+        #ifdef INVERT_USER_LED
+            output = !output;
+        #endif
+        #if defined(M5STAMP) || defined(M5_ATOMS3LITE)
+            int color = (output == HIGH) ? 255 : 0; // blue when on
+            setAllNeoPixels(PIN_LED, 1, color);
+        #else
+            digitalWrite(PIN_LED, (PinStatus)output);
+        #endif
+    #endif
 }
+
 
 // User Buttons
 

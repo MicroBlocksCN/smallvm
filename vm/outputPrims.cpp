@@ -377,7 +377,7 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 5;
 }
 
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(Elite_Core)
 
 	static void updateNeoPixelDisplay(); // forward reference
 
@@ -461,7 +461,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;
 	#elif defined(ARDUINO_Labplus_mPython) || defined(COCOROBO) || \
-		  defined(MINGBAI)
+		  defined(MINGBAI) || defined(Elite_Core)
 		lightLevel = analogRead(39) * 1000 / 4095;
 	#elif defined(DATABOT)
 		const char *msg = "Use 'Light & Gesture' library on Databot.";
@@ -782,6 +782,8 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 			pinNum = 27;
 		#elif defined(ARDUINO_Mbits)
 			pinNum = 13; // internal NeoPixel pin
+		#elif defined(Elite_Core)
+			pinNum = 12; // internal NeoPixel pin	
 		#elif defined(DATABOT)
 			pinNum = 2; // internal NeoPixel pin
 		#elif defined(ESP32_S3)
@@ -1022,7 +1024,7 @@ void turnOffInternalNeoPixels() {
 
 // Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix and Mbits
 
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(Elite_Core)
 
 	void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
@@ -1030,6 +1032,8 @@ void turnOffInternalNeoPixels() {
 		initNeoPixelPin(27); // use internal NeoPixels
 #elif defined(ARDUINO_Mbits)
 		initNeoPixelPin(13); // use internal NeoPixels
+#elif defined(Elite_Core)
+		initNeoPixelPin(12); // use internal NeoPixels		
 #endif
 		delay(1); // make sure NeoPixels are latched and ready for new data
 

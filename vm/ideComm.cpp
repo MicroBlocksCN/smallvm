@@ -64,6 +64,7 @@ static void showShapeForMSecs(int msecs) {
 	}
 }
 
+#ifndef Elite_Core
 static void show_BLE_ID() {
 	OBJ args[5]; // used to call primitives
 
@@ -82,6 +83,7 @@ static void show_BLE_ID() {
 	}
 	primMBDisplayOff(0, args);
 }
+#endif
 
 static void flashUserLED() {
 	// used for debugging
@@ -266,7 +268,9 @@ void BLE_start() {
 	bleRunning = true;
 
 	BLE_resumeAdvertising();
-	show_BLE_ID();
+	#ifndef Elite_Core
+    show_BLE_ID();
+    #endif
 }
 
 void BLE_stop() {
