@@ -190,7 +190,7 @@ method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
   leftItems = (list)
-  add leftItems (140 * scale)
+  add leftItems (160 * scale)
   add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
   add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')

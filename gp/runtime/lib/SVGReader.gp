@@ -1,7 +1,8 @@
 to readIcon iconName color {
 	// returns a bitmap costume
+	scale = (global 'scale')
 	print 'reading icon' iconName
-	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) 0 0 (global 'scale') color)
+	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) 0 0 scale color)
 }
 
 to readSVG data x y scale color {
@@ -128,8 +129,6 @@ method processPath SVGReader attributes {
 			drawPath this value
 		} (name == 'fill') {
 			fill pen (parseColor this value)
-		} (name == 'clip-rule') {
-			
 		} else {
 			print 'missing attribute' name 'in SVG parser'
 		}
