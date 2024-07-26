@@ -1,8 +1,9 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 4
-depends TFT Strings Files
+version 1 5 
+depends TFT Strings Files 
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.5 增加对neoPanel和OLED的支持
 v1.4 增加二进制字库文件支持
 v1.3 增加了一个大写英文字母字体
 v1.2 增加了通过文件保存和提取字模的功能
@@ -16,13 +17,13 @@ v1.1 增加了颜色设置，增加了几个汉字和数字示例
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/'
 
-  spec ' ' 'draw' 'draw _ x _ y _ size _ _' 'str num num num color' 'data' 0 0 1
+  spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' 'data' 0 0 1 nil ''
   spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
   spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
   space
-  spec 'r' '_fromFontFile' '_fromFontFile _' 'auto'
+  spec 'r' '_fromFontFile' '_fromFontFile _ withHeader _' 'auto bool' nil true
   spec 'r' '_getCode' '_getCode _' 'str' 'text'
   spec 'r' '_getCodeFromFile' '_getCodeFromFile _' 'str' 'fileName'
   spec 'r' '_numbers' '_numbers'
@@ -47,29 +48,28 @@ to '_chars' {
   return ' ,.!-:''?()℃%'
 }
 
-to dec2hex dec {
-  local 'hexDigits' '0123456789abcdef'
-  if (dec == 0) {
-    return ('[data:join]' ('[data:convertType]' 0 'string') ('[data:convertType]' 0 'string'))
-  }
-  local 'hexString' ''
-  local 'num' dec
-  repeatUntil (num <= 0) {
-    local 'remainder' (num % 16)
-    hexString = ('[data:join]' (at (remainder + 1) hexDigits) hexString)
-    num = (num / 16)
-  }
-  if ((size hexString) < 2) {
-    return ('[data:join]' '0' hexString)
+to '_fromFontFile' foo withHeader {
+  if (and (('[data:unicodeAt]' 1 foo) >= 19968) (('[data:unicodeAt]' 1 foo) <= 40959)) {
+    local 'f' (((('[data:unicodeAt]' 1 foo) - 19968) * 32) + 0)
+    '[file:open]' 'font.bin'
+    '[file:setReadPosition]' f 'font.bin'
+    local 'a' ('[file:readBytes]' 32 'font.bin')
+    local 'fon' ''
+    for i 32 {
+      fon = ('[data:join]' fon (dec2hex (at i a)))
+    }
+    if withHeader {
+      return ('[data:join]' '1010' fon)
+    } else {
+      return fon
+    }
   } else {
-    return hexString
+    return ''
   }
 }
 
-
-
-to _getCode foo {
-comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
+to '_getCode' foo {
+  comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
 其中_l开头的是26个大写字母，_c开头的是符号，_numbers是数字。
 可以用你自己的字体替换这几个积木中的内容.每个字体积木包含10个字符'
   local 'var' (('[data:unicodeAt]' 1 (uppercase foo)) - 65)
@@ -94,7 +94,7 @@ comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
       if ((size file) > 10) {
         return file
       } (('[data:find]' 'font.bin' ('file names')) > 0) {
-        local 'r' (_fromFontFile foo)
+        local 'r' ('_fromFontFile' foo true)
         if (r != '') {
           return r
         } else {
@@ -107,22 +107,6 @@ comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
         return (at 1 ('_c1'))
       }
     }
-  }
-}
-
-to _fromFontFile foo {
-  if (and (('[data:unicodeAt]' 1 foo) >= 19968) (('[data:unicodeAt]' 1 foo) <= 40959)) {
-    local 'f' (((('[data:unicodeAt]' 1 foo) - 19968) * 32) + 0)
-    '[file:open]' 'font.bin'
-    '[file:setReadPosition]' f 'font.bin'
-    local 'a' ('[file:readBytes]' 32 'font.bin')
-    local 'fon' ''
-    for i 32 {
-      fon = ('[data:join]' fon (dec2hex (at i a)))
-    }
-    return ('[data:join]' '1010' fon)
-  } else {
-    return ''
   }
 }
 
@@ -160,7 +144,26 @@ to '_sample' {
   return ('[data:makeList]' '101000000000000000FE2020202020000000004040404040407F4040404040404000' '10100042440008E416151454541414F4040000402011011F111115155151311F1101')
 }
 
-to draw data x y size color {
+to dec2hex dec {
+  local 'hexDigits' '0123456789abcdef'
+  if (dec == 0) {
+    return ('[data:join]' ('[data:convertType]' 0 'string') ('[data:convertType]' 0 'string'))
+  }
+  local 'hexString' ''
+  local 'num' dec
+  repeatUntil (num <= 0) {
+    local 'remainder' (num % 16)
+    hexString = ('[data:join]' (at (remainder + 1) hexDigits) hexString)
+    num = (num / 16)
+  }
+  if ((size hexString) < 2) {
+    return ('[data:join]' '0' hexString)
+  } else {
+    return hexString
+  }
+}
+
+to draw data x y size color neo {
   comment '本库核心的汉字显示方法，用法参看drawSample函数'
   local 'xx' 0
   local 'yy' -1
@@ -171,13 +174,23 @@ to draw data x y size color {
       yy += 8
     }
     for i 4 {
-      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {'[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size color}
+      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {if (neo == 1) {
+        local 'var' ('_neoPanel_indexForXY' (x + xx) (y + yy))
+        if (and (1 <= var) (var <= (size _np_pixels))) {
+          atPut var _np_pixels color
+        }
+      } else {
+        '[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size color
+      }}
       yy += -1
     }
     if ((j % 2) == 0) {
       xx += 1
       yy = (yy + 8)
     }
+  }
+  if (neo == 1) {
+    '_NeoPixel_update'
   }
 }
 
