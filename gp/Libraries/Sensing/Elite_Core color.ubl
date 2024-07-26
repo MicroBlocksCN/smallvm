@@ -1,0 +1,126 @@
+module 'Elite_Core color'
+author '英荔教育'
+version 1 3 
+description ''
+variables _apds9960_addr gain reg 
+
+  spec 'r' 'Elite_Core apds9960 color' 'Elite_Core apds9960 color Hue value'
+  spec 'r' 'Elite_Core apds9960 color name' 'Elite_Core apds9960 color name'
+  space
+  spec ' ' 'Elite_Core close fill-in light' 'Elite_Core close fill-in light _' 'bool' true
+  spec ' ' '_apds9960_initialize' '_apds9960_initialize'
+  spec 'r' '_apds9960_read16bits reg' '_apds9960_read16bits reg _' 'auto' '10'
+  spec ' ' '_apds9960_setLightGain' '_apds9960_set light gain _' 'auto' '4x'
+  spec ' ' '_apds9960_turnOff' '_apds9960_turnOff'
+  spec ' ' '_apds9960_turnOnWithoutGestures' '_apds9960_turnOnWithoutGestures'
+  spec ' ' '_apds9960_unblockStateMachine' '_apds9960_unblockStateMachine'
+  spec 'r' '_Elite_Core apds9960 color' '_Elite_Core apds9960 color'
+
+to 'Elite_Core apds9960 color' {
+  digitalWriteOp 25 false
+  local 'hue' 0
+  local 'R' (((at 1 ('_Elite_Core apds9960 color')) * 100) / 255)
+  local 'G' (((at 2 ('_Elite_Core apds9960 color')) * 100) / 255)
+  local 'B' (((at 3 ('_Elite_Core apds9960 color')) * 100) / 255)
+  local 'maxVal' (maximum R (maximum G B))
+  local 'minVal' (minimum R (minimum G B))
+  local 'delta' (maxVal - minVal)
+  if (delta <= 0) {
+    return 0
+  }
+  if (and (maxVal == R) (G >= B)) {
+    return ((60 * (((G - B) * 100) / delta)) / 100)
+  }
+  if (and (maxVal == R) (G < B)) {
+    return (((60 * (((G - B) * 100) / delta)) + (360 * 100)) / 100)
+  }
+  if (maxVal == G) {
+    return (((60 * (((B - R) * 100) / delta)) + (120 * 100)) / 100)
+  }
+  if (maxVal == B) {
+    return (((60 * (((R - G) * 100) / delta)) + (240 * 100)) / 100)
+  }
+}
+
+to 'Elite_Core apds9960 color name' {
+  local 'hue' ('Elite_Core apds9960 color')
+  if (or (hue > 310) (hue < 20)) {
+    return '红色'
+  }
+  if (and (hue > 150) (hue < 190)) {
+    return '绿色'
+  }
+  if (and (hue > 210) (hue < 235)) {
+    return '蓝色'
+  }
+  if (and (hue > 20) (hue < 110)) {
+    return '黄色'
+  }
+  if (and (hue > 230) (hue < 300)) {
+    return '紫色'
+  }
+}
+
+to 'Elite_Core close fill-in light' foo {
+  digitalWriteOp 25 (not foo)
+}
+
+to '_Elite_Core apds9960 color' {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  '_apds9960_unblockStateMachine'
+  local 'r' ('_apds9960_read16bits reg' (hexToInt '96'))
+  local 'g' ('_apds9960_read16bits reg' (hexToInt '98'))
+  local 'b' ('_apds9960_read16bits reg' (hexToInt '9A'))
+  return ('[data:makeList]' r g b)
+}
+
+to '_apds9960_initialize' {
+  _apds9960_addr = (hexToInt '39')
+  '_apds9960_turnOff'
+  comment 'Reg 0x81: Integration time. 224 gives a range of 0 to ~32768 (2^15) in about 90 msecs.'
+  i2cSet _apds9960_addr (hexToInt '81') 224
+  comment 'Reg 0x8E: PPULSE. 0x87 sends 8 16-usec pulses.'
+  i2cSet _apds9960_addr (hexToInt '8E') (hexToInt '87')
+  '_apds9960_setLightGain' '4x'
+  '_apds9960_turnOnWithoutGestures'
+  waitMillis 100
+}
+
+to '_apds9960_read16bits reg' reg {
+  local 'lowByte' (i2cGet _apds9960_addr reg)
+  local 'highByte' (i2cGet _apds9960_addr (reg + 1))
+  return ((highByte << 8) | lowByte)
+}
+
+to '_apds9960_setLightGain' gain {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  local 'drive' 0
+  if ('1x' == gain) {
+    drive = 0
+  } ('4x' == gain) {
+    drive = 1
+  } ('16x' == gain) {
+    drive = 2
+  } ('64x' == gain) {
+    drive = 3
+  }
+  local 'val' (i2cGet _apds9960_addr (hexToInt '8F'))
+  val = ((val & 252) | (drive & 3))
+  i2cSet _apds9960_addr (hexToInt '8F') val
+}
+
+to '_apds9960_turnOff' {
+  i2cSet _apds9960_addr (hexToInt '80') 0
+}
+
+to '_apds9960_turnOnWithoutGestures' {
+  i2cSet _apds9960_addr (hexToInt '80') 7
+}
+
+to '_apds9960_unblockStateMachine' {
+  comment 'If an object is close to the sensor, the state machine
+remains in gesture mode. This will unblock it, freeing
+the sensor to update the light and color readings.'
+  i2cSet _apds9960_addr (hexToInt 'AB') 0
+}
+

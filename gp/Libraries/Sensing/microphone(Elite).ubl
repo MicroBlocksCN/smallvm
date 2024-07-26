@@ -1,0 +1,11 @@
+module 'microphone(Elite)'
+author '英荔教育'
+version 1 0 
+description ''
+
+  spec 'r' 'Elite_Core Microphone' 'Elite_Core Microphone'
+
+to 'Elite_Core Microphone' {
+  return (analogReadOp 4)
+}
+
