@@ -128,6 +128,8 @@ method processPath SVGReader attributes {
 			drawPath this value
 		} (name == 'fill') {
 			fill pen (parseColor this value)
+		} (name == 'clip-rule') {
+			
 		} else {
 			print 'missing attribute' name 'in SVG parser'
 		}
@@ -199,6 +201,8 @@ method parseColor SVGReader colorString {
 
 	if (colorString == 'black') {
 		return (gray 0)
+	} (colorString == 'white') {
+		return (gray 255)
 	} (beginsWith colorString '#') {
 		return (colorHex (substring colorString 2))
 	} else {
