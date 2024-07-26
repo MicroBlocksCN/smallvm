@@ -3807,6 +3807,78 @@ ble 最后广播的字符串
 ble set group _ (0-255)
 ble 设置广播分组 _ (0-255)
 
+##############
+# Elite_Core #
+##############
+
+Elite_Core color
+颜色传感器
+
+LED display
+5×5 RGB 点阵
+
+Temperature Humidity (Elite)
+温湿度传感器
+
+microphone(Elite)
+声音传感器
+
+#### LED display
+
+Elite_Core LED plot x _ y _ color _
+5×5 RGB 点阵点亮 x _ y _ 颜色 _
+
+Elite_Core LED unplot x _ y _
+5×5 RGB 点阵熄灭 x _ y _ 
+
+Elite_Core LED display image _ color _
+5×5 RGB 点阵显示图像 _ 颜色 _
+
+clear Elite_Core LED dispaly
+5×5 RGB 点阵清除显示
+
+Elite_Core LED set all color _
+设置 5×5 RGB 点阵所有 LED 的颜色为 _
+
+Elite_Core LED color r _ g _ b _ (0~255)
+颜色 r _ g _ b _ （0~255）
+
+Elite_Core LED random color
+随机颜色
+
+Elite_Core LED fill column _ color _
+5×5 RGB 点阵屏绘制 行 _ 颜色 _
+
+Elite_Core LED fill row _ color _
+5×5 RGB 点阵绘制 列 _ 颜色 _
+
+Elite_Core LED stop scrolling
+5×5 RGB 点阵停止滚动
+
+Elite_Core LED character _ at x _ y _ color _
+5×5 RGB 点阵显示字符 _ 于 x _ y _ 颜色 _
+
+Elite_Core LED scroll text _ color _
+5×5 RGB 点阵显滚动显示文字 _ 颜色 _
+
+Elite_Core apds9960 color Hue value
+颜色传感器获取 色相值
+
+Elite_Core apds9960 color name
+颜色传感器获取 颜色名
+
+Elite_Core close fill-in light _
+颜色传感器补光灯 _
+
+Elite_Core Microphone
+声音传感器音量值
+
+ELite_Core AHT20 humidity
+温湿度传感器 湿度值
+
+ELite_Core AHT20 temperature
+温湿度传感器 温度值
+
 ##################
 # MicroBlocks UI #
 ##################
