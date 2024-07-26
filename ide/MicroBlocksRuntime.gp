@@ -2876,7 +2876,7 @@ method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag
 
 method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
 	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot') {
-		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
+		flashVM this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
 
@@ -3079,6 +3079,9 @@ method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 		disconnected = true
 		flasherPort = port
 		port = nil
+		// workaround for ESP32 install issue introduced in 1.2.89:
+		flasherPort = nil
+		portName = 'webserial'
 	} else {
 		setPort this 'disconnect'
 		flasherPort = nil
