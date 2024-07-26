@@ -2793,6 +2793,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
 	}
 	writeFile (join boardPath vmFileName) vmData
+	vmVersion = nil
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
 	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 8000 }
