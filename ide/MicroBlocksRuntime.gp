@@ -680,6 +680,8 @@ method webSerialConnect SmallRuntime action {
 		connectionStartTime = (msecsSinceStart)
 		portName = 'webserial'
 		port = 1
+	    lastPingRecvMSecs = 0
+	    sendMsg this 'pingMsg'
 	}
 }
 
@@ -909,7 +911,7 @@ method updateConnection SmallRuntime {
 		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
 		clearRunningHighlights this
-		if (not (isWebSerial this)) { closePort this }
+        closePort this
 		return 'not connected'
 	}
 }
@@ -957,12 +959,11 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			lastPingRecvMSecs = 0
-			waitForPing this
             if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
                 justConnected this
                 return 'connected'
             }
+            sendMsg this 'pingMsg' // send another ping
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
@@ -2690,21 +2691,33 @@ method niceBoardName SmallRuntime board {
 method collectBoardDrives SmallRuntime {
 	result = (list)
 	if ('Mac' == (platform)) {
-        for dir (allDirectories '/Volumes') {
-            driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
+		for v (listDirectories '/Volumes') {
+			path = (join '/Volumes/' v '/')
+			driveName = (getBoardDriveName this path)
+			if (notNil driveName) { add result (list driveName path) }
+		}
 	} ('Linux' == (platform)) {
-        for dir (allDirectories '/media') {
-             // Debian variants
-           driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
-        for dir (allDirectories '/run/media') {
-            // Fedora variants
-            driveName = (getBoardDriveName this dir)
-            if (notNil driveName) { add result (list driveName dir) }
-        }
+        // Debian variants
+    	for dir (listDirectories '/media') {
+			prefix = (join '/media/' dir)
+			for v (listDirectories prefix) {
+				path = (join prefix '/' v '/')
+				driveName = (getBoardDriveName this path)
+				if (notNil driveName) { add result (list driveName path) }
+			}
+		}
+        // Fedora variants
+		for dir (listDirectories '/run/media') {
+	        userFolder = (join '/run/media/' dir)
+			for user (listDirectories userFolder) {
+			    prefix = (join userFolder '/' user)
+                for v (listDirectories prefix) {
+                    path = (join prefix '/' v '/')
+                    driveName = (getBoardDriveName this path)
+                    if (notNil driveName) { add result (list driveName path) }
+                }
+            }
+		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')

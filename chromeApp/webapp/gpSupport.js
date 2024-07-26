@@ -861,7 +861,7 @@ async function webSerialConnect() {
 }
 
 async function webSerialDisconnect() {
-	if (GP_webSerialReader) await GP_webSerialReader.cancel();
+	if (GP_webSerialReader) await GP_webSerialReader.cancel().catch(() => {});
 	if (GP_webSerialPort) await GP_webSerialPort.close().catch(() => {});
 	GP_webSerialReader = null;
 	GP_webSerialPort = null;
