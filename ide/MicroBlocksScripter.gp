@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection cornerIcon
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -58,6 +58,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
+  addRoundedCorner this
 
   scriptsPane = (newScriptEditor 10 10 nil)
   scriptsFrame = (scrollFrame scriptsPane (color projectEditor 'white'))
@@ -80,6 +81,14 @@ method initialize MicroBlocksScripter aProjectEditor {
   smallRuntime this // create a SmallRuntime instance
   if (isNil projectEditor) { select categorySelector 'Control' }
   return this
+}
+
+method addRoundedCorner MicroBlocksScripter {
+  scale = (global 'scale')
+  cornerIcon = (newMorph)
+  setCostume cornerIcon (readIcon 'rounded-corner')
+  setPosition cornerIcon (left (morph blocksFrame)) ((height (morph blocksFrame)) - (8 * scale))
+  addPart morph cornerIcon
 }
 
 method languageChanged MicroBlocksScripter {
@@ -280,6 +289,8 @@ method fixLayout MicroBlocksScripter {
   fixLibraryHeaderLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
+
+  setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
 }
 
 method fixResizerLayout MicroBlocksScripter {
