@@ -2713,7 +2713,8 @@ method collectBoardDrives SmallRuntime {
 			    prefix = (join userFolder '/' user)
                 for v (listDirectories prefix) {
                     path = (join prefix '/' v '/')
-                    driveName = (getBoardDriveName this path)
+ print 'Checking Fedora path:' path
+                   driveName = (getBoardDriveName this path)
                     if (notNil driveName) { add result (list driveName path) }
                 }
             }
