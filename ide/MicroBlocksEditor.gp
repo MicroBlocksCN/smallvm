@@ -73,6 +73,7 @@ method initialize MicroBlocksEditor {
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
+  addLogo this
   addTipBar this
   addZoomButtons this
   clearProject this
@@ -144,10 +145,10 @@ method scaleChanged MicroBlocksEditor {
   initialize (smallRuntime) scripter
 
   // rebuild the editor
-  addLogo this
   addTopBarParts this
   addPart morph (morph title)
   addPart morph (morph scripter)
+  addLogo this
   addTipBar this
   addZoomButtons this
 
@@ -199,8 +200,7 @@ method addTopBarParts MicroBlocksEditor {
   indicator = (last leftItems)
 
   if (isNil title) {
-    // only add the logo and title the first time
-    addLogo this
+    // only add title the first time
     title = (newText '' 'Arial' (17 * scale))
     addPart morph (morph title)
   }
@@ -225,6 +225,7 @@ method addTopBarParts MicroBlocksEditor {
 }
 
 method addLogo MicroBlocksEditor {
+  print 'wat'
   logoM = (newMorph)
   setCostume logoM (readIcon 'logo')
   setPosition logoM 0 0
