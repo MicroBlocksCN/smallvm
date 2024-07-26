@@ -94,6 +94,16 @@ method addRoundedCorner MicroBlocksScripter {
   addPart morph cornerIcon
 }
 
+method darkModeChanged MicroBlocksScripter {
+  if (darkModeEnabled projectEditor) {
+  	setColor scriptsFrame (color projectEditor 'blueGray' 900)
+  	setColor blocksFrame (color projectEditor 'blueGray' 800)
+  } else {
+  	setColor scriptsFrame (color projectEditor 'white')
+  	setColor blocksFrame (color projectEditor 'blueGray' 50)
+  }
+}
+
 method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
 

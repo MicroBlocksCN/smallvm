@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot colorPalette
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot colorPalette darkMode
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -1030,6 +1030,10 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'showImplementationBlocks')) {
 		showHiddenBlocks = (at prefs 'showImplementationBlocks')
 	}
+	if (notNil (at prefs 'darkMode')) {
+		darkMode = (at prefs 'darkMode')
+		darkModeChanged scripter
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -1073,6 +1077,16 @@ method toggleShowHiddenBlocks MicroBlocksEditor flag {
 
 method showHiddenBlocksEnabled MicroBlocksEditor {
 	return (and (devMode) (showHiddenBlocks == true))
+}
+
+method toggleDarkMode MicroBlocksEditor flag {
+	darkMode = flag
+	saveToUserPreferences this 'darkMode' darkMode
+	darkModeChanged scripter
+}
+
+method darkModeEnabled MicroBlocksEditor {
+	return (darkMode == true)
 }
 
 // developer mode
@@ -1269,8 +1283,15 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
 	if (showHiddenBlocksEnabled this) {
 		addItem menu 'hide implementation blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+		addLine menu
 	} else {
 		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+		addLine menu
+	}
+  	if (darkModeEnabled this) {
+		addItem menu 'light mode' (action 'toggleDarkMode' this false) 'make the IDE brighter'
+	} else {
+		addItem menu 'dark mode' (action 'toggleDarkMode' this true) 'make the IDE darker'
 	}
   }
   return menu

@@ -33,6 +33,10 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
 method contents ScrollFrame {return contents}
 method setAutoScroll ScrollFrame bool {enableAutoScroll = bool}
 
+method setColor ScrollFrame aColor {
+  setCostume morph aColor
+}
+
 method setContents ScrollFrame aHandler {
   idx = (indexOf (parts morph) (morph contents))
   setOwner (morph contents) nil
