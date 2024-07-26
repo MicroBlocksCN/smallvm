@@ -219,8 +219,8 @@ method addTopBarParts MicroBlocksEditor {
   progressIndicator = (last rightItems)
   add rightItems (3 * scale)
 
-  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 'Start' 36)
-  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 'Stop' 36)
+  add rightItems (addSVGIconButton this 'icon-start' 'startAll' 'Start' (color this 'blueGray' 700) (color this 'yellow'))
+  add rightItems (addSVGIconButton this 'icon-stop' 'stopAndSyncScripts' 'Stop' (color this 'blueGray' 700) (color this 'yellow'))
   add rightItems (7 * scale)
 }
 
@@ -1467,6 +1467,13 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
+method addSVGIconButton MicroBlocksEditor iconName selector hint color1 color2 {
+  button = (newButton '' (action selector this))
+  setCostumes button (readIcon iconName color1) (readIcon iconName color2)
+  addPart morph (morph button)
+  return button
+}
+
 method addIconButton MicroBlocksEditor icon selector hint width {
   scale = (global 'scale')
   w = (43 * scale)
@@ -1579,37 +1586,6 @@ method fixPNGScriptImage MicroBlocksEditor pngFile {
 
 // UI image resources
 
-method makeLogoPNG MicroBlocksEditor {
-  // Used to generate images for the logo images in both normal and retina resolution.
-  // Must be run on a computer with the necessary fonts.
-
-  bm = (newBitmap 276 80 (gray 0 0))
-  drawBitmap bm (bunnyIcon this 2) -6 4
-  drawLogoText this bm 2
-  writeFile 'logoAndTextRetina.png' (encodePNG bm)
-  writeFile 'logoAndTextRetina.txt' (base64Encode (encodePNG bm))
-
-  bm = (newBitmap 138 40 (gray 0 0))
-  drawBitmap bm (bunnyIcon this 1) -3 2
-  drawLogoText this bm 1
-  writeFile 'logoAndText.png' (encodePNG bm)
-  writeFile 'logoAndText.txt' (base64Encode (encodePNG bm))
-}
-
-method drawLogoText MicroBlocksEditor bm scale {
-  // Used to create a logo images.
-  // Must be run on a computer with the necessary fonts (e.g. MacOS).
-
-  textColor = (gray 50)
-  left = (31 * scale)
-  top = (5 * scale)
-  setFont 'Trebuchet MS' (18 * scale)
-  drawString bm 'MicroBlocks' textColor left top
-  setFont 'Futura Medium Italic' (8 * scale)
-  top += (20 * scale)
-  drawString bm 'Small, Fast, Human Friendly' textColor left top
-}
-
 method connectButtonIcon MicroBlocksEditor {
   data = '
 iVBORw0KGgoAAAANSUhEUgAAABkAAAAWCAYAAAA1vze2AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAF
@@ -1655,60 +1631,6 @@ FV6EiD4CcBtADoCf9Hp9IzNfxcS1Wcw2KTNfE0LsCAQCzX6/X7PwSwdUXV3tEEJ8D/UT7F8hhPPixYs/
 qjmx2+3F4XB4JRE9DgDM3JeTk3Olvb09ZlswGyBJkq4BeEZl/kY0Gt1w+fLlP+croFQhoNJoI6Kzer2+
 8v8gAgAEM5+PMb7XYrG81N7envSty0JBz8zNk4XhCwBuEdEur9d7ZKEDSxb/Afpz63umivdIAAAAAElF
 TkSuQmCC'
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
-}
-
-method startButtonIcon MicroBlocksEditor {
-  data = '
-iVBORw0KGgoAAAANSUhEUgAAABQAAAAWCAYAAADAQbwGAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAJ
-egAACXoBD0XXIwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFWSURBVDiNrdM9
-axRRFMbx3x0GjaQ2pDCFRcxK2pAitpYi+QIpjQoWFoJYKbFML7EIhHwDYyobi7yInca4d0FBhC3WWKUJ
-a0KYFJuVQTa7M84+3XnO4X+fw72XhgfqPoru+2FERSWYE8xiRdtP0ZMq4ERmPFePYVnbN9Gi99LywOBq
-D/8aXhv3ScPdsgmv9OlPy7wRbYvmigG5VGDuFnZEb30xMQh4ucjJ57ojFUUvfO0dpGjCvEbxXGJP3e1h
-ALuaErzTsO67sWEAIcgsOLGvbr5jRKfn4GFoaVigrrIUx1T+wweCe2o2EvypkghrEtNqNiDFyX/CPks8
-MmU7byY6K5fRoeCxlpl/Yd2EZVbelHpoUvOige6l9FewJfPUTR8GjaY46tPfxzM1mwMPzQF/9/CbeKlm
-VXBaFNYBBr9kf+sWlo145bp2GVA+4S5uYFVq3WSld+kMPTFR1LOrihUAAAAASUVORK5CYII='
-  dataRetina = '
-iVBORw0KGgoAAAANSUhEUgAAACcAAAAsCAYAAADmZKH2AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAS
-9QAAEvUBKRJxDwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAALKSURBVFiFzdjN
-a1xVGIDx3z25UZoS8asqiuhC0klSBP+GFupCcOXSL4SgKFmEirgQdddSSqkipRRKLHbjSmihEQtudOdC
-Jc2dmCAo+BXRQG0j6jjHxWTayaQx83Hv3DxwN+ec951n3veeM/dOAjKfY1jiHM6o+MMOILFkj5qVlrEr
-mBUdNuGnssQgqNvbNnYbpiWWZU5Y9EAZYhBE920xN4Jpdd/KnLLsnkGK0ajcdh96C6b8Y1nVYVWjgxCD
-ILGnw7WjotdEVVUv+sJwoWYabb23y5j7RSftNq/qqUKs1gmCO3uMHRN9KDPnsslcrdYJopE+cxwUfK3q
-bN6bJkj6lmvkiZ5Wsygzk9f9mEflbhDdjmN2m5c52G+6QI5yNxjDnMx5Cx7qNUlRck2ekFiQecuSW7sN
-DthVgFQrI3hTzZcu299NYKD7b9QjFcElmfdl7uokICAtWKqdZ7AkM7XdwoCh4n02cQdOyVyUeXirRWH9
-KovHMa9qWpS0TyYya4rfFJ1wSeJZFT82B8pq6804IPpK1ZPNgbLb2s7doo9kToiGEpk6m/tdOtEHO6lq
-GwliwL9le7QRcdxez6eol23Twq94wbjzNH4ddkrlPpF4rvUoSVErUQiu4nUV70nE1omUjQMDJbqIl0z4
-7mbTZbV1RfSqCWf/b9Gg2xoxq+6QSb9vtzjFX8U7gQWJV1R82mlAwFqBQtbzv63usW7EaFTuz2KcwAV1
-L5v0fS/BqWIq9w2mjfu4nyRBkqvcqmjGNfv6FYNUzEWuhjOGveGRDf+S9kUqsdbnMTxnyIwxWU5O10nx
-W4+xizhk3IUcfTYQxK7b8AOm/GxfkWI02rrSYVtXRUeMeseDhR4/10k7qNyaxLv+dsSjVgch1SQV/LLF
-4+Y1idM42vqMNUhS9U277IrESdFRlZ43Sy403royn2m8v55TN2vS1TKlmvwHLHW8gYqPdl8AAAAASUVO
-RK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
-}
-
-method stopButtonIcon MicroBlocksEditor {
-  data = '
-iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAI
-+gAACPoBjcM6MwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACFSURBVDiN7dU9
-DkAwGIfx5zW7Re9lZpE4iY+NweBcnIK9pjZVEgnvxjO2yW/rv0KUBVmgBrL4LmoyUAnY8FAusAYobzDX
-YCAPUQ8+wC5ReYmdUFHAjugMrQLm6mSGFUiVwC1Rgnw/+BVwVPRGzafXGyi0xsFhVmO+PAbvB/aAncAA
-ffwF7ItnNpUpNqZKAAAAAElFTkSuQmCC'
-  dataRetina = '
-iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAR
-8wAAEfMBmr+RUAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIaSURBVFiF7dkx
-TxRBGIfx39wqh1fZ2JBQWFDZ8gWUGDUIBDWCojHxgxkIMSGCgIKCBuMXsKUCtMBQ0ECFnHiuxR16HHvr
-GY7bM+HpdubNzpPZyebd/wYN8pFz3TzD7YTpiwg1YzF2E2oXN3l6lR+NrFt700RionUmAmON1Dew6MwO
-D3s5aKA2nVU68kxhuBlyVbyJudtDMa0oVbAi9wJDTVX7w1LEncvs1yuoK7hGHjMh+cw1k3d5hrv5ljSZ
-SxrcohB40wI5uFFkYYtC0uSxHdzkQpFFXDt1taN8yDNQu5NHdnCVjiLTWi8Hffu8+kJn9eBvwVU6OplB
-f8vVKgSul5irnH9UBGOiPJMxA1nJVXEzMPWJ8xBiog0m8SBjsVpmNxkJ64zjSdY2dZgI62zjUtYmddjO
-xURZW6QQ5UK7CzoTPBFngiclyqnT0bQJUTvLobx7P7OWSKGUQylrixTOBE/KfyAYt7tgaHdBvM3aIoWl
-tm35Y15+ZTRULqINnmMkY69D5ne538tBDgKlXR7jdcZisBwzeph8HUkWKmHRrIy+jQPvcwxVh0nHoo81
-8oE53GqpHSt5Bmujj8R0a4vCXvlx97VEjZUCQ13s1U4ktltd7MX0BxZO381ynsEkOVKa1R6K+9zD/Kmp
-lQPMutkgf+mmr/C9WH71zDbbLGYxZjgtXeUfQvTPjMc8aoZcYHqHsaaE6Idk9RviFzG4jSVrWs+wAAAA
-AElFTkSuQmCC'
   if (2 == (global 'scale')) { data = dataRetina }
   return (readFrom (new 'PNGReader') (base64Decode data))
 }

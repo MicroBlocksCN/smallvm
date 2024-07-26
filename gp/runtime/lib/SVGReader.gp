@@ -185,11 +185,10 @@ method getPathParams SVGReader pathString startIndex {
 		i = (i + 1)
 	}
 
-	// some SVGs separate params by commas, others by spaces ¯\_(ツ)_/¯
-	delimiter = ' '
-	if ((findSubstring ',' paramString) > 0) { delimiter = ',' }
+	// some SVGs separate param groups by commas ¯\_(ツ)_/¯
+	paramString = (copyReplacing paramString ',' ' ')
 
-	for item (splitWith (trim paramString) delimiter) {
+	for item (splitWith (trim paramString) ' ') {
 		add params ((toNumber item) * scaleFactor)
 	}
 	return (list params i)
