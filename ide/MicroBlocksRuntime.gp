@@ -2622,6 +2622,7 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
+    closeAllDialogs (findMicroBlocksEditor)
 	if ('Browser' == (platform)) {
 		installVMInBrowser this eraseFlashFlag downloadLatestFlag
 		return
