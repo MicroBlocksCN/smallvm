@@ -2,7 +2,7 @@
   "name": "MicroBlocks",
   "short_name": "MicroBlocks",
   "description": "Simple, easy-to-use blocks programming language for the BBC micro:bit and other microcontrollers",
-  "version": "1.2.45",
+  "version": "1.2.91",
   "manifest_version": 2,
   "permissions": [
 	"clipboardRead",
