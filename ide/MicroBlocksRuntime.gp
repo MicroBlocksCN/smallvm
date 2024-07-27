@@ -2698,20 +2698,16 @@ method collectBoardDrives SmallRuntime {
 			if (notNil driveName) { add result (list driveName path) }
 		}
 	} ('Linux' == (platform)) {
-        // Debian variants
-    	for v (listDirectories '/media') {
-            path = (join '/media/' v '/')
-            driveName = (getBoardDriveName this path)
-            if (notNil driveName) { add result (list driveName path) }
-		}
-        // Fedora variants
-		for user (listDirectories '/run/media') {
-	        userFolder = (join '/run/media/' user)
-			for v (listDirectories userFolder) {
-                path = (join userFolder '/' v '/')
-                driveName = (getBoardDriveName this path)
-                if (notNil driveName) { add result (list driveName path) }
-            }
+		// Try both Debian ('/media') and Fedora ('/run/media') variants
+		for media (list '/media' '/run/media') {
+			for userName (listDirectories media) {
+				prefix = (join media '/' userName)
+				for v (listDirectories prefix) {
+					path = (join prefix '/' v '/')
+					driveName = (getBoardDriveName this path)
+					if (notNil driveName) { add result (list driveName path) }
+				}
+			}
 		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
