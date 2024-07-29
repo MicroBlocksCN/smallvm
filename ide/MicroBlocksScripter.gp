@@ -118,11 +118,11 @@ method languageChanged MicroBlocksScripter {
 
 method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
-  libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
+  libHeader = (newBox (newMorph) (color projectEditor 'blueGray' 850) 0 0)
 
-  label = (newText (localized 'Libraries') 'Arial' (18 * scale) (gray 30))
+  label = (newText (localized 'LIBRARIES') 'Arial' (10 * scale) (color projectEditor 'blueGray' 300))
   if ('Linux' == (platform)) {
-	label = (newText (localized 'Libraries') 'Liberation Sans' (15 * scale) (gray 30))
+	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (10 * scale) (color projectEditor 'blueGray' 300))
   }
   setPosition (morph label) (6 * scale) (6 * scale)
   addPart (morph libHeader) (morph label)
@@ -136,7 +136,7 @@ method makeLibraryHeader MicroBlocksScripter {
 
 method updateLibraryHeader MicroBlocksScripter {
   labelM = (first (parts (morph libHeader)))
-  setText (handler labelM) (localized 'Libraries')
+  setText (handler labelM) (localized 'LIBRARIES')
 
   addButton = (handler (last (parts (morph libHeader))))
   setHint addButton (localized 'Add Library')
@@ -303,6 +303,7 @@ method fixLayout MicroBlocksScripter {
   updateSliders blocksFrame
   updateSliders scriptsFrame
 
+  // rounded corner at bottom left of palette
   setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
 }
 
@@ -336,8 +337,13 @@ method drawOn MicroBlocksScripter ctx {
   scale = (global 'scale')
   borderWidth = (2 * scale)
   paneColor = (color projectEditor 'blueGray' 850)
-  borderColor = (color projectEditor 'blueGray' 100)
-  x = (right (morph categorySelector))
+  // border between palette and scripting area
+  if (darkModeEnabled projectEditor) {
+    borderColor = (color projectEditor 'blueGray' 700)
+  } else {
+    borderColor = (color projectEditor 'blueGray' 100)
+  }
+  x = ((right (morph categorySelector)) + 1)
   fillRect ctx paneColor 0 (top morph) x (height morph) // bg color for category/lib panes
   x = (right (morph blocksFrame))
   fillRect ctx borderColor x (top morph) borderWidth (height morph)

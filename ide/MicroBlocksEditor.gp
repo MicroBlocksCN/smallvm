@@ -195,13 +195,12 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
   add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')
-  add leftItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
-  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
-  indicator = (last leftItems)
+  add leftItems (12 * scale)
+  add leftItems (vSeparator this)
 
   if (isNil title) {
     // only add title the first time
-    title = (newText '' 'Arial' (17 * scale))
+    title = (newText '' 'Arial' (17 * scale) (color this 'blueGray' 50))
     addPart morph (morph title)
   }
 
@@ -209,7 +208,7 @@ method addTopBarParts MicroBlocksEditor {
 
   addFrameRate = (contains (commandLine) '--allowMorphMenu')
   if addFrameRate {
-	frameRate = (newText '0 fps' 'Arial' (14 * scale))
+	frameRate = (newText '0 fps' 'Arial' (14 * scale) (color this 'blueGray' 50))
 	addPart morph (morph frameRate)
 	add rightItems frameRate
 	add rightItems (16 * scale)
@@ -219,15 +218,32 @@ method addTopBarParts MicroBlocksEditor {
   progressIndicator = (last rightItems)
   add rightItems (3 * scale)
 
+  add rightItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
+  add rightItems (12 * scale)
+  add rightItems (vSeparator this)
+  add rightItems (12 * scale)
+  add rightItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
+  indicator = (last rightItems)
+  add rightItems (12 * scale)
+  add rightItems (vSeparator this)
+  add rightItems (12 * scale)
   add rightItems (addSVGIconButton this 'icon-start' 'startAll' 'Start' (color this 'blueGray' 700) (color this 'yellow'))
   add rightItems (addSVGIconButton this 'icon-stop' 'stopAndSyncScripts' 'Stop' (color this 'blueGray' 700) (color this 'yellow'))
   add rightItems (7 * scale)
 }
 
+method vSeparator MicroBlocksEditor {
+  scale = (global 'scale')
+  separator = (newBox (newMorph) (color this 'blueGray' 700) 0 0 false false)
+  setExtent (morph separator) scale ((topBarHeight this) + (4 * scale))
+  addPart morph (morph separator)
+  return separator 
+}
+
 method addLogo MicroBlocksEditor {
   logoM = (newMorph)
   setCostume logoM (readIcon 'logo')
-  setPosition logoM 0 0
+  setPosition logoM 8 8
   addPart morph logoM
 }
 
@@ -551,15 +567,16 @@ method updateTitle MicroBlocksEditor {
   projName = (withoutExtension (filePart fileName))
   setText title projName
   redraw title
-  centerTitle this
+  placeTitle this
 }
 
-method centerTitle MicroBlocksEditor {
+method placeTitle MicroBlocksEditor {
   scale = (global 'scale')
   left = (right (morph (last leftItems)))
   right = (left (morph (first rightItems)))
   titleM = (morph title)
-  setCenter titleM (half (left + right)) (21 * scale)
+  setLeft titleM (left + (12 * scale))
+  setTop titleM (12 * scale)
 
   // hide title if insufficient space
   if (((width titleM) + (8 * scale)) > (right - left)) {
@@ -1114,7 +1131,7 @@ method pageResized MicroBlocksEditor {
 method topBarBlue MicroBlocksEditor { return (color this 'blueGray' 900) }
 // TODO get rid of highlight color once we're using SVG icons
 method topBarBlueHighlight MicroBlocksEditor { return (color this 'blueGray' 500) }
-method topBarHeight MicroBlocksEditor { return (46 * (global 'scale')) }
+method topBarHeight MicroBlocksEditor { return (48 * (global 'scale')) }
 
 method drawOn MicroBlocksEditor aContext {
   scale = (global 'scale')
@@ -1167,7 +1184,7 @@ method fixTopBarLayout MicroBlocksEditor {
 	  x = ((x - (width m)) - space)
 	}
   }
-  centerTitle this
+  placeTitle this
 }
 
 method fixTipBarLayout MicroBlocksEditor {
@@ -1185,34 +1202,6 @@ method fixScripterLayout MicroBlocksEditor {
   h = (max 1 (((height (morph (global 'page'))) - (top m)) - (height (morph tipBar))))
   setExtent m w h
   fixLayout scripter
-}
-
-method drawIcon MicroBlocksEditor {
-	h = 200
-	w = ((2 / 3) * h)
-	r = (h / 28)
-
-	bm = (newBitmap (w + 5) (h + 5)) // add a bit for line width
-	pen = (newVectorPen bm)
-
-	beginPath pen (0.632 * w) (0.012 * h)
-	cubicCurveTo pen (0.562 * w) (0.013 * h) (0.342 * w) (0.046 * h) (0.342 * w) (0.165 * h)
-	cubicCurveTo pen (0.342 * w) (0.241 * h) (0.356 * w) (0.337 * h) (0.392 * w) (0.401 * h)
-	cubicCurveTo pen (0.316 * w) (0.405 * h) (0.299 * w) (0.410 * h) (0.240 * w) (0.417 * h)
-	cubicCurveTo pen (0.282 * w) (0.365 * h) (0.298 * w) (0.313 * h) (0.298 * w) (0.251 * h)
-	cubicCurveTo pen (0.298 * w) (0.029 * h) (0.390 * w) (0.013 * h) (0.344 * w) (0.013 * h)
-	cubicCurveTo pen (0.298 * w) (0.013 * h) (0.035 * w) (0.087 * h) (0.054 * w) (0.251 * h)
-	cubicCurveTo pen (0.081 * w) (0.323 * h) (0.104 * w) (0.426 * h) (0.138 * w) (0.474 * h)
-	cubicCurveTo pen (0.077 * w) (0.550 * h) (0.030 * w) (0.620 * h) (0.030 * w) (0.697 * h)
-	cubicCurveTo pen (0.030 * w) (0.864 * h) (0.241 * w) (1.000 * h) (0.503 * w) (1.000 * h)
-	cubicCurveTo pen (0.791 * w) (1.000 * h) (1.000 * w) (0.864 * h) (1.000 * w) (0.697 * h)
-	cubicCurveTo pen (1.000 * w) (0.643 * h) (0.965 * w) (0.395 * h) (0.517 * w) (0.395 * h)
-	cubicCurveTo pen (0.554 * w) (0.331 * h) (0.569 * w) (0.238 * h) (0.569 * w) (0.165 * h)
-	cubicCurveTo pen (0.569 * w) (0.042 * h) (0.695 * w) (0.012 * h) (0.628 * w) (0.012 * h)
-	cubicCurveTo pen (0.630 * w) (0.012 * h) (0.630 * w) (0.012 * h) (0.632 * w) (0.012 * h)
-	fill pen (gray 250)
-	stroke pen (gray 0) 3
-	return bm
 }
 
 // context menu
