@@ -1,0 +1,118 @@
+module 'LEDbit'
+author Patch
+version 1 0
+description '根据MakeCode驱动改造：https://github.com/lzty634158/LED-Bit
+相关视频：https://www.bilibili.com/video/BV1KSvTejEyq/'
+
+variables _HT16K33 '_MLED data pin' '_MLED buffer' '_MLED intensity' '_MLED clock pin' '_SHT30 data' _LEDbit_list _LEDbit_brightness
+
+  spec ' ' 'LEDbit multi' 'LEDbit list _' 'auto' '10'
+  spec ' ' 'LEDbit number' 'LEDbit number _' 'auto' '10'
+  spec ' ' 'LEDbit x' 'LEDbit x _ y _' 'auto auto' 1 1
+  spec ' ' 'LEDbit_clear' 'LEDbit_clear'
+  spec ' ' 'LEDbit_init brightness' 'LEDbit_init brightness _' 'auto' 0
+  spec 'r' '_LEDbit_num' '_LEDbit_num _' 'auto' 1
+  spec ' ' '_LEDbit_row' '_LEDbit_row _ data _ add _' 'auto auto auto' 0 '' 0
+  spec ' ' '_LEDbit_side' '_LEDbit_side _ add _' 'auto auto' '' 0
+
+to 'LEDbit multi' foo {
+  'LEDbit_init brightness' _LEDbit_brightness
+  _LEDbit_list = (newList 17 (hexToInt '0x0'))
+  local 'var' 0
+  local 'x' 0
+  local 'y' 0
+  for i (size foo) {
+    x = (at 1 (at i foo))
+    y = (at 2 (at i foo))
+    if (x < 9) {
+      var = (y * 2)
+    } else {
+      var = ((y * 2) + 1)
+      x += -8
+    }
+    atPut var _LEDbit_list ((at var _LEDbit_list) | (1 << (x - 1)))
+  }
+  '[sensors:i2cWrite]' _HT16K33 _LEDbit_list
+}
+
+to 'LEDbit number' foo {
+  _LEDbit_list = (newList 17 (hexToInt '0x0'))
+  local 'var' foo
+  var = ('[data:convertType]' var 'string')
+  if ((size var) > 4) {
+    var = ('[data:copyFromTo]' var 1 4)
+  }
+  local 'left' ''
+  local 'right' ('[data:copyFromTo]' var ((size var) - 1) (size var))
+  if ((size var) > 2) {
+    left = ('[data:copyFromTo]' var 1 ((size var) - 2))
+  }
+  if (left != '') {
+    '_LEDbit_side' left 0
+  }
+  '_LEDbit_side' right 1
+  '[sensors:i2cWrite]' _HT16K33 _LEDbit_list
+}
+
+to 'LEDbit x' x y {
+  'LEDbit_init brightness' _LEDbit_brightness
+  _LEDbit_list = (newList 17 (hexToInt '0x0'))
+  local 'var' 0
+  if (x < 9) {
+    var = (y * 2)
+  } else {
+    var = ((y * 2) + 1)
+    x += -8
+  }
+  atPut var _LEDbit_list (1 << (x - 1))
+  '[sensors:i2cWrite]' _HT16K33 _LEDbit_list
+}
+
+to LEDbit_clear {
+  'LEDbit_init brightness' _LEDbit_brightness
+  _LEDbit_list = (newList 17 (hexToInt '0x0'))
+  '[sensors:i2cWrite]' _HT16K33 _LEDbit_list
+}
+
+to 'LEDbit_init brightness' brightness {
+  comment 'brightness from 0 to 15'
+  _HT16K33 = (hexToInt '0x70')
+  if ('[sensors:i2cExists]' _HT16K33) {
+    _LEDbit_brightness = brightness
+    '[sensors:i2cWrite]' _HT16K33 ('[data:makeList]' (hexToInt '0x21'))
+    '[sensors:i2cWrite]' _HT16K33 ('[data:makeList]' (((hexToInt '0x80') | (hexToInt '0x01')) | (0 << 1)))
+    '[sensors:i2cWrite]' _HT16K33 ('[data:makeList]' ((hexToInt '0xE0') | brightness))
+  } else {
+    sayIt 'LED:bit NOT EXISTS'
+  }
+}
+
+to '_LEDbit_num' foo {
+  if (foo == 0) {
+    return '.02555520'
+  } else {
+    return (at foo ('[data:makeList]' '.02322220' '.03442170' '.03424430' '.04655740' '.07134430' '.04235520' '.07442220' '.02525520' '.02556210'))
+  }
+}
+
+to '_LEDbit_row' foo data bar {
+  local 'row' 0
+  for i 9 {
+    if (i > 1) {
+      row = (at i data)
+      atPut (((i - 1) * 2) + bar) _LEDbit_list ((at (((i - 1) * 2) + bar) _LEDbit_list) | (row << foo))
+    }
+  }
+}
+
+to '_LEDbit_side' side add {
+  if ((size side) > 1) {
+    local 'tm' ('_LEDbit_num' ('[data:convertType]' (at 1 side) 'number'))
+    '_LEDbit_row' 0 tm add
+    tm = ('_LEDbit_num' ('[data:convertType]' (at 'last' side) 'number'))
+    '_LEDbit_row' 4 tm add
+  } else {
+    tm = ('_LEDbit_num' ('[data:convertType]' (at 'last' side) 'number'))
+    '_LEDbit_row' 4 tm add
+  }
+}
