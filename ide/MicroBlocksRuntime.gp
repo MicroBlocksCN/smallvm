@@ -2622,6 +2622,7 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
+    closeAllDialogs (findMicroBlocksEditor)
 	if ('Browser' == (platform)) {
 		installVMInBrowser this eraseFlashFlag downloadLatestFlag
 		return
@@ -2697,26 +2698,16 @@ method collectBoardDrives SmallRuntime {
 			if (notNil driveName) { add result (list driveName path) }
 		}
 	} ('Linux' == (platform)) {
-        // Debian variants
-    	for dir (listDirectories '/media') {
-			prefix = (join '/media/' dir)
-			for v (listDirectories prefix) {
-				path = (join prefix '/' v '/')
-				driveName = (getBoardDriveName this path)
-				if (notNil driveName) { add result (list driveName path) }
+		// Try both Debian ('/media') and Fedora ('/run/media') variants
+		for media (list '/media' '/run/media') {
+			for userName (listDirectories media) {
+				prefix = (join media '/' userName)
+				for v (listDirectories prefix) {
+					path = (join prefix '/' v '/')
+					driveName = (getBoardDriveName this path)
+					if (notNil driveName) { add result (list driveName path) }
+				}
 			}
-		}
-        // Fedora variants
-		for dir (listDirectories '/run/media') {
-	        userFolder = (join '/run/media/' dir)
-			for user (listDirectories userFolder) {
-			    prefix = (join userFolder '/' user)
-                for v (listDirectories prefix) {
-                    path = (join prefix '/' v '/')
-                    driveName = (getBoardDriveName this path)
-                    if (notNil driveName) { add result (list driveName path) }
-                }
-            }
 		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
@@ -2793,6 +2784,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
 	}
 	writeFile (join boardPath vmFileName) vmData
+	vmVersion = nil
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
 	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 8000 }
@@ -2875,7 +2867,7 @@ method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag
 
 method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
 	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot') {
-		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
+		flashVM this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
 
@@ -3078,6 +3070,9 @@ method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 		disconnected = true
 		flasherPort = port
 		port = nil
+		// workaround for ESP32 install issue introduced in 1.2.89:
+		flasherPort = nil
+		portName = 'webserial'
 	} else {
 		setPort this 'disconnect'
 		flasherPort = nil
