@@ -87,45 +87,30 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
 
 method buildMorph Menu page yPos {
   scale =  (global 'scale')
+  editor = (findProjectEditor)
 
   // settings, to be refactored later to somewhere else
-  labelFontName = 'Arial Bold'
   fontName = 'Arial'
   fontSize = (scale * 16)
   if ('Linux' == (platform)) { fontSize = (scale * 13) }
   border = (scale * 1)
   corner = (scale * 2)
-  labelPadding = (scale * 4)
   itemPaddingV = (scale * 1)
   itemPaddingH = (scale * 3)
-  color = (gray 255)
-  labelTextColor = (gray 255)
-  labelBackgroundColor = (gray 60)
-  borderColor = labelBackgroundColor
-  itemTextColorNormal = (gray 0)
-  itemTextColorHighlighted = itemTextColorNormal
-  itemTextColorPressed = (gray 255)
-  itemBackgroundColorHighlighted = (gray 210)
-  itemBackgroundColorPressed = (gray 100)
+  color = (color editor 'blueGray' 900)
+  borderColor = (color editor 'blueGray' 700)
+  itemTextColorNormal = (color editor 'blueGray' 50)
+  itemTextColorHighlighted = color
+  itemTextColorPressed = color
+  itemBackgroundColorHighlighted = (color editor 'yellow')
+  itemBackgroundColorPressed = itemBackgroundColorHighlighted
 
   minHeight = (min (scale * 100) (height (morph page)))
   maxHeight = ((height (morph page)) - 100)
 
-  if (notNil morph) {destroy morph}
+  menuWidth = 50
 
-  // create raw label bitmap - lbl
-  lbl = label
-  if (isClass lbl 'String') {
-    lbl = (stringImage lbl labelFontName fontSize labelTextColor 'center' (darker labelTextColor 80) nil nil nil nil labelBackgroundColor)
-  }
-  lblHeight = 0
-  lblWidth = 0
-  if (isClass lbl 'Bitmap') {
-    lblHeight = (+ (height lbl) (* labelPadding 2))
-    lblWidth = (width lbl)
-  }
-  menuWidth = (+ lblWidth (* labelPadding 2))
-  menuHeight = lblHeight
+  if (notNil morph) {destroy morph}
 
   // measure item labels, determine menu dimensions
   itemLbls = (newArray (count items))
@@ -167,21 +152,8 @@ method buildMorph Menu page yPos {
   setWidth (bounds morph) (width bg)
   setHeight (bounds morph) (height bg)
 
-  // create full label bitmap
-  if (isClass lbl 'Bitmap') {
-    fullLabel = (newBitmap widgetWidth lblHeight)
-    fill fullLabel labelBackgroundColor
-    x = (((width fullLabel) - (width lbl)) / 2)
-    y = (((height fullLabel) - (height lbl)) / 2)
-    drawBitmap fullLabel lbl x y
-
-    // render full label on menu
-    drawBitmap bg fullLabel border (+ border corner)
-  } else {
-    fullLabel = (rect)
-  }
-  y = (+ (height fullLabel) border)
   setCostume morph bg
+  y = border
 
   if (widgetHeight < menuHeight) {
     box = (newBox nil (transparent) 0 0 false false)
@@ -189,7 +161,7 @@ method buildMorph Menu page yPos {
     setExtent container menuWidth (menuHeight - lblHeight)
     scrollFrame = (scrollFrame box)
     setExtent (morph scrollFrame) widgetWidth (widgetHeight - lblHeight)
-    setPosition (morph scrollFrame) border (+ (height fullLabel) border)
+    setPosition (morph scrollFrame) border border
     addPart morph (morph scrollFrame)
     updateSliders scrollFrame
     setAlpha (morph (getField scrollFrame 'vSlider')) 255
