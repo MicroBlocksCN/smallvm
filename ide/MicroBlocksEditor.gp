@@ -548,8 +548,8 @@ method step MicroBlocksEditor {
 	step httpServer
   }
   if ('unknown' == newerVersion) {
-    launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
-    newerVersion = nil
+    // launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
+    // newerVersion = nil
   } (notNil newerVersion) {
     reportNewerVersion this
     newerVersion = nil
