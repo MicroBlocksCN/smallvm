@@ -548,22 +548,25 @@ method step MicroBlocksEditor {
 	}
 	processDroppedFiles this
 
-	if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
-	if (isRunning httpServer) {
-		step httpServer
+	if (((msecsSinceStart) > nextIndicatorUpdateMSecs)) {
+		updateIndicator this
+		nextIndicatorUpdateMSecs = ((msecsSinceStart) + 200)
 	}
-	if ('unknown' == newerVersion) {
-		launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
-		newerVersion = nil
-	} (notNil newerVersion) {
-		if versionCheckOnStartup {
-			reportNewerVersion this
-			newerVersion = nil
-		}
-	}
-	if (notNil frameRate) {
-		updateFPS this
-	}
+
+  if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
+  if (isRunning httpServer) {
+	step httpServer
+  }
+  if ('unknown' == newerVersion) {
+    // launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
+    // newerVersion = nil
+  } (notNil newerVersion) {
+    reportNewerVersion this
+    newerVersion = nil
+  }
+  if (notNil frameRate) {
+	updateFPS this
+  }
 }
 
 method updateFPS MicroBlocksEditor {
