@@ -549,20 +549,20 @@ method step MicroBlocksEditor {
 		nextIndicatorUpdateMSecs = ((msecsSinceStart) + 200)
 	}
 
-	if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
-	if (isRunning httpServer) {
-		step httpServer
-	}
-	if ('unknown' == newerVersion) {
-		launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
-		newerVersion = nil
-	} (notNil newerVersion) {
-		reportNewerVersion this
-		newerVersion = nil
-	}
-	if (notNil frameRate) {
-		updateFPS this
-	}
+  if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
+  if (isRunning httpServer) {
+	step httpServer
+  }
+  if ('unknown' == newerVersion) {
+    // launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
+    // newerVersion = nil
+  } (notNil newerVersion) {
+    reportNewerVersion this
+    newerVersion = nil
+  }
+  if (notNil frameRate) {
+	updateFPS this
+  }
 }
 
 method updateFPS MicroBlocksEditor {
