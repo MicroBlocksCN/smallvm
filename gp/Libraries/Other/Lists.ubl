@@ -1,6 +1,6 @@
 module Lists Data
 author MicroBlocks
-version 1 6 
+version 1 7 
 choices pick 'a few' some most 
 description 'Useful functions for working with lists.
 '
@@ -12,6 +12,7 @@ description 'Useful functions for working with lists.
   spec 'r' 'list_map' 'map _ over _' 'str.functionNameMenu auto' 'aFunction' 'aList'
   spec 'r' 'list_filter' 'filter _ with _' 'auto str.functionNameMenu' 'aList' 'aFunction'
   spec 'r' 'list_pick' 'pick _ from _' 'menu.pick str' 'some' 'aList'
+  spec 'r' 'list_replace' '_ with items _ replaced by _' 'auto auto auto' 'aList' 'indices' 10
   space
   spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
   spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
@@ -160,5 +161,14 @@ to list_uniqued list {
   local 'unique' ('[data:copyFromTo]' list 1)
   list_unique unique
   return unique
+}
+
+to list_replace 'a list' indices replacement {
+  if (indices == '') {return (v 'a list')}
+  local 'new list' ('[data:copyFromTo]' (v 'a list') 1)
+  for i (ifExpression (isType indices 'list') indices ('[data:split]' ('[data:convertType]' indices 'string') ',')) {
+    atPut i (v 'new list') replacement
+  }
+  return (v 'new list')
 }
 
