@@ -1,59 +1,48 @@
 module 'CoCube Module'
 author 'Liang Shuai'
-version 1 1
-depends NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Distance (HC-SR04)' 'Other/System/sensorPrims'
+version 1 2
+depends Servo NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Distance (HC-SR04)' 'Other/System/sensorPrims' 
 description 'External modules of CoCube'
 
   spec ' ' 'Power on module' 'Power on module'
   spec ' ' 'Power off module' 'Power off module'
   space
-  spec ' ' 'Gripper open' 'Gripper open _ milliseces' 'num' 100
-  spec ' ' 'Gripper close' 'Gripper close  _ milliseces' 'num' 100
-  spec ' ' 'Gripper release' 'Gripper release'
-  space
-  spec 'r' 'ToF connected' 'ToF connected'
-  spec 'r' 'ToF distance (mm)' 'ToF distance (mm)'
+  spec ' ' 'Gripper Open' 'Gripper Open'
+  spec ' ' 'Gripper Close' 'Gripper Close'
+  spec ' ' 'Gripper degree' 'Gripper degrees _ (-70 to 0)' 'num' 0
   space
   spec ' ' 'attach NeoPixel' 'attach NeoPixel'
   spec ' ' 'set all NeoPixels color' 'set all NeoPixels color _' 'color'
   spec ' ' 'clear NeoPixels' 'clear NeoPixels'
   space
   spec 'r' 'Ultrasonic distance (cm)' 'Ultrasonic distance (cm)'
+  space
+  spec 'r' 'Ambient Light' 'Ambient Light'
 
-to 'Gripper close' duration {
-  '[sensors:i2cSetPins]' 21 22
-  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '01')
-  waitMillis duration
-  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
-}
-
-to 'Gripper open' duration {
-  '[sensors:i2cSetPins]' 21 22
-  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '02')
-  waitMillis duration
-  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
-}
-
-to 'Gripper release' {
-  '[sensors:i2cSetPins]' 21 22
-  '[sensors:i2cWrite]' (hexToInt '33') (hexToInt '03')
+to 'Power on module' {
+  digitalWriteOp 13 true
 }
 
 to 'Power off module' {
   digitalWriteOp 13 false
 }
 
-to 'Power on module' {
-  digitalWriteOp 13 true
+to 'Gripper Open' {
+  setServoAngle 22 0
 }
 
-to 'ToF connected' {
-  '[sensors:i2cSetPins]' 21 22
-  return ('VL53L0X connected')
+to 'Gripper Close' {
+  setServoAngle 22 -70
 }
 
-to 'ToF distance (mm)' {
-  return ('VL53L0X distance (mm)')
+to 'Gripper degree' degree {
+  if (degree < -70) {
+    setServoAngle 22 -70
+  } (degree > 0) {
+    setServoAngle 22 0
+  } else {
+    setServoAngle 22 degree
+  }
 }
 
 to 'Ultrasonic distance (cm)' {
@@ -72,3 +61,9 @@ to 'set all NeoPixels color' color {
   neoPixelSetAllToColor color
 }
 
+to 'Ambient Light' {
+  i2cSet (hexToInt '23') 23 (hexToInt '21')
+  read = (newList 2)
+  '[sensors:i2cRead]' (hexToInt '23') read
+  return (((at 1 read) << 8) | (at 2 read))
+}
