@@ -1,7 +1,9 @@
 module main
-author unknown
+author Patch
 version 1 0 
-description ''
+description '在TFT、OLED和16点阵NeoPanel上利用汉字字库显示汉字，
+需要下载汉字库到主控板上，下载地址：
+https://www.go2crm.cn/go_static/font.bin'
 
 script 40 40 {
 whenStarted
