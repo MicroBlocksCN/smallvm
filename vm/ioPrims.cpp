@@ -1766,9 +1766,11 @@ Servo servo[TOTAL_PINS];
 static void setServo(int pin, int usecs) {
 	int servoIndex = pin;
 
-	#if defined(MAKERPORT) || defined(MAKERPORT_V2)
+	#if defined(MAKERPORT) || defined(MAKERPORT_V2) || defined(MAKERPORT_V3)
 		// The MakerPort (SAM D21) can use only the first 12 servo channels.
-		// Map pins 7-18 to those channels. Servo capable pins are: 7-12, 14, 16-17
+		// Map pins 7-18 to those channels.
+		// Makerport V1/V2 servo capable pins: 7-12, 14, 16-17
+		// Makerport V3 servo capable pins: 7-12, 14-16
 		servoIndex -= 7;
 		if (servoIndex < 0) return;
 	#endif
