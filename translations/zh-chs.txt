@@ -3798,20 +3798,14 @@ Power on module
 Power off module
 关闭外接模块电源
 
-Gripper open _ milliseces
-夹爪张开 _ 毫秒
+Gripper Open
+夹爪张开
 
-Gripper close  _ milliseces
-夹爪闭合 _ 毫秒
+Gripper Close
+夹爪闭合
 
-Gripper release
-夹爪释放
-
-ToF connected
-ToF 已连接
-
-ToF distance (mm)
-ToF 距离(mm)
+Gripper degrees _ (-70 to 0)
+夹爪角度 _ (-70 to 0)度
 
 attach NeoPixel
 连接 NeoPixel
@@ -3824,6 +3818,9 @@ clear NeoPixels
 
 Ultrasonic distance (cm)
 超声波 距离(cm)
+
+Ambient Light
+环境光强
 
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
