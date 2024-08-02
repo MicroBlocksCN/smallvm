@@ -10,21 +10,22 @@ to window label {
 
 method morph Window {return morph}
 method border Window {return border}
-method clientColor Window {return clientColor}
 method clientArea Window {return clientArea}
+method clientColor Window {return clientColor}
 method labelString Window {return (text label)}
 
 method initialize Window labelString {
+  pe = (findProjectEditor)
   scale = (global 'scale')
   border = (scale * 5)
-  color = (gray 80)
-  clientColor = (gray 255)
+  color = (color pe 'blueGray' 850)
+  clientColor = (color pe 'blueGray' 50)
   morph = (newMorph this)
   setGrabRule morph 'handle'
   setTransparentTouch morph false // optimization
   label = (newText (localized labelString) 'Arial Bold' (scale * 12) clientColor)
   addPart morph (morph label)
-  closeBtn = (pushButton 'X' (color 140 100 100) (action 'destroy' (morph this)))
+  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)))
   addPart morph (morph closeBtn)
   resizer = (resizeHandle this)
 }
@@ -34,14 +35,14 @@ method updateScale Window {
   border = (scale * 5)
   setFont label nil (scale * 12)
   removePart morph (morph closeBtn)
-  closeBtn = (pushButton 'X' (color 140 100 100) (action 'destroy' (morph this)))
+  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)))
   addPart morph (morph closeBtn)
 }
 
 method fixLayout Window {
   labelSize = (+ (height (morph label)) border)
   clientArea = (rect (+ (left morph) border) (+ (top morph) labelSize border) (- (width morph) (border * 2)) ((height morph) - (+ labelSize (border * 2))))
-  setPosition (morph label) (+ (left morph) ((- (width morph) (width (morph label))) / 2)) (+ (top morph) border)
+  setPosition (morph label) (+ (left morph) (10 * (global 'scale'))) (+ (top morph) border)
   setTop (morph closeBtn) (+ (top morph) border)
   setRight (morph closeBtn) ((right morph) - border)
   setRight (morph resizer) (right clientArea)
@@ -53,7 +54,7 @@ method redraw Window {
   w = (width morph)
   h = (height morph)
   bm = (newBitmap w h)
-  fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) (scale * 4) color 1 (lighter color 20)
+  fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) (scale * 4) color 0 (lighter color 20)
   setCostume morph bm
 }
 
@@ -108,6 +109,6 @@ method preSerialize Window {
 }
 
 method postSerialize Window {
-  drawLabelCostumes closeBtn 'X' (color 140 100 100)
+  drawLabelCostumes closeBtn 'X' color
   drawResizeCostumes resizer
 }

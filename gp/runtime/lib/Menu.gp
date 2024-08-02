@@ -96,7 +96,7 @@ method buildMorph Menu page yPos {
   border = (scale * 1)
   corner = (scale * 2)
   itemPaddingV = (scale * 1)
-  itemPaddingH = (scale * 3)
+  itemPaddingH = (scale * 32)
   color = (color editor 'blueGray' 900)
   borderColor = (color editor 'blueGray' 700)
   itemTextColorNormal = (color editor 'blueGray' 50)
