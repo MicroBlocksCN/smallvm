@@ -1,0 +1,2028 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 40 40 {
+whenStarted
+comment '使用这个示例之前，请确保已经下载字库文件font.bin到你所使用的主控板上。
+字库文件下载地址：https://www.go2crm.cn/go_static/font.bin'
+sendBroadcast 'OLED'
+sendBroadcast 'TFT'
+sendBroadcast 'LED16'
+}
+
+script 319 157 {
+whenBroadcastReceived 'TFT'
+'[tft:clear]'
+drawChar 'hello 汉字' 0 0 1 (colorSwatch 35 190 30 255)
+drawChar 'hello 汉字' 0 16 2 (colorSwatch 35 190 30 255)
+drawChar '你好汉字' 0 48 3 (colorSwatch 35 190 30 255)
+}
+
+script 511 313 {
+whenBroadcastReceived 'LED16'
+comment '在16X16的NeoPixel灯阵上可以显示完整汉字'
+neoPanel_attach 16 16 12
+clearNeoPixels
+comment '本字库所包含汉字范围在unicode19968和40959之间'
+draw ('_fromFontFile' ('[data:unicodeString]' (random 19968 40959)) true) 0 0 1 (makeColor (random 100 255) (random 100 255) (random 100 255)) 1
+}
+
+script 40 351 {
+whenBroadcastReceived 'OLED'
+OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+OLEDclear
+OLEDwrite 'Hello!' 0 0 false
+local 'var' '任意汉字'
+local 'x' 0
+for i (size var) {
+  OLEDdrawImageWH (OLEDmakeDotImage ('_fromFontFile' (at i var) false)) x 20 16 16
+  x += 16
+}
+}
+
+
+module Files Data
+author MicroBlocks
+version 1 3 
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file names' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
+}
+
+
+module NeoPanel Output
+author 'José García Yeste & Víctor Casado'
+version 1 1 
+depends NeoPixel BMP 
+description 'Draw lines, rectangles, text, and images on a NeoPixel panels (e.g. 8x8, 16x16 or 32x8) in either horizontal or vertical orientation. Panels can be daisy-chained to create larger displays if there is sufficient power to drive them.
+See: https://www.btf-lighting.com/collections/led-matrix-display/products/ws2812b-panel-screen-8-8-16-16-8-32-pixel-256-pixels-digital-flexible-led-programmed-individually-addressable-full-color-dc5v#
+'
+variables _neoPanel_width _neoPanel_height _neoPanel_isHorizontal 
+
+  spec ' ' 'neoPanel_attach' 'attach NeoPixel panel width _ height _ at pin _' 'num num num' 8 8 1
+  space
+  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1
+  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1
+  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1
+  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4
+  space
+  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1
+  spec ' ' 'neoPanel_drawBMP' 'NeoPanel draw BMP file _ at x _ y _' 'str num num' '' 1 1
+  space
+  spec 'r' '_neoPanel_indexForXY' '_neoPanel_index for x _ y _' 'num num' 1 1
+
+to '_neoPanel_indexForXY' x y {
+  if (or (x < 1) (y < 1)) {return 0}
+  if (or (x > _neoPanel_width) (y > _neoPanel_height)) {return 0}
+  if _neoPanel_isHorizontal {
+    if ((x & 1) == 0) {
+      return (((x - 1) * _neoPanel_height) + ((_neoPanel_height - y) + 1))
+    } else {
+      return (((x - 1) * _neoPanel_height) + y)
+    }
+  } else {
+    if ((y & 1) == 0) {
+      return (((y - 1) * _neoPanel_width) + x)
+    } else {
+      return (((y - 1) * _neoPanel_width) + ((_neoPanel_width - x) + 1))
+    }
+  }
+}
+
+to neoPanel_attach width height pin {
+  _neoPanel_width = width
+  _neoPanel_height = height
+  _neoPanel_isHorizontal = (width >= height)
+  neoPixelAttach (_neoPanel_width * _neoPanel_height) pin
+}
+
+to neoPanel_drawBMP filename originX originY {
+  if (not ('_bmp_readHeader' filename)) {return}
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    for x (size line) {
+      local 'pixel' ('_neoPanel_indexForXY' (originX + (x - 1)) y)
+      if (pixel > 0) {
+        atPut pixel _np_pixels (at x line)
+      }
+    }
+    y += yIncrement
+  }
+  '[file:close]' filename
+  '_NeoPixel_update'
+}
+
+to neoPanel_drawHorizontalLine y color {
+  if (and (y > 0) (y <= _neoPanel_width)) {
+    if _neoPanel_isHorizontal {
+      local 'index' (((y - 1) * _neoPanel_height) + 1)
+      repeat _neoPanel_height {
+        atPut index _np_pixels color
+        index += 1
+      }
+    } else {
+      local 'index' ((_neoPanel_width - y) + 1)
+      repeat (_neoPanel_height / 2) {
+        atPut index _np_pixels color
+        index += (((y - 1) * 2) + 1)
+        atPut index _np_pixels color
+        index += ((((_neoPanel_width - y) + 1) * 2) - 1)
+      }
+    }
+    '_NeoPixel_update'
+  }
+}
+
+to neoPanel_drawPixel x y color {
+  setNeoPixelColor ('_neoPanel_indexForXY' x y) color
+}
+
+to neoPanel_drawText text x0 y0 color {
+  for letter text {
+    local 'shape' ('[display:mbShapeForLetter]' letter)
+    local 'mask' 1
+    local 'x' (x0 - 1)
+    local 'y' (y0 - 1)
+    for c 5 {
+      for f 5 {
+        if ((shape & mask) != 0) {
+          local 'i' ('_neoPanel_indexForXY' (x + f) (y + c))
+          if (i > 0) {
+            atPut i _np_pixels color
+          }
+        }
+        mask = (mask << 1)
+      }
+    }
+    if _neoPanel_isHorizontal {
+      x0 += 5
+    } else {
+      y0 += 6
+    }
+  }
+  '_NeoPixel_update'
+}
+
+to neoPanel_drawVerticalLine x color {
+  if (and (x > 0) (x <= _neoPanel_height)) {
+    if _neoPanel_isHorizontal {
+      local 'index' x
+      repeat (_neoPanel_width / 2) {
+        atPut index _np_pixels color
+        index += (((_neoPanel_height - x) * 2) + 1)
+        atPut index _np_pixels color
+        index += ((x * 2) - 1)
+      }
+    } else {
+      local 'index' (((x - 1) * _neoPanel_width) + 1)
+      atPut index _np_pixels color
+      repeat _neoPanel_width {
+        atPut index _np_pixels color
+        index += 1
+      }
+    }
+    '_NeoPixel_update'
+  }
+}
+
+to neoPanel_fillRectangle x y width height color {
+  local 'column' y
+  repeat height {
+    local 'row' x
+    repeat width {
+      atPut ('_neoPanel_indexForXY' row column) _np_pixels color
+      row += 1
+    }
+    column += 1
+  }
+  '_NeoPixel_update'
+}
+
+
+module NeoPixel Output
+author MicroBlocks
+version 1 7 
+description 'Control NeoPixel (WS2812) RGB LED strips and rings.
+'
+variables _np_pixels 
+
+  spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
+  spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+  space
+  spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  spec ' ' 'NeoPixel_brighten' 'brighten NeoPixel _ by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
+  space
+  spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
+  spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+  spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+
+to NeoPixel_brighten i delta {
+  '_NeoPixel_increaseRGB' i delta
+  '_NeoPixel_update'
+}
+
+to NeoPixel_brighten_all delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_increaseRGB' i delta
+  }
+  '_NeoPixel_update'
+}
+
+to '_NeoPixel_ensureInitialized' {
+  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+    neoPixelAttach 25 '' false
+  } ((boardType) == 'D1-Mini') {
+    comment 'D1 mini kit'
+    neoPixelAttach 7 15 false
+  } ((boardType) == 'Mbits') {
+    neoPixelAttach 25 '' false
+  } else {
+    neoPixelAttach 10 '' false
+  }}
+}
+
+to '_NeoPixel_increaseRGB' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'r' ((rgb >> 16) & 255)
+    local 'g' ((rgb >> 8) & 255)
+    local 'b' (rgb & 255)
+    local 'brightness' (maximum r g b)
+    if (delta > 0) {
+      delta = (minimum delta (255 - brightness))
+    } else {
+      delta = (maximum delta (42 - brightness))
+    }
+    r = (maximum 0 (minimum (r + delta) 255))
+    g = (maximum 0 (minimum (g + delta) 255))
+    b = (maximum 0 (minimum (b + delta) 255))
+    atPut i _np_pixels (colorFromRGB r g b)
+  }
+}
+
+to '_NeoPixel_rotate' left {
+  '_NeoPixel_ensureInitialized'
+  local 'length' (size _np_pixels)
+  if left {
+    local 'first' (at 1 _np_pixels)
+    for i (length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut length _np_pixels first
+  } else {
+    local 'last' (at length _np_pixels)
+    for i (length - 1) {
+      atPut ((length - i) + 1) _np_pixels (at (length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels last
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 300
+}
+
+to clearNeoPixels {
+  '_NeoPixel_ensureInitialized'
+  fillList _np_pixels 0
+  '_NeoPixel_update'
+}
+
+to colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to neoPixelAttach number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
+  fillList _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to neoPixelSetAllToColor color {
+  '_NeoPixel_ensureInitialized'
+  fillList _np_pixels color
+  '_NeoPixel_update'
+}
+
+to rotateNeoPixelsBy n {
+  '_NeoPixel_ensureInitialized'
+  repeat (absoluteValue n) {
+    '_NeoPixel_rotate' (n > 0)
+  }
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColor i color {
+  '_NeoPixel_ensureInitialized'
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    '_NeoPixel_update'
+  }
+}
+
+to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
+  '_NeoPixel_ensureInitialized'
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
+  '_NeoPixel_update'
+}
+
+
+module 'OLED Graphics' Output
+author 'Turgut Guneysu'
+version 1 13 
+choices ModeMenu Horizontal Vertical 
+choices OnOffMenu On Off 
+choices VideoMenu Inverse Normal 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
+Changes:
+- always display buffer
+- defer display updates block
+- remove reveal
+- switch to x (0-127), y (0-63)
+- Pruned commands and vars
+- textX and textY
+- Text at any x and y
+- handles newLines
+- removed dependencies
+- unified data format for chars, sprites, and images
+- image draw at any x,y
+- filled rectangle
+- image draw bug fix
+- stack overflow fix
+'
+variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix _byteCount _imgData _imgWidth _imgHeight 
+
+  spec ' ' 'OLEDInit_I2C' 'initialize i2c _ address(hex) _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_0.96in' '3C' '-' false
+  spec ' ' 'OLEDInit_SPI' 'initialize spi _ d/c pin# _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_2.42in' 16 8 false
+  spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
+  spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
+  spec ' ' 'OLEDclear' 'clear'
+  spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
+  spec ' ' 'OLEDdrawCircle' 'draw circle at x _ y _ radius _ erase _' 'auto auto auto bool' 64 32 '10' false
+  spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
+  spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
+  spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
+  spec ' ' 'OLEDfillRect' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
+  spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
+  spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
+  spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
+  spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
+  spec 'r' 'OLEDwru' 'cursor location'
+  spec ' ' 'defer display updates' 'defer display updates'
+  spec ' ' '_GDDRAMoff' '_GDDRAMoff'
+  spec ' ' '_GDDRAMon' '_GDDRAMon'
+  spec ' ' '_OLEDcursorReset' '_cursor reset'
+  spec ' ' '_OLEDsetDisplay' '_set display _' 'str.OnOffMenu' 'On'
+  spec ' ' '_OLEDreset' '_set reset Pin# _' 'auto' '0'
+  spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
+  spec ' ' '_SPIWriteData' '_SPIWriteData'
+  spec ' ' '_T1' '_T1'
+  spec ' ' '_T2' '_T2'
+  spec ' ' '_T3' '_T3'
+  spec 'r' '_cBMP' '_cBMP _ InvYN _' 'auto bool' '' false
+  spec ' ' '_clearDisplay' '_clearDisplay'
+  spec ' ' '_corner' '_corner _ _ _ _ _' 'auto auto auto auto bool' 'TL' 32 1 0 true
+  spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
+  spec ' ' '_initChars' '_initChars'
+  spec ' ' '_initCheck' '_initCheck'
+  spec ' ' '_initDisplayHW' '_initDisplayHW'
+  spec ' ' '_initLibrary' '_initLibrary'
+  spec ' ' '_process image data' '_process image data _' 'auto' ' '
+  spec ' ' '_sendCmd' '_sendCmd _' 'auto' ''
+  spec ' ' '_verifyXY' '_verifyXY _ _' 'auto auto' 0 0
+
+to OLEDInit_I2C dispType i2cAddr resetPin flip {
+  comment 'Sets display type and interface and initializes HW settings.
+Do NOT set a ResetPin# unless one exists on the display hardware.
+NOTE:
+Displays supported:
+- OLED 0.96in (SD1306 chip) and
+- OLED 2.42" (SD1309 chip)
+Both displays are 128x64 pixels or 16x8 characters in size.
+Displays come in dual mode version (i2c and spi) and pure i2c.
+Pure i2c models do not have a Reset pin.
+
+flip setting controls display hardware write direction:
+- false: top to bottom
+- true: bottom to top'
+  _comma = ('[data:unicodeString]' 44)
+  _comMode = 'i2c'
+  OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  if (_displayType != 0) {
+    return
+  }
+  if (dispType == 'OLED_0.96in') {
+    _displayType = 6
+    _resetPin = resetPin
+  } else {
+    _displayType = 9
+    _resetPin = resetPin
+  }
+  '_initDisplayHW'
+  if flip {
+    OLEDflip true
+  }
+  '_initLibrary'
+  OLEDclear
+  OLEDcontrast 4
+}
+
+to OLEDInit_SPI dispType dcPin resetPin flip {
+  comment 'Sets display type and interface and initializes HW settings.
+SPI four wire in Mode-0 is supported. Max speed=10000000.
+
+Do NOT set a ResetPin# unless one exists on the display hardware.
+NOTE:
+Displays supported:
+- OLED 0.96in (SD1306 chip) and
+- OLED 2.42" (SD1309 chip)
+Both displays are 128x64 pixels or 16x8 characters in size.
+Displays come in dual mode version (i2c and spi) and pure i2c.
+Pure i2c models do not have a Reset pin.
+flip setting controls display hardware write direction:
+- false: top to bottom
+- true: bottom to top'
+  _comma = ('[data:unicodeString]' 44)
+  _comMode = 'spi'
+  _dcPin = dcPin
+  if (_displayType != 0) {
+    return
+  }
+  if (dispType == 'OLED_0.96in') {
+    _displayType = 6
+    _resetPin = resetPin
+  } else {
+    _displayType = 9
+    _resetPin = resetPin
+  }
+  '[sensors:spiSetup]' 10000000
+  '_initDisplayHW'
+  if flip {
+    OLEDflip true
+  }
+  '_initLibrary'
+  OLEDclear
+  OLEDcontrast 4
+}
+
+to OLEDclear {
+  comment 'Set bounds to FullScreen and CLEARs display
+and GDBuffer.'
+  _GDBuffer = ('[data:newByteArray]' 1024)
+  '_initCheck'
+  '_OLEDcursorReset'
+  OLEDshowGDBuffer
+}
+
+to OLEDcontrast contrast {
+  comment 'Sets the brightness control of the display to one of four values.
+1 is the least bright, 4 is the brightest setting.'
+  '_initCheck'
+  local 'cLevels' ('[data:makeList]' 0 '1F' '2F' 'F0')
+  if (and (contrast >= 1) (contrast <= 4)) {
+    local 'i2cCmd' ('[data:join]' '81' _comma (at contrast cLevels))
+    '_sendCmd' i2cCmd
+  } else {
+    sayIt 'Error in CONTRAST Level'
+  }
+}
+
+to OLEDdrawCircle cx cy r erase {
+  comment 'Bresenham Circle:
+Draws circles, even partially bigger than the display.
+x: 0-127
+y: 0-63
+void plotCircle(int xm, int ym, int r)
+{
+   int x = -r, y = 0, err = 2-2*r; /* II. Quadrant */
+   do {
+      setPixel(xm-x, ym+y); /*   I. Quadrant */
+      setPixel(xm-y, ym-x); /*  II. Quadrant */
+      setPixel(xm+x, ym-y); /* III. Quadrant */
+      setPixel(xm+y, ym+x); /*  IV. Quadrant */
+      r = err;
+      if (r <= y) err += ++y*2+1;           /* e_xy+e_y < 0 */
+      if (r > x || err > y) err += ++x*2+1; /* e_xy+e_x > 0 or no 2nd y-step */
+   } while (x < 0);
+}'
+  '_initCheck'
+  local 'x' (-1 * r)
+  local 'y' 0
+  local 'err' (2 - (2 * r))
+  repeatUntil (x >= 0) {
+    OLEDpixel (cx - x) (cy + y) erase
+    OLEDpixel (cx - y) (cy - x) erase
+    OLEDpixel (cx + x) (cy - y) erase
+    OLEDpixel (cx + y) (cy + x) erase
+    r = err
+    if (r <= y) {
+      y += 1
+      err = (err + ((y * 2) + 1))
+    }
+    if (or (r > x) (err > y)) {
+      x += 1
+      err = (err + ((x * 2) + 1))
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDdrawImage image x y {
+  comment '_imgHeight has to be mod8 or 1-8'
+  for row# (maximum 1 ((minimum _imgHeight (64 - y)) / 8)) {
+    local 'GDidx' ((((y / 8) * 128) + x) + 1)
+    local 'imgDispl' ((row# - 1) * _imgWidth)
+    for byte# (minimum _imgWidth (128 - x)) {
+      comment 'If y is on page boundary, just copy'
+      if (0 == (y % 8)) {
+        atPut GDidx _GDBuffer (at (imgDispl + byte#) image)
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      } else {
+        comment 'Else, copy GDLowBits + shiftedByte + GDHiBits to GDBuffer and GDBuffer +128'
+        local 'shiftedByte' ('_dec2hex' ((at (imgDispl + byte#) image) << (y % 8)))
+        local 'temp' 0
+        local 'tempHI' ('[data:copyFromTo]' shiftedByte 1 2)
+        local 'tempLO' ('[data:copyFromTo]' shiftedByte 3 4)
+        local 'GDLowBits' ((1 << (y % 8)) - 1)
+        local 'GDHiBits' (255 - GDLowBits)
+        tempLO = ((hexToInt tempLO) | ((at GDidx _GDBuffer) & GDLowBits))
+        atPut GDidx _GDBuffer tempLO
+        if ((GDidx + 128) <= 1024) {
+          tempHI = ((hexToInt tempHI) | ((at (GDidx + 128) _GDBuffer) & GDHiBits))
+          atPut (GDidx + 128) _GDBuffer tempHI
+        }
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      }
+      waitMillis 0
+    }
+    y += 8
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDdrawLine x0 y0 x1 y1 erase {
+  comment 'Draws a line from x0,y0 to x1,y1 using the Bresenham Algorithm
+x: 0-127
+y: 0-63
+plotLine(int x0, int y0, int x1, int y1)
+    dx =  abs(x1-x0);
+    sx = x0<x1 ? 1 : -1;
+    dy = -abs(y1-y0);
+    sy = y0<y1 ? 1 : -1;
+    err = dx+dy;  /* error value e_xy */
+    while (true)   /* loop */
+        plot(x0, y0);
+        if (x0 == x1 && y0 == y1) break;
+        e2 = 2*err;
+        if (e2 >= dy) /* e_xy+e_x > 0 */
+            err += dy;
+            x0 += sx;
+        end if
+        if (e2 <= dx) /* e_xy+e_y < 0 */
+            err += dx;
+            y0 += sy;
+        end if
+    end while'
+  '_initCheck'
+  results = ('[data:makeList]')
+  local 'dx' (absoluteValue (x1 - x0))
+  local 'dy' (-1 * (absoluteValue (y1 - y0)))
+  local 'err' (dx + dy)
+  local 'e2' 0
+  local 'done' (booleanConstant false)
+  if (x0 < x1) {
+    local 'sx' 1
+  } else {
+    local 'sx' -1
+  }
+  if (y0 < y1) {
+    local 'sy' 1
+  } else {
+    local 'sy' -1
+  }
+  repeatUntil done {
+    OLEDpixel x0 y0 erase
+    if (and (x0 == x1) (y0 == y1)) {
+      done = (booleanConstant true)
+    }
+    e2 = (2 * err)
+    if (e2 >= dy) {
+      err += dy
+      x0 += sx
+    }
+    if (e2 <= dx) {
+      err += dx
+      y0 += sy
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDdrawRect TLx TLy width height erase cornerRad {
+  comment 'Draw Rectangle with optional rounded corners with radius R.
+Does not check for reversed rectangle coordinates for round corners.'
+  '_initCheck'
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
+  local 'BRx' (TLx + width)
+  local 'BRy' (TLy + height)
+  if (cornerRad >= 3) {
+    '_corner' 'TL' TLx TLy cornerRad erase
+    '_corner' 'TR' BRx TLy cornerRad erase
+    '_corner' 'BR' BRx BRy cornerRad erase
+    '_corner' 'BL' TLx BRy cornerRad erase
+    comment 'TOP - Adjust x'
+    OLEDdrawLine (TLx + cornerRad) TLy ((BRx - 1) - cornerRad) TLy erase
+    comment 'RIGHT- Adjust y'
+    OLEDdrawLine BRx ((TLy + 1) + cornerRad) BRx ((BRy - 1) - cornerRad) erase
+    comment 'BOTTOM - Adjust x'
+    OLEDdrawLine ((BRx - 1) - cornerRad) BRy ((TLx + 1) + cornerRad) BRy erase
+    comment 'LEFT - Adjust y'
+    OLEDdrawLine TLx ((BRy - 1) - cornerRad) TLx ((TLy + 1) + cornerRad) erase
+  } else {
+    OLEDdrawLine TLx TLy BRx TLy erase
+    OLEDdrawLine BRx (TLy + 1) BRx BRy erase
+    OLEDdrawLine (BRx - 1) BRy TLx BRy erase
+    OLEDdrawLine TLx (BRy - 1) TLx (TLy + 1) erase
+  }
+  _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDfillRect x y w h erase {
+  for row h {
+    for col w {
+      OLEDpixel (x + (col - 1)) (y + (row - 1)) erase
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDflip flip {
+  comment 'Flips the display initialization horizontally or vertically.
+Horizontal or vertical is based on the pin connector location.'
+  if flip {
+    '_sendCmd' 'A0,C0'
+  } else {
+    '_sendCmd' 'A1,C8'
+  }
+}
+
+to OLEDmakeImage spr# {
+  comment 'Receives a spr# representing 5x5 image matrix.
+Converts it to a HOR array of 5 VERT bitmap numbers.
+This can be displayed with the draw image block.
+sprNum max is 33554431'
+  '_initCheck'
+  local 'spriteList' ('[data:newByteArray]' 5)
+  local 'val' 0
+  for col 5 {
+    for row ('[data:asByteArray]' ('[data:makeList]' 0 5 10 15 20)) {
+      local 'bit' (col + row)
+      local 'vertBit#' (bit / 5)
+      if ((spr# & (1 << (bit - 1))) != 0) {
+        if (col != 5) {
+          val += (1 << vertBit#)
+        } else {
+          val += (1 << (vertBit# - 1))
+        }
+      }
+    }
+    atPut col spriteList val
+    val = 0
+  }
+  _imgWidth = 5
+  _imgHeight = 5
+  return spriteList
+}
+
+to OLEDpixel x y erase {
+  comment 'Places a pixel at x,y in the virtual GDBuffer
+Use OLEDshowGDBuffer to display it
+1024 Locations
+x: 0-127
+y: 0-63
+page#: 0-7
+pagePixel#: 0-7
+GDIndex: 1-1024
+
+RangeCheck:
+verify x and y are in range of display limits
+if X <= num <= Y'
+  '_initCheck'
+  if (and (and (x >= 0) (x <= 127)) (and (y >= 0) (y <= 63))) {
+    local 'page#' (y / 8)
+    local 'pagePixel#' (y % 8)
+    local 'GDIndex' ((x + ((y / 8) * 128)) + 1)
+    local 'byteBMP' (at GDIndex _GDBuffer)
+    if (not erase) {
+      byteBMP = (byteBMP | (1 << pagePixel#))
+    } else {
+      comment 'Turn off n th bit'
+      byteBMP = (byteBMP & ('~' (1 << pagePixel#)))
+    }
+    atPut GDIndex _GDBuffer byteBMP
+  }
+}
+
+to OLEDsetVideo videoMode {
+  comment 'Switches the entire display:
+Inverse: inverse video mode (bit 0 = on)
+Normal: normal video mode (bit 1 = on).
+Any image on the display will be preserved when mode changes.'
+  '_initCheck'
+  if (videoMode == 'Inverse') {
+    local 'i2cCmd' 'A7'
+  } else {
+    local 'i2cCmd' 'A6'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to OLEDshowGDBuffer {
+  comment 'Copies contents of virtual _GDBuffer to display
+i2c:
+   in 61 byte chunks for speed.
+   1 byte is used for the command 40
+spi:
+   fastest is dump buffer
+ _GDBuffer is in decimal'
+  '_initCheck'
+  if (_comMode == 'i2c') {
+    local 'idx' 0
+    repeat 17 {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
+      idx += 61
+    }
+  } else {
+    '_SPIWriteData'
+    '[sensors:spiExchange]' ('[data:copyFromTo]' _GDBuffer 1)
+  }
+  _delayGDUpd = (booleanConstant false)
+}
+
+to OLEDwrite string x y invFlag {
+  comment 'Writes strings to display at any x,y; processing CR LF and wrapping at col x.
+_textX and _textY are next write locations.'
+  '_initCheck'
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
+  '_verifyXY' x y
+  local 'origX' x
+  if (not (isType string 'string')) {
+    string = ('[data:join]' '' string)
+  }
+  for char string {
+    comment 'If in table process it - LINE SET is not supported.'
+    if (('[data:find]' char _cTABLE) != -1) {
+      OLEDdrawImage ('_cBMP' char invFlag) x y
+      x += 8
+      if (x > 127) {
+        x = origX
+        y += 8
+        if (y > 63) {
+          y = 0
+        }
+      }
+    } (13 == ('[data:unicodeAt]' 1 char)) {
+      noop
+    } (10 == ('[data:unicodeAt]' 1 char)) {
+      x = origX
+      y += 8
+      if (y > 63) {
+        y = 0
+      }
+    } else {
+      comment 'bad char - STOP'
+      sayIt 'Invalid CHAR value:' char 'uniCode:' ('[data:unicodeAt]' 1 char)
+      stopTask
+    }
+  }
+  _textX = x
+  _textY = y
+  _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDwru {
+  comment 'Next Row and Column to print
+_textY, _textX'
+  return ('[data:asByteArray]' ('[data:makeList]' _textY _textX))
+}
+
+to '_GDDRAMoff' {
+  comment 'Displays a full empty screen of reverse video.
+It disengages the hardware GDBuffer. '
+  local 'i2cCmd' 'A5'
+  '_sendCmd' i2cCmd
+}
+
+to '_GDDRAMon' {
+  comment 'It disables the GDDRAMoff mode and engages the hardware GDBuffer for display content.'
+  local 'i2cCmd' 'A4'
+  '_sendCmd' i2cCmd
+}
+
+to '_OLEDcursorReset' {
+  comment 'Sets display bounds to full range and resets cursor
+to the origin top-left (0,0)
+Rows: 0-7
+Cols: 0-127
+Cursor position is affected by any display operation
+and also by OLEDColMode block.'
+  '_initCheck'
+  local 'cmdString' '22,00,07,21,00,7F'
+  '_sendCmd' cmdString
+  _textX = 0
+  _textY = 0
+  _begCol = 0
+  _endCol = 127
+  _begRow = 0
+  _endRow = 7
+}
+
+to '_OLEDreset' pin {
+  comment 'Does a power off and on on the display,
+thus forcing a hardware initialization.'
+  digitalWriteOp pin false
+  waitMillis 1
+  digitalWriteOp pin true
+  waitMillis 1
+}
+
+to '_OLEDsetDisplay' onoff {
+  comment 'Puts the display into
+Off:SLEEP   On:WAKE   mode.
+Images on display are preserved.'
+  '_initCheck'
+  if (onoff == 'On') {
+    local 'i2cCmd' 'AF'
+  } else {
+    local 'i2cCmd' 'AE'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to '_SPIWriteCmd' {
+  comment 'In SPI mode, we send either a write command
+or write data control code. Then follow it with
+the appropriate command/data bundle.'
+  digitalWriteOp _dcPin false
+}
+
+to '_SPIWriteData' {
+  comment 'In SPI mode, we send either a write command
+or write data control code. Then follow it with
+the appropriate command/data bundle.'
+  digitalWriteOp _dcPin true
+}
+
+to '_T1' {
+  comment 'THIN-SS Character Set
+Range: space - ?'
+  local '_cHEX1' '00000000000000000000005F00000000000007000007000000147F14147F140000242A6B6B2A12000046261008646200304A454D324848000000040300000000001C224100000000000041221C000000082A1C1C1C2A08000008083E080800000000806000000000000808080808080000000060000000000040201008040200003E615149453E000044427F4040000000625151494966000022414949493600101814527F5010000027454545453900003C4A4949493000000301710905030000364949494936000006494949291E00000000660000000000008066000000000008142241000000002424242424240000000041221408000002010151090600'
+  local 'idx' 1
+  for i 256 {
+    atPut i _cDecTBL (hexToInt ('[data:copyFromTo]' _cHEX1 idx (idx + 1)))
+    idx += 2
+  }
+  _cHEX1 = ''
+}
+
+to '_T2' {
+  comment 'THIN-SS Character Set
+Range: @ - _ (underscore)'
+  local '_cHEX2' '003E415D55551E00007C121111127C0000417F4949493600001C22414141220000417F4141221C0000417F495D41630000417F491D010300001C224151517200007F080808087F000000417F4100000000304040413F010000417F081422414000417F4140406000007F01020402017F007F010204087F00003E414141413E0000417F4909090600001E212131215E4000417F49192946000026494949493200000301417F410103003F404040403F00000F10204020100F003F40403840403F004122140814224100010244784402010043615149454361007F4141410000000102040810204000004141417F00000008040201020408008080808080808080'
+  local 'idx' 1
+  for i 256 {
+    atPut (256 + i) _cDecTBL (hexToInt ('[data:copyFromTo]' _cHEX2 idx (idx + 1)))
+    idx += 2
+  }
+  _cHEX2 = ''
+}
+
+to '_T3' {
+  comment 'THIN-SS Character Set
+Range: '' - . (last char)'
+  local '_cHEX3' '0000000304000000002054545454784000017F304848483000384444444428000030484848317F4000385454545418000000487E490102000098A4A4A4A4780400417F08040478000000447D400000000060808080847D0000017F10284440000000417F40000000007C040478040478007C08040404780000384444444438000084FC98242418000018242498FC840000447C480404180000485454545424000004043F44442000003C404040207C00000C10204020100C003C40403840403C0044281028440000009CA0A0A0A07C00004464544C44000000080836414100000000007700000000000041413608080000020101020201000000000000000000'
+  local 'idx' 1
+  for i 256 {
+    atPut (512 + i) _cDecTBL (hexToInt ('[data:copyFromTo]' _cHEX3 idx (idx + 1)))
+    idx += 2
+  }
+  _cHEX3 = ''
+}
+
+to '_cBMP' char invFlag {
+  comment 'Returns DEC char bitmap from _cHexTbl and
+optionally converts it to inverse (XOR).
+Line segments are NOT supported.
+A: 00,7c,12,11,12,7c,00
+dec:  0,124,18,17,17,124,0
+inv:    255,131,237,238,238,131,255'
+  local 'key' (((('[data:unicodeAt]' 1 char) - 32) * 8) + 1)
+  local 'charList' ('[data:copyFromTo]' _cDecTBL key (key + 7))
+  comment 'inverse'
+  if invFlag {
+    for item# (size charList) {
+      atPut item# charList ((at item# charList) ^ 255)
+    }
+  }
+  _imgWidth = 8
+  _imgHeight = 8
+  return charList
+}
+
+to '_clearDisplay' {
+  comment 'Clear Screen without initializing _GDBuffer'
+  '_initCheck'
+  '_OLEDcursorReset'
+  local 'clearBuff' ('[data:newByteArray]' 60 0)
+  if ('i2c' == _comMode) {
+    repeat 17 {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+    }
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+  } else {
+    '_SPIWriteData'
+    '[sensors:spiExchange]' ('[data:newByteArray]' 1024)
+  }
+}
+
+to '_corner' loc cx cy r erase {
+  comment 'Calculates and displays the rounded corners for the rectangles.
+loc is one of TL, TR, BL, BR ... topLeft, topright, bottomleft, bottomright
+cx,cy are the corner coordinates for the rounded corner.
+r is the radius in pixels of the arc to be calculated.'
+  local 'x' (-1 * r)
+  local 'y' 0
+  local 'err' (2 - (2 * r))
+  if (loc == 'TL') {
+    cx += r
+    cy += r
+  } (loc == 'TR') {
+    cx += (-1 * r)
+    cy += r
+  } (loc == 'BL') {
+    cx += r
+    cy += (-1 * r)
+  } (loc == 'BR') {
+    cx += (-1 * r)
+    cy += (-1 * r)
+  }
+  repeatUntil (x >= 0) {
+    if (loc == 'TL') {
+      OLEDpixel (cx + x) (cy - y) erase
+    } (loc == 'TR') {
+      OLEDpixel (cx + y) (cy + x) erase
+    } (loc == 'BL') {
+      OLEDpixel (cx - y) (cy - x) erase
+    } (loc == 'BR') {
+      OLEDpixel (cx - x) (cy + y) erase
+    }
+    r = err
+    if (r <= y) {
+      y += 1
+      err = (err + ((y * 2) + 1))
+    }
+    if (or (r > x) (err > y)) {
+      x += 1
+      err = (err + ((x * 2) + 1))
+    }
+  }
+}
+
+to '_dec2hex' num {
+  comment 'Fast version w/o inversion. (~115uSecs)'
+  local '_hexTbl' '0123456789ABCDEF'
+  local 'hexNum' ''
+  repeatUntil (num < 0) {
+    if ((num / 16) != 0) {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = (num / 16)
+    } else {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = -1
+    }
+  }
+  comment 'If not half-byte length, pad it.'
+  repeatUntil (((size hexNum) % 4) == 0) {
+    hexNum = ('[data:join]' '0' hexNum)
+  }
+  return hexNum
+}
+
+to '_initChars' {
+  comment 'Creates the character set used in the Library (96 characters)
+used JOIN  for SPACE (uni-32) character so it won''t be deleted by mistake.
+For each character, _cDecTbl is updated with 8 byte array values.'
+  _cTABLE = ('[data:join]' ('[data:unicodeString]' 32) '!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~.')
+  '_T1'
+  '_T2'
+  '_T3'
+}
+
+to '_initCheck' {
+  comment 'Verifies Library initialization status.'
+  if OLEDReady {
+    return 0
+  } else {
+    sayIt 'Display needs to be initialized before using the library blocks.'
+    stopTask
+  }
+}
+
+to '_initDisplayHW' {
+  comment '*** DO NOT CHANGE THESE WITHOUT UNDERSTANDING THEIR MEANINGS ***
+*** IT CAN MAKE THE DISPLAY NOT OPERATE CORRECTLY                          ***
+
+Initializes display HW timings
+OLED INITIALIZATION STRINGS:
+1306: pins are on top
+1309: pins are on the right
+
+A8 3F - Multiplex Ratio 0F-3F (16mux to 64mux)
+D3 00 - Display Offset (vertical) 00-63
+40    - Display Start Line 40-7F (40:0)
+A0    - Set Segment Remap A0: Remap 0:0, A1: 127:0                 [A0]
+C0    - Scan Direction C0:0-127, C8:127-0                                     [C0]
+DA 12 - COM pin hw config 02:double-high 12:normal bits
+81 7F - Set contrast 00-FF (00:dimmest, FF:brightest)
+A4    - A4:display shows GDRAM, A5:display all ON pixels
+A6    - A6:Normal video, A7:Inverse video
+D5 F0 - Set display clock HB:OSC freq / LB:divide ratio (00-FF)
+D9 22 - Set pre-charge period HB:Phase2 / LB:Phase1 (1-15 DCLK)
+DB 20 - Set Vcomh deselect level 20:1306(~0.77xVcc), 34:1309(~0.78xVcc)
+8D 14 - Charge Pump Setting 10:disable CP, 14:enable CP
+20 00 - Set HORIZONTAL mode
+AF    - Display ON/OFF AE:off (sleep mode), AF:on'
+  if (_resetPin != '-') {
+    '_OLEDreset' _resetPin
+  }
+  if (9 == _displayType) {
+    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,70,D9,22,DB,34,8D,14,20,00,AF'
+  } else {
+    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,70,D9,22,DB,20,8D,14,20,00,AF'
+  }
+  '_sendCmd' initCmd
+}
+
+to '_initLibrary' {
+  comment 'Sets all Library variables and initializes the display hardware.
+It also initializes the virtual GDBuffer, and clears the display.
+NOTE:
+Displays supported: OLED1306 (0.96in) and OLED1309 (2.42"), selected via boolean position.
+OLED1309 requires the connection of RESET pin to a digital pin.
+Both displays are 128x64 pixels or 16x8 characters in size.
+Make sure the character hex tables are \n (LF) terminated.
+Otherwise, extra lines are added in between and it gets messed up.
+eg: A: 00,7C,12,11,11,12,7C,00\n
+Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
+  _comma = ('[data:unicodeString]' 44)
+  _eol = ('[data:unicodeString]' 10)
+  comment 'Col starts are in HEX'
+  _dataPrefix = ('[data:newByteArray]' 1 (hexToInt '40'))
+  comment 'There is no FF/255 in th cHexTBL.
+this value is used to build the byteArray.'
+  _cDecTBL = ('[data:newByteArray]' 768 255)
+  _GDBuffer = ('[data:newByteArray]' 1024)
+  _textX = 0
+  _textY = 0
+  _begRow = 0
+  _begCol = 0
+  _endRow = 7
+  _endCol = 127
+  _delayGDUpd = (booleanConstant false)
+  '_initChars'
+  OLEDReady = (booleanConstant true)
+  '_OLEDsetDisplay' 'On'
+  setUserLED true
+  waitMillis 1000
+  setUserLED false
+}
+
+to '_process image data' image {
+  comment 'Processes the new hex image data format.
+Each _imgHex gets added to _imgData in DEC byteArray format.
+_byteCount keeps track of total bytes processed.
+_imgWidth and _imgHeight (mod8) are dimensions.'
+  local '_ptr' 1
+  comment '_imgData is not initialized yet.'
+  if (or (0 == _imgData) (not (isType _imgData 'byte array'))) {
+    _imgWidth = (hexToInt ('[data:copyFromTo]' image 1 2))
+    _imgHeight = (hexToInt ('[data:copyFromTo]' image 3 4))
+    image = ('[data:copyFromTo]' image 5)
+    comment 'If _imgHeight is partial byte, adjust to full byte'
+    if (not (0 == (_imgHeight % 8))) {
+      _imgHeight += (8 - (_imgHeight % 8))
+    }
+    _imgData = ('[data:newByteArray]' ((_imgWidth * _imgHeight) / 8))
+  }
+  for byte ((size image) / 2) {
+    atPut (_byteCount + byte) _imgData (hexToInt ('[data:copyFromTo]' image _ptr (_ptr + 1)))
+    _ptr += 2
+  }
+  _byteCount += byte
+}
+
+to '_sendCmd' cmdString {
+  comment 'Input is a comma sep. STRING.
+MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
+  local '_cList' ('[data:split]' cmdString _comma)
+  local 'cmdPrefix' (hexToInt '80')
+  if ('i2c' == _comMode) {
+    for cmd _cList {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:asByteArray]' ('[data:makeList]' cmdPrefix (hexToInt cmd)))
+    }
+  } else {
+    '_SPIWriteCmd'
+    for cmd _cList {
+      spiSend (hexToInt cmd)
+    }
+  }
+}
+
+to '_verifyXY' x y {
+  if (and (and (x >= 0) (x <= 127)) (and (y >= 0) (y <= 63))) {
+    return 0
+  } else {
+    sayIt 'x or y value error:' ('[data:unicodeString]' 10) 'x:' x ' y:' y
+    stopTask
+  }
+}
+
+to 'defer display updates' {
+  _delayGDUpd = (booleanConstant true)
+}
+
+
+module 'OLED 汉字' Output
+author 'Turgut Guneysu 与 梁财兵'
+version 0 2 
+description '在 Turgut Guneysu 的1306 OLED 驱动上增加了汉字点阵库。'
+variables _chDecTBL _chTABLE _initChs 
+
+  spec ' ' 'OLEDwriteChs' '显示汉字 _ 在 x _ y _ 反色 _' 'str auto auto bool' '你好世界' 0 0 false
+  spec ' ' 'OLEDdrawImageWH' '显示 图像 _ 在 x _ y _  : 宽 _ 高 _ ' 'auto num num num num' '0' 0 0 5 5
+  spec 'r' 'OLEDmakeDotImage' '点阵图 从字符串 _ ' 'str' '048850FF518A0401000007040201'
+  spec ' ' 'userChLibrary' '自定义字库(1-10) _ 从16进制字符串 _' 'str str' '汉字' '112200023EC20282621E0000040209080402010204080800
+0C0424242526A46424040C0001010109090F010101010100'
+  spec 'r' 'ChsLibrary' '当前汉字库'
+  spec ' ' '_chT1' '_chT1'
+  spec ' ' '_chT2' '_chT2'
+  spec ' ' '_chT3' '_chT3'
+  spec ' ' '_initChsChars' '_initChsChars'
+  spec ' ' '_initChsCheck' '_initChsCheck'
+  spec 'r' '_chBMP' '_chBMP _ invFlag _' 'str bool' '' false
+  spec 'r' 'BLEname' '蓝牙名称'
+
+to BLEname {
+  local 'uniqueName' ''
+  local 'mac' ('[data:split]' ('[net:myMAC]') ':')
+  local 'machineNum' (((hexToInt (at 5 mac)) << 8) | (hexToInt (at 6 mac)))
+  repeat 3 {
+    uniqueName = ('[data:join]' ('[data:unicodeString]' (65 + (machineNum % 26))) uniqueName)
+    machineNum = (machineNum / 26)
+  }
+  uniqueName = ('[data:join]' 'MicroBlocks ' uniqueName)
+  return uniqueName
+}
+
+to ChsLibrary {
+  '_initChsCheck'
+  sayIt _chTABLE
+  return _chTABLE
+}
+
+to OLEDdrawImageWH image x y w h {
+  comment '_imgHeight has to be mod8 or 1-8'
+  if ((pushArgCount) > 3) {
+    _imgWidth = w
+    _imgHeight = h
+  }
+  for row# (maximum 1 (((minimum _imgHeight (64 - y)) + 7) / 8)) {
+    local 'GDidx' ((((y / 8) * 128) + x) + 1)
+    local 'imgDispl' ((row# - 1) * _imgWidth)
+    for byte# (minimum _imgWidth (128 - x)) {
+      comment 'If y is on page boundary, just copy'
+      if (0 == (y % 8)) {
+        atPut GDidx _GDBuffer (at (imgDispl + byte#) image)
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      } else {
+        comment 'Else, copy GDLowBits + shiftedByte + GDHiBits to GDBuffer and GDBuffer +128'
+        local 'shiftedByte' ('_dec2hex' ((at (imgDispl + byte#) image) << (y % 8)))
+        local 'temp' 0
+        local 'tempHI' ('[data:copyFromTo]' shiftedByte 1 2)
+        local 'tempLO' ('[data:copyFromTo]' shiftedByte 3 4)
+        local 'GDLowBits' ((1 << (y % 8)) - 1)
+        local 'GDHiBits' (255 - GDLowBits)
+        tempLO = ((hexToInt tempLO) | ((at GDidx _GDBuffer) & GDLowBits))
+        atPut GDidx _GDBuffer tempLO
+        if ((GDidx + 128) <= 1024) {
+          tempHI = ((hexToInt tempHI) | ((at (GDidx + 128) _GDBuffer) & GDHiBits))
+          atPut (GDidx + 128) _GDBuffer tempHI
+        }
+        GDidx += 1
+        if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
+          return 0
+        }
+      }
+      waitMillis 0
+    }
+    y += 8
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDmakeDotImage s {
+  comment '取模方式为列行式低位在前，
+即从第一列开始向下取8个点作为一个字节，
+然后从第二列开始向下取8个点作为第二个字节……
+依此类推。如果最后不足8个点就补满8位。
+结果字符串为两位16进制表示。'
+  local 'list' ('[data:makeList]')
+  local 's#' ''
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    s# = ('[data:join]' s# line)
+  }
+  for i ('[data:range]' 1 (size s#) 2) {
+    '[data:addLast]' (hexToInt ('[data:join]' (at i s#) (at (i + 1) s#))) list
+  }
+  return list
+}
+
+to OLEDwriteChs string x y invFlag {
+  '_initCheck'
+  '_initChsCheck'
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
+  '_verifyXY' x y
+  local 'origX' x
+  if (not (isType string 'string')) {
+    string = ('[data:join]' '' string)
+  }
+  for char string {
+    comment 'If in table process it - LINE SET is not supported.'
+    if (('[data:find]' char _chTABLE) != -1) {
+      OLEDdrawImageWH ('_chBMP' char invFlag) x y 12 12
+      x += 12
+      if (x > 127) {
+        x = origX
+        y += 8
+        if (y > 63) {
+          y = 0
+        }
+      }
+    } (13 == ('[data:unicodeAt]' 1 char)) {
+      noop
+    } (10 == ('[data:unicodeAt]' 1 char)) {
+      x = origX
+      y += 8
+      if (y > 63) {
+        y = 0
+      }
+    } else {
+      comment 'bad char - STOP'
+      sayIt '无效字符' char 'uniCode:' ('[data:unicodeAt]' 1 char)
+      stopTask
+    }
+  }
+  _textX = x
+  _textY = y
+  _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to '_chBMP' char invFlag {
+  local 'key' (('[data:find]' char _chTABLE) * 24)
+  local 'charList' ('[data:copyFromTo]' _chDecTBL (key - 23) key)
+  comment 'inverse'
+  if invFlag {
+    for item# (size charList) {
+      atPut item# charList ((at item# charList) ^ 255)
+    }
+  }
+  _imgWidth = 12
+  _imgHeight = 12
+  return charList
+}
+
+to '_chT1' {
+  comment '你好世界蓝牙无线物联'
+  local '_chHEX1' '2010FC0310CF04F404548C0000000F000201080F0000030088780F88784242F24A464000080502050800080F000000001010FE1010FF1010FF10100000000F080809090909080800809F9555553F5555959F8000000804030000000F000000000272077A02221A1237521200080F09090F090F09090F080000322A2222A262FE22222000040402020108080F0000000020222222E23EE22222222000080402010000070808080E0098D4B388004848FF24A52600040402020808040305080E009C88FF4808C73C847C04FC0000000F00090402010808070002FE52FE42494AF84A4940000203020F0904030003040800'
+  local 'idx' 1
+  for i 240 {
+    atPut i _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX1 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX1 = ''
+}
+
+to '_chT2' {
+  comment '网络址天气温湿度℃晴'
+  local '_chHEX2' 'FF099161910991619109FF000F0100000001000008090F0098D4B38848C4AB92AAC6400004040202000F0404040F00001010FF1000F80000FF10100004040302080F08080F08080020222222A27EA2222222200008080402010001020408080008242B2A2A2A2A2AEA0A0200000000000000000003040E00224400C05FD555D55FC000000402090F080F080F080F08001122803E2AEA2AEA2A3E800004020809080F080F0809080000FE0A8ABEAAABAABE8A0A0008070008090A04040A090800020502F804020202040E8000000000000102020202010000FE22FE0022EAAABFAAEA220007020700000F02020A0F0000'
+  local 'idx' 1
+  for i 256 {
+    atPut (240 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX2 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX2 = ''
+}
+
+to '_chT3' {
+  comment '阴多云小中大雨掌控板'
+  local '_chHEX3' 'FF0119E700FF494949FF00000F02020904030008080F00009090485423924A6652C0400008080809050403020100000020202222A2622222222020000004060504040405060C000000C0300000FF00001060800001000008080F00000000010000F8888888FF888888F8000000010000000F00000001000010101010D03FD01010101000080804030000000304080800F909294909FF09294909F9000F000102000700010A080F000642435E56D7565E43020600040405050D0F05050504040088FF48004CA4958694A44C00080F00000808080F080808008868FF2840FE12F21291710000000F080403080502050800'
+  local 'idx' 1
+  for i 240 {
+    atPut (480 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHEX3 idx (idx + 1)))
+    idx += 2
+  }
+  _chHEX3 = ''
+}
+
+to '_initChsChars' {
+  _chTABLE = ('[data:join]' '你好世界' '蓝牙无线物联网络址天气温湿度℃晴阴多云小中大雨掌控板')
+  if (_initChs == 0) {
+    _chDecTBL = ('[data:newByteArray]' 960 255)
+  }
+}
+
+to '_initChsCheck' {
+  if (_initChs == 0) {
+    '_initChsChars'
+    '_chT1'
+    '_chT2'
+    '_chT3'
+    _initChs = 1
+  }
+}
+
+to userChLibrary string hexStr {
+  if ((size string) > 10) {
+    sayIt '自定义字库最多10个汉字!'
+    stopTask
+  }
+  '_initChsChars'
+  _chTABLE = ('[data:join]' _chTABLE string)
+  local '_chHex4' ''
+  for line ('[data:split]' hexStr ('[data:unicodeString]' 10)) {
+    _chHex4 = ('[data:join]' _chHex4 line)
+  }
+  if ((size _chHex4) != ((size string) * 48)) {
+    sayIt '16进制字符串的长度有误！'
+    stopTask
+  }
+  local 'idx' 1
+  for i (size _chHex4) {
+    atPut (720 + i) _chDecTBL (hexToInt ('[data:copyFromTo]' _chHex4 idx (idx + 1)))
+    idx += 2
+  }
+  _chHex4 = ''
+}
+
+
+module OctoStudio Comm
+author wwj718
+version 1 7 
+choices octo_shapes triangle circle square heart star 
+description 'Communicate with OctoStudio (https://octostudio.org/)'
+variables _octoShapes _octoLastBeam _octoIsBeaming 
+
+  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
+  space
+  spec 'r' 'octoBeamReceived' 'Octo beam received?'
+  spec 'r' 'octoLastBeam' 'Octo last beam'
+  space
+  spec 'r' 'octoReceiveBeam' 'Octo receive beam'
+  space
+  spec ' ' '_octoInit' '_octoInit'
+  spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
+  spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
+  space
+  spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
+  spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
+  spec ' ' '_octoStopBeam' '_octoStopBeam'
+
+to '_octoInit' {
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
+}
+
+to '_octoMakeMessage' shape {
+  comment 'Mimic iOS, eg: ECA7059C00000001'
+  '_octoInit'
+  local 'result' ('[data:makeList]')
+  repeat 8 {
+    '[data:addLast]' (at 'random' '0123456789ABCDEF') result
+  }
+  repeat 7 {
+    '[data:addLast]' 0 result
+  }
+  local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
+  if (shapeNum < 0) {
+    return 'Unknown shape'
+  }
+  '[data:addLast]' shapeNum result
+  return ('[data:joinStrings]' result)
+}
+
+to '_octoReceiveBeam' {
+  return ('[ble:octoReceive]')
+}
+
+to '_octoShapeForID' id {
+  '_octoInit'
+  if (or (id < 0) (id >= (size _octoShapes))) {
+    return 'Unknown shape'
+  }
+  return (at (id + 1) _octoShapes)
+}
+
+to '_octoStartBeam' msg {
+  '[ble:octoStartBeam]' msg
+}
+
+to '_octoStopBeam' {
+  '[ble:octoStopBeam]'
+}
+
+to octoBeamReceived {
+  comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
+  local 'newBeam' ('_octoReceiveBeam')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  _octoLastBeam = ('_octoShapeForID' newBeam)
+  return (booleanConstant true)
+}
+
+to octoLastBeam {
+  comment 'Return the name of the last shape received.'
+  if (_octoLastBeam == 0) {
+    return 'None'
+  }
+  return _octoLastBeam
+}
+
+to octoReceiveBeam {
+  local 'newBeam' ('_octoReceiveBeam')
+  if (newBeam == (booleanConstant false)) {
+    return (booleanConstant false)
+  }
+  return ('_octoShapeForID' newBeam)
+}
+
+to octoSendBeam shape optionalDuration {
+  local 'duration' 200
+  if ((pushArgCount) > 1) {
+    duration = optionalDuration
+  }
+  if (_octoIsBeaming == 1) {
+    sayIt 'waiting...'
+    waitUntil (_octoIsBeaming == 0)
+    sayIt ''
+  }
+  _octoIsBeaming = 1
+  '_octoStartBeam' ('_octoMakeMessage' shape)
+  waitMillis duration
+  '_octoStopBeam'
+  _octoIsBeaming = 0
+}
+
+
+module Strings Data
+author MicroBlocks
+version 1 5 
+description 'String operations.'
+
+  spec 'r' 'isDigit' '_ is a digit' 'str' '5'
+  spec 'r' 'isLowercase' '_ is lowercase' 'str' 'A'
+  spec 'r' 'isUppercase' '_ is uppercase' 'str' 'E'
+  space
+  spec 'r' 'beginsWith' '_ begins with _' 'str str' 'prefix' 'pre'
+  spec 'r' 'endsWith' '_ ends with _' 'str str' 'suffix' 'fix'
+  spec 'r' 'contains' '_ contains _' 'str str' 'smiles' 'mile'
+  space
+  spec 'r' 'lowercase' 'lowercase _' 'str' 'THIS is a String! :)'
+  spec 'r' 'uppercase' 'uppercase _' 'str' 'Hello, world!'
+  spec 'r' 'withoutWhiteSpace' '_ without white space' 'str' '1, 2,	3,
+4'
+  space
+  spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '
+  spec 'r' 'stringToUnicodes' 'unicodes _' 'auto' 'aString'
+  spec 'r' 'unicodesToString' 'string from unicodes _' 'auto' 'aList'
+  space
+  spec 'r' 'num2str' 'num2str _' 'auto' 42
+  spec 'r' 'str2num' 'str2num _' 'str' '123'
+
+to beginsWith string substring {
+  return (('[data:find]' substring string) == 1)
+}
+
+to contains string substring {
+  return (('[data:find]' substring string) > 0)
+}
+
+to endsWith string substring {
+  return (('[data:find]' substring string) > ((size string) - (size substring)))
+}
+
+to isDigit char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 48) (unicode <= 57))
+}
+
+to isLowercase char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 97) (unicode <= 122))
+}
+
+to isUppercase char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 65) (unicode <= 90))
+}
+
+to joinWith stringList separator {
+  if (not (isType stringList 'list')) {return ('[data:join]' '' stringList)}
+  if (or ((pushArgCount) == 1) (separator == '')) {return ('[data:joinStrings]' stringList)}
+  local 'result' (newList (2 * (size stringList)))
+  '[data:delete]' 'all' result
+  for s stringList {
+    '[data:addLast]' s result
+    '[data:addLast]' separator result
+  }
+  '[data:delete]' 'last' result
+  return ('[data:joinStrings]' result)
+}
+
+to lowercase string {
+  local 'new string' ''
+  for i (size string) {
+    if (isUppercase (at i string)) {
+      'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) + 32)))
+    } else {
+      'new string' = ('[data:join]' (v 'new string') (at i string))
+    }
+  }
+  return (v 'new string')
+}
+
+to num2str n {
+  return ('[data:join]' '' n)
+}
+
+to str2num s {
+  return (0 + s)
+}
+
+to stringToUnicodes s {
+  local 'result' (newList (size s))
+  for i (size s) {
+    atPut i result ('[data:unicodeAt]' i s)
+  }
+  return result
+}
+
+to unicodesToString aList {
+  return ('[data:unicodeString]' aList)
+}
+
+to uppercase string {
+  local 'new string' ''
+  for i (size string) {
+    if (isLowercase (at i string)) {
+      'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) - 32)))
+    } else {
+      'new string' = ('[data:join]' (v 'new string') (at i string))
+    }
+  }
+  return (v 'new string')
+}
+
+to withoutWhiteSpace aString {
+  local 'result' (newList (size aString))
+  '[data:delete]' 'all' result
+  for i (size aString) {
+    local 'ch' ('[data:unicodeAt]' i aString)
+    if (ch > 32) {
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 8 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[tft:clear]' 'clear TFT display'
+  space
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to tft_colorSwatch color {
+  return color
+}
+
+
+module TFThanzi
+author 'Patch & Rang'
+version 1 5 
+depends TFT Strings Files 
+description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.5 增加对neoPanel和OLED的支持
+v1.4 增加二进制字库文件支持
+v1.3 增加了一个大写英文字母字体
+v1.2 增加了通过文件保存和提取字模的功能
+v1.1 增加了颜色设置，增加了几个汉字和数字示例
+-------
+取模工具：
+32点阵汉字取模 https://create.codelab.club/projects/53122
+16点阵汉字取模 https://create.codelab.club/projects/53070
+16点阵图案设计工具 https://create.codelab.club/projects/66585
+-------
+介绍视频：
+https://www.bilibili.com/video/BV1R14y1172r/'
+
+  spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' 'data' 0 0 1 nil ''
+  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
+  spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
+  spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
+  spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
+  space
+  spec 'r' '_fromFontFile' '_fromFontFile _ withHeader _' 'auto bool' nil true
+  spec 'r' '_getCode' '_getCode _' 'str' 'text'
+  spec 'r' '_getCodeFromFile' '_getCodeFromFile _' 'str' 'fileName'
+  spec 'r' '_numbers' '_numbers'
+  spec 'r' '_sample' '_sample'
+  spec 'r' '_l1' '_l1'
+  spec 'r' '_l2' '_l2'
+  spec 'r' '_l3' '_l3'
+  spec 'r' '_c1' '_c1'
+  spec 'r' '_c2' '_c2'
+  spec 'r' '_chars' '_chars'
+
+to '_c1' {
+  return ('[data:makeList]' '10100000000000000000000000000000000000000000000000000000000000000000,' '10100000000000000000000000000000000000000058380000000000000000000000,' '10100000000000000000000000000000000000000060600000000000000000000000,' '1010000000FEFE000000000000000000000000000067670000000000000000000000' '10100000008080808080808080800000000000000000000000000000000000000000,' '10100000000000000008080000000000000000000000000000101000000000000000,' '101000000000000000241C0000000000000000000000000000000000000000000000' '10100000000008040202028282443800000000000000000000002700000000000000,' '1010000000000000C0300804020000000000000000000000030C1020400000000000' '1010000000000002040830C000000000000000000000004020100C03000000000000')
+}
+
+to '_c2' {
+  return ('[data:makeList]' '1010000C12120CC02010101010101010200000000000001F20404040404040402000' '10100000182424180000804020100804000000002010080402010000182424180000,')
+}
+
+to '_chars' {
+  comment '符号字体，需要在这里列出所有符号，与_c1,_c2字体积木中的字体内容顺序要一致'
+  return ' ,.!-:''?()℃%'
+}
+
+to '_fromFontFile' foo withHeader {
+  if (and (('[data:unicodeAt]' 1 foo) >= 19968) (('[data:unicodeAt]' 1 foo) <= 40959)) {
+    local 'f' (((('[data:unicodeAt]' 1 foo) - 19968) * 32) + 0)
+    '[file:open]' 'font.bin'
+    '[file:setReadPosition]' f 'font.bin'
+    local 'a' ('[file:readBytes]' 32 'font.bin')
+    local 'fon' ''
+    for i 32 {
+      fon = ('[data:join]' fon (dec2hex (at i a)))
+    }
+    if withHeader {
+      return ('[data:join]' '1010' fon)
+    } else {
+      return fon
+    }
+  } else {
+    return ''
+  }
+}
+
+to '_getCode' foo {
+  comment '字体在_l1,_l2,_l3,_c1,_c2,_numbers这几个积木中,
+其中_l开头的是26个大写字母，_c开头的是符号，_numbers是数字。
+可以用你自己的字体替换这几个积木中的内容.每个字体积木包含10个字符'
+  local 'var' (('[data:unicodeAt]' 1 (uppercase foo)) - 65)
+  local 'num' (17 + var)
+  if (and (var > -1) (var < 26)) {
+    return (at ((var % 10) + 1) (callCustomReporter ('[data:join]' '_l' ((var / 10) + 1))))
+  } (and (num > -1) (num < 10)) {
+    if (num == 0) {num = 10}
+    return (at num ('_numbers'))
+  } else {
+    var = ('[data:find]' foo ('_chars'))
+    if (var > 0) {
+      return (at (((var - 1) % 10) + 1) (callCustomReporter ('[data:join]' '_c' (((var - 1) / 10) + 1))))
+    } (('[data:find]' foo '上海') > 0) {
+      if (foo == '上') {
+        return (at 1 ('_sample'))
+      } else {
+        return (at 2 ('_sample'))
+      }
+    } else {
+      local 'file' ('_getCodeFromFile' foo)
+      if ((size file) > 10) {
+        return file
+      } (('[data:find]' 'font.bin' ('file names')) > 0) {
+        local 'r' ('_fromFontFile' foo true)
+        if (r != '') {
+          return r
+        } else {
+          sayIt foo 'is not in font library'
+          return (at 1 ('_c1'))
+        }
+      } else {
+        sayIt foo 'is not in font library'
+        comment '没找到字体时返回空格'
+        return (at 1 ('_c1'))
+      }
+    }
+  }
+}
+
+to '_getCodeFromFile' file {
+  comment '从文件读取字模，文件以要显示的汉字命名'
+  if (('[data:find]' file ('file names')) > -1) {
+    '[file:open]' file
+    local 'var' ('[file:readLine]' file)
+    '[file:close]' file
+    return var
+  } else {
+    return ''
+  }
+}
+
+to '_l1' {
+  return ('[data:makeList]' '101000F8040202020202020202020200F800007F0101010101010101010101017F00' '101000FE8082828282828282828282403800007F0040404040404040404040201E00' '101000F80402020202020202020202000800001F0040404040404040404040201000' '101000FE000202020202020202020200F800007F4040404040404040404040201F00' '101000FE8082828282828282828282820200007F4040404040404040404040404000' '101000FE8082828282828282828282820200007F0000000000000000000000000000' '101000F80402020202020202020202008800001F0040404040404141414141211F00' '101000FE008080808080808080808080FE00007F0000000000000000000000007F00' '10100002020202020202FE0202020200020000404040404040407F40404040404000' '10100002020202020202FE0202020200020000404040404040201F00000000000000')
+}
+
+to '_l2' {
+  return ('[data:makeList]' '101000FE8080404060A01010080804040200007F0000000000000102040810204000' '101000FE0000000000000000000000000000003F4040404040404040404040001000' '101000FE020204081020201008040200FE00007F0000000000000000000000007F00' '101000FE000810204080000000000000FE00007F0000000000000102040810007F00' '101000F0080402020202020202020000FC00003F0000404040404040404020100F00' '101000FC0202020202020202020202807800007F0001010101010101010101000000' '101000F0080402020202020202020200F800001F0040404040404040402810284700' '101000FC0202020202020202020202807800007F0001010101010103050911204000' '10100078840202020202020202020200080000100041414141414141414141221C00' '10100002020202020202FE0202020200020000000000000000007F00000000000000')
+}
+
+to '_l3' {
+  return ('[data:makeList]' '101000FE000000000000000000000000FE00001F0040404040404040404040201F00' '10100006186080000000000000806018060000000000010618606018060100000000,' '101000FE000000000000000000000000FE00007F0040201008040408102040407F00' '10100002040810204080004020100800020000402010080402000102040810204000,' '101000020408102040800040201008000200000000000000007F0000000000000000' '10100002020202020202824222120A00020000406050484442414040404040404000')
+}
+
+to '_numbers' {
+  comment '本库设计独特的16点阵数字字体'
+  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F8040202020282820202020200F800001F0040404040414140404040201F00')
+}
+
+to '_sample' {
+  comment '两个示例汉字的32点阵字模'
+  return ('[data:makeList]' '101000000000000000FE2020202020000000004040404040407F4040404040404000' '10100042440008E416151454541414F4040000402011011F111115155151311F1101')
+}
+
+to dec2hex dec {
+  local 'hexDigits' '0123456789abcdef'
+  if (dec == 0) {
+    return ('[data:join]' ('[data:convertType]' 0 'string') ('[data:convertType]' 0 'string'))
+  }
+  local 'hexString' ''
+  local 'num' dec
+  repeatUntil (num <= 0) {
+    local 'remainder' (num % 16)
+    hexString = ('[data:join]' (at (remainder + 1) hexDigits) hexString)
+    num = (num / 16)
+  }
+  if ((size hexString) < 2) {
+    return ('[data:join]' '0' hexString)
+  } else {
+    return hexString
+  }
+}
+
+to draw data x y size color neo {
+  comment '本库核心的汉字显示方法，用法参看drawSample函数'
+  local 'xx' 0
+  local 'yy' -1
+  local 'fbl' (hexToInt ('[data:join]' (at 1 data) (at 2 data)))
+  for j ((size data) - 4) {
+    if (1 == (j % (fbl * 2))) {
+      xx = 0
+      yy += 8
+    }
+    for i 4 {
+      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {if (neo == 1) {
+        local 'var' ('_neoPanel_indexForXY' (x + xx) (y + yy))
+        if (and (1 <= var) (var <= (size _np_pixels))) {
+          atPut var _np_pixels color
+        }
+      } else {
+        '[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size color
+      }}
+      yy += -1
+    }
+    if ((j % 2) == 0) {
+      xx += 1
+      yy = (yy + 8)
+    }
+  }
+  if (neo == 1) {
+    '_NeoPixel_update'
+  }
+}
+
+to drawChar foo x y size color {
+  local 'var' ('[data:convertType]' foo 'string')
+  for i (size var) {
+    local 'font' ('_getCode' (at i var))
+    local 'dz' 0
+    if (('[data:copyFromTo]' font 1 4) == ('[data:convertType]' 2020 'string')) {
+      dz = 32
+    } else {
+      dz = 16
+    }
+    '[tft:rect]' (x + ((i - 1) * (size * dz))) y (size * dz) (size * dz) (colorSwatch 0 0 0 255)
+    draw font (x + ((i - 1) * (size * dz))) y size color
+  }
+}
+
+to drawSample x y size color {
+  comment '自带两个汉字的显示示例'
+  for i (size ('_sample')) {
+    '[tft:rect]' (x + ((i - 1) * (size * 16))) y (size * 16) (size * 16) (colorSwatch 0 0 0 255)
+    draw (at i ('_sample')) (x + ((i - 1) * (size * 16))) y size color
+  }
+}
+
+to saveFile fileName code {
+  comment 'fileName是文件名，每个汉字对应一个以这个汉字命名的字模文件'
+  '[file:delete]' fileName
+  '[file:open]' fileName
+  '[file:appendLine]' code fileName
+  '[file:close]' fileName
+}
+
