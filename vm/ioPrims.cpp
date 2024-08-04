@@ -439,9 +439,9 @@ void hardwareInit() {
 #elif defined(MAKERPORT_V3) // must come before Zero
 
 	#define BOARD_TYPE "MakerPort V3"
-	#define DIGITAL_PINS 26
+	#define DIGITAL_PINS 28
 	#define ANALOG_PINS 9
-	#define TOTAL_PINS 26
+	#define TOTAL_PINS 28
 	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 15};
 
 #elif defined(MAKERPORT) // must come before Zero
@@ -1779,8 +1779,8 @@ static void setServo(int pin, int usecs) {
 		if (servo[servoIndex].attached()) servo[servoIndex].detach();
 	} else {
 		if (!servo[servoIndex].attached()) {
-			// allow a wide range of pulse widths; MicroBlocks library imposes its own limits
-			servo[servoIndex].attach(pin, 200, 3000);
+			// allow a wide range of pulse widths
+			servo[servoIndex].attach(pin, 500, 2900); // On SAMD21, max must be <= 2911
 		}
 		servo[servoIndex].writeMicroseconds(usecs);
 	}
