@@ -1,31 +1,46 @@
-to readIcon iconName color {
+to testSVG fileName optionalScale useOriginalColor {
+	scale = 2
+	if (notNil optionalScale) { scale = optionalScale }
+	fgColor = (gray 100)
+	bgColor = (gray 220)
+	if (true == useOriginalColor) { fgColor = nil }
+	filePath = (join '../img/' fileName '.svg')
+
+	ctx = (newGraphicContextOnScreen)
+	clear ctx bgColor
+
+	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
+	readFrom reader (readFile filePath)
+	bm = (bitmap reader)
+	drawBitmap ctx (bitmap reader) 0 0
+	show ctx
+	return bm
+}
+
+to readIcon iconName fgColor bgColor {
 	// returns a bitmap costume
 	scale = (global 'scale')
 	print 'reading icon' iconName
-	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) 0 0 scale color)
+	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) scale fgColor bgColor)
 }
 
-to readSVG data x y scale color {
+to readSVG data scale fgColor bgColor {
 	if (isNil scale) { scale = (global 'scale') }
-	reader = (initialize (new 'SVGReader') x y scale color)
+	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
 	readFrom reader data
 	return (bitmap reader)
 }
 
-defineClass SVGReader pen index svgData originX originY scaleFactor bitmap overridenColor
+defineClass SVGReader scaleFactor overridenColor backgroundColor svgData index pen bitmap
 
-method initialize SVGReader x y scale color {
-	index = 1
-
-	originX = x
-	originY = y
+method initialize SVGReader scale fgColor bgColor {
 	if (notNil scale) {
 		scaleFactor = scale
 	} else {
 		scaleFactor = 1
 	}
-	if (notNil color) { overridenColor = color }
-
+	overridenColor = fgColor // if nil, uses original color
+	backgroundColor = bgColor // if nil, does not handle holes
 	return this
 }
 
@@ -33,6 +48,7 @@ method bitmap SVGReader { return bitmap }
 
 method readFrom SVGReader data {
 	svgData = data
+	index = 1
 	nextTag = (nextTag this)
 	while (notNil nextTag) {
 		processTag this nextTag (nextAttributes this)
@@ -42,7 +58,9 @@ method readFrom SVGReader data {
 
 method nextTag SVGReader {
 	startIndex = (findSubstring '<' svgData index)
-	endIndex = (findAnyOf svgData (list ' ' '>') startIndex)
+	if (notNil startIndex) {
+		endIndex = (tagNameEnd this startIndex)
+	}
 	if (or (isNil startIndex) (isNil endIndex)) {
 		index = (count svgData)
 		return nil
@@ -51,6 +69,39 @@ method nextTag SVGReader {
 	index = endIndex
 	return (toLowerCase tagName)
 }
+
+method tagNameEnd SVGReader startIndex {
+	end = (count svgData)
+	i = (startIndex + 1)
+	while (i < end) {
+		ch = (at svgData i)
+		if (or ('>' == ch) (isWhiteSpace ch)) { return i }
+		i += 1
+	}
+}
+
+// method findTagEnd SVGReader startIndex {
+// 	// Find the closing ">" after startIndex.
+// 	// Don't worry delimiters inside strings for now.
+//
+// 	nestingCount = 1
+// 	i = (startIndex + 1)
+// 	end = (count svgData)
+// 	while (i < end) {
+// 		ch = (at svgData i)
+// 		if ('>' == ch) {
+// 			nestingCount += -1
+// 			if (nestingCount <= 0) { return i }
+// 		}
+// 		if ('<' == ch) {
+// 			if (and (i < end) ((at svgData (i + 1)) != '/')) {
+// 				nestingCount += 1
+// 			}
+// 		}
+// 		i += 1
+// 	}
+// 	return nil // hit end without finding the closing ">"
+// }
 
 method nextAttributes SVGReader {
 	tagEndIndex = (findSubstring '>' svgData index)
@@ -115,10 +166,11 @@ method processSVGTag SVGReader attributes {
 		}
 	}
 
-	bitmap = (newBitmap w h)
+	fillColor = backgroundColor
+	if (isNil backgroundColor) { fillColor = (gray 0 0) }
+	bitmap = (newBitmap w h fillColor)
 	pen = (newVectorPen bitmap)
-	setOffset pen originX originY
-	setClipRect pen originX originY w h
+	setClipRect pen 0 0 w h
 }
 
 method processPath SVGReader attributes {
@@ -129,6 +181,8 @@ method processPath SVGReader attributes {
 			drawPath this value
 		} (name == 'fill') {
 			fill pen (parseColor this value)
+		} (name == 'stroke') {
+			stroke pen (color 255 0 0) // (parseColor this value)
 		} else {
 			print 'missing attribute' name 'in SVG parser'
 		}
@@ -196,6 +250,10 @@ method getPathParams SVGReader pathString startIndex {
 }
 
 method parseColor SVGReader colorString {
+	if ('none' == colorString) {
+		if (notNil backgroundColor) { return backgroundColor }
+		return (color 0 255 255) // magenta, so clear areas will be noticeable
+	}
 	if (notNil overridenColor) { return overridenColor }
 
 	if (colorString == 'black') {
