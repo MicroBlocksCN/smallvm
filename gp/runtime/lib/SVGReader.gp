@@ -9,10 +9,10 @@ to testSVG fileName optionalScale useOriginalColor {
 	ctx = (newGraphicContextOnScreen)
 	clear ctx bgColor
 
+	fgColor = nil // show original colors
 	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
-	readFrom reader (readFile filePath)
-	bm = (bitmap reader)
-	drawBitmap ctx (bitmap reader) 0 0
+	bm = (readFrom reader (readFile filePath))
+	drawBitmap ctx bm 0 0
 	show ctx
 	return bm
 }
@@ -27,11 +27,10 @@ to readIcon iconName fgColor bgColor {
 to readSVG data scale fgColor bgColor {
 	if (isNil scale) { scale = (global 'scale') }
 	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
-	readFrom reader data
-	return (bitmap reader)
+	return (readFrom reader data)
 }
 
-defineClass SVGReader scaleFactor overridenColor backgroundColor svgData index pen bitmap
+defineClass SVGReader scaleFactor overridenColor backgroundColor svgData pen bitmap
 
 method initialize SVGReader scale fgColor bgColor {
 	if (notNil scale) {
@@ -44,149 +43,72 @@ method initialize SVGReader scale fgColor bgColor {
 	return this
 }
 
-method bitmap SVGReader { return bitmap }
-
 method readFrom SVGReader data {
 	svgData = data
-	index = 1
-	nextTag = (nextTag this)
-	while (notNil nextTag) {
-		processTag this nextTag (nextAttributes this)
-		nextTag = (nextTag this)
+	createBitmap this
+	i = (findSubstring '<path' svgData startIndex)
+	while (notNil i) {
+		pathTag = (extractPathTag this i)
+		fillColor = (readStringAttribute this 'fill' pathTag)
+		drawPath this (readStringAttribute this 'd' pathTag)
+		if (notNil fillColor) {
+			fill pen (parseColor this fillColor)
+		}
+		i = (findSubstring '<path' svgData (i + (count pathTag)))
 	}
+	return bitmap
 }
 
-method nextTag SVGReader {
-	startIndex = (findSubstring '<' svgData index)
-	if (notNil startIndex) {
-		endIndex = (tagNameEnd this startIndex)
-	}
-	if (or (isNil startIndex) (isNil endIndex)) {
-		index = (count svgData)
-		return nil
-	}
-	tagName = (substring svgData (startIndex + 1) (endIndex - 1))
-	index = endIndex
-	return (toLowerCase tagName)
-}
-
-method tagNameEnd SVGReader startIndex {
-	end = (count svgData)
-	i = (startIndex + 1)
-	while (i < end) {
-		ch = (at svgData i)
-		if (or ('>' == ch) (isWhiteSpace ch)) { return i }
-		i += 1
-	}
-}
-
-// method findTagEnd SVGReader startIndex {
-// 	// Find the closing ">" after startIndex.
-// 	// Don't worry delimiters inside strings for now.
-//
-// 	nestingCount = 1
-// 	i = (startIndex + 1)
-// 	end = (count svgData)
-// 	while (i < end) {
-// 		ch = (at svgData i)
-// 		if ('>' == ch) {
-// 			nestingCount += -1
-// 			if (nestingCount <= 0) { return i }
-// 		}
-// 		if ('<' == ch) {
-// 			if (and (i < end) ((at svgData (i + 1)) != '/')) {
-// 				nestingCount += 1
-// 			}
-// 		}
-// 		i += 1
-// 	}
-// 	return nil // hit end without finding the closing ">"
-// }
-
-method nextAttributes SVGReader {
-	tagEndIndex = (findSubstring '>' svgData index)
-	lastAttributeEndIndex = tagEndIndex
-	while ((at svgData lastAttributeEndIndex) != '"') { // "
-		lastAttributeEndIndex = (lastAttributeEndIndex - 1)
-	}
-	attributes = (list)
-	while (index < lastAttributeEndIndex) {
-		nextAttr = (nextAttribute this)
-		if (notNil nextAttr) { add attributes nextAttr }
-	}
-	return attributes
-}
-
-method nextAttribute SVGReader {
-	tagEndIndex = (findSubstring '>' svgData index)
-	equalsIndex = (findSubstring '=' svgData index)
-
-	if (or (equalsIndex > tagEndIndex) (isNil equalsIndex)) { return }
-
-	attrEndIndex = (findSubstring '"' svgData (equalsIndex + 2)) //"
-
-	attrName = ''
-	// + 2 and - 1 to get rid of the quotes in attrs
-	attrValue = (substring svgData (equalsIndex + 2) (attrEndIndex - 1))
-
-	i = (equalsIndex - 1)
-	if (i < tagEndIndex) {
-		while (i > index) {
-			i = (i - 1)
-			if ((at svgData i) == ' ') {
-				attrName = (substring svgData (i + 1) (equalsIndex - 1))
-				i = index
-			}
+method createBitmap SVGReader {
+	w = (readNumberAttribute this 'width' svgData)
+	h = (readNumberAttribute this 'height' svgData)
+	if (or (isNil w) (isNil h)) {
+		s = (readStringAttribute this 'viewBox' svgData)
+		if (isNil s) {
+			print 'SVGReader: No width, height, or viewBox attributes found'
+			// use default dimensions
+			w = 100
+			h = 100
+		} else {
+			viewBox = (words s)
+			w = (toInteger (at viewBox 3))
+			h = (toInteger (at viewBox 4))
 		}
 	}
-	index = attrEndIndex
-	return (list attrName attrValue)
-}
-
-method processTag SVGReader tagName attributes {
-	if (tagName == 'svg') {
-		processSVGTag this attributes
-	} (tagName == 'path') {
-		processPath this attributes
-	}
-}
-
-method processSVGTag SVGReader attributes {
-	w = 0
-	h = 0
-	for attr attributes {
-		name = (first attr)
-		value = (at attr 2)
-		if (name == 'width') {
-			w = ((toNumber value) * scaleFactor)
-		} (name == 'height') {
-			h = ((toNumber value) * scaleFactor)
-		} (name == 'viewBox') {
-			//TODO parse viewBox here. Or not!
-		}
-	}
-
-	fillColor = backgroundColor
-	if (isNil backgroundColor) { fillColor = (gray 0 0) }
+	w = (w * scaleFactor)
+	h = (h * scaleFactor)
 	bitmap = (newBitmap w h fillColor)
 	pen = (newVectorPen bitmap)
 	setClipRect pen 0 0 w h
 }
 
-method processPath SVGReader attributes {
-	for attr attributes {
-		name = (first attr)
-		value = (at attr 2)
-		if (name == 'd') {
-			drawPath this value
-		} (name == 'fill') {
-			fill pen (parseColor this value)
-		} (name == 'stroke') {
-			stroke pen (color 255 0 0) // (parseColor this value)
-		} else {
-			print 'missing attribute' name 'in SVG parser'
-		}
-	}
+method readNumberAttribute SVGReader attrName aString {
+	pattern = (join ' ' attrName '="')
+	i = (findSubstring pattern aString startIndex)
+	if (isNil i) { return nil } // not found
+	i += (count pattern)
+	end = i
+	while (isDigit (at aString end)) { end += 1 }
+	return (toInteger (substring aString i (end - 1)))
+}
+
+method readStringAttribute SVGReader attrName aString {
+	pattern = (join ' ' attrName '="')
+	i = (findSubstring pattern aString startIndex)
+	if (isNil i) { return nil } // not found
+	i += (count pattern)
+	end = i
+	while ('"' != (at aString end)) { end += 1 }
+	return (trim (substring aString i (end - 1)))
+}
+
+method extractPathTag SVGReader startIndex {
+	// Return the "<path .../>" tag tag starting at the given index.
+
+	start = (startIndex + 5)
+	end = (findSubstring '/>' svgData start)
+	if (isNil end) { return '' } // no terminator; truncated file?
+	return (substring svgData start (end - 1))
 }
 
 method drawPath SVGReader pathString {
@@ -235,7 +157,7 @@ method getPathParams SVGReader pathString startIndex {
 	if (i >= length) { return (list (list) length) }
 	params = (list)
 	paramString = ''
-	while (and (i <= length) (not (isLetter (at pathString i)))) {
+	while (and (i <= length) (not (isPathCommand this (at pathString i)))) {
 		paramString = (join paramString (at pathString i))
 		i = (i + 1)
 	}
@@ -249,10 +171,14 @@ method getPathParams SVGReader pathString startIndex {
 	return (list params i)
 }
 
+method isPathCommand SVGReader ch {
+	return (and (isLetter ch) ('E' != ch) ('e' != ch))
+}
+
 method parseColor SVGReader colorString {
 	if ('none' == colorString) {
 		if (notNil backgroundColor) { return backgroundColor }
-		return (color 0 255 255) // magenta, so clear areas will be noticeable
+		return (color 255 0 255) // magenta, so missing background color will be noticeable
 	}
 	if (notNil overridenColor) { return overridenColor }
 
