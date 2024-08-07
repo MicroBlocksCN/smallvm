@@ -1,16 +1,13 @@
-to testSVG fileName optionalScale useOriginalColor {
+to testSVG fileName optionalScale optionalFGColor {
 	scale = 2
 	if (notNil optionalScale) { scale = optionalScale }
-	fgColor = (gray 100)
 	bgColor = (gray 220)
-	if (true == useOriginalColor) { fgColor = nil }
 	filePath = (join '../img/' fileName '.svg')
 
 	ctx = (newGraphicContextOnScreen)
 	clear ctx bgColor
 
-	fgColor = nil // show original colors
-	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
+	reader = (initialize (new 'SVGReader') scale optionalFGColor bgColor)
 	bm = (readFrom reader (readFile filePath))
 	drawBitmap ctx bm 0 0
 	show ctx
@@ -18,16 +15,25 @@ to testSVG fileName optionalScale useOriginalColor {
 }
 
 to readIcon iconName fgColor bgColor {
-	// returns a bitmap costume
+	// Returns a bitmap for the given icon at the current scale.
+
 	scale = (global 'scale')
-	print 'reading icon' iconName
-	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) scale fgColor bgColor)
+	fileName = (join 'img/' iconName '.svg')
+	print 'Reading icon' fileName
+
+	data = (readEmbeddedFile fileName)
+	if (isNil data) { print 'File not found:' fileName }
+	return (readSVG data scale fgColor bgColor)
 }
 
 to readSVG data scale fgColor bgColor {
+	// Convert the given SVG data into a bitmap at the scale.
+	// If fgColor is not nil, stroke and fill colors will be mapped to that color.
+	// bgColor is optional but can be provided to avoid antialiasing fringes.
+
 	if (isNil scale) { scale = (global 'scale') }
-	reader = (initialize (new 'SVGReader') scale fgColor bgColor)
-	return (readFrom reader data)
+	svgReader = (initialize (new 'SVGReader') scale fgColor bgColor)
+	return (readFrom svgReader data)
 }
 
 defineClass SVGReader scaleFactor overridenColor backgroundColor svgData startX startY lastX lastY lastCX lastCY pen bitmap
@@ -36,14 +42,15 @@ method initialize SVGReader scale fgColor bgColor {
 	if (notNil scale) {
 		scaleFactor = scale
 	} else {
-		scaleFactor = 1
+		scaleFactor = (global 'scale')
 	}
 	overridenColor = fgColor // if nil, uses original color
-	backgroundColor = bgColor // if nil, does not handle holes
+	backgroundColor = bgColor // provide this to avoid anti-aliasing fringes
 	return this
 }
 
 method readFrom SVGReader data {
+	if (isNil data) { return (newBitmap (10 * scaleFactor) (10 * scaleFactor) (gray 100)) } // no data
 	svgData = data
 	createBitmap this
 	i = (findSubstring '<path' svgData startIndex)
@@ -91,13 +98,15 @@ method createBitmap SVGReader {
 }
 
 method readNumberWithUnits SVGReader attrName srcString {
+	// Note: Handles positive and negative decimal numbers without exponents.
+
 	pattern = (join ' ' attrName '="')
 	i = (findSubstring pattern srcString startIndex)
 	if (isNil i) { return nil } // not found
 	i += (count pattern)
 	end = i
-	if (or ('.' == (at srcString end)) ('.' == (at srcString end))) { end += 1 } // leading '-' or '.'
-	while (isDigit (at srcString end)) { end += 1 }
+	if ('-' == (at srcString end)) { end += 1 } // leading '-'
+	while (or (isDigit (at srcString end)) ('.' == (at srcString end))) { end += 1 }
 	n = (toNumber (substring srcString i (end - 1)))
 	if (isLetter (at srcString end)) {
 		units = (substring srcString end (end + 1))
@@ -137,14 +146,12 @@ method drawPath SVGReader pathString {
 	lastCY = 0
 	i = 1
 	isFirst = true
-// print pathString
 	while (i <= (count pathString)) {
 		isAbsolute = (isUpperCase (at pathString i))
 		cmd = (toUpperCase (at pathString i))
 		paramsAndNextIndex = (getPathParams this pathString (i + 1))
 		params = (at paramsAndNextIndex 1)
 		argsNeeded = (argsNeededForCmd this cmd)
-//print cmd 'argsNeeded' argsNeeded 'have' (count params)
 		while ((count params) >= argsNeeded) {
 			if ('M' == cmd) { // move
 				moveCmd this params isAbsolute isFirst
@@ -154,12 +161,12 @@ method drawPath SVGReader pathString {
 				vLineCmd this params isAbsolute
 			} ('H' == cmd) { // horizontal line
 				hLineCmd this params isAbsolute
-			} ('C' == cmd) { // dcubic Bézier
+			} ('C' == cmd) { // cubic Bézier
 				cubicCmd this params isAbsolute
 			} ('S' == cmd) { // smooth curve
 				smoothCurveCmd this params isAbsolute
 			} ('A' == cmd) { // arc command - not supported
-				print 'SVG path arc command not supported' params
+				print 'SVG arc (A) path command is not supported; convert to Bezier curve' params
 			} ('Z' == cmd) { // close path
 				closePath pen
 				argsNeeded = 10000 // force loop exit (since Z has zero paramters)
@@ -197,11 +204,12 @@ method moveCmd SVGReader params isAbsolute isFirst {
 	lastX += (at params 1)
 	lastY += (at params 2)
 	if isFirst {
-print '  beginPath' lastX lastY params isFirst
+// print '  beginPath' lastX lastY
 		beginPath pen lastX lastY
 		startX = lastX
 		startY = lastY
 	} else {
+// print '  lineTo' lastX lastY
 		lineTo pen lastX lastY
 	}
 }
@@ -248,7 +256,6 @@ method cubicCmd SVGReader params isAbsolute {
 		lastX = (lastX + (at params 5))
 		lastY = (lastY + (at params 6))
 	}
-// print 'cubicCurve' c1X c1Y lastCX lastCY lastX lastY
 	cubicCurveTo pen c1X c1Y lastCX lastCY lastX lastY
 }
 
@@ -266,19 +273,23 @@ method smoothCurveCmd SVGReader params isAbsolute {
 		lastX = (lastX + (at params 3))
 		lastY = (lastY + (at params 4))
 	}
-print 'smoothCurve' c1X c1Y lastCX lastCY lastX lastY
 	cubicCurveTo pen c1X c1Y lastCX lastCY lastX lastY
 }
 
 method getPathParams SVGReader pathString startIndex {
 	len = (count pathString)
-	if (startIndex >= len) { return (list (list) startIndex) }
-	i = (startIndex + 1)
+	i = startIndex
 	while (and (i <= len) (not (isPathCommand this (at pathString i)))) {
 		i = (i + 1)
 	}
 	paramString = (substring pathString startIndex (i - 1))
 	return (list (splitParameterString this paramString) i)
+}
+
+method isPathCommand SVGReader ch {
+	// "E" is not a path command. Don't be confused by exponential notation such as 1.0e-6.
+
+	return (and (isLetter ch) ('E' != ch) ('e' != ch))
 }
 
 method splitParameterString SVGReader paramString {
@@ -314,12 +325,6 @@ method splitParameterString SVGReader paramString {
 
 method scaledNumber SVGReader numberString {
 	return (scaleFactor * (toNumber numberString))
-}
-
-method isPathCommand SVGReader ch {
-	// "E" is not a path command. Don't be confused by exponential notation such as 1.0e-6.
-
-	return (and (isLetter ch) ('E' != ch) ('e' != ch))
 }
 
 method readColor SVGReader attrName srcString {
