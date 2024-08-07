@@ -1,12 +1,13 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 5 
+version 1 6 
 tags ir infrared remote 
 description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
 Note: Transmitting IR does not work on ESP8266 boards.
 
-Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.'
+Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.
+'
 variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin 
 
   spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
@@ -86,6 +87,8 @@ to '_captureIRMessage' {
         _ir_pin = 2
       } ((boardType) == 'MakerPort') {
         _ir_pin = 18
+      } ((boardType) == 'MakerPort V3') {
+        _ir_pin = 22
       }
     }
   }
