@@ -191,12 +191,12 @@ method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
   leftItems = (list)
-  add leftItems (160 * scale)
-  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
-  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
-  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')
+  add leftItems (175 * scale)
+  add leftItems (addSVGIconButtonOldStyle this 'icon-globe' 'languageMenu' 'Language')
   add leftItems (12 * scale)
-  add leftItems (vSeparator this)
+  add leftItems (addSVGIconButtonOldStyle this 'icon-gear' 'settingsMenu' 'MicroBlocks')
+  add leftItems (12 * scale)
+  add leftItems (addSVGIconButtonOldStyle this 'icon-file' 'projectMenu' 'File')
 
   if (isNil title) {
     // only add title the first time
@@ -211,24 +211,26 @@ method addTopBarParts MicroBlocksEditor {
 	frameRate = (newText '0 fps' 'Arial' (14 * scale) (color this 'blueGray' 50))
 	addPart morph (morph frameRate)
 	add rightItems frameRate
-	add rightItems (16 * scale)
+	add rightItems (18 * scale)
   }
 
-  add rightItems (addIconButton this (newBitmap 0 0) 'noop' 'Progress' 36)
-  progressIndicator = (last rightItems)
-  add rightItems (3 * scale)
+  progressW = (36 * scale)
+  progressIndicator = (newImageBox (newBitmap progressW progressW))
+  add rightItems progressIndicator
+  add rightItems (12 * scale)
 
-  add rightItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
+  add rightItems (addSVGIconButtonOldStyle this 'icon-graph' 'showGraph' 'Graph')
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
-  add rightItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
+  add rightItems (addSVGIconButtonOldStyle this 'icon-usb' 'connectToBoard' 'Connect')
   indicator = (last rightItems)
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
-  add rightItems (addSVGIconButton this 'icon-start' 'startAll' 'Start' (color this 'blueGray' 700) (color this 'yellow'))
-  add rightItems (addSVGIconButton this 'icon-stop' 'stopAndSyncScripts' 'Stop' (color this 'blueGray' 700) (color this 'yellow'))
+  add rightItems (addSVGIconButton this 'icon-start' 'startAll' 'Start')
+  add rightItems (12 * scale)
+  add rightItems (addSVGIconButton this 'icon-stop' 'stopAndSyncScripts' 'Stop')
   add rightItems (7 * scale)
 }
 
@@ -237,7 +239,7 @@ method vSeparator MicroBlocksEditor {
   separator = (newBox (newMorph) (color this 'blueGray' 700) 0 0 false false)
   setExtent (morph separator) scale ((topBarHeight this) + (4 * scale))
   addPart morph (morph separator)
-  return separator 
+  return separator
 }
 
 method addLogo MicroBlocksEditor {
@@ -575,7 +577,7 @@ method placeTitle MicroBlocksEditor {
   left = (right (morph (last leftItems)))
   right = (left (morph (first rightItems)))
   titleM = (morph title)
-  setLeft titleM (left + (12 * scale))
+  setLeft titleM (left + (18 * scale))
   setTop titleM (12 * scale)
 
   // hide title if insufficient space
@@ -634,6 +636,14 @@ method updateFPS MicroBlocksEditor {
 
 // Progress indicator
 
+method showDownloadProgress MicroBlocksEditor phase downloadProgress {
+	isDownloading = (downloadProgress < 1)
+	bm = (bitmap progressIndicator)
+	drawProgressIndicator this bm phase downloadProgress
+	costumeChanged (morph progressIndicator)
+	updateDisplay (global 'page') // update the display
+}
+
 method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	scale = (global 'scale')
 	radius = (13 * scale)
@@ -641,14 +651,14 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	cy = ((half (height bm)) + scale)
 	bgColor = (topBarBlue this)
 	if (1 == phase) {
-		lightGray = (mixed (gray 0) 5 bgColor)
-		darkGray = (mixed (gray 0) 15 bgColor)
+		lightGray = (mixed (gray 255) 5 bgColor)
+		darkGray = (mixed (gray 255) 15 bgColor)
 	} (2 == phase) {
-		lightGray = (mixed (gray 0) 10 bgColor)
-		darkGray = (mixed (gray 0) 25 bgColor)
+		lightGray = (mixed (gray 255) 10 bgColor)
+		darkGray = (mixed (gray 255) 25 bgColor)
 	} (3 == phase) {
-		lightGray = (mixed (gray 0) 25 bgColor)
-		darkGray = (mixed (gray 0) 50 bgColor)
+		lightGray = (mixed (gray 255) 25 bgColor)
+		darkGray = (mixed (gray 255) 50 bgColor)
 	}
 
 	fill bm bgColor
@@ -673,31 +683,7 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	fill pen darkGray
 }
 
-method showDownloadProgress MicroBlocksEditor phase downloadProgress {
-	isDownloading = (downloadProgress < 1)
-	bm1 = (getField progressIndicator 'offCostume')
-	drawProgressIndicator this bm1 phase downloadProgress
-	bm2 = (getField progressIndicator 'onCostume')
-	drawProgressIndicator this bm2 phase downloadProgress
-	costumeChanged (morph progressIndicator)
-	updateDisplay (global 'page') // update the display
-}
-
 // Connection indicator
-
-method drawIndicator MicroBlocksEditor bm bgColor isConnected {
-	scale = (global 'scale')
-	fill bm bgColor
-	if isConnected {
-		cx = (half (width bm))
-		cy = ((half (height bm)) + scale)
-		radius = (13 * scale)
-		green = (mixed (color 0 200 0) 70 bgColor)
-		drawCircle (newShapeMaker bm) cx cy radius green
-	}
-	icon = (connectButtonIcon this)
-	drawBitmap bm icon (10 * scale) (10 * scale)
-}
 
 method updateIndicator MicroBlocksEditor forcefully {
 	if (busy (smallRuntime)) { return } // do nothing during file transfer
@@ -706,10 +692,12 @@ method updateIndicator MicroBlocksEditor forcefully {
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	isConnected = ('connected' == status)
 
-	bm1 = (getField indicator 'offCostume')
-	drawIndicator this bm1 (topBarBlue this) isConnected
-	bm2 = (getField indicator 'onCostume')
-	drawIndicator this bm2 (topBarBlueHighlight this) isConnected
+    iconColor = (color this 'blueGray' 500)
+    if isConnected { iconColor = (color 0 200 0) }
+
+    offBM = (readIcon 'icon-usb' iconColor)
+    onBM = (getField indicator 'onCostume')
+    setCostumes indicator offBM onBM
 
 	costumeChanged (morph indicator)
 	lastStatus = status
@@ -1477,9 +1465,21 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addSVGIconButton MicroBlocksEditor iconName selector hint color1 color2 {
+method addSVGIconButton MicroBlocksEditor iconName selector hint {
+  normalColor = (color this 'blueGray' 500)
+  highlightColor = (color this 'yellow')
   button = (newButton '' (action selector this))
-  setCostumes button (readIcon iconName color1) (readIcon iconName color2)
+  setCostumes button (readIcon iconName normalColor) (readIcon iconName highlightColor)
+  if (notNil hint) { setHint button (localized hint) }
+  addPart morph (morph button)
+  return button
+}
+
+method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
+  highlightColor = (color this 'yellow')
+  button = (newButton '' (action selector this))
+  setCostumes button (readIcon iconName) (readIcon iconName highlightColor)
+  if (notNil hint) { setHint button (localized hint) }
   addPart morph (morph button)
   return button
 }
