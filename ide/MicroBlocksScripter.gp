@@ -130,11 +130,11 @@ method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
   libHeader = (newBox (newMorph) (color projectEditor 'blueGray' 850) 0 0)
 
-  label = (newText (localized 'LIBRARIES') 'Arial' (10 * scale) (color projectEditor 'blueGray' 300))
+  label = (newText (localized 'LIBRARIES') 'Arial' (14 * scale) (color projectEditor 'blueGray' 300))
   if ('Linux' == (platform)) {
-	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (10 * scale) (color projectEditor 'blueGray' 300))
+	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (14 * scale) (color projectEditor 'blueGray' 300))
   }
-  setPosition (morph label) (6 * scale) (6 * scale)
+  setPosition (morph label) (15 * scale) (6 * scale)
   addPart (morph libHeader) (morph label)
 
   libAddButton = (addLibraryButton this '+' (33 * scale) (33 * scale))
@@ -158,6 +158,7 @@ method fixLibraryHeaderLayout MicroBlocksScripter {
 }
 
 method addLibraryButton MicroBlocksScripter label w h {
+  // xxx TODO This button will be replaced by an "Add Library" button in the content area
   scale = (global 'scale')
   setFont 'Arial Bold' (24 * scale)
   halfW = (1.5 * scale)
@@ -172,7 +173,7 @@ method addLibraryButton MicroBlocksScripter label w h {
   fillRect bm1 (gray 60) (centerX - halfLen) (centerY - halfW) len lineW
   fillRect bm1 (gray 60) (centerX - halfW) (centerY - halfLen) lineW len
 
-  bm2 = (newBitmap w h (topBarBlueHighlight projectEditor))
+  bm2 = (newBitmap w h (color projectEditor 'blueGray' 500)) // was top bar blue highlight
   fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
   fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
 
