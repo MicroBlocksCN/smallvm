@@ -1,4 +1,4 @@
-defineClass Slider morph orientation action floor ceiling value size thickness
+defineClass Slider morph orientation action floor ceiling value size thickness backgroundColor sliderColor
 
 to slider orientation span action thickness floor ceiling value size {
 	if (isNil span) { span = 100 }
@@ -22,7 +22,15 @@ method initialize Slider span {
 	}
 	morph = (newMorph this)
 	setExtent morph w h
+	backgroundColor = (gray 255 90) // default background color
+	sliderColor = (gray 110 180) // default handle color
 	return this
+}
+
+method setColors Slider bgColor fgColor {
+	if (notNil bgColor) { backgroundColor = bgColor }
+	if (notNil fgColor) { sliderColor = fgColor }
+	changed morph
 }
 
 method ceiling Slider { return ceiling }
@@ -58,8 +66,7 @@ method drawOn Slider ctx {
 	scale = (global 'scale')
 	sliderSize = (20 * scale)
 
-	bgColor = (gray 255 90)
-	fillRect ctx bgColor (left morph) (top morph) (width morph) (height morph)
+	fillRect ctx backgroundColor (left morph) (top morph) (width morph) (height morph)
 	if ((ceiling - floor) == 0) {
 		frac = 0
 	} else {
@@ -76,7 +83,6 @@ method drawOn Slider ctx {
 	}
 
 	sliderCorner = (4 * scale)
-	sliderColor = (gray 110 180)
 	fillRoundedRect (getShapeMaker ctx) sliderRect sliderCorner sliderColor 0
 }
 

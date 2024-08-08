@@ -37,6 +37,11 @@ method setColor ScrollFrame aColor {
   setCostume morph aColor
 }
 
+method setSliderColors ScrollFrame bgColor fgColor {
+  if (notNil hSlider) { setColors hSlider bgColor fgColor }
+  if (notNil vSlider) { setColors vSlider bgColor fgColor }
+}
+
 method setContents ScrollFrame aHandler {
   idx = (indexOf (parts morph) (morph contents))
   setOwner (morph contents) nil

@@ -95,13 +95,23 @@ method addRoundedCorner MicroBlocksScripter {
 }
 
 method darkModeChanged MicroBlocksScripter {
+  changed morph // report damage
   if (darkModeEnabled projectEditor) {
-  	setColor scriptsFrame (color projectEditor 'blueGray' 900)
-  	setColor blocksFrame (color projectEditor 'blueGray' 800)
+    scriptsFrameColor = (color projectEditor 'blueGray' 900)
+    blocksFrameColor = (color projectEditor 'blueGray' 800)
+    sliderBGColor = (color projectEditor 'blueGray' 600)
+    sliderFGColor = (color projectEditor 'blueGray' 800)
   } else {
-  	setColor scriptsFrame (color projectEditor 'white')
-  	setColor blocksFrame (color projectEditor 'blueGray' 50)
+    scriptsFrameColor = (color projectEditor 'white')
+    blocksFrameColor = (color projectEditor 'blueGray' 50)
+    sliderBGColor = (color projectEditor 'blueGray' 100)
+    sliderFGColor = (color projectEditor 'blueGray' 200)
   }
+
+  setColor scriptsFrame scriptsFrameColor
+  setColor blocksFrame blocksFrameColor
+  setSliderColors scriptsFrame sliderBGColor sliderFGColor
+  setSliderColors blocksFrame sliderBGColor sliderFGColor
 }
 
 method languageChanged MicroBlocksScripter {
