@@ -82,6 +82,10 @@ method beginPathFromCurrentPostion VectorPen {
   path = (list 'M' penX penY)
 }
 
+method closePath VectorPen {
+  add path 'Z'
+}
+
 method goto VectorPen dstX dstY {
   // For compatability with Pen
   lineTo this dstX dstY
@@ -343,7 +347,9 @@ method svgPath VectorPen aColor closeFlag {
 	  cy = (at path (i + 4))
 	  add result (join 'Q ' cx ' ' cy ' ' endX ' ' endY)
 	  i += 5
-	}
+	} ('Z' == cmd) {
+	  add result 'Z'
+    }
   }
   if (true == closeFlag) { add result 'Z' }
   add result '"'

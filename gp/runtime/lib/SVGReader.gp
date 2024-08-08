@@ -1,201 +1,343 @@
-to readIcon iconName color {
-	// returns a bitmap costume
+to testSVG fileName optionalScale optionalFGColor {
+	scale = 2
+	if (notNil optionalScale) { scale = optionalScale }
+	bgColor = (gray 220)
+	filePath = (join '../img/' fileName '.svg')
+
+	ctx = (newGraphicContextOnScreen)
+	clear ctx bgColor
+
+	reader = (initialize (new 'SVGReader') scale optionalFGColor bgColor)
+	bm = (readFrom reader (readFile filePath))
+	drawBitmap ctx bm 0 0
+	show ctx
+	return bm
+}
+
+to readIcon iconName fgColor bgColor {
+	// Returns a bitmap for the given icon at the current scale.
+
 	scale = (global 'scale')
-	print 'reading icon' iconName
-	return (readSVG (readEmbeddedFile (join 'img/' iconName '.svg')) 0 0 scale color)
+	fileName = (join 'img/' iconName '.svg')
+	print 'Reading icon' fileName
+
+	data = (readEmbeddedFile fileName)
+	if (isNil data) { print 'File not found:' fileName }
+	return (readSVG data scale fgColor bgColor)
 }
 
-to readSVG data x y scale color {
+to readSVG data scale fgColor bgColor {
+	// Convert the given SVG data into a bitmap at the scale.
+	// If fgColor is not nil, stroke and fill colors will be mapped to that color.
+	// bgColor is optional but can be provided to avoid antialiasing fringes.
+
 	if (isNil scale) { scale = (global 'scale') }
-	reader = (initialize (new 'SVGReader') x y scale color)
-	readFrom reader data
-	return (bitmap reader)
+	svgReader = (initialize (new 'SVGReader') scale fgColor bgColor)
+	return (readFrom svgReader data)
 }
 
-defineClass SVGReader pen index svgData originX originY scaleFactor bitmap overridenColor
+defineClass SVGReader scaleFactor overridenColor backgroundColor svgData startX startY lastX lastY lastCX lastCY pen bitmap
 
-method initialize SVGReader x y scale color {
-	index = 1
-
-	originX = x
-	originY = y
+method initialize SVGReader scale fgColor bgColor {
 	if (notNil scale) {
 		scaleFactor = scale
 	} else {
-		scaleFactor = 1
+		scaleFactor = (global 'scale')
 	}
-	if (notNil color) { overridenColor = color }
-
+	overridenColor = fgColor // if nil, uses original color
+	backgroundColor = bgColor // provide this to avoid anti-aliasing fringes
 	return this
 }
 
-method bitmap SVGReader { return bitmap }
-
 method readFrom SVGReader data {
+	if (isNil data) { return (newBitmap (10 * scaleFactor) (10 * scaleFactor) (gray 100)) } // no data
 	svgData = data
-	nextTag = (nextTag this)
-	while (notNil nextTag) {
-		processTag this nextTag (nextAttributes this)
-		nextTag = (nextTag this)
-	}
-}
+	createBitmap this
+	i = (findSubstring '<path' svgData startIndex)
+	while (notNil i) {
+		pathTag = (extractPathTag this i)
+		drawPath this (readStringAttribute this 'd' pathTag)
 
-method nextTag SVGReader {
-	startIndex = (findSubstring '<' svgData index)
-	endIndex = (findAnyOf svgData (list ' ' '>') startIndex)
-	if (or (isNil startIndex) (isNil endIndex)) {
-		index = (count svgData)
-		return nil
-	}
-	tagName = (substring svgData (startIndex + 1) (endIndex - 1))
-	index = endIndex
-	return (toLowerCase tagName)
-}
-
-method nextAttributes SVGReader {
-	tagEndIndex = (findSubstring '>' svgData index)
-	lastAttributeEndIndex = tagEndIndex
-	while ((at svgData lastAttributeEndIndex) != '"') { // "
-		lastAttributeEndIndex = (lastAttributeEndIndex - 1)
-	}
-	attributes = (list)
-	while (index < lastAttributeEndIndex) {
-		nextAttr = (nextAttribute this)
-		if (notNil nextAttr) { add attributes nextAttr }
-	}
-	return attributes
-}
-
-method nextAttribute SVGReader {
-	tagEndIndex = (findSubstring '>' svgData index)
-	equalsIndex = (findSubstring '=' svgData index)
-
-	if (or (equalsIndex > tagEndIndex) (isNil equalsIndex)) { return }
-
-	attrEndIndex = (findSubstring '"' svgData (equalsIndex + 2)) //"
-
-	attrName = ''
-	// + 2 and - 1 to get rid of the quotes in attrs
-	attrValue = (substring svgData (equalsIndex + 2) (attrEndIndex - 1))
-
-	i = (equalsIndex - 1)
-	if (i < tagEndIndex) {
-		while (i > index) {
-			i = (i - 1)
-			if ((at svgData i) == ' ') {
-				attrName = (substring svgData (i + 1) (equalsIndex - 1))
-				i = index
-			}
+		fillColor = (readColor this 'fill' pathTag)
+		if (notNil fillColor) {
+			fill pen fillColor
 		}
-	}
-	index = attrEndIndex
-	return (list attrName attrValue)
-}
 
-method processTag SVGReader tagName attributes {
-	if (tagName == 'svg') {
-		processSVGTag this attributes
-	} (tagName == 'path') {
-		processPath this attributes
-	}
-}
-
-method processSVGTag SVGReader attributes {
-	w = 0
-	h = 0
-	for attr attributes {
-		name = (first attr)
-		value = (at attr 2)
-		if (name == 'width') {
-			w = ((toNumber value) * scaleFactor)
-		} (name == 'height') {
-			h = ((toNumber value) * scaleFactor)
-		} (name == 'viewBox') {
-			//TODO parse viewBox here. Or not!
+		strokeColor = (readColor this 'stroke' pathTag)
+		if (notNil strokeColor) {
+			strokeWidth = (readNumberWithUnits this 'stroke-width' pathTag)
+			if (isNil strokeWidth) { strokeWidth = 1 }
+			stroke pen strokeColor (scaleFactor * strokeWidth)
 		}
+		i = (findSubstring '<path' svgData (i + (count pathTag)))
 	}
-
-	bitmap = (newBitmap w h)
-	pen = (newVectorPen bitmap)
-	setOffset pen originX originY
-	setClipRect pen originX originY w h
+	return bitmap
 }
 
-method processPath SVGReader attributes {
-	for attr attributes {
-		name = (first attr)
-		value = (at attr 2)
-		if (name == 'd') {
-			drawPath this value
-		} (name == 'fill') {
-			fill pen (parseColor this value)
+method createBitmap SVGReader {
+	w = (ceiling (readNumberWithUnits this 'width' svgData))
+	h = (ceiling (readNumberWithUnits this 'height' svgData))
+	if (or (isNil w) (isNil h)) {
+		s = (readStringAttribute this 'viewBox' svgData)
+		if (isNil s) {
+			print 'SVGReader: No width, height, or viewBox attributes found'
+			// use default dimensions
+			w = 33
+			h = 32
 		} else {
-			print 'missing attribute' name 'in SVG parser'
+			viewBox = (words s)
+			w = (toInteger (at viewBox 3))
+			h = (toInteger (at viewBox 4))
 		}
 	}
+	w = (w * scaleFactor)
+	h = (h * scaleFactor)
+	bitmap = (newBitmap w h fillColor)
+	pen = (newVectorPen bitmap)
+	setClipRect pen 0 0 w h
+}
+
+method readNumberWithUnits SVGReader attrName srcString {
+	// Note: Handles positive and negative decimal numbers without exponents.
+
+	pattern = (join ' ' attrName '="')
+	i = (findSubstring pattern srcString startIndex)
+	if (isNil i) { return nil } // not found
+	i += (count pattern)
+	end = i
+	if ('-' == (at srcString end)) { end += 1 } // leading '-'
+	while (or (isDigit (at srcString end)) ('.' == (at srcString end))) { end += 1 }
+	n = (toNumber (substring srcString i (end - 1)))
+	if (isLetter (at srcString end)) {
+		units = (substring srcString end (end + 1))
+		if ('pt' == units) { n = (n * 1.25)
+		} ('pc' == units) { n = (n * 15)
+		} ('mm' == units) { n = (n * 3.543307)
+		} ('cm' == units) { n = (n * 35.43307)
+		} ('in' == units) { n = (n * 90)
+		}
+	}
+	return n
+}
+
+method readStringAttribute SVGReader attrName srcString {
+	pattern = (join ' ' attrName '="')
+	i = (findSubstring pattern srcString startIndex)
+	if (isNil i) { return nil } // not found
+	i += (count pattern)
+	end = i
+	while ('"' != (at srcString end)) { end += 1 }
+	return (trim (substring srcString i (end - 1)))
+}
+
+method extractPathTag SVGReader startIndex {
+	// Return the "<path .../>" tag tag starting at the given index.
+
+	start = (startIndex + 5)
+	end = (findSubstring '/>' svgData start)
+	if (isNil end) { return '' } // no terminator; truncated file?
+	return (substring svgData start (end - 1))
 }
 
 method drawPath SVGReader pathString {
+	lastX = 0
+	lastY = 0
+	lastCX = 0
+	lastCY = 0
 	i = 1
-	while (i < (count pathString)) {
-		currentChar = (toUpperCase (at pathString i))
-		paramList = (getPathParams this pathString (i + 1))
-		params = (at paramList 1)
-		if (currentChar == 'M') { // move to absolute point
-			beginPath pen (at params 1) (at params 2)
-		} (currentChar == 'L') { // draw line to absolute point
-			lineTo pen (at params 1) (at params 2)
-		} (currentChar == 'V') { // draw vertical line to absolute y
-			vLine pen (at params 1)
-		} (currentChar == 'H') { // draw horizontal line to absolute x
-			hLine pen (at params 1)
-		} (currentChar == 'C') { // cubic Bézier
-			(cubicCurveTo
-				pen
-				(at params 1)
-				(at params 2)
-				(at params 3)
-				(at params 4)
-				(at params 5)
-				(at params 6)
-			)
-		} (currentChar == 'S') { // smooth curve
-			(curveTo
-				pen
-				(at params 1)
-				(at params 2)
-				(at params 3)
-				(at params 4)
-			)
-		} (currentChar == 'Z') { // close path
-		} else {
-			print 'missing path command' currentChar 'in SVG parser'
+	isFirst = true
+	while (i <= (count pathString)) {
+		isAbsolute = (isUpperCase (at pathString i))
+		cmd = (toUpperCase (at pathString i))
+		paramsAndNextIndex = (getPathParams this pathString (i + 1))
+		params = (at paramsAndNextIndex 1)
+		argsNeeded = (argsNeededForCmd this cmd)
+		while ((count params) >= argsNeeded) {
+			if ('M' == cmd) { // move
+				moveCmd this params isAbsolute isFirst
+			} ('L' == cmd) { // line
+				lineCmd this params isAbsolute
+			} ('V' == cmd) { // vertical line
+				vLineCmd this params isAbsolute
+			} ('H' == cmd) { // horizontal line
+				hLineCmd this params isAbsolute
+			} ('C' == cmd) { // cubic Bézier
+				cubicCmd this params isAbsolute
+			} ('S' == cmd) { // smooth curve
+				smoothCurveCmd this params isAbsolute
+			} ('A' == cmd) { // arc command - not supported
+				print 'SVG arc (A) path command is not supported; convert to Bezier curve' params
+			} ('Z' == cmd) { // close path
+				closePath pen
+				argsNeeded = 10000 // force loop exit (since Z has zero paramters)
+			} else {
+				print 'missing path command' cmd 'in SVG parser'
+			}
+			params = (copyFromTo params (argsNeeded + 1))
+			isFirst = false
 		}
-		i = (at paramList 2)
+		i = (at paramsAndNextIndex 2)
 	}
+}
+
+method argsNeededForCmd SVGReader cmd {
+	pathCmd = (toUpperCase cmd)
+	if ('A' == cmd) { return 7
+	} ('C' == cmd) { return 6
+	} ('H' == cmd) { return 1
+	} ('L' == cmd) { return 2
+	} ('M' == cmd) { return 2
+	} ('Q' == cmd) { return 4
+	} ('S' == cmd) { return 4
+	} ('T' == cmd) { return 2
+	} ('V' == cmd) { return 1
+	} ('Z' == cmd) { return 0
+	}
+	return 0
+}
+
+method moveCmd SVGReader params isAbsolute isFirst {
+	if isAbsolute { // absolute position; clear lastX & lastY
+		lastX = 0
+		lastY = 0
+	}
+	lastX += (at params 1)
+	lastY += (at params 2)
+	if isFirst {
+// print '  beginPath' lastX lastY
+		beginPath pen lastX lastY
+		startX = lastX
+		startY = lastY
+	} else {
+// print '  lineTo' lastX lastY
+		lineTo pen lastX lastY
+	}
+}
+
+method lineCmd SVGReader params isAbsolute {
+	if isAbsolute { // absolute position; clear lastX & lastY
+		lastX = 0
+		lastY = 0
+	}
+	lastX += (at params 1)
+	lastY += (at params 2)
+	lineTo pen lastX lastY
+}
+
+method hLineCmd SVGReader params isAbsolute {
+	if isAbsolute { // absolute position; clear lastX
+		lastX = 0
+	}
+	lastX += (at params 1)
+	lineTo pen lastX lastY
+}
+
+method vLineCmd SVGReader params isAbsolute {
+	if isAbsolute { // absolute position; clear lastY
+		lastY = 0
+	}
+	lastY += (at params 1)
+	lineTo pen lastX lastY
+}
+
+method cubicCmd SVGReader params isAbsolute {
+	if isAbsolute {
+		c1X = (at params 1)
+		c1Y = (at params 2)
+		lastCX = (at params 3)
+		lastCY = (at params 4)
+		lastX = (at params 5)
+		lastY = (at params 6)
+	} else {
+		c1X = (lastX + (at params 1))
+		c1Y = (lastY + (at params 2))
+		lastCX = (lastX + (at params 3))
+		lastCY = (lastY + (at params 4))
+		lastX = (lastX + (at params 5))
+		lastY = (lastY + (at params 6))
+	}
+	cubicCurveTo pen c1X c1Y lastCX lastCY lastX lastY
+}
+
+method smoothCurveCmd SVGReader params isAbsolute {
+	c1X = (lastX + (lastX - lastCX))
+	c1Y = (lastY + (lastY - lastCY))
+	if isAbsolute {
+		lastCX = (at params 1)
+		lastCY = (at params 2)
+		lastX = (at params 3)
+		lastY = (at params 4)
+	} else {
+		lastCX = (lastX + (at params 1))
+		lastCY = (lastY + (at params 2))
+		lastX = (lastX + (at params 3))
+		lastY = (lastY + (at params 4))
+	}
+	cubicCurveTo pen c1X c1Y lastCX lastCY lastX lastY
 }
 
 method getPathParams SVGReader pathString startIndex {
-	length = (count pathString)
+	len = (count pathString)
 	i = startIndex
-	if (i >= length) { return (list (list) length) }
-	params = (list)
-	paramString = ''
-	while (and (i <= length) (not (isLetter (at pathString i)))) {
-		paramString = (join paramString (at pathString i))
+	while (and (i <= len) (not (isPathCommand this (at pathString i)))) {
 		i = (i + 1)
 	}
+	paramString = (substring pathString startIndex (i - 1))
+	return (list (splitParameterString this paramString) i)
+}
 
-	// some SVGs separate param groups by commas ¯\_(ツ)_/¯
-	paramString = (copyReplacing paramString ',' ' ')
+method isPathCommand SVGReader ch {
+	// "E" is not a path command. Don't be confused by exponential notation such as 1.0e-6.
 
-	for item (splitWith (trim paramString) ' ') {
-		add params ((toNumber item) * scaleFactor)
+	return (and (isLetter ch) ('E' != ch) ('e' != ch))
+}
+
+method splitParameterString SVGReader paramString {
+	// Split the path parameter string into a list of numbers.
+	// The separator rules are tricky!
+
+	result = (list)
+	digitSeen = false
+	start = 1
+	for i (count paramString) {
+		ch = (at paramString i)
+		if (and (isOneOf ch ',' ' ') digitSeen) {
+			// some SVGs separate x-y pairs with a comma and other parameters with spaces
+			add result (scaledNumber this (substring paramString start (i - 1)))
+			digitSeen = false
+			start = (i + 1)
+		} (and ('-' == ch) digitSeen) {
+			// optimized .SVG's may omit separator before negative parameters! (i.e. 1-2 means 1, -2)
+			if (not (isOneOf (at paramString (i - 1)) 'E' 'e')) {
+				add result (scaledNumber this (substring paramString start (i - 1)))
+				digitSeen = false
+				start = i
+			}
+		} (isDigit ch) {
+			digitSeen = true
+		}
 	}
-	return (list params i)
+	if (start <= (count paramString)) {
+		add result (scaledNumber this (substring paramString start))
+	}
+	return result
+}
+
+method scaledNumber SVGReader numberString {
+	return (scaleFactor * (toNumber numberString))
+}
+
+method readColor SVGReader attrName srcString {
+	colorString = (readStringAttribute this attrName srcString)
+	if (or (isNil colorString) ('none' == colorString)) { return nil }
+	return (parseColor this colorString)
 }
 
 method parseColor SVGReader colorString {
+	if ('hole' == colorString) {
+		if (notNil backgroundColor) { return backgroundColor }
+		return (color 255 0 255) // magenta, so missing background color will be noticeable
+	}
 	if (notNil overridenColor) { return overridenColor }
 
 	if (colorString == 'black') {

@@ -25,12 +25,23 @@ to color r g b a {
 }
 
 to colorHex s {
-  r = (hex (substring s 1 2))
-  g = (hex (substring s 3 4))
-  b = (hex (substring s 5 6))
   a = 255
-  if (8 == (count s)) {
-    a = (hex (substring s 7 8))
+  if ((count s) < 6) {
+    // one hex digit per channel
+    r = ((hex (at s 1)) << 8)
+    g = ((hex (at s 2)) << 8)
+    b = ((hex (at s 3)) << 8)
+    if (4 == (count s)) {
+      a = ((hex (at s 4)) << 8)
+    }
+  } else {
+    // two hex digits per channel
+    r = (hex (substring s 1 2))
+    g = (hex (substring s 3 4))
+    b = (hex (substring s 5 6))
+    if (8 == (count s)) {
+      a = (hex (substring s 7 8))
+    }
   }
   return (new 'Color' r g b a)
 }
