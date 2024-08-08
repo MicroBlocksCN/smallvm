@@ -110,14 +110,14 @@ static const uint8_t DAC0 = PIN_DAC0;
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (27u)
-#define PIN_SPI_MOSI         (28u)
-#define PIN_SPI_SCK          (29u)
+#define PIN_SPI_MISO         (28u)
+#define PIN_SPI_MOSI         (29u)
+#define PIN_SPI_SCK          (30u)
 #define PERIPH_SPI           sercom4
 #define PAD_SPI_TX           SPI_PAD_2_SCK_3
 #define PAD_SPI_RX           SERCOM_RX_PAD_0
 
-static const uint8_t SS	  = (30u);	// SERCOM4 last PAD is present on A2 but HW SS isn't used. Set here only for reference.
+static const uint8_t SS	  = (31u);	// SERCOM4 last PAD is present on A2 but HW SS isn't used. Set here only for reference.
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -127,8 +127,8 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (22u)
-#define PIN_WIRE_SCL         (23u)
+#define PIN_WIRE_SDA         (24u)
+#define PIN_WIRE_SCL         (25u)
 #define PERIPH_WIRE          sercom3
 #define WIRE_IT_HANDLER      SERCOM3_Handler
 
@@ -138,9 +138,9 @@ static const uint8_t SCL = PIN_WIRE_SCL;
 /*
  * USB
  */
-#define PIN_USB_HOST_ENABLE (24ul)
-#define PIN_USB_DM          (25ul)
-#define PIN_USB_DP          (26ul)
+#define PIN_USB_HOST_ENABLE (32ul)
+#define PIN_USB_DM          (33ul)
+#define PIN_USB_DP          (34ul)
 
 #ifdef __cplusplus
 }
