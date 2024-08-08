@@ -286,27 +286,35 @@ method exportLibrary MicroBlocksScripter libName {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (20 * scale))
-  catHeight = ((heightForItems categorySelector) / scale)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (20 * scale))
-  columnHeaderHeight = 33
+
+  catWidth = (max (width (morph categorySelector)) (40 * scale))
+  catHeight = (heightForItems categorySelector)
+  blocksWidth = (max (width (morph blocksFrame)) (40 * scale))
 
   // prevent pane dividers from going off right side
   catWidth = (min catWidth ((width morph) - (20 * scale)))
   blocksWidth = (min blocksWidth ((width morph) - (catWidth + (20 * scale))))
 
-  packer = (newPanePacker (bounds morph) scale)
-  packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libSelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer spacer 24 categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
-  packPanesV packer blocksFrame '100%'
-  packPanesV packer scriptsFrame '100%'
-  finishPacking packer
+  // resize parts
+  totalHeight = (height morph)
+  totalWidth = (width morph)
+  libHeaderHeight = (28 * scale)
+  setExtent (morph categorySelector) catWidth catHeight
+  setExtent (morph libHeader) catWidth libHeaderHeight
+  setExtent (morph libSelector) catWidth (catHeight - (libHeaderHeight + (24 * scale)))
+  setExtent (morph blocksFrame) blocksWidth totalHeight
+  setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
-  // extra damage report for area below libSelector
-  libSelectorM = (morph libSelector)
-  reportDamage morph (rect 0 (bottom libSelectorM) (width libSelectorM) (height morph))
+  // position parts
+  leftEdge = (left morph)
+  topEdge = (top morph)
+  fastSetPosition (morph categorySelector) leftEdge (topEdge + (24 * scale))
+  fastSetPosition (morph libHeader) leftEdge (bottom (morph categorySelector))
+  fastSetPosition (morph libSelector) leftEdge (bottom (morph libHeader))
+  fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
+  fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
+
+  changed morph // report damage
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
