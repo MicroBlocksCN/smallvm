@@ -19,7 +19,6 @@ to readIcon iconName fgColor bgColor {
 
 	scale = (global 'scale')
 	fileName = (join 'img/' iconName '.svg')
-	print 'Reading icon' fileName
 
 	data = (readEmbeddedFile fileName)
 	if (isNil data) { print 'File not found:' fileName }
@@ -330,16 +329,13 @@ method scaledNumber SVGReader numberString {
 method readColor SVGReader attrName srcString {
 	colorString = (readStringAttribute this attrName srcString)
 	if (or (isNil colorString) ('none' == colorString)) { return nil }
+	if (and (notNil overridenColor) ('fill' == attrName)) { // override fill color
+		return overridenColor
+	}
 	return (parseColor this colorString)
 }
 
 method parseColor SVGReader colorString {
-	if ('hole' == colorString) {
-		if (notNil backgroundColor) { return backgroundColor }
-		return (color 255 0 255) // magenta, so missing background color will be noticeable
-	}
-	if (notNil overridenColor) { return overridenColor }
-
 	if (colorString == 'black') {
 		return (gray 0)
 	} (colorString == 'white') {
@@ -349,4 +345,5 @@ method parseColor SVGReader colorString {
 	} else {
 		print 'missing color' colorString 'in SVG parser'
 	}
+	return (gray 100) // missing color
 }
