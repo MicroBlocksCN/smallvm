@@ -38,7 +38,7 @@
 // update (forward) references of objects that move during compaction and object resizing.
 
 #if defined(NRF51)
-  #define OBJSTORE_BYTES 1300
+  #define OBJSTORE_BYTES 1200
 #elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI_V3)
   #define OBJSTORE_BYTES 48000
 #elif defined(ARDUINO_NRF52_PRIMO)
