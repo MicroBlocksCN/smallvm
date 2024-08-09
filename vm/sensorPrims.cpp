@@ -16,7 +16,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(PICO_ED) || defined(XRP)
+#if defined(PICO_ED) || defined(XRP) || defined(GIZMO_MECHATRONICS)
 	#define Wire Wire1
 #endif
 
@@ -29,6 +29,9 @@
 #if defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
+#elif defined(GIZMO_MECHATRONICS)
+	#define PIN_WIRE_SCL 3
+	#define PIN_WIRE_SDA 2
 #elif defined(WUKONG2040)
 	#define PIN_WIRE_SCL 17
 	#define PIN_WIRE_SDA 16
