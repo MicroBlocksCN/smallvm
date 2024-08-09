@@ -168,9 +168,9 @@ method showTrashcan MicroBlocksEditor purpose {
   trashcan = (newMorph)
   overlay = (newMorph)
   if (purpose == 'hide') {
-	  setCostume trashcan (readSVGIcon 'trash-hide' nil nil 1.5)
+	  setCostume trashcan (readSVGIcon 'trashcan-hide' nil nil 1.5)
   } (purpose == 'delete') {
-	  setCostume trashcan (readSVGIcon 'trash-delete' nil nil 1.5)
+	  setCostume trashcan (readSVGIcon 'trashcan-delete' nil nil 1.5)
   } (purpose == 'hideAndDelete') {
 	  setCostume trashcan (readSVGIcon 'trashcan-both' nil nil 1.5)
   }
