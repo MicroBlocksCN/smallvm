@@ -34,6 +34,8 @@ pio run -e databot
 cp .pio/build/databot/firmware.bin precompiled/vm_databot.bin
 pio run -e makerport
 python precompiled/uf2conv.py -c .pio/build/makerport/firmware.bin -o precompiled/vm_makerport.uf2
+pio run -e gizmo-mechatronics
+cp .pio/build/gizmo-mechatronics/firmware.uf2 precompiled/vm_gizmo_mechatronics.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/

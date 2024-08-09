@@ -2664,6 +2664,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'ELECFREAKS Pico:ed' (action 'rp2040ResetMessage' this)
 			addItem menu 'ELECFREAKS Wukong2040' (action 'rp2040ResetMessage' this)
 			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
+			addItem menu 'Gizmo' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 			addItem menu 'MakerPort' (action 'adaFruitResetMessage' this)
 		}
@@ -2744,6 +2745,7 @@ method picoVMFileName SmallRuntime {
 	addItem menu 'ELECFREAKS Pico:ed'
 	addItem menu 'ELECFREAKS Wukong2040'
 	addItem menu 'RP2040 (Pico or Pico W)'
+	addItem menu 'Gizmo'
 	waitForSelection menu
 	result = (first tmp)
 	if ('ELECFREAKS Pico:ed' == result) {
@@ -2752,6 +2754,8 @@ method picoVMFileName SmallRuntime {
 		return 'vm_wukong2040.uf2'
 	} ('RP2040 (Pico or Pico W)' == result) {
 		return 'vm_pico_w.uf2'
+	} ('Gizmo' == result) {
+		return 'vm_gizmo_mechatronics.uf2'
 	}
 	return 'none'
 }
@@ -2832,6 +2836,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'ELECFREAKS Pico:ed'
 			addItem menu 'ELECFREAKS Wukong2040'
 			addItem menu 'RP2040 (Pico or Pico W)'
+			addItem menu 'Gizmo'
 			addLine menu
 			addItem menu 'MakerPort'
 			addLine menu
@@ -2903,6 +2908,9 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 		driveName = 'RPI-RP2'
 	} ('ELECFREAKS Wukong2040' == boardName) {
 		vmFileName = 'vm_wukong2040.uf2'
+		driveName = 'RPI-RP2'
+	} ('Gizmo' == boardName) {
+		vmFileName = 'vm_gizmo_mechatronics.uf2'
 		driveName = 'RPI-RP2'
 	} else {
 		return // bad board name
