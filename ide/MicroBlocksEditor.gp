@@ -268,33 +268,12 @@ method newZoomButton MicroBlocksEditor iconName action {
     action = (action iconName this)
   }
   iconScale = (0.5 * (global 'scale'))
-  bgColor = (gray 0) // xxx adjust this
-  normalColor = (gray 80)
+  normalColor = (color this 'blueGray' 400)
   highlightColor = (color this 'yellow')
   button = (newButton '' action)
-  bm1 = (readSVGIcon iconName normalColor normalColor iconScale)
-  bm2 = (readSVGIcon iconName highlightColor highlightColor iconScale)
+  bm1 = (readSVGIcon iconName normalColor nil iconScale)
+  bm2 = (readSVGIcon iconName highlightColor nil iconScale)
   setCostumes button bm1 bm2
-  return button
-}
-
-method newZoomButtonOLD MicroBlocksEditor selector action {
-  // xxx TODO Replace zoom buttons with SVG icons.
-  if (isNil action) {
-    action = (action selector this)
-  }
-  scale = (global 'scale')
-  icon = (call (action (join selector 'Icon') this))
-  w = (30 * scale)
-  h = (30 * scale)
-  x = (half (w - (width icon)))
-  y = (5 * scale)
-  bm1 = (newBitmap w h (transparent))
-  drawBitmap bm1 icon x y
-  //bm2 = (newBitmap w h (color this 'blueGray' 500))
-  //drawBitmap bm2 icon x y
-  button = (newButton '' action)
-  setCostumes button bm1
   return button
 }
 
@@ -337,12 +316,13 @@ method setBlockScalePercent MicroBlocksEditor newPercent {
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {
-  right = ((right morph) - 15)
-  bottom = (((bottom morph) - (height (morph tipBar))) - 10)
+  scale = (global 'scale')
+  right = ((right morph) - (15 * scale))
+  bottom = (((bottom morph) - (height (morph tipBar))) - (20 * scale))
   for button zoomButtons {
-	right = (right - (width (morph button)))
+    right = (right - ((width (morph button)) + (5 * scale)))
     setLeft (morph button) right
-    setTop (morph button) ((bottom - (height (morph button))) - 5)
+    setTop (morph button) (bottom - (height (morph button)))
   }
 }
 

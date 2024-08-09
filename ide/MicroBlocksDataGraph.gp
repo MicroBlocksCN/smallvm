@@ -46,12 +46,13 @@ method addZoomButtons MicroBlocksDataGraph {
 }
 
 method fixZoomButtonsLayout MicroBlocksDataGraph {
-	right = ((right morph) - (12 * (global 'scale')))
-	bottom = ((bottom morph) - (8 * (global 'scale')))
+	scale = (global 'scale')
+	right = ((right morph) - (13 * scale))
+	bottom = ((bottom morph) - (12 * scale))
 	for button zoomButtons {
-		right = (right - (width (morph button)))
+		right = (right - ((width (morph button)) + (5 * scale)))
 		setLeft (morph button) right
-		setTop (morph button) ((bottom - (height (morph button))) - 5)
+		setTop (morph button) (bottom - (height (morph button)))
 	}
 }
 
