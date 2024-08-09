@@ -89,7 +89,7 @@ method initialize MicroBlocksScripter aProjectEditor {
 method addRoundedCorner MicroBlocksScripter {
   scale = (global 'scale')
   cornerIcon = (newMorph)
-  setCostume cornerIcon (readIcon 'rounded-corner')
+  setCostume cornerIcon (readSVGIcon 'rounded-corner')
   setPosition cornerIcon (left (morph blocksFrame)) ((height (morph blocksFrame)) - (8 * scale))
   addPart morph cornerIcon
 }
@@ -299,7 +299,7 @@ method fixLayout MicroBlocksScripter {
   // resize parts
   totalHeight = (height morph)
   totalWidth = (width morph)
-  libHeaderHeight = (28 * scale)
+  libHeaderHeight = (30 * scale)
   setExtent (morph categorySelector) catWidth catHeight
   setExtent (morph libHeader) catWidth libHeaderHeight
   setExtent (morph libSelector) catWidth (catHeight - (libHeaderHeight + (24 * scale)))

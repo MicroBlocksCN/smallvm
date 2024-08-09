@@ -1,50 +1,49 @@
-to testSVG fileName optionalScale optionalFGColor {
-	scale = 2
-	if (notNil optionalScale) { scale = optionalScale }
-	bgColor = (gray 220)
-	filePath = (join '../img/' fileName '.svg')
+to readSVGIcon iconName fgColor bgColor iconScale strokeOverideFlag {
+	// Returns a bitmap for the given icon at the given scale.
+	// All parameters except iconName are optional.
 
+	fileName = (join 'img/' iconName '.svg')
+	data = (readEmbeddedFile fileName)
+	if (isNil data) { print 'File not found:' fileName }
+	return (renderSVG data fgColor bgColor iconScale strokeOverideFlag)
+}
+
+to renderSVG data fgColor bgColor iconScale strokeOverideFlag {
+	// Convert the given SVG data into a bitmap at the scale.
+	// If fgColor is not nil, stroke and fill colors will be mapped to that color.
+	// bgColor is optional but can be provided to avoid antialiasing fringes.
+
+	svgReader = (initialize (new 'SVGReader') fgColor bgColor iconScale strokeOverideFlag)
+	return (readFrom svgReader data)
+}
+
+to testSVG fileName optionalScale optionalFGColor {
+	// Used for testing rendering from GP command line.
+
+	bm = (readSVGIcon fileName optionalFGColor (gray 220) optionalScale false)
 	ctx = (newGraphicContextOnScreen)
 	clear ctx bgColor
-
-	reader = (initialize (new 'SVGReader') scale optionalFGColor bgColor)
-	bm = (readFrom reader (readFile filePath))
 	drawBitmap ctx bm 0 0
 	show ctx
 	return bm
 }
 
-to readIcon iconName fgColor bgColor {
-	// Returns a bitmap for the given icon at the current scale.
+defineClass SVGReader scaleFactor overridenColor overrideStrokes backgroundColor svgData startX startY lastX lastY lastCX lastCY pen bitmap
 
-	scale = (global 'scale')
-	fileName = (join 'img/' iconName '.svg')
-
-	data = (readEmbeddedFile fileName)
-	if (isNil data) { print 'File not found:' fileName }
-	return (readSVG data scale fgColor bgColor)
-}
-
-to readSVG data scale fgColor bgColor {
-	// Convert the given SVG data into a bitmap at the scale.
-	// If fgColor is not nil, stroke and fill colors will be mapped to that color.
-	// bgColor is optional but can be provided to avoid antialiasing fringes.
-
-	if (isNil scale) { scale = (global 'scale') }
-	svgReader = (initialize (new 'SVGReader') scale fgColor bgColor)
-	return (readFrom svgReader data)
-}
-
-defineClass SVGReader scaleFactor overridenColor backgroundColor svgData startX startY lastX lastY lastCX lastCY pen bitmap
-
-method initialize SVGReader scale fgColor bgColor {
-	if (notNil scale) {
-		scaleFactor = scale
+method initialize SVGReader fgColor bgColor iconScale strokeOverideFlag {
+	if (notNil iconScale) {
+		scaleFactor = iconScale
 	} else {
 		scaleFactor = (global 'scale')
 	}
 	overridenColor = fgColor // if nil, uses original color
 	backgroundColor = bgColor // provide this to avoid anti-aliasing fringes
+	if (and (isNil bgColor) (notNil fgColor)) {
+		backgroundColor = fgColor
+	}
+
+	if (isNil strokeOverideFlag) { strokeOverideFlag = true }
+	overrideStrokes = strokeOverideFlag
 	return this
 }
 
@@ -91,6 +90,8 @@ method createBitmap SVGReader {
 	}
 	w = (w * scaleFactor)
 	h = (h * scaleFactor)
+	fillColor = (gray 100 0)
+	if (notNil backgroundColor) { fillColor = (withAlpha backgroundColor 0) }
 	bitmap = (newBitmap w h fillColor)
 	pen = (newVectorPen bitmap)
 	setClipRect pen 0 0 w h
@@ -203,12 +204,10 @@ method moveCmd SVGReader params isAbsolute isFirst {
 	lastX += (at params 1)
 	lastY += (at params 2)
 	if isFirst {
-// print '  beginPath' lastX lastY
 		beginPath pen lastX lastY
 		startX = lastX
 		startY = lastY
 	} else {
-// print '  lineTo' lastX lastY
 		lineTo pen lastX lastY
 	}
 }
@@ -329,8 +328,10 @@ method scaledNumber SVGReader numberString {
 method readColor SVGReader attrName srcString {
 	colorString = (readStringAttribute this attrName srcString)
 	if (or (isNil colorString) ('none' == colorString)) { return nil }
-	if (and (notNil overridenColor) ('fill' == attrName)) { // override fill color
-		return overridenColor
+	if (notNil overridenColor) {
+		if ('fill' == attrName) { return overridenColor }
+		if (and overrideStrokes ('stroke' == attrName)) { return overridenColor }
+
 	}
 	return (parseColor this colorString)
 }

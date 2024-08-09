@@ -209,8 +209,8 @@ method contentsFor MicroBlocksTipBar anElement {
 
 method initIcons MicroBlocksTipBar {
 	iconsDict = (dictionary)
-	atPut iconsDict '[l]' (readIcon 'mouse-left-button')
-	atPut iconsDict '[r]' (readIcon 'mouse-right-button')
-	atPut iconsDict '(-o)' (readIcon 'bool_true')
-	atPut iconsDict '(o-)' (readIcon 'bool_false')
+	atPut iconsDict '[l]' (readSVGIcon 'mouse-left-button')
+	atPut iconsDict '[r]' (readSVGIcon 'mouse-right-button')
+	atPut iconsDict '(-o)' (readSVGIcon 'bool_true')
+	atPut iconsDict '(o-)' (readSVGIcon 'bool_false')
 }

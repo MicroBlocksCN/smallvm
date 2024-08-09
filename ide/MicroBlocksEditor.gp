@@ -244,27 +244,9 @@ method vSeparator MicroBlocksEditor {
 
 method addLogo MicroBlocksEditor {
   logoM = (newMorph)
-  setCostume logoM (readIcon 'logo')
+  setCostume logoM (readSVGIcon 'logo')
   setPosition logoM 8 8
   addPart morph logoM
-}
-
-method textButton MicroBlocksEditor label selector {
-  label = (localized label)
-  scale = (global 'scale')
-  setFont 'Arial Bold' (16 * scale)
-  if ('Linux' == (platform)) { setFont 'Arial Bold' (13 * scale) }
-  w = ((stringWidth label) + (10 * scale))
-  h = (41 * scale)
-  labelY = (12 * scale)
-  bm1 = (newBitmap w h (topBarBlue this))
-  drawString bm1 label (gray 60) (5 * scale) labelY
-  bm2 = (newBitmap w h (topBarBlueHighlight this))
-  drawString bm2 label (gray 40) (5 * scale) labelY
-  button = (newButton '' (action selector this))
-  setCostumes button bm1 bm2
-  addPart morph (morph button)
-  return button
 }
 
 // zoom buttons
@@ -281,7 +263,23 @@ method addZoomButtons MicroBlocksEditor {
   fixZoomButtonsLayout this
 }
 
-method newZoomButton MicroBlocksEditor selector action {
+method newZoomButton MicroBlocksEditor iconName action {
+  if (isNil action) { // use the selector name as the action
+    action = (action iconName this)
+  }
+  iconScale = (0.5 * (global 'scale'))
+  bgColor = (gray 0) // xxx adjust this
+  normalColor = (gray 80)
+  highlightColor = (color this 'yellow')
+  button = (newButton '' action)
+  bm1 = (readSVGIcon iconName normalColor normalColor iconScale)
+  bm2 = (readSVGIcon iconName highlightColor highlightColor iconScale)
+  setCostumes button bm1 bm2
+  return button
+}
+
+method newZoomButtonOLD MicroBlocksEditor selector action {
+  // xxx TODO Replace zoom buttons with SVG icons.
   if (isNil action) {
     action = (action selector this)
   }
@@ -293,7 +291,7 @@ method newZoomButton MicroBlocksEditor selector action {
   y = (5 * scale)
   bm1 = (newBitmap w h (transparent))
   drawBitmap bm1 icon x y
-  //bm2 = (newBitmap w h (topBarBlueHighlight this))
+  //bm2 = (newBitmap w h (color this 'blueGray' 500))
   //drawBitmap bm2 icon x y
   button = (newButton '' action)
   setCostumes button bm1
@@ -695,7 +693,7 @@ method updateIndicator MicroBlocksEditor forcefully {
     iconColor = (color this 'blueGray' 500)
     if isConnected { iconColor = (color 0 200 0) }
 
-    offBM = (readIcon 'icon-usb' iconColor)
+    offBM = (readSVGIcon 'icon-usb' iconColor (topBarBlue this))
     onBM = (getField indicator 'onCostume')
     setCostumes indicator offBM onBM
 
@@ -1117,8 +1115,6 @@ method pageResized MicroBlocksEditor {
 // top bar drawing
 
 method topBarBlue MicroBlocksEditor { return (color this 'blueGray' 900) }
-// TODO get rid of highlight color once we're using SVG icons
-method topBarBlueHighlight MicroBlocksEditor { return (color this 'blueGray' 500) }
 method topBarHeight MicroBlocksEditor { return (48 * (global 'scale')) }
 
 method drawOn MicroBlocksEditor aContext {
@@ -1128,8 +1124,9 @@ method drawOn MicroBlocksEditor aContext {
   w = (width morph)
   topBarH = (topBarHeight this)
   fillRect aContext (topBarBlue this) x y w topBarH
+
   // bottom border
-  fillRect aContext (color this 'blueGray' 700) x ((y + topBarH) - 2) w 2
+  fillRect aContext (color this 'blueGray' 700) x ((y + topBarH) - scale) w scale
 }
 
 // layout
@@ -1469,7 +1466,7 @@ method addSVGIconButton MicroBlocksEditor iconName selector hint {
   normalColor = (color this 'blueGray' 500)
   highlightColor = (color this 'yellow')
   button = (newButton '' (action selector this))
-  setCostumes button (readIcon iconName normalColor) (readIcon iconName highlightColor)
+  setCostumes button (readSVGIcon iconName normalColor) (readSVGIcon iconName highlightColor)
   if (notNil hint) { setHint button (localized hint) }
   addPart morph (morph button)
   return button
@@ -1477,27 +1474,13 @@ method addSVGIconButton MicroBlocksEditor iconName selector hint {
 
 method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
   highlightColor = (color this 'yellow')
+  bgColor = (topBarBlue this)
+  iconScale = (global 'scale')
   button = (newButton '' (action selector this))
-  setCostumes button (readIcon iconName) (readIcon iconName highlightColor)
-  if (notNil hint) { setHint button (localized hint) }
-  addPart morph (morph button)
-  return button
-}
-
-method addIconButton MicroBlocksEditor icon selector hint width {
-  scale = (global 'scale')
-  w = (43 * scale)
-  if (notNil width) { w = (width * scale) }
-  h = (42 * scale)
-  x = (half (w - (width icon)))
-  y = (11 * scale)
-  bm1 = (newBitmap w h (topBarBlue this))
-  drawBitmap bm1 icon x y
-  bm2 = (newBitmap w h (topBarBlueHighlight this))
-  drawBitmap bm2 icon x y
-  button = (newButton '' (action selector this))
-  if (notNil hint) { setHint button (localized hint) }
+  bm1 = (readSVGIcon iconName nil bgColor iconScale false)
+  bm2 = (readSVGIcon iconName highlightColor bgColor iconScale false)
   setCostumes button bm1 bm2
+  if (notNil hint) { setHint button (localized hint) }
   addPart morph (morph button)
   return button
 }
