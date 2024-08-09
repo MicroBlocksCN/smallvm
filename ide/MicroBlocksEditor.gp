@@ -160,17 +160,19 @@ method scaleChanged MicroBlocksEditor {
 // trashcan
 
 method showTrashcan MicroBlocksEditor purpose {
+  // Hide trashcan icon if purpose is nil.
+
   hideTrashcan this // just in case, prevent trashcans from stacking
   palette = (blockPalette (scripter this))
   paletteArea = (clientArea (handler (owner (morph palette))))
   trashcan = (newMorph)
   overlay = (newMorph)
   if (purpose == 'hide') {
-	  setCostume trashcan (hideDefinitionIcon this)
+	  setCostume trashcan (readSVGIcon 'trash-hide' nil nil 1.5)
   } (purpose == 'delete') {
-	  setCostume trashcan (trashcanIcon this)
+	  setCostume trashcan (readSVGIcon 'trash-delete' nil nil 1.5)
   } (purpose == 'hideAndDelete') {
-	  setCostume trashcan (hideAndDeleteIcon this)
+	  setCostume trashcan (readSVGIcon 'trashcan-both' nil nil 1.5)
   }
   addPart (morph palette) overlay
   addPart (morph palette) trashcan
