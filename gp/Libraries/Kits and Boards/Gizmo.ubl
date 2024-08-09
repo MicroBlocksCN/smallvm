@@ -4,7 +4,7 @@ version 1 0
 choices gizmo_buttons X A B Y 'Left Shoulder' 'Right Shoulder' 'Left Trigger' 'Right Trigger' Back Start 'Left Stick' 'Right Stick'
 choices gizmo_axes 'Left X' 'Left Y' 'Right X' 'Right Y' 'Dpad X' 'Dpad Y'
 depends Servo
-description 'Provides blocks for using the Gizmo from Gizmo Mechatronics.
+description 'Provides blocks for using the Gizmo control system.
 More information about the Gizmo at https://github.com/gizmo-platform'
 
 variables _gizmoGamepadState
