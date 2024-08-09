@@ -20,7 +20,12 @@ to renderSVG data fgColor bgColor iconScale strokeOverideFlag {
 to testSVG fileName optionalScale optionalFGColor {
 	// Used for testing rendering from GP command line.
 
-	bm = (readSVGIcon fileName optionalFGColor (gray 220) optionalScale false)
+	bgColor = (gray 240)
+	fileName = (join '../img/' fileName '.svg')
+	data = (readFile fileName)
+	if (isNil data) { print 'File not found:' fileName }
+
+	bm = (renderSVG data optionalFGColor bgColor optionalScale false)
 	ctx = (newGraphicContextOnScreen)
 	clear ctx bgColor
 	drawBitmap ctx bm 0 0
