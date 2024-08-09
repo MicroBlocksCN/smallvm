@@ -3,7 +3,7 @@ author MicroBlocks
 version 2 0 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
-choices makerport_loudnessPin 'analog pin' 'mp3 player' 
+choices makerport_loudnessPin 'mp3 player' 'analog pin (13)' 'extra pin (17)' 
 description 'Support for MakerPort (https://makerport.fun)'
 variables _makerport_microSDInserted 
 
@@ -16,7 +16,7 @@ variables _makerport_microSDInserted
   space
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
-  spec 'r' 'makerport_loudness' 'loudness pin _' 'auto.makerport_loudnessPin' 13
+  spec 'r' 'makerport_loudness' 'loudness pin _' 'auto.makerport_loudnessPin' 'mp3 player'
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
 
 to makerport_beep freq msecs optionalVolume {
@@ -50,8 +50,9 @@ to makerport_initialize {
 }
 
 to makerport_loudness soundPin {
-  if ('analog pin' == soundPin) {soundPin = 13}
   if ('mp3 player' == soundPin) {soundPin = 0}
+  if ('analog pin (13)' == soundPin) {soundPin = 13}
+  if ('extra pin (17)' == soundPin) {soundPin = 17}
   local 'low' 10000
   local 'high' -10000
   for i 100 {
