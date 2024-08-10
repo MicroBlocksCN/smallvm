@@ -1136,6 +1136,7 @@ method installBoardSpecificBlocks SmallRuntime {
 	if (or readFromBoard (notNil decompiler)) { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
+    if (isNil boardType) { return } // can happen if VM was updated by versionReceived
 
 	if ('Citilab ED1' == boardType) {
 		importEmbeddedLibrary scripter 'ED1 Buttons'
