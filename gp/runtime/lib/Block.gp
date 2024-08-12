@@ -155,7 +155,7 @@ method fixLayout Block {
           	add lines currentLine
           	add lineHeights h
           }
-          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) - (3 * scale))
+          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) - (7 * scale))
           add lines (list each)
           add lineHeights (height (morph each))
           currentLine = (list)
@@ -383,7 +383,7 @@ method commandSlots Block {
 	result = (list)
 	top = (top morph)
 	for m (parts morph) {
-		if (isClass (handler m) 'CommandSlot') { add result (list ((top m) - top) (height m)) }
+		if (isClass (handler m) 'CommandSlot') { add result (list ((top m) - top) ((height m) - (blockScale))) }
 	}
 	return result
 }
