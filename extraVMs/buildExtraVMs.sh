@@ -30,3 +30,6 @@ pio run -e esp32-c3
 cp .pio/build/esp32-c3/firmware.bin extraVMs/vm_esp32-c3.bin
 pio run -e freenoveCamera
 cp .pio/build/freenoveCamera/firmware.bin extraVMs/vm_freenoveCamera.bin
+
+pio run -e gizmo-mechatronics
+cp .pio/build/gizmo-mechatronics/firmware.uf2 extraVMs/vm_gizmo_mechatronics.uf2
