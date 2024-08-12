@@ -218,6 +218,7 @@ method addTopBarParts MicroBlocksEditor {
 
   progressW = (36 * scale)
   progressIndicator = (newImageBox (newBitmap progressW progressW))
+  addPart morph (morph progressIndicator)
   add rightItems progressIndicator
   add rightItems (12 * scale)
 
@@ -618,7 +619,7 @@ method updateFPS MicroBlocksEditor {
 
 method showDownloadProgress MicroBlocksEditor phase downloadProgress {
 	isDownloading = (downloadProgress < 1)
-	bm = (bitmap progressIndicator)
+	bm = (costumeData (morph progressIndicator))
 	drawProgressIndicator this bm phase downloadProgress
 	costumeChanged (morph progressIndicator)
 	updateDisplay (global 'page') // update the display
@@ -631,14 +632,14 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	cy = ((half (height bm)) + scale)
 	bgColor = (topBarBlue this)
 	if (1 == phase) {
-		lightGray = (mixed (gray 255) 5 bgColor)
-		darkGray = (mixed (gray 255) 15 bgColor)
+		lightGray = (color this 'blueGray' 50)
+		darkGray = (color this 'blueGray' 100)
 	} (2 == phase) {
-		lightGray = (mixed (gray 255) 10 bgColor)
-		darkGray = (mixed (gray 255) 25 bgColor)
+		lightGray = (color this 'blueGray' 100)
+		darkGray = (color this 'blueGray' 300)
 	} (3 == phase) {
-		lightGray = (mixed (gray 255) 25 bgColor)
-		darkGray = (mixed (gray 255) 50 bgColor)
+		lightGray = (color this 'blueGray' 300)
+		darkGray = (color this 'blueGray' 500)
 	}
 
 	fill bm bgColor
