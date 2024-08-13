@@ -150,3 +150,70 @@ method rightClicked CategorySelector {
 	}
 	return true
 }
+
+// dropping
+
+method wantsDropOf CategorySelector aHandler {
+	if (not (isMicroBlocks)) { return false } // this is a MicroBlocks specific feature
+	// only accept definition hat blocks
+	scripter = (scripter (findProjectEditor))
+	return (and
+		(isClass aHandler 'Block')
+		(isNil (blockSpec aHandler))
+		((type aHandler) == 'hat')
+	)
+}
+
+method justReceivedDrop CategorySelector aHandler {
+	// Add blocks to libraries by dropping their definition into the library selector
+	pe = (findProjectEditor)
+	scripter = (scripter pe)
+	mainModule = (main (project pe))
+	intoLibrary = (and
+		((getField scripter 'libSelector') == this)
+		(notNil (categoryUnderHand this)))
+	intoMyBlocks = (and
+		((getField scripter 'categorySelector') == this)
+		((categoryUnderHand this) == 'My Blocks'))
+
+	// accept it if dropping onto the library list or onto the category list,
+	// but only if it's onto My Blocks
+	if (or intoLibrary intoMyBlocks){
+		block = (handler (at (parts (morph aHandler)) 2))
+		function = (function block)
+		for lib (values (libraries (project scripter))) {
+			if (contains (functions lib) function) {
+				// Block already in a library, let's remove it from there first
+				removeFunction lib function
+				remove (blockList lib) (functionName function)
+				remove (blockSpecs lib) (blockSpecFor function)
+			}
+		}
+		if intoLibrary {
+			library = (at (libraries (project scripter)) (categoryUnderHand this))
+		} else {
+			library = mainModule
+		}
+		if (not (contains (functions library) function)) {
+			globalsUsed = (globalVarsUsed function)
+			if (contains (functions mainModule) function) {
+				// Block is in My Blocks, let's remove it from there first
+				removeFunction mainModule function
+				remove (blockList mainModule) (functionName function)
+				remove (blockSpecs mainModule) (blockSpecFor function)
+				for var globalsUsed {
+					deleteVariable mainModule var
+				}
+			}
+			addFunction library function
+			add (blockList library) (functionName function)
+			add (blockSpecs library) (blockSpecFor function)
+			for var globalsUsed {
+				addVariable library var
+			}
+		}
+		select this (categoryUnderHand this)
+	}
+	animateBackToOldOwner (hand (global 'page')) (morph aHandler) (action 'languageChanged' scripter)
+}
+

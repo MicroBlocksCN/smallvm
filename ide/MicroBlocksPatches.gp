@@ -495,10 +495,6 @@ method extractBlock Block whileGrabbing {
 method exportAsImage Block { exportAsImageScaled (topBlock this) }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
-method exportAsImage BlockDefinition {
-	exportAsImageScaled (handler (ownerThatIsA morph 'Block'))
-}
-
 method copyToClipboard Block {
   setClipboard (scriptText this)
 }
@@ -619,116 +615,6 @@ method deleteBlockDefinition Block {
   deleteFunction (scripter pe) (primName expression)
 }
 
-method deleteBlockDefinition BlockDefinition {
-  if (not (confirm (global 'page') nil
-  	'Are you sure you want to remove this block definition?')) {
-		return
-  }
-  pe = (findProjectEditor)
-  if (isNil pe) { return }
-  deleteFunction (scripter pe) op
-}
-
-method hideDefinition BlockDefinition {
-  // Remove this method/function definition from the scripting area.
-
-  pe = (findProjectEditor)
-  if (isNil pe) { return }
-  hideDefinition (scripter pe) op
-}
-
-method wantsDropOf BlocksPalette aHandler {
-  return (isAnyClass aHandler 'Block' 'Monitor' 'MicroBlocksSelectionContents')
-}
-
-method justReceivedDrop BlocksPalette aHandler {
-  // Hide a block definition when it is is dropped on the palette.
-  pe = (findProjectEditor)
-  if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
-  if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
-	proto = (editedPrototype aHandler)
-	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
-		hideDefinition (scripter pe) op
-		removeFromOwner (morph aHandler)
-		return
-	}
-  }
-  if (and (isClass aHandler 'Block') (notNil pe)) {
-	recordDrop (scriptEditor (scripter pe)) aHandler
-	deleteChunkFor (smallRuntime) aHandler
-  }
-  if (isClass aHandler 'MicroBlocksSelectionContents') {
-	for part (parts (morph aHandler)) {
-		justReceivedDrop this (handler part)
-	}
-  }
-  removeFromOwner (morph aHandler)
-}
-
-method wantsDropOf CategorySelector aHandler {
-	// only accept definition hat blocks
-	scripter = (scripter (findProjectEditor))
-	return (and
-		(isClass aHandler 'Block')
-		(isNil (blockSpec aHandler))
-		((type aHandler) == 'hat')
-	)
-}
-
-// Allow adding blocks to libraries by dropping their definitions into the
-// library selector
-method justReceivedDrop CategorySelector aHandler {
-	pe = (findProjectEditor)
-	scripter = (scripter pe)
-	mainModule = (main (project pe))
-	intoLibrary = (and
-		((getField scripter 'libSelector') == this)
-		(notNil (categoryUnderHand this)))
-	intoMyBlocks = (and
-		((getField scripter 'categorySelector') == this)
-		((categoryUnderHand this) == 'My Blocks'))
-
-	// accept it if dropping onto the library list or onto the category list,
-	// but only if it's onto My Blocks
-	if (or intoLibrary intoMyBlocks){
-		block = (handler (at (parts (morph aHandler)) 2))
-		function = (function block)
-		for lib (values (libraries (project scripter))) {
-			if (contains (functions lib) function) {
-				// Block already in a library, let's remove it from there first
-				removeFunction lib function
-				remove (blockList lib) (functionName function)
-				remove (blockSpecs lib) (blockSpecFor function)
-			}
-		}
-		if intoLibrary {
-			library = (at (libraries (project scripter)) (categoryUnderHand this))
-		} else {
-			library = mainModule
-		}
-		if (not (contains (functions library) function)) {
-			globalsUsed = (globalVarsUsed function)
-			if (contains (functions mainModule) function) {
-				// Block is in My Blocks, let's remove it from there first
-				removeFunction mainModule function
-				remove (blockList mainModule) (functionName function)
-				remove (blockSpecs mainModule) (blockSpecFor function)
-				for var globalsUsed {
-					deleteVariable mainModule var
-				}
-			}
-			addFunction library function
-			add (blockList library) (functionName function)
-			add (blockSpecs library) (blockSpecFor function)
-			for var globalsUsed {
-				addVariable library var
-			}
-		}
-		select this (categoryUnderHand this)
-	}
-	animateBackToOldOwner (hand (global 'page')) (morph aHandler) (action 'languageChanged' scripter)
-}
-
 // Input slots
 
 method inputIndex Block anInput {
@@ -744,37 +630,6 @@ method inputIndex Block anInput {
     }
   }
   return nil
-}
-
-method contextMenu BlockDefinition {
-  menu = (menu nil this)
-  addItem menu 'hide block definition' 'hideDefinition'
-  addLine menu
-  addItem menu 'copy to clipboard' (action 'copyToClipboard' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard'
-  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard as a URL'
-  addLine menu
-  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of this block definition as a PNG file'
-  if (devMode) {
-    addLine menu
-    addItem menu 'show instructions' (action 'showInstructions' this)
-    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
-    addItem menu 'show call tree' (action 'showCallTree' this)
-  }
-  addLine menu
-  addItem menu 'delete block definition...' 'deleteBlockDefinition'
-  popUp menu (global 'page') (left morph) (bottom morph)
-}
-
-method showInstructions BlockDefinition {
-  showInstructions (smallRuntime) (handler (owner (owner morph)))
-}
-
-method showCompiledBytes BlockDefinition {
-  showCompiledBytes (smallRuntime) (handler (owner (owner morph)))
-}
-
-method showCallTree BlockDefinition {
-  showCallTree (smallRuntime) (handler (owner (owner morph)))
 }
 
 method initializeRepeater BlockDefinition aBlockSpec {
