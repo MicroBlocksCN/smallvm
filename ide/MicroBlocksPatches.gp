@@ -177,36 +177,6 @@ method isReplaceableByReporter InputSlot {
 	return (not isStatic)
 }
 
-to gpFolder {
-  if ('iOS' == (platform)) { return '.' }
-  path = (userHomePath)
-
-  hidden = (global 'hideFolderShortcuts')
-  if (and (notNil hidden) (contains hidden 'Projects')) { return '/' } // if GP hidden, use computer
-
-  // Look for <home>/Documents
-  if (contains (listDirectories path) 'Documents') {
-	path = (join path '/Documents')
-  }
-  if (not (contains (listDirectories path) 'MicroBlocks')) {
-	if (contains (listDirectories path) 'MicroBlocks Projects') {
-		// if it exists, rename old 'MicroBlocks Projects' folder to 'MicroBlocks'
-		renameFile (join path '/MicroBlocks Projects') (join path '/MicroBlocks')
-	} else {
-		// create the MicroBlocks folder if it does not already exist
-		makeDirectory (join path '/MicroBlocks')
-	}
-  }
-  if (contains (listDirectories path) 'MicroBlocks') {
-    // create the Libraries subfolder, if it does not already exist
-	if (not (contains (listDirectories (join path '/MicroBlocks') 'Libraries'))) {
-		makeDirectory (join path '/MicroBlocks/Libraries')
-	}
-	path = (join path '/MicroBlocks')
-  }
-  return path
-}
-
 // Broadcast menu
 
 method broadcastMenu InputSlot {
@@ -774,21 +744,6 @@ method inputIndex Block anInput {
     }
   }
   return nil
-}
-
-method representsANumber String {
-	// MicroBlocks only supports integers.
-	if ('' == String) { return true }
-	isFirst = true
-	for c (letters this) {
-		if ('-' == c) {
-			if (not isFirst) { return false }
-		} (not (isDigit c)) {
-			return false
-		}
-		isFirst = false
-	}
-	return true
 }
 
 method contextMenu BlockDefinition {

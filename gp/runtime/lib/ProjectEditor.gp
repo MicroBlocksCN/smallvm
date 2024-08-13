@@ -69,11 +69,8 @@ to findProjectEditor {
   page = (global 'page')
   editorClass = 'ProjectEditor'
   if (isMicroBlocks) { editorClass = 'MicroBlocksEditor' }
-  if (notNil page) {
-	for p (parts (morph page)) {
-	  if (isClass (handler p) editorClass) { return (handler p) }
-	}
-  }
+  m = (findMorph editorClass)
+  if (notNil m) { return (handler m) }
   return nil
 }
 

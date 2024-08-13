@@ -750,7 +750,7 @@ method withoutTrailingDigits String {
 }
 
 method representsANumber String {
-  if (isMicroblocks) return { representsAnInteger this }
+  if (isMicroBlocks) { return (representsAnInteger this) }
   hasDecimalPoint = false
   hasExponent = false
   lastC = nil
