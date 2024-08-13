@@ -87,6 +87,7 @@ method initializeRepeater BlockDefinition aBlockSpec {
     hide (morph repeater)
   }
   setPadding repeater (5 * (global 'scale'))
+
   if (isMicroBlocks) { return } // suppress the ability to make variadic user-defined blocks for now
 
   addPart (morph repeater) (morph drawer)
