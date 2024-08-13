@@ -5,6 +5,8 @@ method stage ProjectEditor { return stage }
 method library ProjectEditor { return library }
 method scripter ProjectEditor { return scripter }
 
+to isMicroBlocks { return false } // used to distguish between GP and MicroBlocks
+
 to recover baseFilename {
   // Save any projects in memory (usually only one) to files.
   if (isNil baseFilename) { baseFilename = 'recovered' }
@@ -65,9 +67,11 @@ to openProjectEditor tryRetina devMode {
 
 to findProjectEditor {
   page = (global 'page')
+  editorClass = 'ProjectEditor'
+  if (isMicroBlocks) { editorClass = 'MicroBlocksEditor' }
   if (notNil page) {
 	for p (parts (morph page)) {
-	  if (isClass (handler p) 'ProjectEditor') { return (handler p) }
+	  if (isClass (handler p) editorClass) { return (handler p) }
 	}
   }
   return nil

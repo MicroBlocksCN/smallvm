@@ -346,7 +346,9 @@ method updateBlocks Scripter {
     specs = (specsFor (authoringSpecs) cat)
     for spec specs {
       if (or (devMode) (isUserBlock this spec)) {
-        addBlock this (blockForSpec spec) spec
+        if (isClass spec 'BlockSpec') {
+          addBlock this (blockForSpec spec) spec
+        }
       }
     }
   }

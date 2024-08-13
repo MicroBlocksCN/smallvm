@@ -7,7 +7,7 @@
 // MicroBlocksEditor.gp - Top-level window for the MicroBlocks IDE
 // John Maloney, January, 2018
 
-to startup { openMicroBlocksEditor } // run at startup if not in interactive mode
+to isMicroBlocks { return true }
 
 to uload fileName {
   // Reload a top level module file when working on MicroBlocks. The 'lib/' prefix and '.gp'

@@ -750,6 +750,7 @@ method withoutTrailingDigits String {
 }
 
 method representsANumber String {
+  if (isMicroblocks) return { representsAnInteger this }
   hasDecimalPoint = false
   hasExponent = false
   lastC = nil
@@ -783,7 +784,7 @@ method representsANumber String {
 }
 
 method representsAnInteger String {
-  if ('' == this) { return false }
+  if ('' == this) { return true }
   if ('-' == (at this 1)) {
   	return (and ((count this) > 1) (allDigits (substring this 2)))
   }

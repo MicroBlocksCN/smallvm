@@ -172,6 +172,7 @@ method blockColorForOp AuthoringSpecs op {
 }
 
 method blockColorForCategory AuthoringSpecs cat {
+  if (not (isMicroBlocks)) { return (gpBlockColorForCategory this cat) }
   if (and (notNil cat) (endsWith cat '-Advanced')) {
   	cat = (substring cat 1 ((count cat) - 9))
   }
@@ -234,24 +235,19 @@ method oldMicroBlocksColor AuthoringSpecs cat {
 // More Blocks					(color 98 50 151)))
 
 
-// GP Colors:
-// method blockColorForCategory AuthoringSpecs cat {
-//   defaultColor = (color 4 148 220)
-//   if (isOneOf cat 'Control' 'Functions') {
-// 	if (notNil (global 'controlColor')) { return (global 'controlColor') }
-// 	return (color 230 168 34)
-//   } ('Variables' == cat) {
-// 	if (notNil (global 'variableColor')) { return (global 'variableColor') }
-// 	return (color 243 118 29)
-//   } (isOneOf cat 'Operators' 'Math') {
-// 	if (notNil (global 'operatorsColor')) { return (global 'operatorsColor') }
-// 	return (color 98 194 19)
-//   } ('Obsolete' == cat) {
-// 	return (color 196 15 0)
-//   }
-//   if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
-//   return defaultColor
-// }
+method gpBlockColorForCategory AuthoringSpecs cat {
+  defaultColor = (color 4 148 220)
+  if (isOneOf cat 'Control' 'Functions') {
+	return (color 230 168 34)
+  } ('Variables' == cat) {
+	return (color 243 118 29)
+  } (isOneOf cat 'Operators' 'Math') {
+	return (color 98 194 19)
+  } ('Obsolete' == cat) {
+	return (color 196 15 0)
+  }
+  return defaultColor
+}
 
 // translation
 

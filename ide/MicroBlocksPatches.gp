@@ -177,12 +177,6 @@ method isReplaceableByReporter InputSlot {
 	return (not isStatic)
 }
 
-to findProjectEditor {
-  m = (findMorph 'MicroBlocksEditor')
-  if (notNil m) { return (handler m) }
-  return nil
-}
-
 to gpFolder {
   if ('iOS' == (platform)) { return '.' }
   path = (userHomePath)

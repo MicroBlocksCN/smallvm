@@ -18,8 +18,13 @@ method initialize Window labelString {
   pe = (findProjectEditor)
   scale = (global 'scale')
   border = (scale * 5)
-  color = (color pe 'blueGray' 850)
-  clientColor = (color pe 'blueGray' 50)
+  if (implements pe 'color') {
+    color = (color pe 'blueGray' 850)
+    clientColor = (color pe 'blueGray' 50)
+  } else {
+    color = (gray 80)
+    clientColor = (gray 255)
+  }
   morph = (newMorph this)
   setGrabRule morph 'handle'
   setTransparentTouch morph false // optimization
