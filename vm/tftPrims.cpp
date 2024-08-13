@@ -1209,7 +1209,6 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
 	#elif defined(COCUBE)
         pinMode(TFT_BL, OUTPUT);
-        // digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
 		if (brightness < 0) brightness = 0;
 		if (brightness > 10) brightness = 10;
 		analogWrite(TFT_BL, brightness * 25);
