@@ -216,10 +216,32 @@ method textChanged InputSlot {
 method clicked InputSlot aHand {
   if (notNil menuSelector) {
     if (or ((x aHand) >= ((right morph) - (fontSize text))) isStatic) {
-	  menu = (call menuSelector this)
-	  if (notNil menu) { popUpAtHand menu (page aHand) }
-      return true
+	  if (contains (methodNames (class 'InputSlot')) menuSelector) {
+		menu = (call menuSelector this)
+		if (notNil menu) {
+		  popUpAtHand menu (page aHand)
+		}
+	  } else {
+		project = (project (findProjectEditor))
+		choices = (choicesFor project menuSelector)
+		if (notNil choices) {
+		  menu = (menu nil (action 'setContents' this) true)
+		  for choice choices {
+		    labelAndValue = (splitWith choice ':')
+		    if ((count labelAndValue) == 2) {
+		      if (representsAnInteger (at labelAndValue 2)) {
+		        atPut labelAndValue 2 (toNumber (at labelAndValue 2))
+		      }
+		      addItem menu (at labelAndValue 1) (at labelAndValue 2)
+		    } else {
+			  addItem menu choice
+			}
+		  }
+		  popUpAtHand menu (page aHand)
+		}
+	  }
     }
+	return true
   }
   return false
 }
@@ -382,6 +404,8 @@ method localVarMenu InputSlot {
 }
 
 method allVarsMenu InputSlot {
+  if (isMicroBlocks) { return (microBlocksVarsMenu this) }
+
   menu = (menu nil (action 'setContents' this) true)
 
   // shared vars
@@ -502,6 +526,141 @@ method voiceNameMenu InputSlot {
   return menu
 }
 
+// MicroBlocks slot menus
+
+method microBlocksVarsMenu InputSlot {
+  menu = (menu)
+
+  // shared vars
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
+  if (notNil scripter) {
+	varNames = (allVariableNames (project (handler scripter)))
+	for varName varNames {
+          // hide vars that start with underscore, used for libraries
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
+            addItemNonlocalized menu varName (action 'setContents' this varName)
+          }
+	}
+	if ((count varNames) > 0) { addLine menu }
+  }
+
+  // local vars
+  myBlock = (handler (ownerThatIsA morph 'Block'))
+  localVars = (collectLocals (expression (topBlock myBlock)))
+
+  // if inside function, add the function arg names
+  topExpr = (expression (topBlock myBlock))
+  if (and ('to' == (primName topExpr)) (notNil scripter)) {
+    fName = (first (argList topExpr))
+    func = (functionNamed (project (handler scripter)) fName)
+    if (notNil func) {
+      for argName (argNames func) {
+        if (not (contains localVars argName)) { add localVars argName }
+      }
+    }
+  }
+
+  remove localVars ''
+  for v varNames { remove localVars v }
+  if (notEmpty localVars) {
+	localVars = (sorted (keys localVars))
+	for varName localVars {
+	  addItemNonlocalized menu varName (action 'setContents' this varName)
+	}
+	addLine menu
+  }
+
+  addItem menu (localized 'Add a variable') (action 'createVariable' (handler scripter) this)
+  scripter = (scripter (findProjectEditor))
+  return menu
+}
+
+method typesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'string'
+  addItem menu 'list'
+  addItem menu 'byte array'
+  return menu
+}
+
+method buttonMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  addItem menu 'A+B'
+  return menu
+}
+
+method AtoDMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  addItem menu 'C'
+  addItem menu 'D'
+  return menu
+}
+
+method pullMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'none'
+  addItem menu 'up'
+  addItem menu 'down'
+  return menu
+}
+
+method itemOfMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 1
+  addItem menu 'last'
+  addItem menu 'random'
+  return menu
+}
+
+method replaceItemMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 1
+  addItem menu 'last'
+  addItem menu 'all'
+  return menu
+}
+
+method functionNameMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  scripterM = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripterM) {
+    project = (project (handler scripterM))
+    specs = (blockSpecs project)
+    for func (functions (main project)) {
+	  addItem menu (functionName func)
+    }
+  }
+  return menu
+}
+
+method broadcastMenu InputSlot {
+  menu = (menu)
+
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripter) {
+    saveScripts (handler scripter)
+    msgList = (allBroadcasts (project (handler scripter)))
+
+    // special case for default broadcast string
+    defaultBroadcast = 'go!'
+    remove msgList defaultBroadcast
+    addItemNonlocalized menu (localized defaultBroadcast) (action 'setContents' this defaultBroadcast)
+    addLine menu
+
+	for s msgList {
+      addItemNonlocalized menu s (action 'setContents' this s)
+	}
+  }
+  return menu
+}
+
 // context menu - type switching
 
 method rightClicked InputSlot aHand {
@@ -548,11 +707,21 @@ method switchType InputSlot editRule {
   setContents this dta
 }
 
-// replacement rule
+// replacement rule - static input slots do not accept reporter drops
 
-to isReplaceableByReporter anInput {return true}
-method isReplaceableByReporter InputSlot {return (not isStatic)}
-method setIsStatic InputSlot bool {isStatic = bool}
+method setIsStatic InputSlot bool { isStatic = bool }
+
+to isReplaceableByReporter anInput { return true }
+
+method isReplaceableByReporter InputSlot {
+  if (not (isMicroBlocks)) { return (not isStatic) }
+  owner = (handler (owner morph))
+  if (and (isClass owner 'Block') ('hat' == (type owner))) {
+    // Don't allow dropping reporters into hat block input slots.
+    return false
+  }
+  return (not isStatic)
+}
 
 // keyboard accessability hooks
 
