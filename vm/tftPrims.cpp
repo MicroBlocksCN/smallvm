@@ -1011,11 +1011,10 @@ static int deferUpdates = false;
 		#define TFT_BL 33
 		#define TFT_WIDTH 240
 		#define TFT_HEIGHT 240
-		#define TFT_PWR -1
 		#define DEFAULT_BATTERY_PIN 34
 
-		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, -1, TFT_SCLK, TFT_MOSI, -1);
-		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 1, false, 240, 240);
+		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
+		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 3, false, TFT_WIDTH, TFT_HEIGHT, 0, 0, 0, 80);
 
 		// ArUco Marker, 4x4, 0-white, 1-black
         const uint16_t aruco_tags[100] = {
@@ -1056,10 +1055,12 @@ static int deferUpdates = false;
                                9, 9, 9, 9, 9, 9, 9, 9, 9, 6, 6, 6, 5, 9, 8, 7, 6, 5, 4, 3, 2, 1, 6, 5, 4, 5};
 
         void tftInit() {
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, LOW);
 			tft.begin();
 			tft.invertDisplay(1);
 			tft.fillScreen(RGB565_BLACK);
-			pinMode(TFT_BL, OUTPUT);
+			delay(35);
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
 
@@ -1077,7 +1078,7 @@ static int deferUpdates = false;
 			else{
 				tft.setTextColor(RGB565_RED);
 			}
-			tft.setCursor(80, 80);
+			tft.setCursor(65, 80);
 			tft.println(battery_percentage_char);
 			delay(800);
 		}
