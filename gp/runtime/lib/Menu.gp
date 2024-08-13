@@ -158,9 +158,9 @@ method buildMorph Menu page yPos {
   if (widgetHeight < menuHeight) {
     box = (newBox nil (transparent) 0 0 false false)
     container = (morph box)
-    setExtent container menuWidth (menuHeight - lblHeight)
+    setExtent container menuWidth menuHeight
     scrollFrame = (scrollFrame box)
-    setExtent (morph scrollFrame) widgetWidth (widgetHeight - lblHeight)
+    setExtent (morph scrollFrame) widgetWidth widgetHeight
     setPosition (morph scrollFrame) border border
     addPart morph (morph scrollFrame)
     updateSliders scrollFrame
