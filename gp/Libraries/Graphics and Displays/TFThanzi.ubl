@@ -1,24 +1,32 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 5 
-depends TFT Strings Files 
+version 1 6
+depends TFT Strings Files NeoPixel NeoPanel
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.6 增加了neoPanel点阵屏上汉字滚动的方法
 v1.5 增加对neoPanel和OLED的支持
 v1.4 增加二进制字库文件支持
 v1.3 增加了一个大写英文字母字体
 v1.2 增加了通过文件保存和提取字模的功能
 v1.1 增加了颜色设置，增加了几个汉字和数字示例
 -------
+字库文件下载地址：https://www.go2crm.cn/go_static/font.bin
 取模工具：
 32点阵汉字取模 https://create.codelab.club/projects/53122
 16点阵汉字取模 https://create.codelab.club/projects/53070
 16点阵图案设计工具 https://create.codelab.club/projects/66585
 -------
 介绍视频：
-https://www.bilibili.com/video/BV1R14y1172r/'
+https://www.bilibili.com/video/BV1R14y1172r/
+
+可以在示例的other分类找到此库的使用示例-chineseDisplay
+'
+
+variables _scrollStop _scrollPause
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' 'data' 0 0 1 nil ''
   spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
+  spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _' 'auto color auto num' '汉字' nil '10' 12
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
   spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
@@ -189,9 +197,6 @@ to draw data x y size color neo {
       yy = (yy + 8)
     }
   }
-  if (neo == 1) {
-    '_NeoPixel_update'
-  }
 }
 
 to drawChar foo x y size color {
@@ -223,4 +228,30 @@ to saveFile fileName code {
   '[file:open]' fileName
   '[file:appendLine]' code fileName
   '[file:close]' fileName
+}
+
+tto scrollHanzi hanzi color x neoPin {
+  _scrollStop = 0
+  _scrollPause = 0
+  neoPanel_attach 16 16 neoPin
+  local 'id' 1
+  repeatUntil (and (x == -16) (id == (size hanzi))) {
+    if (_scrollPause == 1) {waitUntil (or (_scrollPause == 0) (_scrollStop == 1))}
+    if (_scrollStop == 0) {
+      if (x == -16) {
+        id += 1
+        x += 16
+      }
+      _np_pixels = (newList 256 0)
+      sayIt id
+      draw ('_fromFontFile' (at id hanzi) true) x 0 1 color 1
+      if (id < (size hanzi)) {
+        draw ('_fromFontFile' (at (id + 1) hanzi) true) (x + 16) 0 1 color 1
+      }
+      '_NeoPixel_update'
+      x += -1
+    } else {
+      stopTask
+    }
+  }
 }
