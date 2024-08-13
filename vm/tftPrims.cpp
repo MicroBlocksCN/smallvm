@@ -1012,6 +1012,7 @@ static int deferUpdates = false;
 		#define TFT_WIDTH 240
 		#define TFT_HEIGHT 240
 		#define TFT_PWR -1
+		#define DEFAULT_BATTERY_PIN 34
 
 		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, -1, TFT_SCLK, TFT_MOSI, -1);
 		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 1, false, 240, 240);
@@ -1061,6 +1062,24 @@ static int deferUpdates = false;
 			pinMode(TFT_BL, OUTPUT);
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
+
+            unsigned char battery_percentage =constrain((2.54 * map(analogRead(DEFAULT_BATTERY_PIN), 0, 1023, 0, 3300) - 6800) / 16, 0, 99);
+			char battery_percentage_char[4];
+			itoa(battery_percentage, battery_percentage_char, 10);
+			tft.setTextSize(10);
+			if (battery_percentage > 66){
+				tft.setTextColor(RGB565_GREEN);
+			}
+			else if (battery_percentage > 33)
+			{
+				tft.setTextColor(RGB565_ORANGE);
+			}
+			else{
+				tft.setTextColor(RGB565_RED);
+			}
+			tft.setCursor(80, 80);
+			tft.println(battery_percentage_char);
+			delay(800);
 		}
 
 	#endif // end of board-specific sections
@@ -1190,7 +1209,10 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
 	#elif defined(COCUBE)
         pinMode(TFT_BL, OUTPUT);
-        digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
+        // digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
+		if (brightness < 0) brightness = 0;
+		if (brightness > 10) brightness = 10;
+		analogWrite(TFT_BL, brightness * 25);
 	#elif defined(FUTURE_LITE)
 		pinMode(TFT_BL, OUTPUT);
 		digitalWrite(TFT_BL, (brightness > 0) ? HIGH : LOW);
