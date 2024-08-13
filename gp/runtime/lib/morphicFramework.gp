@@ -170,6 +170,13 @@ method grab Hand handler {
   changed morph
 }
 
+method oldX Hand { return oldX }
+method oldY Hand { return oldY }
+method savePosition Hand {
+	oldX = x
+	oldY = y
+}
+
 method cachedCostumeFor Hand handler {
   result = (newMorph)
   bm = (fullCostume (morph handler))
@@ -1426,7 +1433,9 @@ method addTurtle Page {
   addPart this t
 }
 
-method confirmToQuit Page {confirm this nil (join 'Are you sure' (newline) 'you want to quit GP?') nil nil 'exit'}
+method confirmToQuit Page {
+	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
+}
 
 // foreground layer
 
