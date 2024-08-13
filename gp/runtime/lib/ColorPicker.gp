@@ -1,6 +1,6 @@
 defineClass ColorPicker morph action paletteBM lastColor grayPalette colorPalette slider swatch rText gText bText
 
-to newColorPicker action initialColor {
+to newColorPicker action initialColor withTransparentButton {
   // If there is already a ColorPicker on the screen, return it.
   // Otherwise, create and return a new one.
 
@@ -16,12 +16,12 @@ to newColorPicker action initialColor {
 	  return picker
 	}
   }
-  return (initialize (new 'ColorPicker') action initialColor)
+  return (initialize (new 'ColorPicker') action initialColor withTransparentButton)
 }
 
 method setAction ColorPicker anAction { action = anAction }
 
-method initialize ColorPicker anAction initialColor {
+method initialize ColorPicker anAction initialColor withTransparentButton {
   morph = (newMorph this)
   setGrabRule morph 'ignore'
   setCostume morph (drawFrame this 297 158)
@@ -29,7 +29,8 @@ method initialize ColorPicker anAction initialColor {
   addColorPalette this 10 25 200 128
   addSlider this 220 25 10 128
   addSwatch this 240 25 50 50
-  addTransparentButton this 244 141
+  if (isNil withTransparentButton) { withTransparentButton = false }
+  if withTransparentButton { addTransparentButton this 244 141 }
   addCloseButton this 273 5
   addReadouts this 250 85
   action = anAction

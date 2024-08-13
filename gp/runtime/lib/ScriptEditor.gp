@@ -29,9 +29,26 @@ method step ScriptEditor {
 
 // events
 
+method handDownOn ScriptEditor aHand {
+	if (notNil (grabbedObject aHand)) { return false } // hand is not empty
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	selection = (selection scripter)
+	if (and (notNil selection) (notEmpty selection)) {
+		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
+		if (and (notNil grabbed) (contains selection (handler grabbed))) {
+			dragBlocks selection
+			return true
+		}
+	}
+	if (isClass (objectAt aHand) 'ScriptEditor') {
+		startSelecting scripter aHand
+	}
+	return true
+}
+
 method wantsDropOf ScriptEditor aHandler {
   return (or
-    (isAnyClass aHandler 'Block' 'CommandSlot')
+    (isAnyClass aHandler 'Block' 'CommandSlot' 'MicroBlocksSelectionContents')
     (and
       (devMode)
       (isClass aHandler 'Text')
@@ -234,6 +251,8 @@ method updateFeedback ScriptEditor block hand {
   }
 }
 
+method dropFeedbackColor ScriptEditor { return (colorHex 'FED722') }
+
 method showCommandDropFeedback ScriptEditor target {
   setHeight (bounds feedback) (scale * 5)
   if (isClass target 'Block') {
@@ -251,7 +270,7 @@ method showCommandDropFeedback ScriptEditor target {
     if (isNil nb) {top += (scaledCorner target)}
     setPosition feedback (+ (scaledCorner target) (left (morph target))) top
   }
-  setCostume feedback (newBitmap (width (morph target)) (scale * 5) (gray 255))
+  setCostume feedback (newBitmap (width (morph target)) (scale * 5) (dropFeedbackColor this))
 }
 
 method showReporterDropFeedback ScriptEditor target {
@@ -259,8 +278,8 @@ method showReporterDropFeedback ScriptEditor target {
   area = (rect 0 0 (width feedback) (height feedback))
   radius = (10 * scale)
   border = (3 * scale)
-  fillColor = (gray 255 150) // translucent
-  borderColor = (gray 255)
+  fillColor = (withAlpha (dropFeedbackColor this) 150) // translucent
+  borderColor = (dropFeedbackColor this)
   bm = (newBitmap (width area) (height area))
   fillRoundedRect (newShapeMaker bm) area radius fillColor border borderColor borderColor
   setCostume feedback bm
@@ -269,6 +288,32 @@ method showReporterDropFeedback ScriptEditor target {
 // context menu
 
 method contextMenu ScriptEditor {
+  menu = (menu nil this)
+  addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
+  addLine menu
+  if (notNil lastDrop) {
+    addItem menu 'undrop (ctrl-Z)' 'undrop' 'undo the last block drop'
+  }
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  addLine menu
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard as URL' 'copyScriptsToClipboardAsURL'
+  addLine menu
+  clip = (readClipboard)
+  if (beginsWith clip 'GP Scripts') {
+	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
+  } (beginsWith clip 'GP Script') {
+	addItem menu 'paste script from clipboard' 'pasteScripts'
+  }
+  addLine menu
+  addItem menu 'save a picture of all visible scripts' 'saveScriptsImage'
+  if (devMode) {
+    addItem menu 'set exported script scale' 'setExportedScriptScale'
+  }
+  return menu
+}
+
+method contextMenuForGP ScriptEditor {
   menu = (menu nil this)
   addItem menu 'set block size...' 'setBlockSize' 'make blocks smaller'
   addLine menu
@@ -605,11 +650,17 @@ method scriptsRect ScriptEditor {
 // script copy/paste via clipboard
 
 method copyScriptsToClipboard ScriptEditor {
-  scripter = (ownerThatIsA morph 'Scripter')
-  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
-  targetObj = (targetObj (handler scripter))
-  setClipboard (join 'GP Scripts' (newline) (scriptStringWithDefinitionBodies (classOf targetObj)))
+  setClipboard (allScriptsString (handler scripter))
+}
+
+method copyScriptsToClipboardAsURL ScriptEditor {
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripter) { return }
+  scriptsString = (allScriptsString (handler scripter))
+  urlPrefix = (urlPrefix (findMicroBlocksEditor))
+  setClipboard (join urlPrefix '#scripts=' (urlEncode scriptsString true))
 }
 
 method pasteScripts ScriptEditor {
