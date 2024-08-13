@@ -230,7 +230,7 @@ to saveFile fileName code {
   '[file:close]' fileName
 }
 
-tto scrollHanzi hanzi color x neoPin {
+to scrollHanzi hanzi color x neoPin {
   _scrollStop = 0
   _scrollPause = 0
   neoPanel_attach 16 16 neoPin
