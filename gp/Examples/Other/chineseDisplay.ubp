@@ -1,20 +1,21 @@
 module main
 author Patch
-version 1 0 
+version 1 1
 description '在TFT、OLED和16点阵NeoPanel上利用汉字字库显示汉字，
 需要下载汉字库到主控板上，下载地址：
 https://www.go2crm.cn/go_static/font.bin'
 
-script 40 40 {
+script 50 50 {
 whenStarted
 comment '使用这个示例之前，请确保已经下载字库文件font.bin到你所使用的主控板上。
-字库文件下载地址：https://www.go2crm.cn/go_static/font.bin'
+字库文件下载地址：https://www.go2crm.cn/go_static/font.bin
+本字库所包含汉字范围在unicode19968和40959之间'
 sendBroadcast 'OLED'
 sendBroadcast 'TFT'
 sendBroadcast 'LED16'
 }
 
-script 319 157 {
+script 329 167 {
 whenBroadcastReceived 'TFT'
 '[tft:clear]'
 drawChar 'hello 汉字' 0 0 1 (colorSwatch 35 190 30 255)
@@ -22,16 +23,21 @@ drawChar 'hello 汉字' 0 16 2 (colorSwatch 35 190 30 255)
 drawChar '你好汉字' 0 48 3 (colorSwatch 35 190 30 255)
 }
 
-script 511 313 {
+script 521 323 {
 whenBroadcastReceived 'LED16'
-comment '在16X16的NeoPixel灯阵上可以显示完整汉字'
+comment '在16X16的NeoPixel像素屏上可以显示完整汉字'
 neoPanel_attach 16 16 12
 clearNeoPixels
-comment '本字库所包含汉字范围在unicode19968和40959之间'
 draw ('_fromFontFile' ('[data:unicodeString]' (random 19968 40959)) true) 0 0 1 (makeColor (random 100 255) (random 100 255) (random 100 255)) 1
+'_NeoPixel_update'
+comment 'neoPanel像素屏上现实静态汉字需要调用_NeoPixel_update呈现结果'
+waitMillis 1000
+scrollHanzi '让简单的事情保持简单' (colorSwatch 17 163 243 255) 10 12
+scrollHanzi '让困难的事情变得可能' (colorSwatch 234 74 236 255) 16 12
+comment '滚动汉字不需要调用_NeoPixel_update(方法里内置了)'
 }
 
-script 40 351 {
+script 50 361 {
 whenBroadcastReceived 'OLED'
 OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
 OLEDclear
@@ -423,10 +429,10 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 13 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -1277,7 +1283,7 @@ description '在 Turgut Guneysu 的1306 OLED 驱动上增加了汉字点阵库�
 variables _chDecTBL _chTABLE _initChs 
 
   spec ' ' 'OLEDwriteChs' '显示汉字 _ 在 x _ y _ 反色 _' 'str auto auto bool' '你好世界' 0 0 false
-  spec ' ' 'OLEDdrawImageWH' '显示 图像 _ 在 x _ y _  : 宽 _ 高 _ ' 'auto num num num num' '0' 0 0 5 5
+  spec ' ' 'OLEDdrawImageWH' '显示 图像 _ 在 x _ y _   : 宽 _ 高 _ ' 'auto num num num num' '0' 0 0 5 5
   spec 'r' 'OLEDmakeDotImage' '点阵图 从字符串 _ ' 'str' '048850FF518A0401000007040201'
   spec ' ' 'userChLibrary' '自定义字库(1-10) _ 从16进制字符串 _' 'str str' '汉字' '112200023EC20282621E0000040209080402010204080800
 0C0424242526A46424040C0001010109090F010101010100'
@@ -1504,114 +1510,6 @@ to userChLibrary string hexStr {
 }
 
 
-module OctoStudio Comm
-author wwj718
-version 1 7 
-choices octo_shapes triangle circle square heart star 
-description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _octoShapes _octoLastBeam _octoIsBeaming 
-
-  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
-  space
-  spec 'r' 'octoBeamReceived' 'Octo beam received?'
-  spec 'r' 'octoLastBeam' 'Octo last beam'
-  space
-  spec 'r' 'octoReceiveBeam' 'Octo receive beam'
-  space
-  spec ' ' '_octoInit' '_octoInit'
-  spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
-  spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
-  space
-  spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
-  spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
-  spec ' ' '_octoStopBeam' '_octoStopBeam'
-
-to '_octoInit' {
-  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
-}
-
-to '_octoMakeMessage' shape {
-  comment 'Mimic iOS, eg: ECA7059C00000001'
-  '_octoInit'
-  local 'result' ('[data:makeList]')
-  repeat 8 {
-    '[data:addLast]' (at 'random' '0123456789ABCDEF') result
-  }
-  repeat 7 {
-    '[data:addLast]' 0 result
-  }
-  local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
-  if (shapeNum < 0) {
-    return 'Unknown shape'
-  }
-  '[data:addLast]' shapeNum result
-  return ('[data:joinStrings]' result)
-}
-
-to '_octoReceiveBeam' {
-  return ('[ble:octoReceive]')
-}
-
-to '_octoShapeForID' id {
-  '_octoInit'
-  if (or (id < 0) (id >= (size _octoShapes))) {
-    return 'Unknown shape'
-  }
-  return (at (id + 1) _octoShapes)
-}
-
-to '_octoStartBeam' msg {
-  '[ble:octoStartBeam]' msg
-}
-
-to '_octoStopBeam' {
-  '[ble:octoStopBeam]'
-}
-
-to octoBeamReceived {
-  comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
-  local 'newBeam' ('_octoReceiveBeam')
-  if (newBeam == (booleanConstant false)) {
-    return (booleanConstant false)
-  }
-  _octoLastBeam = ('_octoShapeForID' newBeam)
-  return (booleanConstant true)
-}
-
-to octoLastBeam {
-  comment 'Return the name of the last shape received.'
-  if (_octoLastBeam == 0) {
-    return 'None'
-  }
-  return _octoLastBeam
-}
-
-to octoReceiveBeam {
-  local 'newBeam' ('_octoReceiveBeam')
-  if (newBeam == (booleanConstant false)) {
-    return (booleanConstant false)
-  }
-  return ('_octoShapeForID' newBeam)
-}
-
-to octoSendBeam shape optionalDuration {
-  local 'duration' 200
-  if ((pushArgCount) > 1) {
-    duration = optionalDuration
-  }
-  if (_octoIsBeaming == 1) {
-    sayIt 'waiting...'
-    waitUntil (_octoIsBeaming == 0)
-    sayIt ''
-  }
-  _octoIsBeaming = 1
-  '_octoStartBeam' ('_octoMakeMessage' shape)
-  waitMillis duration
-  '_octoStopBeam'
-  _octoIsBeaming = 0
-}
-
-
 module Strings Data
 author MicroBlocks
 version 1 5 
@@ -1803,25 +1701,32 @@ to tft_colorSwatch color {
 
 module TFThanzi
 author 'Patch & Rang'
-version 1 5 
-depends TFT Strings Files 
+version 1 6 
+depends TFT Strings Files NeoPixel NeoPanel 
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.6 增加了neoPanel点阵屏上汉字滚动的方法
 v1.5 增加对neoPanel和OLED的支持
 v1.4 增加二进制字库文件支持
 v1.3 增加了一个大写英文字母字体
 v1.2 增加了通过文件保存和提取字模的功能
 v1.1 增加了颜色设置，增加了几个汉字和数字示例
 -------
+字库文件下载地址：https://www.go2crm.cn/go_static/font.bin
 取模工具：
 32点阵汉字取模 https://create.codelab.club/projects/53122
 16点阵汉字取模 https://create.codelab.club/projects/53070
 16点阵图案设计工具 https://create.codelab.club/projects/66585
 -------
 介绍视频：
-https://www.bilibili.com/video/BV1R14y1172r/'
+https://www.bilibili.com/video/BV1R14y1172r/
+
+可以在示例的other分类找到此库的使用示例-chineseDisplay
+'
+variables _scrollStop _scrollPause 
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' 'data' 0 0 1 nil ''
   spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
+  spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _' 'auto color auto num' '汉字' nil '10' 12
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
   spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
@@ -1992,9 +1897,6 @@ to draw data x y size color neo {
       yy = (yy + 8)
     }
   }
-  if (neo == 1) {
-    '_NeoPixel_update'
-  }
 }
 
 to drawChar foo x y size color {
@@ -2026,5 +1928,31 @@ to saveFile fileName code {
   '[file:open]' fileName
   '[file:appendLine]' code fileName
   '[file:close]' fileName
+}
+
+to scrollHanzi hanzi color x neoPin {
+  _scrollStop = 0
+  _scrollPause = 0
+  neoPanel_attach 16 16 neoPin
+  local 'id' 1
+  repeatUntil (and (x == -16) (id == (size hanzi))) {
+    if (_scrollPause == 1) {waitUntil (or (_scrollPause == 0) (_scrollStop == 1))}
+    if (_scrollStop == 0) {
+      if (x == -16) {
+        id += 1
+        x += 16
+      }
+      _np_pixels = (newList 256 0)
+      sayIt id
+      draw ('_fromFontFile' (at id hanzi) true) x 0 1 color 1
+      if (id < (size hanzi)) {
+        draw ('_fromFontFile' (at (id + 1) hanzi) true) (x + 16) 0 1 color 1
+      }
+      '_NeoPixel_update'
+      x += -1
+    } else {
+      stopTask
+    }
+  }
 }
 
