@@ -127,7 +127,7 @@ method fixLayout InputSlot {
   w = ((width (morph text)) + (8 * scale))
   textX = ((left morph) + (4 * scale))
   textY = ((top morph) + (4 * scale))
-  if ('Linux' == (platform)) { textY += (-2 * scale) }
+  if ('Linux' == (platform)) { textY += (-1 * scale) }
   setPosition (morph text) textX textY
   if (notNil menuSelector) {
     // leave room for menu arrow
