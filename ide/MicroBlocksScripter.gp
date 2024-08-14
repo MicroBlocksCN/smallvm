@@ -129,14 +129,14 @@ method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
   libHeader = (newBox (newMorph) (color projectEditor 'blueGray' 850) 0 0)
 
-  label = (newText (localized 'LIBRARIES') 'Arial' (14 * scale) (color projectEditor 'blueGray' 300))
+  label = (newText (localized 'LIBRARIES') 'Arial' (13 * scale) (color projectEditor 'blueGray' 300))
   if ('Linux' == (platform)) {
-	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (14 * scale) (color projectEditor 'blueGray' 300))
+	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (11 * scale) (color projectEditor 'blueGray' 300))
   }
-  setPosition (morph label) (15 * scale) (6 * scale)
+  setPosition (morph label) (20 * scale) (8 * scale)
   addPart (morph libHeader) (morph label)
 
-  libAddButton = (addLibraryButton this '+' (33 * scale) (33 * scale))
+  libAddButton = (addLibraryButton this (33 * scale) (33 * scale))
   setPosition (morph libAddButton) (82 * scale) 0
   addPart (morph libHeader) (morph libAddButton)
   addPart morph (morph libHeader)
@@ -156,25 +156,26 @@ method fixLibraryHeaderLayout MicroBlocksScripter {
   setRight buttonM (right (owner buttonM))
 }
 
-method addLibraryButton MicroBlocksScripter label w h {
+method addLibraryButton MicroBlocksScripter w h {
   // xxx TODO This button will be replaced by an "Add Library" button in the content area
   scale = (global 'scale')
   setFont 'Arial Bold' (24 * scale)
-  halfW = (1.5 * scale)
+  halfW = (2 * scale)
   lineW = (2 * halfW)
-  halfLen = (7 * scale)
+  halfLen = (8 * scale)
   len = (2 * halfLen)
   centerX = (toInteger (w / 2))
   centerY = (toInteger (h / 2))
 
+  plusSignColor = (color projectEditor 'blueGray' 300)
   labelY = (6 * scale)
-  bm1 = (newBitmap w h (topBarBlue projectEditor))
-  fillRect bm1 (gray 60) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm1 (gray 60) (centerX - halfW) (centerY - halfLen) lineW len
+  bm1 = (newBitmap w h (color projectEditor 'blueGray' 850))
+  fillRect bm1 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
+  fillRect bm1 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
 
-  bm2 = (newBitmap w h (color projectEditor 'blueGray' 500)) // was top bar blue highlight
-  fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
+  bm2 = (newBitmap w h (color projectEditor 'yellow')) // was top bar blue highlight
+  fillRect bm2 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
+  fillRect bm2 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
 
   button = (newButton '' (action 'importLibrary' this))
   setHint button (localized 'Add Library')

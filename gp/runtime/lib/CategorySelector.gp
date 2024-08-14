@@ -52,7 +52,8 @@ method drawOn CategorySelector ctx {
 	black = (gray 0)
 
 	insetX = (20 * scale)
-	insetY = (3 * scale)
+	insetY = (4 * scale)
+	if ('Linux' == (platform)) { insetY = (3 * scale) }
 
 	itemH = (itemHeight this)
 
