@@ -167,7 +167,7 @@ method drawShape InputSlot aShapeMaker {
     r = (bounds morph)
   }
 
-  corner = (height morph)
+  corner = (15 * (blockScale)) // semi-circular for slot heights up to 30 * blockScale
   if ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }

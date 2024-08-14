@@ -371,9 +371,10 @@ method drawShape Block aShapeMaker {
 			drawBlockWithCommandSlots aShapeMaker r commandSlots color
 		}
 	} (type == 'reporter') {
+		radius = (15 * scale) // semi-circular for slot heights up to 30 * blockScale
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
-		drawReporter aShapeMaker r clr ((height morph) / 2)
+		drawReporter aShapeMaker r clr radius
 	} (type == 'hat') {
 		drawHatBlock aShapeMaker r color
 	}
