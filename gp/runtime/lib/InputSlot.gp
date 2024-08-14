@@ -14,8 +14,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
   scale = (blockScale)
   morph = (newMorph this)
   text = (newText '')
-  setMinWidth text (24 * scale)
-  align text 'center'
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
 	editRule = 'line'
@@ -123,9 +121,11 @@ method isVarSlot InputSlot {
 
 method fixLayout InputSlot {
   scale = (blockScale)
+  textWidth = (max (width (morph text)) (24 * scale))
+  textPadding = (half (textWidth - (width (morph text))))
   h = ((height (morph text)) + (7 * scale))
-  w = ((width (morph text)) + (8 * scale))
-  textX = ((left morph) + (4 * scale))
+  w = (textWidth + (8 * scale))
+  textX = (+ (left morph) textPadding (4 * scale))
   textY = ((top morph) + (4 * scale))
   if ('Linux' == (platform)) { textY += (-1 * scale) }
   setPosition (morph text) textX textY
@@ -175,7 +175,7 @@ method drawShape InputSlot aShapeMaker {
   } else {
     fillRoundedRect aShapeMaker r corner (gray 255)
   }
-// xxx
+// xxx uncomment to show text bounds
 // textM = (morph text)
 // textR = (rect ((left textM) - (left morph)) ((top textM) - (top morph)) (width textM) (height textM))
 // outlineRectangle aShapeMaker textR 1 (gray 180)
@@ -205,7 +205,8 @@ method textChanged InputSlot {
 
 method clicked InputSlot aHand {
   if (notNil menuSelector) {
-    if (or isStatic ((x aHand) >= (right (morph text)))) {
+	arrowLeft = ((right morph) - (12 * (blockScale)))
+    if (or isStatic ((x aHand) >= arrowLeft)) {
 	  if (contains (methodNames (class 'InputSlot')) menuSelector) {
 		menu = (call menuSelector this)
 		if (notNil menu) {
@@ -233,7 +234,7 @@ method clicked InputSlot aHand {
     }
 	return true
   }
-  return false
+  return (handDownOn text aHand)
 }
 
 method clickedForEdit InputSlot aText {selectAll aText}
