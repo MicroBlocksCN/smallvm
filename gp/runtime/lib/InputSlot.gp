@@ -16,7 +16,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
   text = (newText '')
   setMinWidth text (24 * scale)
   align text 'center'
-  addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
 	editRule = 'line'
@@ -26,11 +25,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
   }
   setEditRule text editRule
   setTextFont this
-  if (editRule == 'numerical') {
-    setBorders text (scale * 5) 0
-  } else {
-    setBorders text (scale * 3) scale
-  }
+  addPart morph (morph text)
   if (editRule == 'static') {
     contents = default
     if (notNil blockColor) { color = (lighter blockColor 75) }
@@ -49,7 +44,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
 	default = (toNumber default)
   }
   setContents this default
-  fixLayout this
   return this
 }
 
@@ -83,20 +77,15 @@ method setContents InputSlot data fixStringOnlyNum {
     }
   }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
-    setText text (localized (toString data))
+    setText text (localized data)
   } else {
     setText text (toString data)
   }
   if isAuto {
-    scale = (blockScale)
     isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
     if isNumber {
       data = (toNumber data)
-      setBorders text (scale * 5) 0
-    } else {
-      setBorders text (scale * 3) scale
     }
-    fixLayout this
   }
   contents = data
   raise morph 'inputChanged' this
@@ -134,17 +123,16 @@ method isVarSlot InputSlot {
 
 method fixLayout InputSlot {
   scale = (blockScale)
-  h = ((height (morph text)) + (6 * scale))
-  w = ((width (morph text)) + (5 * scale))
-  if ('Linux' == (platform)) { h += scale }
-  textX = ((left morph) + (2 * scale)) // xxx
-  textY = (+ (top morph) 1 (4 * scale))
-  if (notNil menuSelector) {
-    // leave room for down-arrow
-    w += ((fontSize text) * 2)
-    textX += ((fontSize text) / 2)
-  }
+  h = ((height (morph text)) + (7 * scale))
+  w = ((width (morph text)) + (8 * scale))
+  textX = ((left morph) + (4 * scale))
+  textY = ((top morph) + (4 * scale))
+  if ('Linux' == (platform)) { textY += (-2 * scale) }
   setPosition (morph text) textX textY
+  if (notNil menuSelector) {
+    // leave room for menu arrow
+    w += (12 * scale)
+  }
   setExtent morph w h
   pathCache = nil
   raise morph 'layoutChanged' this
@@ -187,17 +175,19 @@ method drawShape InputSlot aShapeMaker {
   } else {
     fillRoundedRect aShapeMaker r corner (gray 255)
   }
+// xxx
+// textM = (morph text)
+// textR = (rect ((left textM) - (left morph)) ((top textM) - (top morph)) (width textM) (height textM))
+// outlineRectangle aShapeMaker textR 1 (gray 180)
+
   if (notNil menuSelector) { // draw down-arrow
-	fontH = (fontSize text)
-    border = (blockScale)
-    w = (fontH - (2 * border))
-    h = ((fontH / 2) + border)
-    x = (left r)
-    y = (top r)
-    x += (((width morph) - (fontH * 1.5)) - border)
-    y += ((((height morph) / 2) + border) - (h / 2))
-    clr = (gray 0)
-	fillArrow aShapeMaker (rect x y w h) 'down' clr
+	scale = (blockScale)
+	w = (10 * scale)
+	h = (9 * scale)
+	x = ((right r) - (14 * scale))
+	y = ((top r) + (6 * scale))
+	arrowColor = (gray 0 180) // slightly transparent
+	fillArrow aShapeMaker (rect x y w h) 'down' arrowColor
   }
 }
 
@@ -215,7 +205,7 @@ method textChanged InputSlot {
 
 method clicked InputSlot aHand {
   if (notNil menuSelector) {
-    if (or ((x aHand) >= ((right morph) - (fontSize text))) isStatic) {
+    if (or isStatic ((x aHand) >= (right (morph text)))) {
 	  if (contains (methodNames (class 'InputSlot')) menuSelector) {
 		menu = (call menuSelector this)
 		if (notNil menu) {
@@ -703,7 +693,6 @@ method switchType InputSlot editRule {
 	  dta = (toString dta)
 	}
   }
-  setTextFont this
   setContents this dta
 }
 

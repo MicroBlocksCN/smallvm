@@ -118,9 +118,8 @@ method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
 
   // update the scripts
-  updateBlocks this
   saveScripts this
-  restoreScripts this
+  restoreScripts this // calls updateBlocks
   scriptChanged this
 }
 
