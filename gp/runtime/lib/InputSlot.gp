@@ -92,13 +92,10 @@ method setContents InputSlot data fixStringOnlyNum {
 method setTextFont InputSlot {
   fontName = 'Arial'
   fontSize = 13
-  if isMonospace {
-    if ('Win' == (platform)) {
+     if ('Win' == (platform)) {
       fontSize = 14
     } ('Linux' == (platform)) {
-      fontName = 'Sans'
-      fontSize = 10
-    }
+    fontSize = 11
   }
   setFont text fontName (fontSize * (blockScale))
 }
@@ -118,7 +115,6 @@ method fixLayout InputSlot {
   w = (textWidth + (8 * scale))
   textX = (+ (left morph) textPadding (4 * scale))
   textY = ((top morph) + (4 * scale))
-  if ('Linux' == (platform)) { textY += (-1 * scale) }
   setPosition (morph text) textX textY
   if (notNil menuSelector) {
     // leave room for menu arrow
