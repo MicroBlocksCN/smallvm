@@ -121,7 +121,11 @@ method scaleChanged MicroBlocksEditor {
   fixLayout this
 }
 
-// trashcan
+// Trashcan
+
+// backstop functions; do nothing if called on a non-MicroBlocksEditor object like nil
+to showTrashcan anyObject { }
+to hideTrashcan anyObject { }
 
 method showTrashcan MicroBlocksEditor purpose {
   // Hide trashcan icon if purpose is nil.

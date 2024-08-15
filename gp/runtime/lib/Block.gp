@@ -476,12 +476,14 @@ method inputIndex Block anInput {
   idx = 0
   items = (flattened labelParts)
 
-  // special case for variable assignments
-  opName = (primName expression)
-  if (or (opName == '=') (opName == '+=')) {
-    // transformed assignment blocks represent the variable name as Text,
-    // not an InputSlot; in this case, increment the input slot index
-    if (and ((count items) > 1) (isClass (at items 2) 'Text')) {idx += 1}
+  if (not (isMicroBlocks)) {
+    // special case for GP variable assignments
+    opName = (primName expression)
+    if (or (opName == '=') (opName == '+=')) {
+      // transformed assignment blocks represent the variable name as Text,
+      // not an InputSlot; in this case, increment the input slot index
+      if (and ((count items) > 1) (isClass (at items 2) 'Text')) {idx += 1}
+    }
   }
 
   for each items {
@@ -504,7 +506,9 @@ method inputs Block {
 // events
 
 method justDropped Block hand {
+  cancelSelection
   snap this (x hand) (y hand)
+  hideTrashcan (findMicroBlocksEditor)
 }
 
 method snap Block x y {
@@ -556,6 +560,49 @@ method aboutToBeGrabbed Block {
   removeSignalPart (morph tb)
   removeStackPart (morph tb)
   removeHighlight (morph tb)
+
+  // show trashcan icon
+  if (isPrototypeHat this) {
+	  showTrashcan (findMicroBlocksEditor) 'hide'
+  } else {
+	  showTrashcan (findMicroBlocksEditor) 'delete'
+  }
+
+  if (or
+		(commandKeyDown (keyboard (global 'page')))
+		(controlKeyDown (keyboard (global 'page')))
+  ) {
+	// duplicate all with control + grab
+	dup = (duplicate this)
+	owner = (handler (owner morph))
+	if (shiftKeyDown (keyboard (global 'page'))) {
+		// duplicate block with control + shift + grab
+		if (notNil (next dup)) {setNext dup nil}
+	}
+	if (notNil owner) {
+		if (isClass owner 'CommandSlot') {
+			setNested owner dup
+		} (isClass owner 'Block') {
+			if ((type dup) == 'reporter') {
+				replaceInput owner this dup
+			} else {
+				setNext owner dup
+			}
+		} (isClass owner 'ScriptEditor') {
+			addPart (morph owner) (morph dup)
+		}
+	}
+  }
+
+  // extract block with shift + grab
+  if (and
+		(shiftKeyDown (keyboard (global 'page')))
+		(notNil (next this))
+  ) {
+    extractBlock this true
+	return
+  }
+
   parent = (handler (owner morph))
   if (isClass parent 'Block') {
     if (type == 'reporter') {
@@ -611,6 +658,38 @@ method expressionChanged Block changedBlock {
 }
 
 method clicked Block hand {
+  if (not (isMicroBlocks)) { return (gpClicked hand) }
+
+  cancelSelection
+  if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
+    userRenameVariable this
+    return
+  } (isPrototype this) {
+    def = (blockDefinition this)
+    if (notNil def) {
+      return (clicked def hand)
+    }
+    return true
+  } (isPrototypeHat this) {
+    prot = (editedPrototype this)
+    if (notNil prot) {
+      return (clicked prot hand)
+    }
+  } (isClass (handler (owner morph)) 'BlockOp') {
+    return
+  }
+
+  topBlock = (topBlock this)
+  if (isPrototypeHat topBlock) { return }
+  runtime = (smallRuntime)
+  if (isRunning runtime topBlock) {
+	stopRunningChunk runtime (lookupChunkID runtime topBlock)
+  } else {
+	evalOnBoard runtime topBlock
+  }
+}
+
+method gpClicked Block hand {
   tb = (topBlock this)
   kbd = (keyboard (page hand))
   if (shiftKeyDown kbd) {
@@ -861,6 +940,110 @@ method revertToDefaultInput Block aReporter {
 // context menu
 
 method contextMenu Block {
+  if (not (isMicroBlocks)) { return (gpContextMenu this) }
+
+  if (isPrototype this) {return nil}
+  menu = (menu nil this)
+  pe = (findProjectEditor)
+  scripter = (scripter pe)
+  selection = (selection scripter)
+  if (and (notNil selection) (notEmpty selection)) {
+  	return (contextMenu selection)
+  }
+
+  isInPalette = ('template' == (grabRule morph))
+  if (and isInPalette (isRenamableVar this)) {
+    addItem menu 'rename...' 'userRenameVariable'
+    addLine menu
+  }
+  addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
+  if (and ('reporter' != type) (notNil (next this))) {
+    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate this block and all blocks below it'
+  }
+  addLine menu
+  if (and (not isInPalette) ('reporter' != type)) {
+    addItem menu 'extract block' 'extractBlock' 'pull out this block'
+  }
+  addLine menu
+  if (hasHelpEntryFor pe this) {
+    addItem menu 'help' (action 'openHelp' pe this) 'show help for this block in a browser'
+    addLine menu
+  }
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this)) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (topBlock this)) 'copy these blocks to the clipboard as a URL'
+  addLine menu
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
+  if (not (isPrototypeHat (topBlock this))) {
+	if (or ('reporter' == (type (topBlock this))) (devMode)) {
+	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
+	}
+  }
+  if (devMode) {
+	addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+    if (and isInPalette (notNil (functionNamed (project pe) (primName expression)))) {
+	  addItem menu 'show call tree' (action 'showCallTree' (smallRuntime) this)
+    }
+
+	// xxx internal testing only; remove later!:
+	if (contains (commandLine) '--allowMorphMenu') {
+		addItem menu 'test decompiler' (action 'testDecompiler' (smallRuntime) this) // xxx
+	}
+  }
+  addLine menu
+
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
+	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
+  } else {
+	  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
+  }
+  if (notNil (functionNamed (project pe) (primName expression))) {
+    addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
+	if isInPalette {
+	  addLine menu
+	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
+	}
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
+  }
+  if ((primName expression) == 'v') {
+	varNames = (allVariableNames (project scripter))
+	if (and (not isInPalette) ((count varNames) > 1)) {
+		for varName varNames {
+			if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
+				b = (toBlock (newReporter 'v' varName))
+				fixLayout b
+				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
+			}
+		}
+	}
+  } else {
+	alternativeOps = (alternateOperators this)
+	if (and (not isInPalette) (notNil alternativeOps)) {
+		addLine menu
+		myOp = (primName expression)
+		for op alternativeOps {
+		  // create and display block morph (with translated spec)
+		  spec = (specForOp (authoringSpecs) op)
+		  if (and (notNil spec) (op != myOp)) {
+			b = (blockForSpec spec)
+			fixLayout b
+			addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
+		  }
+		}
+	}
+  }
+  if (not isInPalette) {
+	addLine menu
+	addItem menu 'delete block' 'delete' 'delete this block'
+  }
+  return menu
+}
+
+method gpContextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   isInPalette = ('template' == (grabRule morph))
@@ -941,11 +1124,60 @@ method duplicate Block {
   return dup
 }
 
+method extractBlock Block whileGrabbing {
+  cancelSelection
+  whileGrabbing = (whileGrabbing == true)
+  if ('reporter' != type) { // hat or command
+    nxt = (next this)
+    if (and (notNil nxt) (notNil (owner morph))) {
+      prev = (ownerThatIsA (owner morph) 'Block')
+      cslot = (ownerThatIsA (owner morph) 'CommandSlot')
+      scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
+      if (and (notNil prev) (=== this (next (handler prev)))) {
+        setNext this nil
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNext (handler prev) nil
+		}
+		setNext (handler prev) nxt
+      } (and (notNil cslot) (=== this (nested (handler cslot)))) {
+        setNext this nil
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNested (handler cslot) nil
+		}
+        setNested (handler cslot) nxt
+      } (notNil scripts) {
+        addPart scripts (morph nxt)
+        fixBlockColor nxt
+      }
+      setNext this nil
+    }
+  }
+  if (not whileGrabbing) { grabTopLeft morph }
+}
+
 method copyToClipboard Block {
   setClipboard (scriptText this)
 }
 
+method copyToClipboardAsURL Block {
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html#scripts='
+	(urlEncode (scriptText this) true)
+  )
+}
+
 method scriptText Block useSemicolons {
+  // Note: scriptText is also called by exportAsImageScaled when saving PNG files.
+
+  if (not (isMicroBlocks)) { return (gpScriptText this) }
+
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  return (scriptStringFor mbScripter this)
+}
+
+method gpScriptText Block useSemicolons {
   useSemicolons = (useSemicolons == true) // useSemicolons is an optional parameter
   pp = (new 'PrettyPrinter')
   if useSemicolons {
@@ -977,7 +1209,8 @@ method scriptText Block useSemicolons {
   return (joinStrings result)
 }
 
-method exportAsImage Block { exportAsImageScaled this }
+method exportAsImage Block { exportAsImageScaled (topBlock this) }
+method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
 method exportAsImageScaled Block result isError fName {
   // Save a PNG picture of the given script at the given scale.
@@ -1082,6 +1315,7 @@ method delete Block {
   }
   aboutToBeGrabbed this
   removeFromOwner morph
+  hideTrashcan (findMicroBlocksEditor)
 }
 
 method editAsText Block {
@@ -1152,6 +1386,13 @@ method openClassBrowser Block className {
 }
 
 method showDefinition Block {
+  if (not (isMicroBlocks)) { return gpShowDefinition this }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  showDefinition (scripter pe) (primName expression)
+}
+
+method gpShowDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   scripter = (scripter pe)
@@ -1841,6 +2082,165 @@ method fixPartColors Block {
     if (isClass (handler m) 'Block') {
       fixBlockColor (handler m)
     }
+  }
+}
+
+// changing block operations in place
+
+method alternateOperators Block {
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	// if it's a variable, return a group with all existing variables
+	return (array '')
+  } else {
+	opGroups = (array
+		(array 'analogReadOp' 'digitalReadOp')
+		(array 'analogWriteOp' 'digitalWriteOp')
+		(array 'analogPins' 'digitalPins')
+		(array 'and' 'or')
+		(array '+' '-' '*' '/' '%')
+		(array 'buttonA' 'buttonB')
+		(array '<' '<=' '==' '!=' '>=' '>')
+		(array 'maximum' 'minimum')
+		(array 'millisOp' 'microsOp')
+		(array '=' '+=')
+		(array '&' '|' '^' '<<' '>>')
+	)
+	op = (primName expression)
+	for group opGroups {
+		if (contains group op) { return group }
+	}
+  }
+  return nil
+}
+
+method changeOperator Block newOp {
+  cancelSelection
+  setField expression 'primName' newOp
+  scripter = (scripter (findProjectEditor))
+  updateScriptAfterOperatorChange scripter this
+}
+
+method changeVar Block varName {
+  cancelSelection
+  newVarReporter = (newReporter 'v' varName)
+  blockOwner = (handler (owner morph))
+  if (isClass blockOwner 'Block') {
+    owningExpr = (expression blockOwner)
+    args = (argList owningExpr)
+    for i (count args) {
+      if ((at args i) == (expression this)) {
+        setArg owningExpr i newVarReporter
+      }
+    }
+  } else { // top level var reporter
+    expression = newVarReporter
+  }
+  scripter = (scripter (findProjectEditor))
+  updateScriptAfterOperatorChange scripter this
+}
+
+// Inspection operations
+
+method findBlockUsers Block {
+	pe = (findProjectEditor)
+	findBlockUsers (project pe) this
+}
+
+method findVarAccessors Block {
+	pe = (findProjectEditor)
+	findVarAccessors (project pe) this
+}
+
+method findVarModifiers Block {
+	pe = (findProjectEditor)
+	findVarModifiers (project pe) this
+}
+
+// Block definition operations
+
+method deleteObsolete Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    if (not
+      (confirm
+	    (global 'page')
+	    nil
+        (join
+          'This block is still being used in '
+          (count (allEntries finder))
+          ' scripts or functions.'
+          (newline)
+          (newline)
+          'Are you sure you want to remove this obsolete block definition?'
+        )
+	  )
+	) { return }
+  }
+
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
+}
+
+method deleteBlockDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  confirmation = 'Are you sure you want to remove this block definition?'
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    confirmation = (join
+      'This block is still being used in '
+      (count (allEntries finder))
+      ' scripts or functions.'
+	  (newline)
+	  (newline)
+	  confirmation
+	)
+  }
+
+  if (not (confirm (global 'page') nil confirmation)) { return }
+
+  deleteFunction (scripter pe) (primName expression)
+}
+
+// additions to Block for script selection
+
+method select Block {
+  if (isNil originalColor) {
+    originalColor = color
+    color = (mixed color 50 (color 0 255 0))
+    pathCache = nil
+    changed morph
+    if (notNil (next this)) {
+      select (next this)
+    }
+    for i (inputs this) {
+      if (isClass i 'Block') {
+        select i
+      } (and
+          (isClass i 'CommandSlot')
+          (notNil (nested i)))
+      {
+            select (nested i)
+      }
+    }
+  }
+}
+
+method unselect Block {
+  if (notNil originalColor) {
+    color = originalColor
+    originalColor = nil
+    pathCache = nil
+    changed morph
   }
 }
 
