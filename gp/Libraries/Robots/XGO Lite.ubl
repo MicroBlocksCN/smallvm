@@ -1,11 +1,11 @@
 module 'XGO Lite' Output
 author MicroBlocks
-version 0 1 
+version 0 2 
 choices xgo_joint_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
 choices xgo_rotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
 choices xgo_slide_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
 choices xgo_speed_Menu Slow Normal Fast 
-choices xgo_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices xgo_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pitch' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
 choices xgo_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
 choices xgo_gait_Menu Trot Walk 
 choices xgo_arm_Menu 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
@@ -99,7 +99,7 @@ to '_xgo_set_joint_angle' nums steps {
 }
 
 to xgo_action action {
-  if (not (isType _xgo_actions 'list')) {_xgo_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pich,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
+  if (not (isType _xgo_actions 'list')) {_xgo_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pitch,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
   local 'actionID' ('[data:find]' action _xgo_actions)
   if (actionID < 1) {
     actionID = 255

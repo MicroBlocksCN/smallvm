@@ -1,6 +1,6 @@
 module 'XGO-nano' Output
 author luwudynamics
-version 3 0 
+version 3 1 
 choices XGO_motor_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
 choices XGO_direction_Menu 'counter-clockwise' clockwise 
 choices XGO_attitude_Menu R P Y 
@@ -12,7 +12,7 @@ choices XGO_transmove_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)'
 choices XGO_gait_Menu Trot Walk 'High Walk' 'Micro Trot' 
 choices XGO_button_Menu A B 
 choices XGO_speed_Menu Fast Normal Slow 
-choices XGO_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pich' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices XGO_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pitch' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
 choices XGO_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
 choices XGO_translation_Menu X Y Z 
 choices XGO_transrotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
@@ -85,7 +85,7 @@ to XGO_2P mode {
 }
 
 to XGO_action foo {
-  if (not (isType _XGO_actions 'list')) {_XGO_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pich,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
+  if (not (isType _XGO_actions 'list')) {_XGO_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pitch,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
   local 'an' ('[data:find]' foo _XGO_actions)
   if (an == 25) {
     '_XGO_action' 128
