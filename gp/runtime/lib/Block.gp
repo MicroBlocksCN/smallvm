@@ -2224,9 +2224,9 @@ method select Block {
         select i
       } (and
           (isClass i 'CommandSlot')
-          (notNil (nested i)))
-      {
-            select (nested i)
+          (notNil (nested i))
+      ) {
+        select (nested i)
       }
     }
   }
