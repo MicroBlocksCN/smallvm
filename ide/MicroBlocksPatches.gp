@@ -14,6 +14,4 @@
 //
 // John Maloney, January, 2018
 
-// All patches have been merged into gp/runtime/lib/
-
-0 // Nothing to see here, but we need a non-comment to avoid a parser complaint
+to isMicroBlocks { return true }

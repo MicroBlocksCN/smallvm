@@ -9,6 +9,8 @@
 
 to isMicroBlocks { return true }
 
+to startup { openMicroBlocksEditor } // run at startup if not in interactive mode
+
 to uload fileName {
   // Reload a top level module file when working on MicroBlocks. The 'lib/' prefix and '.gp'
   // suffix can be omitted. Example: "reload 'List'"
