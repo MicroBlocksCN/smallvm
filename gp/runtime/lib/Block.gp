@@ -229,12 +229,6 @@ method fixLayout Block {
     minHeight = (23 * scale)
     atPut lineHeights 1 (max (at lineHeights 1) minHeight)
   }
-//  if ((count lineHeights) >= 1) {
-//    minHeight = (23 * scale)
-//    if ((count lines) > 1) { minHeight = (23 * scale) }
-// print (at lineHeights 1) '->' minHeight ((count lines) > 1)
-//    atPut lineHeights 1 (max (at lineHeights 1) minHeight)
-//  }
 
   // determine blockWidth from line data
   blockWidth = 0
@@ -268,12 +262,7 @@ method fixLayout Block {
       if (type == 'reporter') {
         fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
       }
-      if (isClass each 'Text') {
-        // fix vertical alignment of text labels
-        fastSetYCenterWithin (morph each) tp bottom // (bottom + (2 * scale))
-      } else {
-        fastSetYCenterWithin (morph each) tp bottom
-      }
+      fastSetYCenterWithin (morph each) tp (bottom + (1 * scale)) // adjust slightly downward
     }
     tp = (bottom + (vSpace * scale))
   }
