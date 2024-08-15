@@ -97,7 +97,7 @@ method setTextFont InputSlot {
       fontSize = 14
     } ('Linux' == (platform)) {
       fontName = 'Sans'
-      fontSize = 11
+      fontSize = 10
     }
   }
   setFont text fontName (fontSize * (blockScale))
