@@ -223,6 +223,51 @@ method shiftBrightness Color n {
   return (colorHSV (at hsv 1) (at hsv 2) newBrightness)
 }
 
+// named colors
+
+to microBlocksColor colorName optionalWeight {
+  // Return a color from the MicroBlocks UI color palette.
+  // The blueGray family takes an optional weight paraemeter (larger numbers are darker).
+
+  palette = (global 'microBlocksPalette')
+  if (isNil palette) { palette = (initMicroBlocksUIColors (color)) }
+  fullName = colorName
+  if (notNil optionalWeight) { fullName = (join '' colorName '-' optionalWeight) }
+  return (at palette fullName (gray 100))
+}
+
+method initMicroBlocksUIColors Color {
+  // Create the MicroBlocks UI color palette.
+
+  palette = (dictionary)
+  atPut palette 'red' (colorHex 'E03B3B')
+  atPut palette 'green' (colorHex '61D14E')
+  atPut palette 'yellow' (colorHex 'FED722')
+  atPut palette 'yellowBorder' (colorHex 'B79701')
+  atPut palette 'white' (gray 255 1)
+  atPut palette 'black' (colorHex '2A2A2A')
+
+  // gray900 in the style sheet, but it's the only gray we're using
+  atPut palette 'gray' (colorHex '383838')
+
+  // blueGrays
+  atPut palette 'blueGray-50' (colorHex 'ECEDF1')
+  atPut palette 'blueGray-75' (colorHex 'E1E3E8')
+  atPut palette 'blueGray-100' (colorHex 'CFD1DC')
+  atPut palette 'blueGray-200' (colorHex 'B0B3C5')
+  atPut palette 'blueGray-300' (colorHex '9095AE')
+  atPut palette 'blueGray-400' (colorHex '787E9C')
+  atPut palette 'blueGray-500' (colorHex '60678B')
+  atPut palette 'blueGray-600' (colorHex '545A7A')
+  atPut palette 'blueGray-700' (colorHex '454A64')
+  atPut palette 'blueGray-800' (colorHex '373B4F')
+  atPut palette 'blueGray-850' (colorHex '2D3143')
+  atPut palette 'blueGray-900' (colorHex '262938')
+
+  setGlobal 'microBlocksPalette' palette
+  return palette
+}
+
 // equality
 
 method == Color other {

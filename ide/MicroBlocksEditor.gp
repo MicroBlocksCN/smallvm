@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot colorPalette darkMode
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay isPilot darkMode
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -83,42 +83,6 @@ method initialize MicroBlocksEditor {
   newerVersion = 'unknown'
   putNextDroppedFileOnBoard = false
   return this
-}
-
-method initializeColorPalette MicroBlocksEditor {
-  colorPalette = (dictionary)
-  atPut colorPalette 'red' (colorHex 'E03B3B')
-  atPut colorPalette 'green' (colorHex '61D14E')
-  atPut colorPalette 'yellow' (colorHex 'FED722')
-  atPut colorPalette 'yellowBorder' (colorHex 'B79701')
-  atPut colorPalette 'white' (gray 255 1)
-  atPut colorPalette 'black' (colorHex '2A2A2A')
-  // gray900 in the style sheet, but it's the only gray we're using
-  atPut colorPalette 'gray' (colorHex '383838')
-  // blueGrays ahead
-  blueGrays = (dictionary)
-  atPut colorPalette 'blueGray' blueGrays
-  atPut blueGrays 50 (colorHex 'ECEDF1')
-  atPut blueGrays 75 (colorHex 'E1E3E8')
-  atPut blueGrays 100 (colorHex 'CFD1DC')
-  atPut blueGrays 200 (colorHex 'B0B3C5')
-  atPut blueGrays 300 (colorHex '9095AE')
-  atPut blueGrays 400 (colorHex '787E9C')
-  atPut blueGrays 500 (colorHex '60678B')
-  atPut blueGrays 600 (colorHex '545A7A')
-  atPut blueGrays 700 (colorHex '454A64')
-  atPut blueGrays 800 (colorHex '373B4F')
-  atPut blueGrays 850 (colorHex '2D3143')
-  atPut blueGrays 900 (colorHex '262938')
-}
-
-method color MicroBlocksEditor name value {
-  if (isNil colorPalette) { initializeColorPalette this }
-  if (name == 'blueGray') {
-    return (at (at colorPalette 'blueGray') value)
-  } else {
-    return (at colorPalette name)
-  }
 }
 
 method scaleChanged MicroBlocksEditor {
@@ -202,7 +166,7 @@ method addTopBarParts MicroBlocksEditor {
 
   if (isNil title) {
     // only add title the first time
-    title = (newText '' 'Arial' (17 * scale) (color this 'blueGray' 50))
+    title = (newText '' 'Arial' (17 * scale) (microBlocksColor 'blueGray' 50))
     addPart morph (morph title)
   }
 
@@ -210,7 +174,7 @@ method addTopBarParts MicroBlocksEditor {
 
   addFrameRate = (contains (commandLine) '--allowMorphMenu')
   if addFrameRate {
-	frameRate = (newText '0 fps' 'Arial' (14 * scale) (color this 'blueGray' 50))
+	frameRate = (newText '0 fps' 'Arial' (14 * scale) (microBlocksColor 'blueGray' 50))
 	addPart morph (morph frameRate)
 	add rightItems frameRate
 	add rightItems (18 * scale)
@@ -239,7 +203,7 @@ method addTopBarParts MicroBlocksEditor {
 
 method vSeparator MicroBlocksEditor {
   scale = (global 'scale')
-  separator = (newBox (newMorph) (color this 'blueGray' 700) 0 0 false false)
+  separator = (newBox (newMorph) (microBlocksColor 'blueGray' 700) 0 0 false false)
   setExtent (morph separator) scale ((topBarHeight this) + (4 * scale))
   addPart morph (morph separator)
   return separator
@@ -271,8 +235,8 @@ method newZoomButton MicroBlocksEditor iconName action {
     action = (action iconName this)
   }
   iconScale = (0.5 * (global 'scale'))
-  normalColor = (color this 'blueGray' 400)
-  highlightColor = (color this 'yellow')
+  normalColor = (microBlocksColor 'blueGray' 400)
+  highlightColor = (microBlocksColor 'yellow')
   button = (newButton '' action)
   bm1 = (readSVGIcon iconName normalColor nil iconScale)
   bm2 = (readSVGIcon iconName highlightColor nil iconScale)
@@ -632,14 +596,14 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	cy = ((half (height bm)) + scale)
 	bgColor = (topBarBlue this)
 	if (1 == phase) {
-		lightGray = (color this 'blueGray' 50)
-		darkGray = (color this 'blueGray' 100)
+		lightGray = (microBlocksColor 'blueGray' 50)
+		darkGray = (microBlocksColor 'blueGray' 100)
 	} (2 == phase) {
-		lightGray = (color this 'blueGray' 100)
-		darkGray = (color this 'blueGray' 300)
+		lightGray = (microBlocksColor 'blueGray' 100)
+		darkGray = (microBlocksColor 'blueGray' 300)
 	} (3 == phase) {
-		lightGray = (color this 'blueGray' 300)
-		darkGray = (color this 'blueGray' 500)
+		lightGray = (microBlocksColor 'blueGray' 300)
+		darkGray = (microBlocksColor 'blueGray' 500)
 	}
 
 	fill bm bgColor
@@ -673,7 +637,7 @@ method updateIndicator MicroBlocksEditor forcefully {
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	isConnected = ('connected' == status)
 
-    iconColor = (color this 'blueGray' 500)
+    iconColor = (microBlocksColor 'blueGray' 500)
     if isConnected { iconColor = (color 0 200 0) }
 
     offBM = (readSVGIcon 'icon-usb' iconColor (topBarBlue this))
@@ -1097,7 +1061,7 @@ method pageResized MicroBlocksEditor {
 
 // top bar drawing
 
-method topBarBlue MicroBlocksEditor { return (color this 'blueGray' 900) }
+method topBarBlue MicroBlocksEditor { return (microBlocksColor 'blueGray' 900) }
 method topBarHeight MicroBlocksEditor { return (48 * (global 'scale')) }
 
 method drawOn MicroBlocksEditor aContext {
@@ -1109,7 +1073,7 @@ method drawOn MicroBlocksEditor aContext {
   fillRect aContext (topBarBlue this) x y w topBarH
 
   // bottom border
-  fillRect aContext (color this 'blueGray' 700) x ((y + topBarH) - scale) w scale
+  fillRect aContext (microBlocksColor 'blueGray' 700) x ((y + topBarH) - scale) w scale
 }
 
 // layout
@@ -1446,8 +1410,8 @@ method settingsMenu MicroBlocksEditor {
 }
 
 method addSVGIconButton MicroBlocksEditor iconName selector hint {
-  normalColor = (color this 'blueGray' 500)
-  highlightColor = (color this 'yellow')
+  normalColor = (microBlocksColor 'blueGray' 500)
+  highlightColor = (microBlocksColor 'yellow')
   button = (newButton '' (action selector this))
   setCostumes button (readSVGIcon iconName normalColor) (readSVGIcon iconName highlightColor)
   if (notNil hint) { setHint button (localized hint) }
@@ -1456,7 +1420,7 @@ method addSVGIconButton MicroBlocksEditor iconName selector hint {
 }
 
 method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
-  highlightColor = (color this 'yellow')
+  highlightColor = (microBlocksColor 'yellow')
   bgColor = (topBarBlue this)
   iconScale = (global 'scale')
   button = (newButton '' (action selector this))

@@ -10,9 +10,9 @@
 defineClass MicroBlocksTipBar morph title tipMorph tip contentDict iconsDict help tipColor titleColor bgColor
 
 method initialize MicroBlocksTipBar editor {
-	titleColor = (color editor 'blueGray' 50)
-	tipColor = (color editor 'blueGray' 300)
-	bgColor = (color editor 'blueGray' 850)
+	titleColor = (microBlocksColor 'blueGray' 50)
+	tipColor = (microBlocksColor 'blueGray' 300)
+	bgColor = (microBlocksColor 'blueGray' 850)
 	morph = (newMorph this)
 	setClipping morph true
 	setFPS morph 5

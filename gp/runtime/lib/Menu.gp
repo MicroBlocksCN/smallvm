@@ -87,7 +87,6 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
 
 method buildMorph Menu page yPos {
   scale =  (global 'scale')
-  editor = (findProjectEditor)
 
   // settings, to be refactored later to somewhere else
   fontName = 'Arial'
@@ -97,12 +96,12 @@ method buildMorph Menu page yPos {
   corner = (scale * 2)
   itemPaddingV = (scale * 1)
   itemPaddingH = (scale * 32)
-  color = (color editor 'blueGray' 900)
-  borderColor = (color editor 'blueGray' 700)
-  itemTextColorNormal = (color editor 'blueGray' 50)
+  color = (microBlocksColor 'blueGray' 900)
+  borderColor = (microBlocksColor 'blueGray' 700)
+  itemTextColorNormal = (microBlocksColor 'blueGray' 50)
   itemTextColorHighlighted = color
   itemTextColorPressed = color
-  itemBackgroundColorHighlighted = (color editor 'yellow')
+  itemBackgroundColorHighlighted = (microBlocksColor 'yellow')
   itemBackgroundColorPressed = itemBackgroundColorHighlighted
 
   minHeight = (min (scale * 100) (height (morph page)))

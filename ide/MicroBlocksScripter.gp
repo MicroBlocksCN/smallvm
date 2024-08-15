@@ -57,14 +57,14 @@ method initialize MicroBlocksScripter aProjectEditor {
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
-  blocksFrame = (scrollFrame blocksPane (color projectEditor 'blueGray' 50))
+  blocksFrame = (scrollFrame blocksPane (microBlocksColor 'blueGray' 50))
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
   addRoundedCorner this
 
   scriptsPane = (newScriptEditor 10 10 nil)
-  scriptsFrame = (scrollFrame scriptsPane (color projectEditor 'white'))
+  scriptsFrame = (scrollFrame scriptsPane (microBlocksColor 'white'))
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
@@ -97,15 +97,15 @@ method addRoundedCorner MicroBlocksScripter {
 method darkModeChanged MicroBlocksScripter {
   changed morph // report damage
   if (darkModeEnabled projectEditor) {
-    scriptsFrameColor = (color projectEditor 'blueGray' 900)
-    blocksFrameColor = (color projectEditor 'blueGray' 800)
-    sliderBGColor = (color projectEditor 'blueGray' 600)
-    sliderFGColor = (color projectEditor 'blueGray' 800)
+    scriptsFrameColor = (microBlocksColor 'blueGray' 900)
+    blocksFrameColor = (microBlocksColor 'blueGray' 800)
+    sliderBGColor = (microBlocksColor 'blueGray' 600)
+    sliderFGColor = (microBlocksColor 'blueGray' 800)
   } else {
-    scriptsFrameColor = (color projectEditor 'white')
-    blocksFrameColor = (color projectEditor 'blueGray' 50)
-    sliderBGColor = (color projectEditor 'blueGray' 100)
-    sliderFGColor = (color projectEditor 'blueGray' 200)
+    scriptsFrameColor = (microBlocksColor 'white')
+    blocksFrameColor = (microBlocksColor 'blueGray' 50)
+    sliderBGColor = (microBlocksColor 'blueGray' 100)
+    sliderFGColor = (microBlocksColor 'blueGray' 200)
   }
 
   setColor scriptsFrame scriptsFrameColor
@@ -127,11 +127,11 @@ method languageChanged MicroBlocksScripter {
 
 method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
-  libHeader = (newBox (newMorph) (color projectEditor 'blueGray' 850) 0 0)
+  libHeader = (newBox (newMorph) (microBlocksColor 'blueGray' 850) 0 0)
 
-  label = (newText (localized 'LIBRARIES') 'Arial' (13 * scale) (color projectEditor 'blueGray' 300))
+  label = (newText (localized 'LIBRARIES') 'Arial' (13 * scale) (microBlocksColor 'blueGray' 300))
   if ('Linux' == (platform)) {
-	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (11 * scale) (color projectEditor 'blueGray' 300))
+	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (11 * scale) (microBlocksColor 'blueGray' 300))
   }
   setPosition (morph label) (20 * scale) (8 * scale)
   addPart (morph libHeader) (morph label)
@@ -167,13 +167,13 @@ method addLibraryButton MicroBlocksScripter w h {
   centerX = (toInteger (w / 2))
   centerY = (toInteger (h / 2))
 
-  plusSignColor = (color projectEditor 'blueGray' 300)
+  plusSignColor = (microBlocksColor 'blueGray' 300)
   labelY = (6 * scale)
-  bm1 = (newBitmap w h (color projectEditor 'blueGray' 850))
+  bm1 = (newBitmap w h (microBlocksColor 'blueGray' 850))
   fillRect bm1 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
   fillRect bm1 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
 
-  bm2 = (newBitmap w h (color projectEditor 'yellow')) // was top bar blue highlight
+  bm2 = (newBitmap w h (microBlocksColor 'yellow')) // was top bar blue highlight
   fillRect bm2 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
   fillRect bm2 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
 
@@ -355,12 +355,12 @@ method showScrollbars MicroBlocksScripter {
 method drawOn MicroBlocksScripter ctx {
   scale = (global 'scale')
   borderWidth = (2 * scale)
-  paneColor = (color projectEditor 'blueGray' 850)
+  paneColor = (microBlocksColor 'blueGray' 850)
   // border between palette and scripting area
   if (darkModeEnabled projectEditor) {
-    borderColor = (color projectEditor 'blueGray' 700)
+    borderColor = (microBlocksColor 'blueGray' 700)
   } else {
-    borderColor = (color projectEditor 'blueGray' 100)
+    borderColor = (microBlocksColor 'blueGray' 100)
   }
   x = ((right (morph categorySelector)) + 1)
   fillRect ctx paneColor 0 (top morph) x (height morph) // bg color for category/lib panes
