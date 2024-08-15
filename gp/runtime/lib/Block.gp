@@ -224,6 +224,11 @@ method fixLayout Block {
 	add lineHeights h
   }
 
+  // adjust minimum block height for one-line blocks
+  if ((count lineHeights) == 1) {
+    atPut lineHeights 1 (max (at lineHeights 1) (22 * scale))
+  }
+
   // determine blockWidth from line data
   blockWidth = 0
   for each lines {
@@ -235,7 +240,7 @@ method fixLayout Block {
     }
   }
   blockHeight = (callWith + (toArray lineHeights))
-  blockHeight += ((* (count lines) vSpace scale) + scale)
+  blockHeight += ((count lines) * (vSpace * scale))
 
   // arrange label parts vertically
   tp = (+ (top morph) (* 2 scale border) scale)
@@ -246,28 +251,24 @@ method fixLayout Block {
       tp += (4 * scale)
     }
   }
-  // make command blocks at least 24 pixels high
-  //if (and (type == 'command') (blockHeight < 24)) {
-  //  blockHeight = (28 * scale)
-//	tp = (8 * scale)
-//  }
 
+  // position block labels and inputs (possibly multiple lines of them)
   line = 0
   for eachLine lines {
     line += 1
-    bottom = (+ tp (at lineHeights line) (vSpace * scale))
+    bottom = (+ tp (at lineHeights line)) // (vSpace * scale))
     for each eachLine {
       if (type == 'reporter') {
         fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
       }
       if (isClass each 'Text') {
         // fix vertical alignment of text labels
-        fastSetYCenterWithin (morph each) tp (bottom + (2 * scale))
+        fastSetYCenterWithin (morph each) tp bottom // (bottom + (2 * scale))
       } else {
         fastSetYCenterWithin (morph each) tp bottom
       }
     }
-    tp = bottom
+    tp = (bottom + (vSpace * scale))
   }
 
   // add extra space below the bottom-most c-slot

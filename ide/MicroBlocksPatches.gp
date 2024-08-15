@@ -16,4 +16,4 @@
 
 // All patches have been merged into gp/runtime/lib/
 
-'Nothing to see here...'
+0 // Nothing to see here, but we need a non-comment to avoid a parser complaint
