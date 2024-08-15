@@ -90,24 +90,16 @@ method setContents InputSlot data fixStringOnlyNum {
 }
 
 method setTextFont InputSlot {
-  fontSize = 12
   fontName = 'Arial'
+  fontSize = 13
   if isMonospace {
-    if ('Browser' == (platform)) {
-      fontSize = 12
-      fontName = 'Arial'
-    } ('Win' == (platform)) {
-      fontSize = 13
-      fontName = 'Arial' // Lucida Console or Consolas
-    } ('Mac' == (platform)) {
-      fontSize = 12
-      fontName = 'Arial'
+    if ('Win' == (platform)) {
+      fontSize = 14
     } ('Linux' == (platform)) {
-      fontSize = 11
       fontName = 'Sans'
+      fontSize = 11
     }
   }
-  if ('Linux' == (platform)) { fontSize += -1 }
   setFont text fontName (fontSize * (blockScale))
 }
 

@@ -1585,16 +1585,15 @@ method isMathOperator Block aString {
 
 method labelText Block aString {
   scale = (blockScale)
-  fontName =  'Verdana Bold'
-  fontSize = (12 * scale)
-  if (isMathOperator this aString) { fontSize = (14 * scale) }
+  fontName = 'Arial Bold'
+  fontSize = (14 * scale)
+  if (isMathOperator this aString) { fontSize += (2 * scale) }
   if ('Linux' == (platform)) {
 	fontName = 'Sans Bold'
-	fontSize = (round (0.85 * fontSize))
+	fontSize = (round (0.8 * fontSize))
   }
   if ('Browser' == (platform)) {
 	fontName = 'Arial Bold'
-	fontSize = (round (1.1 * fontSize))
   }
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
