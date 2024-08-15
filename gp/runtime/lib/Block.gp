@@ -225,9 +225,16 @@ method fixLayout Block {
   }
 
   // adjust minimum block height for one-line blocks
-  if ((count lineHeights) == 1) {
-    atPut lineHeights 1 (max (at lineHeights 1) (22 * scale))
+  if (notEmpty lineHeights) {
+    minHeight = (23 * scale)
+    atPut lineHeights 1 (max (at lineHeights 1) minHeight)
   }
+//  if ((count lineHeights) >= 1) {
+//    minHeight = (23 * scale)
+//    if ((count lines) > 1) { minHeight = (23 * scale) }
+// print (at lineHeights 1) '->' minHeight ((count lines) > 1)
+//    atPut lineHeights 1 (max (at lineHeights 1) minHeight)
+//  }
 
   // determine blockWidth from line data
   blockWidth = 0
@@ -256,7 +263,7 @@ method fixLayout Block {
   line = 0
   for eachLine lines {
     line += 1
-    bottom = (+ tp (at lineHeights line)) // (vSpace * scale))
+    bottom = (+ tp (at lineHeights line))
     for each eachLine {
       if (type == 'reporter') {
         fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
