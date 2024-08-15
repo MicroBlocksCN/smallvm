@@ -1578,20 +1578,23 @@ to toBlock commandOrReporter {
   return block
 }
 
+method isMathOperator Block aString {
+  return (isOneOf aString '=' '+' '/' '×' '−' '≠' // last three: unicode multiply, minus, not equals
+	'<' '<=' '=' '>=' '>' '&' '|' '^' '~' '<<' '>>')
+}
+
 method labelText Block aString {
   scale = (blockScale)
   fontName =  'Verdana Bold'
-  fontSize = (11 * scale)
-  if (isOneOf aString '=' '+' '/' '×' '−' '≠') { // last three: unicode multiply, minus, not equals
-  	fontSize = (13 * scale)
-  }
+  fontSize = (12 * scale)
+  if (isMathOperator this aString) { fontSize = (14 * scale) }
   if ('Linux' == (platform)) {
 	fontName = 'Sans Bold'
 	fontSize = (round (0.85 * fontSize))
   }
   if ('Browser' == (platform)) {
 	fontName = 'Arial Bold'
-	fontSize = (fontSize + (2 * scale))
+	fontSize = (round (1.1 * fontSize))
   }
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
