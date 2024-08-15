@@ -1,8 +1,9 @@
 module Servo Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags servo motor angle rotation position 
-description 'Control both positional (angle) and rotational servo motors.'
+description 'Control both positional (angle) and rotational servo motors.
+'
 variables _servoPin _servoPulseWidth 
 
   spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
@@ -82,7 +83,7 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (5 * speed))
+  local 'pulseWidth' (1500 - (10 * speed))
   if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }
