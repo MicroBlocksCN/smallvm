@@ -66,11 +66,14 @@ to openProjectEditor tryRetina devMode {
 }
 
 to findProjectEditor {
-  page = (global 'page')
-  editorClass = 'ProjectEditor'
-  if (isMicroBlocks) { editorClass = 'MicroBlocksEditor' }
-  m = (findMorph editorClass)
+  // Return the top-level project editor, either for MicroBlocks or for GP.
+
+  m = (findMorph 'MicroBlocksEditor')
   if (notNil m) { return (handler m) }
+
+  m = (findMorph 'ProjectEditor')
+  if (notNil m) { return (handler m) }
+
   return nil
 }
 

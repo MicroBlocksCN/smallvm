@@ -164,7 +164,7 @@ method setOpCategory AuthoringSpecs op category {
 method blockColorForOp AuthoringSpecs op {
   if ('comment' == op) { return (colorHex 'F2EEBF') } // was (colorHSV 55 0.6 0.93)
   pe = (findProjectEditor)
-  if (notNil pe) {
+  if (and (notNil pe) (isMicroBlocks)) {
 	cat = (categoryForOp (project pe) op) // get category from project, if possible
   }
   if (isNil cat) { cat = (at opCategory op) } // get category of a built-in block

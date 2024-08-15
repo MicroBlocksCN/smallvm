@@ -32,6 +32,7 @@ method step ScriptEditor {
 method handDownOn ScriptEditor aHand {
 	if (notNil (grabbedObject aHand)) { return false } // hand is not empty
 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (isNil scripter) { return }
 	selection = (selection scripter)
 	if (and (notNil selection) (notEmpty selection)) {
 		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')

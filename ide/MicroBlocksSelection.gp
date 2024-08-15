@@ -17,7 +17,9 @@ to startSelecting aScripter aHand {
 }
 
 to cancelSelection {
-	scripter = (scripter (findMicroBlocksEditor))
+	editor = (findMicroBlocksEditor)
+	if (isNil editor) { return }
+	scripter = (scripter editor)
 	for p (allMorphs (morph (scriptEditor scripter))) {
 		if (isClass (handler p) 'Block') { unselect (handler p) }
 	}
