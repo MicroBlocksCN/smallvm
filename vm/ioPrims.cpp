@@ -660,8 +660,8 @@ void hardwareInit() {
 	#define DEFAULT_L2_PIN 10
 	#define DEFAULT_R1_PIN 26
 	#define DEFAULT_R2_PIN 25
-	#define PIN_BUTTON_A 37
-	#define PIN_BUTTON_B 38
+	#define PIN_BUTTON_A 38
+	#define PIN_BUTTON_B 37
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
