@@ -304,7 +304,7 @@ method fixLayout Block {
 
   nb = (next this)
   if (notNil nb) {
-    fastSetPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+    fastSetPosition (morph nb) (left morph) ((bottom morph) - (scale * (corner + 1)))
   }
   rerender morph
   if wasHighlighted { addHighlight morph }
