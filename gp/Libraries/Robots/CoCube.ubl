@@ -8,6 +8,9 @@ variables speed error_angle target_angle error_y angle error_distance error_x
 
   spec 'r' 'Battery Percentage' 'Battery Percentage'
   space
+  spec 'r' 'On The Mat' 'On The Mat'
+  spec 'r' 'Card ID' 'Card ID'
+  space
   spec 'r' 'position_X' 'positionX'
   spec 'r' 'position_Y' 'positionY'
   spec 'r' 'position_Yaw' 'positionYaw'
@@ -32,8 +35,17 @@ variables speed error_angle target_angle error_y angle error_distance error_x
   spec ' ' '_calculate_angle_error_' '_calculate_angle_error_ angle _' 'num' 10
   spec ' ' '_calculate_distance_error target_x _ target_y _' '_calculate_distance_error Target_X _ Target_Y _' 'num num' 10 10
 
+
 to 'Battery Percentage' {
   return (minimum (((254 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 680000) / 1600) 100)
+}
+
+to 'On The Mat' {
+  return (callCustomReporter '[sensors:cube_status]')
+}
+
+to 'Card ID' {
+  return (callCustomReporter '[sensors:cube_index]')
 }
 
 to ControlLeftMotor speed {
