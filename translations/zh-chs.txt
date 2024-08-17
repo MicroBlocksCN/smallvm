@@ -3733,6 +3733,12 @@ Communication Failure!!!
 Battery Percentage
 电量百分比
 
+On The Mat
+在定位垫上
+
+Card ID
+卡片ID
+
 positionX
 位姿X
 
