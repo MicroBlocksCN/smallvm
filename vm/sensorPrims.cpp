@@ -2582,7 +2582,19 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 			return int2obj(result);
 	}
 
-	static OBJ primPositionSpeedLeft(int argCount, OBJ *args){
+	static OBJ primIndex(int argCount, OBJ *args){
+            int result = cocube.GetIndex();
+            return int2obj(result);
+    }
+
+    static OBJ primCubeStatus(int argCount, OBJ *args) {
+        if (cocube.GetState())
+            return trueObj;
+        else
+            return falseObj;
+    }
+
+    static OBJ primPositionSpeedLeft(int argCount, OBJ *args){
 			int result = cocube.GetSpeedLeft();
 			return int2obj(result);
 	}
@@ -2683,6 +2695,8 @@ static PrimEntry entries[] = {
 	{"position_x", primPositionX},
 	{"position_y", primPositionY},
 	{"position_yaw", primPositionYaw},
+	{"cube_index", primIndex},
+	{"cube_status", primCubeStatus},
 	{"speed_left", primPositionSpeedLeft},
 	{"speed_right", primPositionSpeedRight},
   	#endif
