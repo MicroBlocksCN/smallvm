@@ -1,0 +1,87 @@
+module M5BugC2
+author '邵悦'
+version 1 0 
+description 'M5Stack bugc2
+https://shop.m5stack.com/products/bugc2-w-m5stickc-plus2'
+
+  spec ' ' 'bugClearLED' 'bugClearLED'
+  spec ' ' 'bugSetLED' 'bugSetLED _ _' 'str color' 'left'
+  spec 'r' 'bugBat' 'bugBat'
+  spec ' ' 'bugSetSpeed' 'bugSetSpeed _ _ _ _' 'auto auto auto auto' '10' '10' '10' '10'
+  spec ' ' 'bugc_i2c_init' 'bugc_i2c_init'
+  spec ' ' 'bug_forward' 'bug_forward'
+  spec ' ' 'bug_backward' 'bug_backward'
+  spec ' ' 'bug_left' 'bug_left'
+  spec ' ' 'bug_right' 'bug_right'
+  spec ' ' 'bug_LED' 'bug_LED _' 'color'
+
+to bugBat {
+  return (i2cGet (hexToInt '38') (hexToInt '20'))
+}
+
+to bugClearLED {
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '10') 0 0 0 0)
+  waitMillis 5
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '10') 1 0 0 0)
+}
+
+to bugSetLED foo bar {
+  if (foo == 'right') {
+    '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '10') 0 ((bar & (hexToInt 'FF0000')) >> 16) ((bar & (hexToInt '00FF00')) >> 8) (bar & (hexToInt '0000FF')))
+  } else {
+    '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '10') 1 ((bar & (hexToInt 'FF0000')) >> 16) ((bar & (hexToInt '00FF00')) >> 8) (bar & (hexToInt '0000FF')))
+  }
+  waitMillis 5
+}
+
+to bugSetSpeed foo bar baz quux {
+  comment 'upleft，upright,downleft,downright'
+  if (foo < 0) {
+    foo = (foo + 256)
+  }
+  if (bar < 0) {
+    bar = (bar + 256)
+  }
+  if (baz < 0) {
+    baz = (baz + 256)
+  }
+  if (quux < 0) {
+    quux = (quux + 256)
+  }
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '00') foo bar baz quux)
+}
+
+to bug_LED foo {
+  bugSetLED 'left' (colorSwatch 35 190 30 255)
+  bugSetLED 'right' (colorSwatch 35 190 30 255)
+}
+
+to bug_backward {
+  bugSetSpeed -30 30 -30 30
+  waitMillis 200
+  bugSetSpeed 0 0 0 0
+}
+
+to bug_forward {
+  bugSetSpeed 25 -30 30 -30
+  waitMillis 200
+  bugSetSpeed 0 0 0 0
+}
+
+to bug_left {
+  bugSetSpeed -10 -20 -10 -20
+  waitMillis 200
+  bugSetSpeed 0 0 0 0
+}
+
+to bug_right {
+  bugSetSpeed 10 20 10 20
+  waitMillis 200
+  bugSetSpeed 0 0 0 0
+}
+
+to bugc_i2c_init {
+  waitMillis 500
+  '[sensors:i2cSetPins]' 0 26
+}
+
