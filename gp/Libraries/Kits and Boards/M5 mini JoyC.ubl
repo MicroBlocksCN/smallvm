@@ -1,0 +1,34 @@
+module 'M5 mini JoyC ' Control
+author 'Shao Yue'
+version 1 0 
+description 'https://shop.m5stack.com/products/m5stickc-mini-joyc-hat-stm32f030'
+
+  spec 'r' 'mini_joyc_button' 'mini_joyc_button'
+  spec 'r' 'mini_joyc_getY' 'mini_joyc_getY'
+  spec 'r' 'mini_joyc_getX' 'mini_joyc_getX'
+  spec ' ' 'mini_joyc_set_color' 'mini_joyc_set_color _' 'color'
+  spec ' ' 'mini_joyc_i2c_init' 'mini_joyc_i2c_init'
+
+to mini_joyc_button {
+  return ((i2cGet (hexToInt '54') (hexToInt '30')) == 0)
+}
+
+to mini_joyc_getX {
+  _mini_x_pos = (i2cGet (hexToInt '54') (hexToInt '20'))
+  return (ifExpression (_mini_x_pos < 125) (0 - _mini_x_pos) (255 - _mini_x_pos))
+}
+
+to mini_joyc_getY {
+  _mini_y_pos = (i2cGet (hexToInt '54') (hexToInt '21'))
+  return (ifExpression (_mini_y_pos < 125) _mini_y_pos (_mini_y_pos - 255))
+}
+
+to mini_joyc_i2c_init {
+  waitMillis 500
+  '[sensors:i2cSetPins]' 0 26
+}
+
+to mini_joyc_set_color foo {
+  '[sensors:i2cWrite]' (hexToInt '54') ('[data:makeList]' (hexToInt '40') ((foo >> 16) & 255) ((foo >> 8) & 255) (foo & 255))
+}
+
