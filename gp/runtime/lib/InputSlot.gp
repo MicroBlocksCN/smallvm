@@ -606,14 +606,13 @@ method replaceItemMenu InputSlot {
 }
 
 method functionNameMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
   scripterM = (ownerThatIsA morph 'MicroBlocksScripter')
-  if (notNil scripterM) {
-    project = (project (handler scripterM))
-    specs = (blockSpecs project)
-    for func (functions (main project)) {
-	  addItem menu (functionName func)
-    }
+  if (isNil scripterM) { return nil }
+  menu = (menu nil (action 'setContents' this) true)
+  project = (project (handler scripterM))
+  specs = (blockSpecs project)
+  for func (functions (main project)) {
+    addItem menu (functionName func)
   }
   return menu
 }
