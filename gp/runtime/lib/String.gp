@@ -786,7 +786,7 @@ method representsANumber String {
 method representsAnInteger String {
   if ('' == this) { return true }
   if ('-' == (at this 1)) {
-  	return (and ((count this) > 1) (allDigits (substring this 2)))
+  	return (allDigits (substring this 2))
   }
   return (allDigits this)
 }
