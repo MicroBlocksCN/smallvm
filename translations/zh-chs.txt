@@ -3730,6 +3730,18 @@ Communication Failure!!!
 
 #### CoCube
 
+left
+左
+
+right
+右
+
+forward
+前
+
+backward
+后
+
 Battery Percentage
 电量百分比
 
@@ -3739,14 +3751,14 @@ On The Mat
 Card ID
 卡片ID
 
-positionX
-位姿X
+X position
+位置X
 
-positionY
-位姿Y
+Y position
+位置Y
 
-positionYaw
-位姿Yaw
+Direction
+方向角
 
 set TFT backlight _
 设置TFT背光 _
@@ -3756,6 +3768,60 @@ TFT绘制ArUco标签 _
 
 draw AprilTag on TFT _
 TFT绘制AprilTag标签 _
+
+CoCube move _ at _ speed (0-50)
+向 _ 以 _ 速度 (0-50) 移动
+
+CoCube rotate _ at _ speed (0-50)
+向 _ 以 _ 速度 (0-50) 旋转
+
+CoCube move _ at _ speed (0-50) for _ millisecs
+向 _ 以 _ 速度 (0-50) 移动 _ 毫秒
+
+CoCube rotate _ at _ speed (0-50) for _ millisecs
+向 _ 以 _ 速度 (0-50) 旋转 _ 毫秒
+
+CoCube move _ at _ speed (0-50) by _ steps
+向 _ 以 _ 速度 (0-50) 移动 _ 步
+
+CoCube rotate _ at _ speed (0-50) by _ degrees
+向 _ 以 _ 速度 (0-50) 旋转 _ 度
+
+CoCube set wheel left _ right _ (-50 to 50)
+左轮以 _ 速度、右轮以 _ 速度移动
+
+CoCube wheels stop
+电机停转
+
+CoCube wheels break
+电机刹车
+
+CoCube rotate to angle _ at _ speed (0-50)
+转向角度 _ 速度 _ (0-50)
+
+CoCube rotate to target X _ Y _ at _ speed (0-50)
+转向目标点 X _ Y _ 速度 _ (0-50)
+
+CoCube move to target X _ Y _ at _ speed (0-50)
+移动到目标点 X _ Y _ 速度 _ (0-50)
+
+_cocube_motors_speed left _ right _
+_左电机速度 _ 右电机速度 _
+
+_cocube_pid_init
+_初始化pid参数
+
+_cocube_pid_left_motor
+_pid控制左电机
+
+_cocube_pid_right_motor
+_pid控制右电机
+
+_cocube_calculate_angle_error angle _
+_计算角度误差 _
+
+_cocube_calculate_distance_error Target_X _ Target_Y _
+_计算距离误差 X _ Y _
 
 Control Left Motor _
 控制左电机 _
