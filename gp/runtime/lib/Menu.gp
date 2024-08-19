@@ -37,6 +37,7 @@ method lastItemIsLine Menu {
 
 method popUp Menu page x y noFocus {
   if (or (isNil noFocus) (not (isClass noFocus 'Boolean'))) {noFocus = false}
+  if (isEmpty items) { return }
   buildMorph this page y
   showMenu page this x y
   if (not noFocus) {focus this}
@@ -108,6 +109,7 @@ method buildMorph Menu page yPos {
   maxHeight = ((height (morph page)) - 100)
 
   menuWidth = 50
+  menuHeight = 0
 
   if (notNil morph) {destroy morph}
 
