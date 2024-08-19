@@ -1,0 +1,102 @@
+module 'M5 BaseX'
+author 'Shao Yue'
+version 1 2 
+description 'M5Core base for LEGO EV3
+https://shop.m5stack.com/products/basex
+BaseX is a special base compatible with LEGO EV3 motor.
+'
+
+  spec ' ' 'BaseX_set pos' 'BaseX_set pos _ mode _' 'auto auto' 1 0
+  spec 'r' 'BaseX_Encoder' 'BaseX_Encoder _' 'auto' 1
+  spec ' ' 'BaseX_set_Encoder' 'BaseX_set_Encoder _ value _' 'auto auto' 1 0
+  spec ' ' 'BaseX_set_motor' 'BaseX_set_motor _ speed _' 'auto auto' 1 0
+  spec 'r' 'BaseX_motor_speed' 'BaseX_motor_speed _' 'auto' 1
+  spec 'r' 'BaseX_motor_20ms_speed' 'BaseX_motor_20ms_speed _' 'auto' 1
+  spec ' ' 'BaseX_set_position_PID pos' 'BaseX_set_position_PID pos _ kp _ ki _ kd _' 'auto auto auto auto' 1 0 0 0
+  spec ' ' 'BaseX_set_position_point' 'BaseX_set_position_point pos _ point _' 'num num' 0 360
+  spec ' ' 'BaseX_set_position_PID_maxspeed' 'BaseX_set_position_PID_maxspeed _ max_pwm _' 'auto auto' 0 0
+  spec ' ' 'BaseX_set_speed_PID' 'BaseX_set_speed_PID pos _ kp _ ki _ kd _' 'auto auto auto auto' 1 0 0 0
+  spec ' ' 'BaseX_set_speed_point pos' 'BaseX_set_speed_point pos _ point _' 'auto auto' 1 '10'
+  spec 'r' '_BaseX_check_pos' '_BaseX_check_pos _' 'auto' 1
+  spec ' ' 'BaseX_set servo' 'BaseX_set servo _ angle _' 'auto auto' 1 '10'
+  spec ' ' 'BaseX_set_pulseWidth' 'BaseX_set_pulseWidth servo _ width _' 'auto auto' 1 2350
+
+to BaseX_Encoder pos {
+  pos = ('_BaseX_check_pos' pos)
+  local 'var' (newList 4)
+  '[sensors:i2cWrite]' (hexToInt '22') ((hexToInt '30') + (4 * pos))
+  '[sensors:i2cRead]' (hexToInt '22') var
+  return (((((at 1 var) << 24) | ((at 2 var) << 16)) | ((at 3 var) << 8)) | (at 4 var))
+}
+
+to BaseX_motor_20ms_speed pos {
+  pos = ('_BaseX_check_pos' pos)
+  local 'var' (i2cGet (hexToInt '22') ((hexToInt '40') + pos))
+  return (ifExpression (var > 127) (var - 256) var)
+}
+
+to BaseX_motor_speed pos {
+  comment 'return Motor run speed, -127 ~ 127'
+  pos = ('_BaseX_check_pos' pos)
+  local 'var' (i2cGet (hexToInt '22') ((hexToInt '20') + pos))
+  return (ifExpression (var > 127) (var - 256) var)
+}
+
+to 'BaseX_set pos' pos mode {
+  comment 'pos:1,2,3,4
+mode: 0 normal,1 position,2 speed'
+  pos = ('_BaseX_check_pos' pos)
+  i2cSet (hexToInt '22') ((hexToInt '50') + ((hexToInt '10') * pos)) mode
+}
+
+to 'BaseX_set servo' pos angle {
+  pos = ((maximum 1 (minimum pos 2)) - 1)
+  i2cSet (hexToInt '22') pos angle
+}
+
+to BaseX_set_Encoder pos value {
+  pos = ('_BaseX_check_pos' pos)
+  '[sensors:i2cWrite]' (hexToInt '22') ('[data:makeList]' ((hexToInt '30') + (4 * pos)) ((value >> 24) & (hexToInt 'FF')) ((value >> 16) & (hexToInt 'FF')) ((value >> 8) & (hexToInt 'FF')) (value & (hexToInt 'FF')))
+}
+
+to BaseX_set_motor pos speed {
+  pos = ('_BaseX_check_pos' pos)
+  speed = (maximum (minimum 127 speed) -127)
+  i2cSet (hexToInt '22') ((hexToInt '20') + pos) (ifExpression (speed < 0) (speed + 256) speed)
+}
+
+to 'BaseX_set_position_PID pos' pos kp ki kd {
+  pos = ('_BaseX_check_pos' pos)
+  '[sensors:i2cWrite]' (hexToInt '22') ('[data:makeList]' (((hexToInt '50') + ((hexToInt '10') * pos)) + 1) kp ki kd)
+}
+
+to BaseX_set_position_PID_maxspeed pos max_pwm {
+  comment 'max_pwm: 0 ~ 127, POSITION mode, max speed  '
+  pos = ('_BaseX_check_pos' pos)
+  i2cSet (hexToInt '22') ((hexToInt '50') + (((hexToInt '10') * pos) + 8)) max_pwm
+}
+
+to BaseX_set_position_point pos point {
+  pos = ('_BaseX_check_pos' pos)
+  '[sensors:i2cWrite]' (hexToInt '22') ('[data:makeList]' ((hexToInt '50') + (((hexToInt '10') * pos) + 4)) (point & (hexToInt 'FF')) ((point >> 8) & (hexToInt 'FF')) ((point >> 16) & (hexToInt 'FF')) ((point >> 24) & (hexToInt 'FF')))
+}
+
+to BaseX_set_pulseWidth pos width {
+  pos = ((maximum 1 (minimum pos 2)) - 1)
+  '[sensors:i2cWrite]' (hexToInt '22') ('[data:makeList]' (pos * 2) ((width >> 8) & (hexToInt 'FF')) (width & (hexToInt 'FF')))
+}
+
+to BaseX_set_speed_PID pos kp ki kd {
+  pos = ('_BaseX_check_pos' pos)
+  '[sensors:i2cWrite]' (hexToInt '22') ('[data:makeList]' (((hexToInt '50') + ((hexToInt '10') * pos)) + 9) kp ki kd)
+}
+
+to 'BaseX_set_speed_point pos' pos point {
+  pos = ('_BaseX_check_pos' pos)
+  i2cSet (hexToInt '22') ((hexToInt '50') + (((hexToInt '10') * pos) + (hexToInt '0C'))) (ifExpression (point < 0) (point + 256) point)
+}
+
+to '_BaseX_check_pos' pos {
+  return ((maximum 1 (minimum pos 4)) - 1)
+}
+

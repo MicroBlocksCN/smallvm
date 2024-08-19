@@ -1,16 +1,23 @@
 module 'M5RoverC-car-lib'
 author 'Shao Yue'
-version 1 0 
-tags 'm5stickC plus' 
+version 1 1 
+tags 'm5stickc plus' 
 description 'https://docs.m5stack.com/en/hat/hat_roverc_pro
 4 wheels and 2 servo
 I2C 0x38
-work with M5stickC plus'
+work with M5stickC plus
+'
 
   spec ' ' 'setRCWheelSpeed pos' 'setRCWheelSpeed pos _ speed _' 'num auto' 1 50
   spec ' ' 'setCServoAngle pos' 'setCServoAngle pos _ angle _' 'num num' 1 60
   spec ' ' 'setRCSpeed x' 'setRCSpeed x _ y _ z _' 'auto auto auto' 0 0 0
   spec ' ' 'stopRC' 'stopRC'
+  spec ' ' 'M5Rover_init' 'M5Rover_init'
+
+to M5Rover_init {
+  waitMillis 500
+  '[sensors:i2cSetPins]' 0 26
+}
 
 to 'setCServoAngle pos' pos angle {
   comment '0x38 i2c address , servo1 reg 0x10, servo2 reg 0x11'
