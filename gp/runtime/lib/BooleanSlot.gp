@@ -12,7 +12,7 @@ method initialize BooleanSlot defaultValue isElse {
 	contents = (true == defaultValue)
 	displayAsElse = (true == isElse)
 	morph = (newMorph this)
-	setExtent morph (28 * (blockScale)) (16 * (blockScale))
+	setExtent morph (29 * (blockScale)) (18 * (blockScale))
 	return this
 }
 
@@ -43,7 +43,7 @@ method drawOn BooleanSlot ctx {
 		return
 	}
 	borderWidth = (max 1 (global 'scale'))
-	sliderSize = ((height morph) * 0.75)
+	sliderSize = ((height morph) - (4 * scale))
 	corner = (14 * scale)
 	r = (bounds morph)
 	sm = (getShapeMaker ctx)
