@@ -136,7 +136,7 @@ method fixLayout Block {
   if (type == 'hat') {
     indentation = (* scale (+ border space))
   } (type == 'reporter') {
-    indentation = (* scale 8)
+    indentation = (* scale 6)
   } (type == 'command') {
     indentation = (* scale (+ border space border))
   }
@@ -226,7 +226,7 @@ method fixLayout Block {
 
   // adjust minimum block height for one-line blocks
   if (notEmpty lineHeights) {
-    minHeight = (23 * scale)
+    minHeight = (21 * scale)
     atPut lineHeights 1 (max (at lineHeights 1) minHeight)
   }
 
@@ -235,35 +235,32 @@ method fixLayout Block {
   for each lines {
     if (notEmpty each) {
       elem = (last each)
-      if (not (isClass elem 'CommandSlot')) {
-        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)) + (* 3 scale (count lines)))
+      if (isClass elem 'CommandSlot') {
+        blockWidth = (max blockWidth (56 * scale)) // min size for "forever" and "if"
+      } else {
+        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)))
       }
     }
   }
   blockHeight = (callWith + (toArray lineHeights))
   blockHeight += ((count lines) * (vSpace * scale))
 
-  // arrange label parts vertically
+  // set vertical position of block labels and inputs (possibly multiple lines of them)
   tp = (+ (top morph) (* 2 scale border) scale)
-  if (type == 'hat') {
+  if (type == 'hat') { // adjustment for hat blocks
     tp += (hatHeight this)
     if (blockHeight < 24) {
       blockHeight = (28 * scale)
       tp += (4 * scale)
     }
   }
-
-  // position block labels and inputs (possibly multiple lines of them)
-  line = 0
+  line = 1
   for eachLine lines {
-    line += 1
     bottom = (+ tp (at lineHeights line))
     for each eachLine {
-      if (type == 'reporter') {
-        fastSetLeft (morph each) (+ (left (morph each)) (((count lines) - 1) * (8 * scale)))
-      }
       fastSetYCenterWithin (morph each) tp (bottom + (1 * scale)) // adjust slightly downward
     }
+    line += 1
     tp = (bottom + (vSpace * scale))
   }
 
@@ -282,21 +279,21 @@ method fixLayout Block {
 
   // adjust block width (i.e. right margin)
   if (type == 'command') {
-	blockWidth += (-1 * scale)
+	blockWidth += (2 * scale)
   } (type == 'hat') {
-	blockWidth += (-2 * scale)
+	blockWidth += (2 * scale)
   } (type == 'reporter') {
 	blockWidth += (-4 * scale)
   }
 
   if (type == 'command') {
-    setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
+    setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (3 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
   } (type == 'hat') {
-    setWidth (bounds morph) (max (scale * 100) (+ blockWidth indentation (scale * corner)))
+    setWidth (bounds morph) (max (scale * 100) (+ blockWidth indentation (3 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
   } (type == 'reporter') {
-    setWidth (bounds morph) (max (scale * 20) (blockWidth + (2 * indentation)))
+    setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (11 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
   }
 

@@ -109,12 +109,12 @@ method isVarSlot InputSlot {
 
 method fixLayout InputSlot {
   scale = (blockScale)
-  textWidth = (max (width (morph text)) (24 * scale))
+  textWidth = (max (width (morph text)) (10 * scale))
   textPadding = (half (textWidth - (width (morph text))))
-  h = ((height (morph text)) + (7 * scale))
-  w = (textWidth + (8 * scale))
-  textX = (+ (left morph) textPadding (4 * scale))
-  textY = ((top morph) + (4 * scale))
+  h = ((height (morph text)) + (3 * scale))
+  w = (textWidth + (14 * scale))
+  textX = (+ (left morph) textPadding (7 * scale))
+  textY = ((top morph) + (2 * scale))
   setPosition (morph text) textX textY
   if (notNil menuSelector) {
     // leave room for menu arrow
