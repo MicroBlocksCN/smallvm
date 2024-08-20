@@ -91,11 +91,14 @@ method setContents InputSlot data fixStringOnlyNum {
 
 method setTextFont InputSlot {
   fontName = 'Arial'
+  if ('Linux' == (platform)) {
+    fontName = 'Noto Sans'
+  }
   fontSize = 13
-     if ('Win' == (platform)) {
-      fontSize = 14
-    } ('Linux' == (platform)) {
-    fontSize = 11
+  if ('Win' == (platform)) {
+    fontSize = 14
+//   } ('Linux' == (platform)) {
+//     fontSize = 11
   }
   setFont text fontName (fontSize * (blockScale))
 }
