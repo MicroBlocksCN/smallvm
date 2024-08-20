@@ -125,7 +125,6 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   morph = (morph window)
   setHandler morph this
   setClipping morph true
-  clr = (gray 250)
 
   action = anAction
   extensions = extensionList
@@ -133,10 +132,11 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   isDone = false
   answer = ''
 
-  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
+  listBoxColor = (gray 250) // very light gray
+  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) listBoxColor)
   onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
   setFont lbox 'Arial' 16
-  listPane = (scrollFrame lbox clr)
+  listPane = (scrollFrame lbox listBoxColor)
   addPart morph (morph listPane)
   setGrabRule (morph listPane) 'ignore'
 
@@ -146,8 +146,8 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   okayButton = (textButton this 0 0 'Okay' 'okay')
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (460 * scale) (366 * scale)
-  setExtent morph (460 * scale) (366 * scale)
+  setMinExtent morph (460 * scale) (415 * scale)
+  setExtent morph (460 * scale) (415 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
@@ -266,7 +266,7 @@ method addIconButton FilePicker x y iconName anAction label {
   drawString bm label (gray 0) labelX labelY
 
   button = (newButton '' anAction)
-  setLabel button bm (gray 225) (gray 245)
+  setLabel button bm (microBlocksColor 'blueGray' 100) (microBlocksColor 'yellow')
   setPosition (morph button) x y
   addPart morph (morph button)
   return button
@@ -276,7 +276,13 @@ method textButton FilePicker x y label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction)
+  buttonColor = (microBlocksColor 'blueGray' 200)
+  if ('Okay' == label) { buttonColor = (mixed buttonColor 50 (color 0 100 0)) } // add green tint
+  if ('<' == label) {
+    result = (pushButton label buttonColor selectorOrAction 0 0)
+  } else {
+    result = (pushButton label buttonColor selectorOrAction)
+  }
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -418,7 +424,7 @@ method redraw FilePicker {
   topInset = (24 * scale)
   inset = (6 * scale)
   bm = (costumeData morph)
-  fillRect bm (gray 230) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
+  fillRect bm (microBlocksColor 'blueGray' 50) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
   costumeChanged morph
   fixLayout this
 }
@@ -428,7 +434,7 @@ method fixLayout FilePicker {
 
   // file list
   topInset = (55 * scale)
-  bottomInset = (40 * scale)
+  bottomInset = (55 * scale)
   leftInset = (110 * scale)
   rightInset = (20 * scale)
   setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
@@ -447,7 +453,7 @@ method fixLayout FilePicker {
 
   // okay and cancel buttons
   space = (10 * scale)
-  y = ((bottom morph) - (28 * scale))
+  y = ((bottom morph) - (40 * scale))
   x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
   setPosition (morph okayButton) x y
   x = (x - ((width (morph cancelButton)) + space))
