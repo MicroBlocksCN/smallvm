@@ -3769,40 +3769,40 @@ TFT绘制ArUco标签 _
 draw AprilTag on TFT _
 TFT绘制AprilTag标签 _
 
-CoCube move _ at _ speed (0-50)
+move _ at _ speed (0-50)
 向 _ 以 _ 速度 (0-50) 移动
 
-CoCube rotate _ at _ speed (0-50)
+rotate _ at _ speed (0-50)
 向 _ 以 _ 速度 (0-50) 旋转
 
-CoCube move _ at _ speed (0-50) for _ millisecs
+move _ at _ speed (0-50) for _ millisecs
 向 _ 以 _ 速度 (0-50) 移动 _ 毫秒
 
-CoCube rotate _ at _ speed (0-50) for _ millisecs
+rotate _ at _ speed (0-50) for _ millisecs
 向 _ 以 _ 速度 (0-50) 旋转 _ 毫秒
 
-CoCube move _ at _ speed (0-50) by _ steps
+move _ at _ speed (0-50) by _ steps
 向 _ 以 _ 速度 (0-50) 移动 _ 步
 
-CoCube rotate _ at _ speed (0-50) by _ degrees
+rotate _ at _ speed (0-50) by _ degrees
 向 _ 以 _ 速度 (0-50) 旋转 _ 度
 
-CoCube set wheel left _ right _ (-50 to 50)
+set wheel left _ right _ (-50 to 50)
 左轮以 _ 速度、右轮以 _ 速度移动
 
-CoCube wheels stop
+wheels stop
 电机停转
 
-CoCube wheels break
+wheels break
 电机刹车
 
-CoCube rotate to angle _ at _ speed (0-50)
+rotate to angle _ at _ speed (0-50)
 转向角度 _ 速度 _ (0-50)
 
-CoCube rotate to target X _ Y _ at _ speed (0-50)
+rotate to target X _ Y _ at _ speed (0-50)
 转向目标点 X _ Y _ 速度 _ (0-50)
 
-CoCube move to target X _ Y _ at _ speed (0-50)
+move to target X _ Y _ at _ speed (0-50)
 移动到目标点 X _ Y _ 速度 _ (0-50)
 
 _cocube_motors_speed left _ right _
@@ -3822,45 +3822,6 @@ _计算角度误差 _
 
 _cocube_calculate_distance_error Target_X _ Target_Y _
 _计算距离误差 X _ Y _
-
-Control Left Motor _
-控制左电机 _
-
-Control Right Motor _
-控制右电机 _
-
-Move Forward _
-前进 _
-
-Move Backward _
-后退 _
-
-Turn Left _
-左转 _
-
-Turn Right _
-右转 _
-
-Motor Stop
-电机停转
-
-Motor Break
-电机刹车
-
-Rotate to Angle _ Speed _
-转向角度 _ 速度 _
-
-Rotate to Target X _ Y _ Speed _
-转向目标点 X _ Y _ 速度 _
-
-Move to Target X _ Y _ Speed _
-移动到目标点 X _ Y _ 速度 _
-
-_calculate_angle_error_ angle _
-_计算角度误差_ 目标角度 _
-
-_calculate_distance_error Target_X _ Target_Y _
-_计算距离误差 目标X _ Y _
 
 #### CoCube Module
 
