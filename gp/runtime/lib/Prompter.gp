@@ -42,7 +42,7 @@ method initialize Prompter label default editRule anAction details {
   minW = (max minW ((width (morph textBox)) + (60 * scale)))
   setEditRule textBox editRule
   setGrabRule (morph textBox) 'ignore'
-  textFrame = (scrollFrame textBox clr (== editRule 'line'))
+  textFrame = (scrollFrame textBox (gray 255) (== editRule 'line'))
   addPart morph (morph textFrame)
 
   createButtons this
