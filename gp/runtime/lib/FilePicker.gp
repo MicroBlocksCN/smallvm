@@ -7,6 +7,9 @@ to pickFileToOpen anAction defaultPath extensionList {
   // nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
   // until a file is chosen and return its full path, or the empty string if no file is chosen.
 
+  if (isMicroBlocks) {
+    return (microBlocksPickFile anAction defaultPath extensionList false)
+  }
   return (pickFile anAction defaultPath extensionList false)
 }
 
@@ -15,11 +18,15 @@ to fileToWrite defaultPath extensionList {
   // offered as a starting point. Wait synchronously until a file is specified and return its
   // full path, or the empty string if the user cancels the operation.
 
+  if (isMicroBlocks) {
+    return (microBlocksFileToWrite defaultPath extensionList)
+  }
+
   if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
 	// there is a single extension and the default path is not nil or empty
 	extension = extensionList
 	if (not (endsWith defaultPath extension)) {
-	  // addpend the extension to the default path
+	  // append the extension to the default path
 	  defaultPath = (join defaultPath extension)
 	}
   }
