@@ -1585,10 +1585,10 @@ method labelText Block aString {
   fontName = 'Arial Bold'
   fontSize = (14 * scale)
   if (isMathOperator this aString) { fontSize += (2 * scale) }
-//   if ('Linux' == (platform)) {
-// 	fontName = 'Sans Bold'
-// 	fontSize = (round (0.8 * fontSize))
-//   }
+  if ('Linux' == (platform)) {
+	fontName = 'Noto Sans Bold'
+//	fontSize = (round (0.8 * fontSize))
+  }
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
   if ('comment' == aString) { labelColor = (gray 80) }
