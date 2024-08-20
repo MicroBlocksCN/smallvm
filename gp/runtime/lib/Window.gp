@@ -15,22 +15,16 @@ method clientColor Window {return clientColor}
 method labelString Window {return (text label)}
 
 method initialize Window labelString {
-  pe = (findProjectEditor)
   scale = (global 'scale')
   border = (scale * 5)
-  if (implements pe 'color') {
-    color = (color pe 'blueGray' 850)
-    clientColor = (color pe 'blueGray' 50)
-  } else {
-    color = (gray 80)
-    clientColor = (gray 255)
-  }
+  color = (microBlocksColor 'blueGray' 900)
+  clientColor = (microBlocksColor 'blueGray' 50)
   morph = (newMorph this)
   setGrabRule morph 'handle'
   setTransparentTouch morph false // optimization
   label = (newText (localized labelString) 'Arial Bold' (scale * 12) clientColor)
   addPart morph (morph label)
-  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)))
+  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)) 0 0)
   addPart morph (morph closeBtn)
   resizer = (resizeHandle this)
 }
@@ -40,7 +34,7 @@ method updateScale Window {
   border = (scale * 5)
   setFont label nil (scale * 12)
   removePart morph (morph closeBtn)
-  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)))
+  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)) 0 0)
   addPart morph (morph closeBtn)
 }
 

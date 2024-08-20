@@ -142,15 +142,16 @@ to pushButton label color action minWidth minHeight makeDefault {
 }
 
 method drawLabelCostumes Trigger label color minWidth minHeight makeDefault {
-  if (isNil minWidth) {minWidth = 0}
-  if (isNil minHeight) {minHeight = 0}
+  scale = (global 'scale')
+  if (isNil minWidth) { minWidth = (40 * scale) }
+  if (isNil minHeight) { minHeight = (25 * scale) }
   if makeDefault {
 	normalCostume = (buttonBitmap label (mixed color 50 (color 0 100 0)) minWidth minHeight)
   } else {
 	normalCostume = (buttonBitmap label color minWidth minHeight)
   }
-  highlightCostume = (buttonBitmap label (darker color) minWidth minHeight)
-  pressedCostume = (buttonBitmap label (darker color) minWidth minHeight true)
+  highlightCostume = (buttonBitmap label (microBlocksColor 'yellow') minWidth minHeight)
+  pressedCostume = (buttonBitmap label (microBlocksColor 'yellow') minWidth minHeight true)
   setCostume morph normalCostume
 }
 
