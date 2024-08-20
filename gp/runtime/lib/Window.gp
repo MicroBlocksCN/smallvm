@@ -24,7 +24,9 @@ method initialize Window labelString {
   setTransparentTouch morph false // optimization
   label = (newText (localized labelString) 'Arial Bold' (scale * 12) clientColor)
   addPart morph (morph label)
-  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)) 0 0)
+  buttonW = (20 * scale)
+  buttonH  = (15 * scale)
+  closeBtn = (pushButton 'X' (gray 0) (action 'destroy' (morph this)) buttonW buttonH)
   addPart morph (morph closeBtn)
   resizer = (resizeHandle this)
 }
