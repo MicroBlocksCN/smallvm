@@ -1587,6 +1587,7 @@ method labelText Block aString {
   if (isMathOperator this aString) { fontSize += (2 * scale) }
   if ('Linux' == (platform)) {
     fontName = 'Noto Sans Bold'
+    fontSize = (round (0.8 * fontSize))
   }
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
