@@ -1878,6 +1878,8 @@ method canCollapse Block {
 }
 
 method expand Block {
+  if ('template' == (grabRule morph)) { return } // do nothing if block is in palette
+
   nb = (next this)
   removeAllParts morph
   expansionLevel += 1
