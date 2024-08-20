@@ -1,0 +1,78 @@
+module main
+author 'wwj718 & Liang Shuai'
+version 1 0 
+
+
+script 40 40 {
+comment 'Please manually add the CoCube library, 
+CoCube Module library, 
+and other required libraries.'
+comment '请手动添加CoCube库、CoCube外接模块库和其他需要的库'
+}
+
+script 40 150 {
+whenBroadcastReceived ''
+handle_message
+}
+
+script 180 150 {
+whenBroadcastReceived ''
+handle_blocking_message
+}
+
+script 40 240 {
+comment 'debug'
+sayIt (getLastBroadcast)
+}
+
+
+module cocube_server_dynatalk
+author 'wwj718 & Liang Shuai'
+version 1 0 
+depends 'Robots/CoCube' 
+description '
+CoCube server code for Snap! and Python API
+
+For more detial: https://wwj718.github.io/post/%E7%BC%96%E7%A8%8B/snap-cocube/#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B-microblocks-%E6%94%AF%E6%8C%81%E7%9A%84-vm-primitive
+
+CoCube BLE Python API: https://github.com/wwj718/cocube
+'
+
+  spec ' ' 'handle_message' 'handle_message'
+  spec ' ' 'handle_blocking_message' 'handle_blocking_message'
+  spec 'r' 'to_mb_args' 'to_mb_args _' 'auto' ''
+
+to handle_blocking_message {
+  local 'msg' (getLastBroadcast)
+  if (('[data:copyFromTo]' msg 1 13) == 'blocking_call') {
+    local 'msg' ('[data:split]' msg ',')
+    local 'msg_id' (at 2 msg)
+    local 'cmd_name' (at 3 msg)
+    local 'cmd_args' ('[data:copyFromTo]' msg 4)
+    local 'result' (callCustomReporter cmd_name (to_mb_args cmd_args))
+    sendBroadcast ('[data:joinStrings]' ('[data:makeList]' '[response]' msg_id result) ',')
+  }
+}
+
+to handle_message {
+  local 'msg' (getLastBroadcast)
+  if (('[data:copyFromTo]' msg 1 4) == 'call') {
+    local 'msg' ('[data:split]' msg ',')
+    local 'msg_id' (at 2 msg)
+    local 'cmd_name' (at 3 msg)
+    local 'cmd_args' ('[data:copyFromTo]' msg 4)
+    local 'result' (callCustomReporter cmd_name (to_mb_args cmd_args))
+    sendBroadcast ('[data:joinStrings]' ('[data:makeList]' '[response]' msg_id result) ',')
+  }
+}
+
+to to_mb_args args {
+  local 'json' ('[data:join]' '[' ('[data:joinStrings]' args ',') ']')
+  local 'json_count' ('[misc:jsonCount]' json '')
+  local 'result' ('[data:makeList]')
+  for i json_count {
+    '[data:addLast]' ('[misc:jsonGet]' json ('[data:convertType]' i 'string')) result
+  }
+  return result
+}
+
