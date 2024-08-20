@@ -121,15 +121,24 @@ method roundedRectHalfPath ShapeMaker rect radius {
   radius = (min radius ((height rect) / 2) ((width rect) / 2))
   w = ((width rect) - (radius * 2))
   h = ((height rect) - (radius * 2))
-  corner = (sqrt ((radius * radius) * 2))
-  forward pen h
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
-  forward pen w
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+
+  useNew = true
+  if useNew {
+    forward pen h
+    turn pen 90 radius
+    forward pen w
+    turn pen 90 radius
+  } else {
+    corner = (sqrt ((radius * radius) * 2))
+    forward pen h
+    turn pen 45
+    forward pen corner 50
+    turn pen 45
+    forward pen w
+    turn pen 45
+    forward pen corner 50
+    turn pen 45
+  }
 }
 
 method drawCircle ShapeMaker centerX centerY radius fillColor borderWidth borderColor {
