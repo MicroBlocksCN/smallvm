@@ -97,8 +97,8 @@ method addRoundedCorner MicroBlocksScripter {
 method darkModeChanged MicroBlocksScripter {
   changed morph // report damage
   if (darkModeEnabled projectEditor) {
-    scriptsFrameColor = (microBlocksColor 'blueGray' 900)
-    blocksFrameColor = (microBlocksColor 'blueGray' 800)
+    scriptsFrameColor = (microBlocksColor 'blueGray' 800)
+    blocksFrameColor = (microBlocksColor 'blueGray' 700)
     sliderBGColor = (microBlocksColor 'blueGray' 600)
     sliderFGColor = (microBlocksColor 'blueGray' 800)
   } else {
@@ -358,7 +358,7 @@ method drawOn MicroBlocksScripter ctx {
   paneColor = (microBlocksColor 'blueGray' 850)
   // border between palette and scripting area
   if (darkModeEnabled projectEditor) {
-    borderColor = (microBlocksColor 'blueGray' 700)
+    borderColor = (microBlocksColor 'blueGray' 600)
   } else {
     borderColor = (microBlocksColor 'blueGray' 100)
   }

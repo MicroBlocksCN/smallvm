@@ -111,10 +111,10 @@ method drawOn MicroBlocksDataGraph ctx {
   radius = (4 * scale)
 
   // draw window frame
-  fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (gray 80)
+  fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (microBlocksColor 'blueGray' 900)
 
   // clear graph area
-  bgColor = (gray 240)
+  bgColor = (microBlocksColor 'blueGray' 50)
   fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
 
   // draw the data
