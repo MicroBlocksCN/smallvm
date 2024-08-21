@@ -579,7 +579,7 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
   setPosition (morph b) nextX nextY
   if isVarReporter { setLeft (morph b) (nextX + (135 * scale)) }
   addPart (morph (contents blocksFrame)) (morph b)
-  nextY += ((height (morph b)) + (4 * (global 'scale')))
+  nextY += ((height (morph b)) + (8 * (global 'scale')))
 }
 
 // Palette Section Labels
