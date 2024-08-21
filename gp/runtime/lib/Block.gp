@@ -269,11 +269,11 @@ method fixLayout Block {
   if (isClass (last (last labelParts)) 'CommandSlot') {
 	// adjust space below last command slot
 	if (isNil drawer) {
-	  extraSpace = (scale * corner)
+	  extraSpace = (7 * scale)
 	} else {
 	  // adjust layout of final block drawer in if-else block
-	  blockHeight += (-6 * scale)
-	  fastMoveBy (morph drawer) 0 (-5 * scale)
+	  blockHeight += (-2 * scale)
+	  fastMoveBy (morph drawer) (-4 * scale) (-3 * scale)
 	}
   }
 

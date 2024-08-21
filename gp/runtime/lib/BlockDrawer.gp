@@ -43,6 +43,7 @@ method drawOn BlockDrawer ctx {
     hasLess = true
   }
 
+  scale = (blockScale)
   size = (height morph)
   if (orientation == 'vertical') { size = (width morph) }
   unit = (half size)
@@ -51,11 +52,12 @@ method drawOn BlockDrawer ctx {
 
   pen = (getShapeMaker ctx)
   x = (left morph)
-  y = (top morph)
+  y = ((top morph) + (1 * scale))
+  h = (size - (2 * scale))
   offset = 0
   if hasLess { // draw left or up arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect (+ x padding) y unit size) 'left' clr
+	  fillArrow pen (rect (+ x padding) y unit h) 'left' clr
 	  offset = (unit + (floor (size / 3)))
 	} else {
 	  fillArrow pen (rect x (+ y padding) size unit) 'up' clr
@@ -64,7 +66,7 @@ method drawOn BlockDrawer ctx {
   }
   if hasMore { // draw right or down arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect (+ x padding offset) y unit size) 'right' clr
+	  fillArrow pen (rect (+ x padding offset) y unit h) 'right' clr
 	} else {
 	  fillArrow pen (rect x (+ y padding offset) size unit) 'down' clr
 	}
