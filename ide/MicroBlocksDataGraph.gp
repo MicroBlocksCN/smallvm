@@ -119,6 +119,7 @@ method drawOn MicroBlocksDataGraph ctx {
 
   // draw the data
   drawData this ctx
+  saveSettings this // the graph size, position, or settings have changed
 }
 
 method drawData MicroBlocksDataGraph ctx {
@@ -349,4 +350,38 @@ method showRecentData MicroBlocksDataGraph {
 	ws = (openWorkspace (global 'page') (joinStrings data (newline)))
 	setTitle ws 'Recent Data'
 	setFont ws 'Arial' (16 * (global 'scale'))
+}
+
+
+// save/restore settings
+
+method saveSettings MicroBlocksDataGraph {
+	if (isNil dataScale) { return } // do nothing when called during initalization
+
+	settings = (dictionary)
+	atPut settings 'zeroAtBottom' zeroAtBottom
+	atPut settings 'dataScale' dataScale
+
+	atPut settings 'x' (left morph)
+	atPut settings 'y' (top morph)
+	atPut settings 'width' (width morph)
+	atPut settings 'height' (height morph)
+
+	setGlobal 'dataGraphSettings' settings
+}
+
+method restoreSettings MicroBlocksDataGraph {
+	settings = (global 'dataGraphSettings')
+	if (isNil settings) { return }
+
+	zeroAtBottom = (at settings 'zeroAtBottom')
+	dataScale = (at settings 'dataScale')
+
+	x = (at settings 'x')
+	y = (at settings 'y')
+	w = (at settings 'width')
+	h = (at settings 'height')
+	setPosition morph x y
+	setExtent morph w h
+	keepWithin morph (bounds (morph (global 'page')))
 }

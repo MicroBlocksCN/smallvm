@@ -1316,7 +1316,9 @@ method showGraph MicroBlocksEditor {
 	if (notNil graph) { destroy graph }
 	page = (global 'page')
 	graph = (newMicroBlocksDataGraph)
-	setPosition (morph graph) (x (hand page)) (y (hand page))
+    graphM = (morph graph)
+    setPosition graphM (half ((width (morph page)) - (width graphM))) (50 * (global 'scale'))
+    restoreSettings graph
 	addPart page graph
 }
 
