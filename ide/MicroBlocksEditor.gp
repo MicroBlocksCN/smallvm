@@ -1369,7 +1369,6 @@ method stopHTTPServer MicroBlocksEditor {
 
 method languageMenu MicroBlocksEditor {
   menu = (menu 'Language' this)
-  addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (sorted (listFiles 'translations')) {
 	  fn = (withoutExtension fn)
