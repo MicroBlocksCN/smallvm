@@ -57,7 +57,7 @@ method drawFrame ColorPicker w h {
   w = (w * scale)
   h = (h * scale)
   cornerRadius = (4 * scale)
-  fillColor = (gray 200)
+  fillColor = (microBlocksColor 'blueGray' 100)
   border = (2 * scale)
   frameColor = (gray 100)
   bm = (newBitmap (w + (2 * border)) (h + (2 * border)))
@@ -145,7 +145,9 @@ method addCloseButton ColorPicker x y {
   x = (x * scale)
   y = (y * scale)
 
-  closeBtn = (pushButton 'X' (color 140 100 100) (action 'destroy' (morph this)))
+  buttonW = (20 * scale)
+  buttonH  = (15 * scale)
+  closeBtn = (pushButton 'X' (gray 0) (action 'destroy' (morph this)) buttonW buttonH)
   setPosition (morph closeBtn) x y
   addPart morph (morph closeBtn)
 }
@@ -196,6 +198,7 @@ method handDownOn ColorPicker aHand {
 
 method handUpOn ColorPicker aHand {
   setCursor 'default'
+  return true
 }
 
 method handMoveFocus ColorPicker aHand {
