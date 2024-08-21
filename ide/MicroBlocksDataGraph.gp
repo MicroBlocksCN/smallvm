@@ -16,7 +16,7 @@ method initialize MicroBlocksDataGraph {
 	morph = (morph window)
 	setHandler morph this
 	setMinExtent morph (scale * 140) (scale * 50)
-	setExtent morph (scale * 200) (scale * 120)
+	setExtent morph (scale * 400) (scale * 200)
 	addZoomButtons this
 	lastDataIndex = 0
 	zeroAtBottom = false
@@ -341,12 +341,12 @@ method importDataFromCSVFile MicroBlocksDataGraph fileName {
 }
 
 method copyDataToClipboard MicroBlocksDataGraph {
-  setClipboard (csvData this)
+	setClipboard (csvData this)
 }
 
 method showRecentData MicroBlocksDataGraph {
-  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
-  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
-  setTitle ws 'Recent Data'
-  setFont ws 'Arial' (16 * (global 'scale'))
+	data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
+	ws = (openWorkspace (global 'page') (joinStrings data (newline)))
+	setTitle ws 'Recent Data'
+	setFont ws 'Arial' (16 * (global 'scale'))
 }
