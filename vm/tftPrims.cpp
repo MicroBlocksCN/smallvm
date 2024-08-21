@@ -1412,8 +1412,8 @@ static OBJ primClear(int argCount, OBJ *args) {
 static OBJ primAruco(int argCount, OBJ *args) {
 	if (!useTFT) return falseObj;
 
-	int aruco_id = obj2int(args[0]);
-	    if (aruco_id >= 100) {
+	int aruco_id = evalInt(args[0]);
+	if (aruco_id >= 100) {
         return falseObj;
     }
     tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, BLACK);
@@ -1453,7 +1453,7 @@ static OBJ primAruco(int argCount, OBJ *args) {
 static OBJ primAprilTag(int argCount, OBJ *args) {
     if (!useTFT) return falseObj;
 
-    int tag_id = obj2int(args[0]);
+    int tag_id = evalInt(args[0]);
     if (tag_id >= 100) {
         return falseObj;
     }
