@@ -358,10 +358,11 @@ method showRecentData MicroBlocksDataGraph {
 method saveSettings MicroBlocksDataGraph {
 	if (isNil dataScale) { return } // do nothing when called during initalization
 
-	settings = (dictionary)
+	settings = (global 'dataGraphSettings')
+	if (isNil settings) { settings = (dictionary) }
+
 	atPut settings 'zeroAtBottom' zeroAtBottom
 	atPut settings 'dataScale' dataScale
-
 	atPut settings 'x' (left morph)
 	atPut settings 'y' (top morph)
 	atPut settings 'width' (width morph)
