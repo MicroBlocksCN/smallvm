@@ -1797,7 +1797,7 @@ method serialDelayMenu SmallRuntime {
 	for i (range 1 5) { addItem menu i }
 	for i (range 6 20 2) { addItem menu i }
 	addLine menu
-	addItem menu 'reset to default'
+	addItem menu 'reset to default (10)'
 	popUpAtHand menu (global 'page')
 }
 
