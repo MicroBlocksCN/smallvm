@@ -1064,7 +1064,12 @@ static int deferUpdates = false;
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
 
-            unsigned char battery_percentage =constrain((2.54 * map(analogRead(DEFAULT_BATTERY_PIN), 0, 1023, 0, 3300) - 6800) / 16, 0, 99);
+			int battery_percentage;
+			for (int i = 0; i < 5; i++) {
+				battery_percentage += analogRead(DEFAULT_BATTERY_PIN);
+				delay(5);
+			}
+            battery_percentage =(2.54 * battery_percentage * 3300 / 4095.0 / 5.0 - 6800) / 16.0;
 			char battery_percentage_char[4];
 			itoa(battery_percentage, battery_percentage_char, 10);
 			tft.setTextSize(10);
