@@ -107,19 +107,19 @@ method graphArea MicroBlocksDataGraph {
 }
 
 method drawOn MicroBlocksDataGraph ctx {
-  scale = (global 'scale')
-  radius = (4 * scale)
+	scale = (global 'scale')
+	radius = (4 * scale)
 
-  // draw window frame
-  fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (microBlocksColor 'blueGray' 900)
+	// draw window frame
+	fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (microBlocksColor 'blueGray' 900)
 
-  // clear graph area
-  bgColor = (microBlocksColor 'blueGray' 50)
-  fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
+	// clear graph area
+	bgColor = (microBlocksColor 'blueGray' 50)
+	fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
 
-  // draw the data
-  drawData this ctx
-  saveSettings this // the graph size, position, or settings have changed
+	// draw the data
+	drawData this ctx
+	saveSettings this // the graph size, position, or settings have changed
 }
 
 method drawData MicroBlocksDataGraph ctx {
@@ -211,7 +211,7 @@ method drawGrid MicroBlocksDataGraph ctx {
 	lineStep = (round (25 * dataScale))
 	heavyLineStep = (4 * lineStep)
 	if (0.5 == dataScale) { lineStep = 10; heavyLineStep = 50 }
-	if (0.25 >= dataScale) { lineStep = 5;  heavyLineStep = 25 }
+	if (0.25 >= dataScale) { lineStep = 5; heavyLineStep = 25 }
 
 	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
@@ -351,7 +351,6 @@ method showRecentData MicroBlocksDataGraph {
 	setTitle ws 'Recent Data'
 	setFont ws 'Arial' (16 * (global 'scale'))
 }
-
 
 // save/restore settings
 
