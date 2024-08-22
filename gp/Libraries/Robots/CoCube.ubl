@@ -1,6 +1,6 @@
 module CoCube
 author 'Liang Shuai'
-version 2 1 
+version 2 2 
 depends Tone Ringtone TFT Display 'Motors/PID' 
 tags 'cocube机器人' 
 choices rotate_Menu left right 
@@ -9,8 +9,8 @@ description 'CoCube的控制库
 v1.0 基本功能
 v2.0 全面增加编码器控制电机的功能
 v2.1 修复一些广播造成的bug
+v2.2 提高原语定位精度
 '
-
 variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ 
 
   spec 'r' 'CoCube Battery Percentage' 'Battery Percentage'
@@ -142,11 +142,11 @@ to 'CoCube position_Direction' {
 }
 
 to 'CoCube position_X' {
-  return (callCustomReporter '[sensors:position_x]')
+  return ((callCustomReporter '[sensors:position_x]') / 128)
 }
 
 to 'CoCube position_Y' {
-  return (callCustomReporter '[sensors:position_y]')
+  return ((callCustomReporter '[sensors:position_y]') / 128)
 }
 
 to 'CoCube rotate' direction speed {
