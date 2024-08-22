@@ -621,9 +621,9 @@ method croppedScriptsCostume ScriptEditor doNotCrop {
     }
   }
   if ('Browser' == (platform)) { // in browser, draw on Texture for speed
-    result = (newTexture w h (gray 0 0))
+    result = (newTexture w h (gray 255 0))
   } else {
-    result = (newBitmap w h (gray 0 0))
+    result = (newBitmap w h (gray 255 0))
   }
   ctx = (newGraphicContextOn result)
   setOffset ctx (0 - (left r)) (0 - (top r))
@@ -645,7 +645,7 @@ method scriptsRect ScriptEditor {
       merge result (fullBounds m)
     }
   }
-  return result
+  return (expandBy result 2) // add an extra pixel all around to allow for anti-aliasing
 }
 
 // script copy/paste via clipboard

@@ -1255,10 +1255,14 @@ method exportAsImageScaled Block result isError fName {
 	bubbleInsetY = 0
   }
 
+  // add an extra pixel all around to allow for anti-aliasing
+  scriptW += 2
+  scriptH += 2
+
   // combine the morph and result bubble, if any
-  bm = (newBitmap (+ scriptW bubbleW (- bubbleInsetX)) (+ scriptH bubbleH (- bubbleInsetY)))
+  bm = (newBitmap (+ scriptW bubbleW (- bubbleInsetX)) (+ scriptH bubbleH (- bubbleInsetY)) (gray 255 0))
   ctx = (newGraphicContextOn bm)
-  setOffset ctx 0 (bubbleH - bubbleInsetY)
+  setOffset ctx 1 ((bubbleH - bubbleInsetY) + 1) // inset by one pixel for anti-aliasing
   fullDrawOn (morph scaledScript) ctx
   if (notNil scaledBubble) {
 	topMorphWidth = (width (morph scaledScript))
