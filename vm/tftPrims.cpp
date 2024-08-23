@@ -1069,21 +1069,21 @@ static int deferUpdates = false;
 				battery_percentage += analogRead(DEFAULT_BATTERY_PIN);
 				delay(5);
 			}
-            battery_percentage =(2.54 * battery_percentage * 3300 / 4095.0 / 5.0 - 6800) / 16.0;
+			battery_percentage = constrain(((44 * battery_percentage / 105.0   - 6800) / 16.0), 0, 99);
 			char battery_percentage_char[4];
 			itoa(battery_percentage, battery_percentage_char, 10);
+			uint16_t battery_color = RGB565_GREEN;
+			if (battery_percentage < 67){
+				battery_color = RGB565_ORANGE;
+				if (battery_percentage < 34){
+					battery_color = RGB565_RED;
+				}
+			}
+			tft.fillRoundRect(45, 72, 145, 96, 5, battery_color);
+			tft.fillRoundRect(185, 95, 25, 50, 3, battery_color);
 			tft.setTextSize(10);
-			if (battery_percentage > 66){
-				tft.setTextColor(RGB565_GREEN);
-			}
-			else if (battery_percentage > 33)
-			{
-				tft.setTextColor(RGB565_ORANGE);
-			}
-			else{
-				tft.setTextColor(RGB565_RED);
-			}
-			tft.setCursor(65, 80);
+			tft.setTextColor(RGB565_BLACK);
+			tft.setCursor(65, 86);
 			tft.println(battery_percentage_char);
 			delay(800);
 		}
