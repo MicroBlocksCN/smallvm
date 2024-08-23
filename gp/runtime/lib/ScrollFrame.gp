@@ -1,4 +1,4 @@
-defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll
+defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll dragOriginX dragOriginY
 
 to area aHandler {return (fullBounds (morph aHandler))}
 
@@ -325,6 +325,19 @@ method changeScrollOffset ScrollFrame dx dy {
   fastSetPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
   changed morph
   updateSliderPositions this
+}
+
+// dragging with mouse
+
+method startDragScroll ScrollFrame aHand {
+  dragOriginX = (x aHand)
+  dragOriginY = (y aHand)
+print 'startDragScroll' dragOriginX dragOriginY
+  focusOn aHand this
+}
+
+method handMoveFocus ScrollFrame aHand {
+  print 'ScrollFrame handMoveFocus dx' ((x aHand) - dragOriginX) ((y aHand) - dragOriginY)
 }
 
 // auto-scrolling

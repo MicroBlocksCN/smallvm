@@ -96,10 +96,10 @@ to postSerialize aHandler {}
 
 // Hand
 
-defineClass Hand morph page isDown x y currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus morphicMenuDisabled
+defineClass Hand morph page x y isDown downX downY currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus morphicMenuDisabled
 
 to newHand {
-  hand = (new 'Hand' nil nil false 0 0 (list) nil nil (newTimer) nil nil nil)
+  hand = (new 'Hand' nil nil 0 0 false 0 0 (list) nil nil (newTimer) nil nil nil)
   morph = (newMorph hand)
   setMorph hand morph
   return hand
@@ -298,7 +298,7 @@ method animateBackToOldOwner Hand aMorph finalAction {
 method step Hand {
   // generate touch-hold events
   if (notNil lastTouchTime) {
-    if ((msecs lastTouchTime) > 300) {processTouchHold this (currentObject this)}
+    if ((msecs lastTouchTime) > 300) { processTouchHold this (currentObject this) }
   }
 }
 
@@ -344,6 +344,19 @@ method processMove Hand {
 	handMoveFocus focus this
 	return
   }
+  if (notNil lastTouchTime) {
+    dx = (abs (x - downX))
+    dx = (abs (y - downY))
+    threshold = (5 * (global 'scale'))
+    if (or (dx > threshold) (dy > threshold)) {
+      // mouse moved while down
+      cancelTouchHold this
+      scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
+      if (notNil scrollFrameM) {
+        startDragScroll (handler scrollFrameM) this
+      }
+    }
+  }
   oldMorphs = currentMorphs
   currentMorphs = (list)
   m = (morph (currentObject this))
@@ -383,6 +396,8 @@ method processSwipe Hand xDelta yDelta {
 }
 
 method processDown Hand button {
+  downX = x
+  downY = y
   currentObj = (objectAt this true)
   if (isNil (ownerThatIsA (morph currentObj) 'Menu')) {
 	// stop editing unless this is a menu selection (it could a text edit menu command)
@@ -426,14 +441,14 @@ method processUp Hand {
   if (current === lastTouched) {
     trg = current
     while (or (not (acceptsEvents trg)) (false == (clicked trg this))) {trg = (parentHandler (morph trg))}
-    if (current === lastClicked) {
+    if (and (notNil lastClicked) (current === lastClicked)) {
       if ((msecs lastClickTime) < 500) {
         trg = current
         while (not (and (acceptsEvents trg) (doubleClicked trg this))) {trg = (parentHandler (morph trg))}
       }
     }
     lastClicked = current
-    reset lastClickTime
+    lastClickTime = (newTimer)
   }
   lastTouched = nil
   lastTouchTime = nil
@@ -448,7 +463,7 @@ to isMobile {
 method processTouchHold Hand currentObj {
   lastTouchTime = nil
   if (isMobile) {
-	// on mobile devices, make map touchHold gestures to rightClicked
+	// on mobile devices, map touchHold gestures to rightClicked
 	processRightClicked this currentObj
 	lastTouched = nil
   }
