@@ -302,6 +302,10 @@ method step Hand {
   }
 }
 
+method cancelTouchHold Hand {
+  lastTouchTime = nil
+}
+
 method processEvent Hand evt {
   type  = (at evt 'type')
   if (type == 'mousewheel') {
@@ -1322,7 +1326,7 @@ method prompt Page question default editRule callback details {
   edit (textBox p) hand
   selectAll (textBox p)
   if (isNil callback) {
-    setField hand 'lastTouchTime' nil
+    cancelTouchHold hand
     while (not (isDone p)) {doOneCycle this}
     destroy (morph p)
     return (answer p)
@@ -1336,7 +1340,7 @@ method confirm Page title question yesLabel noLabel callback {
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
   if (isNil callback) {
-    setField hand 'lastTouchTime' nil
+    cancelTouchHold hand
     while (not (isDone p)) {doOneCycle this}
     destroy (morph p)
     return (answer p)
@@ -1348,7 +1352,7 @@ method inform Page details title yesLabel nonBlocking {
   initializeForInform p title details yesLabel
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
-  setField hand 'lastTouchTime' nil
+  cancelTouchHold hand
   if (nonBlocking == true) { return true }
   while (not (isDone p)) {doOneCycle this}
   destroy (morph p)
