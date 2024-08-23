@@ -42,7 +42,7 @@ method handDownOn ScriptEditor aHand {
 		}
 	}
 	if (isClass (objectAt aHand) 'ScriptEditor') {
-		if (not (isMobile) {
+		if (not (isMobile)) {
 			startSelecting scripter aHand
 		}
 	}
@@ -74,6 +74,9 @@ method justGrabbedPart ScriptEditor part {
 }
 
 method clicked ScriptEditor hand {
+  // Support for GP keyboard block entry.
+
+  if (isMicroBlocks) { return } // do nothing in MicroBlocks
   kbd = (keyboard (page hand))
   if (and (devMode) (keyDown kbd 'space')) {
     txt = (newText '' 'Arial' ((global 'scale') * 12) (gray 0))
