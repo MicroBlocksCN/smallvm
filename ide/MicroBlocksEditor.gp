@@ -1142,14 +1142,37 @@ method fixScripterLayout MicroBlocksEditor {
   fixLayout scripter
 }
 
-// context menu
+method drawIcon MicroBlocksEditor {
+	h = 200
+	w = ((2 / 3) * h)
+	r = (h / 28)
 
-method rightClicked MicroBlocksEditor aHand {
-  popUpAtHand (contextMenu this) (global 'page')
-  return true
+	bm = (newBitmap (w + 5) (h + 5)) // add a bit for line width
+	pen = (newVectorPen bm)
+
+	beginPath pen (0.632 * w) (0.012 * h)
+	cubicCurveTo pen (0.562 * w) (0.013 * h) (0.342 * w) (0.046 * h) (0.342 * w) (0.165 * h)
+	cubicCurveTo pen (0.342 * w) (0.241 * h) (0.356 * w) (0.337 * h) (0.392 * w) (0.401 * h)
+	cubicCurveTo pen (0.316 * w) (0.405 * h) (0.299 * w) (0.410 * h) (0.240 * w) (0.417 * h)
+	cubicCurveTo pen (0.282 * w) (0.365 * h) (0.298 * w) (0.313 * h) (0.298 * w) (0.251 * h)
+	cubicCurveTo pen (0.298 * w) (0.029 * h) (0.390 * w) (0.013 * h) (0.344 * w) (0.013 * h)
+	cubicCurveTo pen (0.298 * w) (0.013 * h) (0.035 * w) (0.087 * h) (0.054 * w) (0.251 * h)
+	cubicCurveTo pen (0.081 * w) (0.323 * h) (0.104 * w) (0.426 * h) (0.138 * w) (0.474 * h)
+	cubicCurveTo pen (0.077 * w) (0.550 * h) (0.030 * w) (0.620 * h) (0.030 * w) (0.697 * h)
+	cubicCurveTo pen (0.030 * w) (0.864 * h) (0.241 * w) (1.000 * h) (0.503 * w) (1.000 * h)
+	cubicCurveTo pen (0.791 * w) (1.000 * h) (1.000 * w) (0.864 * h) (1.000 * w) (0.697 * h)
+	cubicCurveTo pen (1.000 * w) (0.643 * h) (0.965 * w) (0.395 * h) (0.517 * w) (0.395 * h)
+	cubicCurveTo pen (0.554 * w) (0.331 * h) (0.569 * w) (0.238 * h) (0.569 * w) (0.165 * h)
+	cubicCurveTo pen (0.569 * w) (0.042 * h) (0.695 * w) (0.012 * h) (0.628 * w) (0.012 * h)
+	cubicCurveTo pen (0.630 * w) (0.012 * h) (0.630 * w) (0.012 * h) (0.632 * w) (0.012 * h)
+	fill pen (gray 250)
+	stroke pen (gray 0) 3
+	return bm
 }
 
-method contextMenu MicroBlocksEditor {
+// gear menu
+
+method gearMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
@@ -1413,7 +1436,7 @@ method languageChanged MicroBlocksEditor {
 // Iconic menus
 
 method settingsMenu MicroBlocksEditor {
-  popUpAtHand (contextMenu this) (global 'page')
+  popUpAtHand (gearMenu this) (global 'page')
 }
 
 method addSVGIconButton MicroBlocksEditor iconName selector hint {
