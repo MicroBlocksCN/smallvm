@@ -917,7 +917,9 @@ method handDownOn ScriptEditor aHand {
 		}
 	}
 	if (isClass (objectAt aHand) 'ScriptEditor') {
-		startSelecting scripter aHand
+		if (not (isMobile)) {
+			startSelecting scripter aHand
+		}
 	}
 	return true
 }

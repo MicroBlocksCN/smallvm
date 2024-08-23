@@ -33,7 +33,7 @@ to clicked aHandler {return false}
 
 to rightClicked aHandler {
   page = (global 'page')
-  if (not (shiftKeyDown (keyboard page))) {
+  if (shiftKeyDown (keyboard page)) {
     devMenu (hand page) aHandler
     return true
   }
@@ -399,6 +399,7 @@ method processDown Hand button {
 }
 
 method processUp Hand {
+  lastTouchTime = nil
   if (notNil focus) {
     handUpOn focus this
     focus = nil
@@ -427,12 +428,15 @@ method processUp Hand {
   lastTouchTime = nil
 }
 
+to isMobile {
+  return (or
+    ('iOS' == (platform))
+    (and ('Browser' == (platform)) (browserIsMobile)))
+}
+
 method processTouchHold Hand currentObj {
   lastTouchTime = nil
-  isMobile = (or
-  	('iOS' == (platform))
-	(and ('Browser' == (platform)) (browserIsMobile)))
-  if isMobile {
+  if (isMobile) {
 	// on mobile devices, make map touchHold gestures to rightClicked
 	processRightClicked this currentObj
 	lastTouched = nil
