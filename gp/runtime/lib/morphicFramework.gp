@@ -346,7 +346,7 @@ method processMove Hand {
   }
   if (notNil lastTouchTime) {
     dx = (abs (x - downX))
-    dx = (abs (y - downY))
+    dy = (abs (y - downY))
     threshold = (5 * (global 'scale'))
     if (or (dx > threshold) (dy > threshold)) {
       // mouse moved while down
