@@ -388,7 +388,7 @@ method processMove Hand {
   }
   for oldM oldMorphs {if (and (acceptsEvents oldM) (not (contains currentMorphs oldM))) {handLeave (handler oldM) this}}
 
-  if (and isDown hasMoved (isNil (grabbedObject this)) (isNil focus)) {
+  if (and isDown hasMoved (isNil (grabbedObject this)) (notNil lastTouchTime)) {
     scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
     if (notNil scrollFrameM) { // drag-scroll the enclosing ScrollFrame
       startDragScroll (handler scrollFrameM) this
