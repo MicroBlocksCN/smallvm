@@ -384,9 +384,9 @@ method handDownOn Text hand {
 }
 
 method handMoveOver Text hand {
-  closeUnclickedMenu (page hand) this
   if (isNil caret) {return}
-  if (isNil startMark) {startMark =  (slot caret)}
+  closeUnclickedMenu (page hand) this
+  if (isNil startMark) {startMark = (slot caret)}
   gotoSlot caret (max 1 (slotAt this (x hand) (y hand)))
 }
 

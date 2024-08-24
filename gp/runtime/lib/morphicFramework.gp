@@ -341,23 +341,17 @@ method currentObject Hand {
 }
 
 method processMove Hand {
-  if (notNil focus) {
+  if (notNil focus) { // a morph (e.g. a slider) is tracking the hand
 	handMoveFocus focus this
 	return
   }
-  if (and (notNil lastTouchTime) (isNil (grabbedObject this))) {
-    dx = (abs (x - downX))
-    dy = (abs (y - downY))
-    threshold = (5 * (global 'scale'))
-    if (or (dx > threshold) (dy > threshold)) {
-      // mouse moved while down
-      cancelTouchHold this
-      scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
-      if (notNil scrollFrameM) {
-        startDragScroll (handler scrollFrameM) this
-      }
-    }
-  }
+
+  moveThreshold = (5 * (global 'scale'))
+  dx = (abs (x - downX))
+  dy = (abs (y - downY))
+  hasMoved = (or (dx > moveThreshold) (dy > moveThreshold))
+  if hasMoved { cancelTouchHold this }
+
   oldMorphs = currentMorphs
   currentMorphs = (list)
   m = (morph (currentObject this))
@@ -370,7 +364,7 @@ method processMove Hand {
         dragged = (grabbedObject this)
         if (isNil dragged) {
           handMoveOver h this
-          if (notNil lastTouched) {
+          if (and hasMoved (notNil lastTouched)) { // try to grab object under hand
             toBeGrabbed = (rootForGrab this lastTouched)
             if (notNil toBeGrabbed) {
               closeUnclickedMenu page toBeGrabbed
@@ -389,6 +383,13 @@ method processMove Hand {
     m = (owner m)
   }
   for oldM oldMorphs {if (and (acceptsEvents oldM) (not (contains currentMorphs oldM))) {handLeave (handler oldM) this}}
+
+  if (and isDown hasMoved (isNil (grabbedObject this)) (isNil focus)) {
+    scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
+    if (notNil scrollFrameM) { // drag-scroll the enclosing ScrollFrame
+      startDragScroll (handler scrollFrameM) this
+    }
+  }
 }
 
 method processSwipe Hand xDelta yDelta {
@@ -404,20 +405,23 @@ method processDown Hand button {
 	// stop editing unless this is a menu selection (it could a text edit menu command)
 	stopEditingUnfocusedText this currentObj
   }
+  closeUnclickedMenu page currentObj
+  lastTouched = nil
+  lastTouchTime = nil
   if (or (button == 3) (commandKeyDown (keyboard page))) {
-    closeUnclickedMenu page currentObj
     processRightClicked this currentObj
     return
   }
-  closeUnclickedMenu page currentObj
-  lastTouched = currentObj
-  lastTouchTime = (newTimer)
   if (and (optionKeyDown (keyboard page)) (notNil currentObj)) {
 	showInScripter currentObj
-	lastTouched = nil
-	lastTouchTime = nil
 	return
   }
+
+  // record the last touched object and time
+  lastTouched = currentObj
+  lastTouchTime = (newTimer)
+
+  // process handDownOn event
   trg = currentObj
   while (notNil trg) {
 	if (and (acceptsEvents trg) (handDownOn trg this)) { return }
