@@ -307,6 +307,15 @@ method cancelTouchHold Hand {
   lastTouchTime = nil
 }
 
+method handHasMoved Hand {
+  // Answer true if the hand has moved significantly since it went down.
+
+  moveThreshold = (5 * (global 'scale'))
+  dx = (abs (x - downX))
+  dy = (abs (y - downY))
+  return (or (dx > moveThreshold) (dy > moveThreshold))
+}
+
 method processEvent Hand evt {
   type  = (at evt 'type')
   if (type == 'mousewheel') {
@@ -346,12 +355,7 @@ method processMove Hand {
 	return
   }
 
-  moveThreshold = (5 * (global 'scale'))
-  dx = (abs (x - downX))
-  dy = (abs (y - downY))
-  hasMoved = (or (dx > moveThreshold) (dy > moveThreshold))
-  if hasMoved { cancelTouchHold this }
-
+  hasMoved = (handHasMoved this)
   oldMorphs = currentMorphs
   currentMorphs = (list)
   m = (morph (currentObject this))
@@ -388,6 +392,8 @@ method processMove Hand {
     scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
     if (notNil scrollFrameM) { // drag-scroll the enclosing ScrollFrame
       startDragScroll (handler scrollFrameM) this
+      lastTouched = nil
+      lastTouchTime = nil
     }
   }
 }
@@ -468,9 +474,7 @@ to isMobile {
 method processTouchHold Hand currentObj {
   lastTouchTime = nil
   if (isMobile) {
-	// on mobile devices, map touchHold gestures to rightClicked
-	processRightClicked this currentObj
-	lastTouched = nil
+    processRightClicked this currentObj
   }
 }
 
