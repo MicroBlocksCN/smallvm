@@ -15,7 +15,7 @@ method initialize CachedTexture aHandler {
 	if (isClass (handler aMorph) 'Block') { fixLayout (handler aMorph) }
 
 	// draw aMorph on the texture
-	fb = (fullBounds aMorph)
+	fb = (expandBy (fullBounds aMorph) 3) // expand so the shadow does not leave a trail in Chrome
 	cachedTexture = (newTexture (width fb) (height fb) (gray 0 0))
 	ctx = (newGraphicContextOn cachedTexture)
 	setOffset ctx (0 - (left fb)) (0 - (top fb))
