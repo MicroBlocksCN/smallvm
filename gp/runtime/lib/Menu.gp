@@ -219,7 +219,7 @@ method focus Menu {
 //  if (notNil fallbackFocus) {
 //    stopEditing (keyboard page)
 //  }
-  selectFirstItem this
+//  selectFirstItem this // xxx
   focusOn (keyboard page) this
 }
 
