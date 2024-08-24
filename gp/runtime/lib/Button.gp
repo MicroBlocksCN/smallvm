@@ -85,10 +85,16 @@ method makeCostume Button label color minWidth minHeight fontName fontSize fontC
 
 // events
 
-method handDownOn Button hand {
+method handDownOn Button aHand {
+  handEnter this aHand
   if (notNil clickAction) {
 	call clickAction this
   }
+  return true
+}
+
+method handUpOn Button aHand {
+  handLeave this aHand
   return true
 }
 

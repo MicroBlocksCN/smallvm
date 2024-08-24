@@ -147,6 +147,7 @@ method grabbedObject Hand {
 }
 
 method grab Hand handler {
+  cancelTouchHold this
   if (notNil (owner (morph handler))) {parent = (handler (owner (morph handler)))}
   aboutToBeGrabbed handler
   oldOwner = parent
@@ -344,7 +345,7 @@ method processMove Hand {
 	handMoveFocus focus this
 	return
   }
-  if (notNil lastTouchTime) {
+  if (and (notNil lastTouchTime) (isNil (grabbedObject this))) {
     dx = (abs (x - downX))
     dy = (abs (y - downY))
     threshold = (5 * (global 'scale'))
