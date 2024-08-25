@@ -114,6 +114,7 @@ method fixLayout InputSlot {
   textPadding = (half (textWidth - (width (morph text))))
   h = ((height (morph text)) + (3 * scale))
   w = (textWidth + (14 * scale))
+  if ('Linux' == (platform)) { h -= (2 * scale) }
   textX = (+ (left morph) textPadding (7 * scale))
   textY = ((top morph) + (2 * scale))
   setPosition (morph text) textX textY
