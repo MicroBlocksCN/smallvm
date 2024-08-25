@@ -17,11 +17,11 @@ variables _rhy_tempo _rhy_bars _rhy_beat_duration _rhy_measures _rhy_reference_n
   spec ' ' 'rhy wait until beat' 'wait until beat _' 'num' 3
   spec ' ' 'rhy wait until bar' 'wait until bar _' 'num' 2
   space
-  spec 'r' 'rhy_whole duration' '¹⁄₁'
-  spec 'r' 'rhy_half duration' '½'
-  spec 'r' 'rhy_quarter duration' '¼'
-  spec 'r' 'rhy_eighth duration' '⅛'
-  spec 'r' 'rhy_sixteenth duration' '¹⁄₁₆'
+  spec 'r' 'rhy_whole duration' '#SVG#note-whole'
+  spec 'r' 'rhy_half duration' '#SVG#note-half'
+  spec 'r' 'rhy_quarter duration' '#SVG#note-quarter'
+  spec 'r' 'rhy_eighth duration' '#SVG#note-eighth'
+  spec 'r' 'rhy_sixteenth duration' '#SVG#note-sixteenth'
   space
   spec 'r' 'rhy_dotted' '_ .' 'auto' ''
   spec 'r' 'rhy_triplet' '‿³ _' 'auto' ''
