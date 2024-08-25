@@ -50,7 +50,7 @@ method fixZoomButtonsLayout MicroBlocksDataGraph {
 	right = ((right morph) - (13 * scale))
 	bottom = ((bottom morph) - (12 * scale))
 	for button zoomButtons {
-		right = (right - ((width (morph button)) + (5 * scale)))
+		right = (right - ((width (morph button)) + (10 * scale)))
 		setLeft (morph button) right
 		setTop (morph button) (bottom - (height (morph button)))
 	}

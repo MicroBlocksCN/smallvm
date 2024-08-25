@@ -240,7 +240,7 @@ method newZoomButton MicroBlocksEditor iconName action {
   if (isNil action) { // use the selector name as the action
     action = (action iconName this)
   }
-  iconScale = (0.5 * (global 'scale'))
+  iconScale = (0.7 * (global 'scale'))
   normalColor = (microBlocksColor 'blueGray' 400)
   highlightColor = (microBlocksColor 'yellow')
   button = (newButton '' action)
@@ -293,7 +293,7 @@ method fixZoomButtonsLayout MicroBlocksEditor {
   right = ((right morph) - (15 * scale))
   bottom = (((bottom morph) - (height (morph tipBar))) - (20 * scale))
   for button zoomButtons {
-    right = (right - ((width (morph button)) + (5 * scale)))
+    right = (right - ((width (morph button)) + (10 * scale)))
     setLeft (morph button) right
     setTop (morph button) (bottom - (height (morph button)))
   }
