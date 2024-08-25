@@ -162,7 +162,7 @@ method fixLayout Block {
           w = 0
           h = 0
         } else {
-          isArgSlot = (not (isClass each 'Text'))
+          isArgSlot = (and (not (isClass each 'Text')) (not (isClass each 'SVGImage')))
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
@@ -1589,13 +1589,17 @@ method labelText Block aString {
   fontName = 'Arial Bold'
   fontSize = (14 * scale)
   if (isMathOperator this aString) { fontSize += (2 * scale) }
+  isSVG = (beginsWith aString '#SVG#')
+  labelColor = (global 'blockTextColor')
+  if (isNil labelColor) { labelColor = (gray 255) }
+  if ('comment' == aString) { labelColor = (gray 80) }
+  if isSVG {
+    return (newSVGImage (substring aString 6) labelColor)
+  }
   if ('Linux' == (platform)) {
     fontName = 'Noto Sans Bold'
     fontSize = (11 * scale)
   }
-  labelColor = (global 'blockTextColor')
-  if (isNil labelColor) { labelColor = (gray 255) }
-  if ('comment' == aString) { labelColor = (gray 80) }
   return (newText aString fontName fontSize labelColor)
 }
 

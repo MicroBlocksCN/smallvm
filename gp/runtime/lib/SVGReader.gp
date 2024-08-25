@@ -33,6 +33,21 @@ to testSVG fileName optionalScale optionalFGColor {
 	return bm
 }
 
+to newSVGImage iconName fgColor bgColor iconScale strokeOverideFlag {
+	return (initialize (new 'SVGImage') iconName fgColor bgColor iconScale strokeOverideFlag)
+}
+
+defineClass SVGImage morph
+
+method initialize SVGImage iconName fgColor bgColor iconScale strokeOverideFlag {
+	bitmap = (readSVGIcon iconName fgColor bgColor iconScale strokeOverideFlag)
+	morph = (newMorph)
+	setCostume morph bitmap
+	return this
+}
+
+method morph SVGImage { return morph }
+
 defineClass SVGReader scaleFactor overridenColor overrideStrokes backgroundColor svgData startX startY lastX lastY lastCX lastCY pen bitmap
 
 method initialize SVGReader fgColor bgColor iconScale strokeOverideFlag {
