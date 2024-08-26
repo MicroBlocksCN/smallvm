@@ -339,14 +339,13 @@ method drawButton ShapeMaker x y width height buttonColor corner border isInset 
 method blockCorner ShapeMaker { return (4 * (blockScale)) }
 
 // Block dent width and inset from edge plus indent for C-shaped blocks.
-method dent ShapeMaker { return (6 * (blockScale)) } // xxx
+method dent ShapeMaker { return (6 * (blockScale)) }
 method notchWidth ShapeMaker { return (16 * (blockScale)) } // 12
 method notchDepth ShapeMaker { return (4 * (blockScale)) } // 3
 method inset ShapeMaker { return (8 * (blockScale)) }
 method cIndent ShapeMaker { return (8 * (blockScale)) }
 
 // Block border width, inset, and color.
-//method blockBorder ShapeMaker { return (max 1 (half (blockScale))) } // xxx
 method blockBorder ShapeMaker { return (max 1 (round (global 'scale'))) }
 method blockBorderInset ShapeMaker { return ((blockBorder this) / 2) }
 method blockBorderColor ShapeMaker blockColor {
@@ -406,27 +405,6 @@ method drawBlockWithCommandSlots ShapeMaker rect commandSlots blockColor {
   }
   blockBottomPath this rect
   fill this blockColor
-  stroke this borderColor (blockBorder this)
-return
-
-// xxx
-  // add outline
-  rect = (insetBy rect (blockBorderInset this)) // draw highlight/shadow lines inset by half the border
-
-  beginBlockPath this rect
-  blockTopPath this rect
-  stroke this borderColor (blockBorder this)
-  for cslot commandSlots {
-    beginPathFromCurrentPostion pen
-    slotTopPath this cslot rect
-    stroke this borderColor (blockBorder this)
-
-    beginPathFromCurrentPostion pen
-    slotBottomPath this cslot rect
-    stroke this borderColor (blockBorder this)
-  }
-  beginPathFromCurrentPostion pen
-  blockBottomPath this rect
   stroke this borderColor (blockBorder this)
 }
 
