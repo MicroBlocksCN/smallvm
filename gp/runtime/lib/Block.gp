@@ -501,20 +501,15 @@ method inputs Block {
 
 method justDropped Block hand {
   cancelSelection
-  snap this (x hand) (y hand)
+  snap this
   hideTrashcan (findMicroBlocksEditor)
 }
 
-method snap Block x y {
+method snap Block {
   scale = (blockScale)
-  if (isNil x) {
-    fb = (fullBounds morph)
-    x = (left fb)
-    y = (top fb)
-  }
   parent = (handler (owner morph))
   if (isClass parent 'ScriptEditor') {
-    b = (targetFor parent this x y)
+    b = (targetFor parent this)
     if (and (isClass b 'Block') ((type b) != 'reporter')) { // command or hat type targets
       recordDrop parent this b (next b)
       setNext b this

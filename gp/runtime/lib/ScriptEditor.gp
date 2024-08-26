@@ -159,84 +159,82 @@ method swapTextForBlock ScriptEditor text block hand {
 
 // snapping
 
-method targetFor ScriptEditor block x y {
-  // answer a snapping target or nil
-  if ((type block) == 'reporter') {return (inputFor this block x y)}
-  isHatSrc = (== (type block) 'hat')
-  scale = (blockScale)
-  thres = (15 * scale)
+method targetFor ScriptEditor block {
+  // Answer a snapping target or nil if none found.
+
+  xThreshold = (50 * (blockScale))
+  yThreshold = (15 * (blockScale))
+
+  if ('reporter' == (type block)) {return (inputFor this block)}
+  isHatSrc = ('hat' == (type block))
+
   x = (left (morph block))
   y = (top (morph block))
   yb = (bottom (morph (bottomBlock block)))
   others = (reversed (allMorphs morph))
   remove others morph
-  remove others (morph block)
-  for i (count others) {
-    b = (at others i)
-    if (and (isClass (handler b) 'Block') (isNil (function (handler b)))) {
+  for m others {
+    if (and (isClass (handler m) 'Block') (isNil (function (handler m)))) {
+      targetType = (type (handler m))
       if isHatSrc {
-        if (and ((type (handler b)) == 'command') (this === (handler (owner b)))) { // top of stack
-          xd = (abs (x - (left b)))
-          yd = (abs ((top b) - yb))
-          if (and (xd < thres) (yd < thres)) {return (array (handler b))}
+        if (and ('command' == targetType) (this === (handler (owner m)))) { // top of stack
+          xd = (abs (x - (left m)))
+          yd = (abs ((top m) - yb))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m))}
         }
       } else {
-        if ((type (handler b)) == 'command') {
-          xd = (abs (x - (left b)))
-          yd = (abs (y - (bottom b)))
-          if (and (xd < thres) (yd < thres)) {return (handler b)}
-          if (this === (handler (owner b))) { // top of stack
-            yd = (abs ((top b) - yb))
-            if (and (xd < thres) (yd < thres)) {return (array (handler b))}
+        if ('command' == targetType) {
+          xd = (abs (x - (left m)))
+          yd = (abs (y - (bottom m)))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
+          if (this === (handler (owner m))) { // top of stack
+            yd = (abs ((top m) - yb))
+            if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m))}
           }
-        } ((type (handler b)) == 'hat') {
-          xd = (abs (x - (left b)))
-          yd = (abs (y - (bottom b)))
-          if (and (xd < thres) (yd < thres)) {return (handler b)}
+        } ('hat' == targetType) {
+          xd = (abs (x - (left m)))
+          yd = (abs (y - (bottom m)))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
         }
       }
-    } (and (not isHatSrc) (isClass (handler b) 'CommandSlot')) {
-      xd = (abs (x - (+ (scaledCorner (handler b)) (left b))))
-      yd = (abs (y - (+ (scaledCorner (handler b)) (top b))))
-      if (and (xd < thres) (yd < thres)) {return (handler b)}
+    } (and (not isHatSrc) (isClass (handler m) 'CommandSlot')) {
+      xd = (abs (x - (+ (scaledCorner (handler m)) (left m))))
+      yd = (abs (y - (+ (scaledCorner (handler m)) (top m))))
+      if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
     }
   }
   return nil
 }
 
-method inputFor ScriptEditor block x y {
-  // answer an input (slot or reporter) for dropping the block or nil
-  area = (bounds (morph block))
+method inputFor ScriptEditor block {
+  // Answer an input (slot or reporter) for dropping the givenblock or nil if none found.
+
   others = (reversed (allMorphs morph))
   remove others morph
-  removeAll others (allMorphs (morph block))
-  if (notNil x) {
-    for i (count others) {
-      b = (at others i)
-      if (isAnyClass (handler b) 'InputSlot' 'BooleanSlot' 'ColorSlot') {
-        bounds = (bounds b)
-        if (and (isReplaceableByReporter (handler b)) (containsPoint bounds x y)) {
-          return (handler b)
-        }
+  x = (left (morph block))
+  y = (top (morph block))
+
+  // look for a slot
+  for m others {
+    if (isAnyClass (handler m) 'InputSlot' 'BooleanSlot' 'ColorSlot') {
+      if (and (isReplaceableByReporter (handler m)) (containsPoint (bounds m) x y)) {
+        return (handler m)
       }
     }
   }
-  for i (count others) {
-    b = (at others i)
+
+  // look for a reporter to replace
+  for m others {
     if (or
-        (and (isReplaceableByReporter (handler b)) (isAnyClass (handler b) 'InputSlot' 'BooleanSlot' 'ColorSlot'))
-        (and
-          (isClass (handler b) 'Block')
-          ((type (handler b)) == 'reporter')
-          (isClass (handler (owner b)) 'Block')
-          ((grabRule b) != 'template')
-          (not (isPrototype (handler b)))
-        )
-      ) {
-      bounds = (bounds b)
-      if (intersects bounds area) {
-        return (handler b)
-      }
+	  (and (isReplaceableByReporter (handler m)) (isAnyClass (handler m) 'InputSlot' 'BooleanSlot' 'ColorSlot'))
+	  (and
+	    (isClass (handler m) 'Block')
+	    ((type (handler m)) == 'reporter')
+	    (isClass (handler (owner m)) 'Block')
+	    ((grabRule m) != 'template')
+	    (not (isPrototype (handler m)))
+      )) {
+        if (containsPoint (bounds m) x y) { return (handler m) }
     }
   }
   return nil
@@ -245,7 +243,7 @@ method inputFor ScriptEditor block x y {
 method updateFeedback ScriptEditor block hand {
   hide feedback
   if (isNil block) {return}
-  trgt = (targetFor this block (x hand) (y hand))
+  trgt = (targetFor this block)
   if (notNil trgt) {
     if ((type block) != 'reporter') { // command or hat types
       showCommandDropFeedback this trgt
