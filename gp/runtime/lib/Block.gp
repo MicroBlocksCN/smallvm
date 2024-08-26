@@ -272,8 +272,8 @@ method fixLayout Block {
 	  extraSpace = (7 * scale)
 	} else {
 	  // adjust layout of final block drawer in if-else block
-	  blockHeight += (-2 * scale)
-	  fastMoveBy (morph drawer) (-4 * scale) (-3 * scale)
+	  blockHeight += (-6 * scale)
+	  fastMoveBy (morph drawer) (-2 * scale) (-5 * scale)
 	}
   }
 
