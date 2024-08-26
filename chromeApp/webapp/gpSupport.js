@@ -448,8 +448,21 @@ function adjustButtonVisibility() {
 	if ((typeof window !== 'undefined') && (window.location.href.includes('go.html'))) {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
-	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
+	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks'))) {
 		document.getElementById('controls').style.display = 'none';
+		if (isKindle || isOtherMobile) {
+			// show the keyboard button on mobile devices, but hide others
+			document.getElementById('controls').style.display = 'inline';
+			document.getElementById('KeyboardButton').style.display = 'inline';
+			document.getElementById('BackspaceButton').style.display = 'none';
+			document.getElementById('FullscreenButton').style.display = 'none';
+			document.getElementById('UploadButton').style.display = 'none';
+			document.getElementById('EnableMicrophoneButton').style.display = 'none';
+			document.getElementById('SeeInsideButton').style.display = 'none';
+			document.getElementById('PresentButton').style.display = 'none';
+			document.getElementById('GoButton').style.display = 'none';
+			document.getElementById('StopButton').style.display = 'none';
+		}
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
