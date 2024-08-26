@@ -299,7 +299,7 @@ method animateBackToOldOwner Hand aMorph finalAction {
 method step Hand {
   // generate touch-hold events
   if (notNil lastTouchTime) {
-    if ((msecs lastTouchTime) > 300) { processTouchHold this (currentObject this) }
+    if ((msecs lastTouchTime) > 500) { processTouchHold this (currentObject this) }
   }
 }
 
