@@ -155,7 +155,7 @@ method fixLayout Block {
           	add lines currentLine
           	add lineHeights h
           }
-          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) - (7 * scale))
+          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) + (2 * scale))
           add lines (list each)
           add lineHeights (height (morph each))
           currentLine = (list)

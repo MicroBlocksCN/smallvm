@@ -437,7 +437,7 @@ method slotTopPath ShapeMaker cslot rect {
 
   slotTop = ((at cslot 1) - (3 * scale))
   slotH = ((at cslot 2) - (14 * scale))
-  upperIndentInset = (33 * scale)
+  upperIndentInset = (42 * scale)
 
   setHeading pen 90 // down
   lineTo pen (right rect) ((top rect) + slotTop)
