@@ -1589,7 +1589,7 @@ method labelText Block aString {
   if (isNil labelColor) { labelColor = (gray 255) }
   if ('comment' == aString) { labelColor = (gray 80) }
   if isSVG {
-    return (newSVGImage (substring aString 6) labelColor)
+    return (newSVGImage (substring aString 6) labelColor color scale)
   }
   if ('Linux' == (platform)) {
     fontName = 'Noto Sans Bold'
