@@ -22,7 +22,7 @@ method step ScriptEditor {
   hand = (hand (handler (root morph)))
   if (containsPoint (bounds morph) (left (morph hand)) (top (morph hand))) {
     load = (grabbedObject hand)
-    if (isClass load 'Block') {updateFeedback this load hand}
+    if (isClass load 'Block') {updateFeedback this load}
   }
   updateHighlights this
 }
@@ -240,7 +240,7 @@ method inputFor ScriptEditor block {
   return nil
 }
 
-method updateFeedback ScriptEditor block hand {
+method updateFeedback ScriptEditor block {
   hide feedback
   if (isNil block) {return}
   trgt = (targetFor this block)
