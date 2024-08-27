@@ -533,10 +533,18 @@ method snap Block {
       setNext b this
     } (isClass b 'Array') {
       recordDrop parent this b
-      b = (at b 1)
-      bb = (bottomBlock this)
-      setPosition morph (left (morph b)) (+ (scale * corner) ((top (morph b)) - (height (fullBounds (morph this)))))
-      setNext bb b
+      rec = b
+      b = (at rec 1)
+      dropType = (at rec 2)
+      cSlot = (at rec 3)
+      if (notNil cSlot) { setWrapHeight cSlot nil }
+      if ('top' == dropType) {
+        bb = (bottomBlock this)
+        setPosition morph (left (morph b)) (+ (scale * corner) ((top (morph b)) - (height (fullBounds (morph this)))))
+        setNext bb b
+      } ('wrap' == dropType) {
+        setNested cSlot b
+      }
     } (isClass b 'CommandSlot') {
       recordDrop parent this b (nested b)
       setNested b this
