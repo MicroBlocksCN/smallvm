@@ -159,15 +159,24 @@ method grab Hand handler {
     setPosition (morph handler) (x - 5) (y - 5)
   }
   removeAllParts morph
-  if ('Browser' == (platform)) {
-	addPart morph (morph (newCachedTexture handler))
-  } else {
-	addPart morph (shadow (morph handler) 50 (7 * (global 'scale')))
-	addPart morph (cachedCostumeFor this handler)
-  }
-  hide (morph handler)
   addPart morph (morph handler)
   justGrabbedPart parent handler
+  draggedObjectChanged this
+}
+
+method draggedObjectChanged Hand {
+  obj = (grabbedObject this)
+  if (isNil obj) { return }
+  removeAllParts morph
+  show (morph obj)
+  if ('Browser' == (platform)) {
+	addPart morph (morph (newCachedTexture obj))
+  } else {
+	addPart morph (shadow (morph obj) 50 (7 * (global 'scale')))
+	addPart morph (cachedCostumeFor this obj)
+  }
+  hide (morph obj)
+  addPart morph (morph obj)
   changed morph
 }
 
