@@ -1,12 +1,21 @@
 // C-shaped block slots
 
-defineClass CommandSlot morph corner color
+defineClass CommandSlot morph corner color wrapHeight
 
 to newCommandSlot color nestedBlock {
   result = (new 'CommandSlot')
   initialize result color nestedBlock
   fixLayout result
   return result
+}
+
+method wrapHeight CommandSlot { return wrapHeight }
+
+method setWrapHeight CommandSlot h {
+  wrapHeight = h
+  if (isNil h) { h = (16 * (blockScale)) }
+  setHeight (bounds morph) h
+  layoutChanged this
 }
 
 method initialize CommandSlot blockColor nestedBlock {

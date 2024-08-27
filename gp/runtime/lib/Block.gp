@@ -497,6 +497,19 @@ method inputs Block {
   )
 }
 
+method openCSlot Block {
+  for cSlot (flattened labelParts) {
+    if (isClass cSlot 'CommandSlot') {
+      if (isEmpty (parts (morph cSlot))) {
+        return cSlot
+      } else {
+        return nil
+      }
+    }
+  }
+  return nil
+}
+
 // events
 
 method justDropped Block hand {
