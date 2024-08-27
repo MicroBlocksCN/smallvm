@@ -157,7 +157,12 @@ method fixLayout Block {
           }
           fastSetLeft (morph each) ((+ left (* scale (+ border corner))) + (2 * scale))
           add lines (list each)
-          add lineHeights (height (morph each))
+          h = (height (morph each))
+          if (notNil (wrapHeight each)) { // increase size for wrapping feedback
+			h = (wrapHeight each)
+			setHeight (bounds (morph each)) h
+		  }
+          add lineHeights h
           currentLine = (list)
           w = 0
           h = 0

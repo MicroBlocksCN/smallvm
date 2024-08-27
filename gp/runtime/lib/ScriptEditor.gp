@@ -171,6 +171,8 @@ method targetFor ScriptEditor block {
   x = (left (morph block))
   y = (top (morph block))
   yb = (bottom (morph (bottomBlock block)))
+  cSlot = (openCSlot block)
+
   others = (reversed (allMorphs morph))
   remove others morph
   for m others {
@@ -180,7 +182,7 @@ method targetFor ScriptEditor block {
         if (and ('command' == targetType) (this === (handler (owner m)))) { // top of stack
           xd = (abs (x - (left m)))
           yd = (abs ((top m) - yb))
-          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m))}
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top')}
         }
       } else {
         if ('command' == targetType) {
@@ -189,8 +191,12 @@ method targetFor ScriptEditor block {
           if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
           if (this === (handler (owner m))) { // top of stack
             yd = (abs ((top m) - yb))
-            if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m))}
-          }
+            if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top' cSlot)}
+            if (notNil cSlot) {
+              yd = (abs ((top (morph cSlot)) - (top m)))
+              if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'wrap' cSlot)}
+            }
+         }
         } ('hat' == targetType) {
           xd = (abs (x - (left m)))
           yd = (abs (y - (bottom m)))
@@ -243,12 +249,27 @@ method inputFor ScriptEditor block {
 method updateFeedback ScriptEditor block {
   hide feedback
   if (isNil block) {return}
+  cSlot = (openCSlot block)
   trgt = (targetFor this block)
-  if (notNil trgt) {
-    if ((type block) != 'reporter') { // command or hat types
-      showCommandDropFeedback this trgt
-    } ((type block) == 'reporter') {
+  if (isNil trgt) { // no drop target
+    if (and (notNil cSlot) (notNil (wrapHeight cSlot))) { // clear cSlot's wrap height
+      setWrapHeight cSlot nil
+      draggedObjectChanged (hand (global 'page'))
+    }
+  } else { // found a drop target
+    if ('reporter' == (type block)) { // dragging a reporter
       showReporterDropFeedback this trgt
+    } else { // dragging a command or hat block (including C-shaped command blocks)
+      if (notNil cSlot) {
+        // adjust size of cSlot
+        if (and (isClass trgt 'Array') ('wrap' == (at trgt 2))) {
+          setWrapHeight cSlot ((height (fullBounds (morph (first trgt)))) + (10 * (blockScale)))
+        } else {
+          setWrapHeight cSlot nil
+        }
+      }
+      draggedObjectChanged (hand (global 'page'))
+      showCommandDropFeedback this trgt
     }
     addPart morph feedback // come to front
     show feedback
@@ -258,14 +279,14 @@ method updateFeedback ScriptEditor block {
 method dropFeedbackColor ScriptEditor { return (colorHex 'FED722') }
 
 method showCommandDropFeedback ScriptEditor target {
-  setHeight (bounds feedback) (scale * 5)
   if (isClass target 'Block') {
     nb = (next target)
     top = (bottom (morph target))
     if (notNil nb) {top = (bottomLine target)}
     setPosition feedback (left (morph target)) top
   } (isClass target 'Array') {
-    target = (at target 1)
+    rec = target
+    target = (at rec 1)
     top = ((top (morph target)) - (height feedback))
     setPosition feedback (left (morph target)) top
   } (isClass target 'CommandSlot') {
@@ -274,7 +295,8 @@ method showCommandDropFeedback ScriptEditor target {
     if (isNil nb) {top += (scaledCorner target)}
     setPosition feedback (+ (scaledCorner target) (left (morph target))) top
   }
-  setCostume feedback (newBitmap (width (morph target)) (scale * 5) (dropFeedbackColor this))
+  setExtent feedback (width (morph target)) (5 * scale)
+  setCostume feedback (dropFeedbackColor this)
 }
 
 method showReporterDropFeedback ScriptEditor target {
