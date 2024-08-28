@@ -179,6 +179,7 @@ void primsInit() {
 	addHIDPrims();
 	addOneWirePrims();
 	addCameraPrims();
+	addEncoderPrims();
 }
 
 // Task Ops

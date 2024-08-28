@@ -1,0 +1,11 @@
+module 'EncoderPrims' Input
+author MicroBlocks
+version 1 0
+description 'Primitives to track two-pin quadrature encoders using interrupts.
+
+There are a fixed number of encoder channels. Each channel maintains a count of the encoder pulses based on the two pins it tracks. The count is incremented when the encoder moves in one direction and decremented when it moves in the other direction.'
+
+	spec ' ' '[encoder:start]' 		'start encoder _ pin A _ pin B _' 'num num num' 1 1 2
+	spec ' ' '[encoder:stop]'		'stop encoder _' 'num' 1
+	spec ' ' '[encoder:reset]'		'reset encoder _' 'num' 1
+	spec 'r' '[encoder:count]'		'encoder count _' 'num' 1
