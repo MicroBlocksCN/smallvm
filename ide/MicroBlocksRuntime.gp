@@ -939,9 +939,9 @@ method justConnected SmallRuntime {
 		} else {
 			print 'Incremental download' vmVersion boardType
 		}
-		recompileAll = true
-		stopAndSyncScripts this true
-		softReset this
+        showDownloadProgress (findMicroBlocksEditor) 2 0
+        stopAndSyncScripts this true
+        softReset this
 	}
 }
 
