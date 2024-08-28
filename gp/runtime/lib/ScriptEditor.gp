@@ -182,7 +182,7 @@ method targetFor ScriptEditor block {
         if (and ('command' == targetType) (this === (handler (owner m)))) { // top of stack
           xd = (abs (x - (left m)))
           yd = (abs ((top m) - yb))
-          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top')}
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top' cSlot)}
         }
       } else {
         if ('command' == targetType) {
