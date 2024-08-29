@@ -14,161 +14,171 @@
 #include "mem.h"
 #include "interp.h"
 
-#if !defined(NOT_AN_INTERRUPT)
-  #define NOT_AN_INTERRUPT (-1)
-#endif
-
-// start of code to be replaced
-// Quadrature Encoder Implementation (to be replaced by Russell)
+/*
+ * A quadrature incremental encoder
+ *
+ * To use the class:
+ * - Construct an instance
+ * - Set the interruptHandler attribute to a function or lambda that calls updateCount.
+ *   It must take no arguments and return nothing.
+ *   (Unfortunately an interrupt handler cannot be a class member function.)
+ * - Call startCounting to configure the encoder pins and start counting.
+ * - Call resetCount to zero the count, whenever desired.
+ * - Call stopCounting to stop counting and disable interrupts for the given encoder.
+ */
 
 #define NUM_ENCODERS 4
 
-/*
- * Data for a quadrature incremental encoder
- */
-struct encoder_t {
-    uint8_t pin_a;
-    uint8_t pin_b;
-    volatile bool prev_state_a;
-    volatile bool prev_state_b;
-    volatile bool isRunning;
+class Encoder {
+public:
     volatile int count;
+    void (*interruptHandler)();
+    volatile bool prevStateA;
+    volatile bool prevStateB;
+    uint8_t pinA = -1;
+    uint8_t pinB = -1;
+
+    bool hasInterruptHandler() { return interruptHandler != nullptr; }
+
+    /*
+     * Set the pins and start counting.
+     *
+     * Attach the interrupt handler to both pins.
+     *
+     * This is safe to call if already counting; it stops counting
+     * with the previously configured pins, then starts counting with the new ones.
+     *
+     * Return:
+     * • 0 on success
+     * • 1 if no interrupt handler
+     * • 2 if the pins are invalid (they must be different and must both must support interrupts)
+     */
+    int startCounting(const uint8_t pinA, const uint8_t pinB) {
+        if (!hasInterruptHandler()) {
+            return 1;
+        }
+        stopCounting();
+        if ((pinA == pinB) || (digitalPinToInterrupt(pinA) == -1) || (digitalPinToInterrupt(pinB) == -1)) {
+            // One or both pins is unusable as an interrupt
+            return 2;
+        }
+        this->pinA = pinA;
+        this->pinB = pinB;
+        this->count = 0;
+        attachInterrupt(digitalPinToInterrupt(pinA), interruptHandler, CHANGE);
+        return 0;
+    }
+
+    /*
+     * Stop counting and detach the interrupt handler from the pins.
+     *
+     * Also reset the count to 0, as a clue that we have stopped counting.
+     */
+    void stopCounting() {
+        if (this->pinA >= 0) {
+       	    detachInterrupt(digitalPinToInterrupt(this->pinA));
+       	}
+        this->pinA = -1;
+        this->pinB = -1;
+        this->count = 0;
+    }
+
+    /*
+     * Read the pins and update the count attribute
+     *
+     * This is intended to be called by interrupts, not by the user.
+     */
+    void updateCount() {
+        bool stateA = digitalRead(pinA);
+        bool stateB = digitalRead(pinB);
+        if (stateA != prevStateA) {
+            count += (stateA == stateB ? -1 : 1);
+            prevStateA = stateA;
+        } else if (stateB != prevStateB) {
+            count += (stateA == stateB ? 1 : -1);
+            prevStateB = stateB;
+        }
+    }
 };
 
-struct encoder_t encoders[NUM_ENCODERS];
+static Encoder encoders[NUM_ENCODERS];
+
+// Interrupts accept no arguments and must be free functions, not class member functions,
+// so we must declare one free function per encoder to call the appropriate member function.
+// Using a macro to define the function as a lambda saves some repetition,
+// and non-capturing lambdas are supposed to usable as function pointers in standard C++.
+#define encoder_handler(ind) []() { encoders[(ind)].updateCount(); }
 
 /*
- * Update the data for the specified quadrature incremental encoder
+ * Install an interrupt handler function for each encoder. Called once at startup time.
  */
-void encoder_handler_impl(encoder_t &encoder) {
-    bool state_a = digitalRead(encoder.pin_a);
-    bool state_b = digitalRead(encoder.pin_b);
-
-    if (state_a != encoder.prev_state_a) {
-        encoder.count += state_a == state_b ? -1 : 1;
-        encoder.prev_state_a = state_a;
-    } else if (state_b != encoder.prev_state_b) {
-        encoder.count += state_a == state_b ? 1 : -1;
-        encoder.prev_state_b = state_b;
-    }
+static void initEncoders() {
+    encoders[0].interruptHandler = encoder_handler(0);
+    encoders[1].interruptHandler = encoder_handler(1);
+    encoders[2].interruptHandler = encoder_handler(2);
+    encoders[3].interruptHandler = encoder_handler(3);
 }
-
-// Interrupts accept no arguments, so we cannot assign encoder_handler_impl;
-// instead, declare one free function per encoder.
-void encoder_handler_0() { encoder_handler_impl(encoders[0]); }
-void encoder_handler_1() { encoder_handler_impl(encoders[1]); }
-void encoder_handler_2() { encoder_handler_impl(encoders[2]); }
-void encoder_handler_3() { encoder_handler_impl(encoders[3]); }
-
-// start of code added by John (can be replaced with C++ calls)
-/*
- * Stop the interrupts for the given encoder
- */
-void stopEncoder(const int encoderIndex) {
-	if (encoderIndex < 1 || encoderIndex > NUM_ENCODERS) return;
-	if (!encoders[encoderIndex].isRunning) return; // not running
-
-	detachInterrupt(digitalPinToInterrupt(encoders[encoderIndex].pin_a));
-	detachInterrupt(digitalPinToInterrupt(encoders[encoderIndex].pin_b));
-	encoders[encoderIndex].isRunning = false;
-}
-
-/*
- * Specify the encoder pins and start the interrupt handler for the given encoder
- */
-int startEncoder(const int encoderIndex, const uint8_t pin_a, const uint8_t pin_b) {
-	if (encoderIndex < 1 || encoderIndex > NUM_ENCODERS) {
-		return -1; // encoderIndex out of range
-	}
-
-	stopEncoder(encoderIndex); // stop the encoder if it is already running
-
-	int interruptA = digitalPinToInterrupt(pin_a);
-	int interruptB = digitalPinToInterrupt(pin_b);
-	if ((interruptA == NOT_AN_INTERRUPT) || (interruptB == NOT_AN_INTERRUPT)) {
-		return -2; // a pin does not support interrupts
-	}
-
-	void (*handler)();
-	switch (encoderIndex) {
-	case 1: handler = encoder_handler_0; break;
-	case 2: handler = encoder_handler_1; break;
-	case 3: handler = encoder_handler_2; break;
-	case 4: handler = encoder_handler_3; break;
-	}
-
-	encoders[encoderIndex].pin_a = pin_a;
-	encoders[encoderIndex].pin_b = pin_b;
-	encoders[encoderIndex].prev_state_a = false;
-	encoders[encoderIndex].prev_state_b = false;
-	encoders[encoderIndex].isRunning = true;
-	encoders[encoderIndex].count = 0;
-
-	attachInterrupt(interruptA, handler, CHANGE);
-	attachInterrupt(interruptB, handler, CHANGE);
-
-	return 0; // success
-}
-
-// end of code added by John
-// end of code to be replaced
 
 // Primitive Functions
 
 OBJ primEncoderStart(int argCount, OBJ *args) {
-	if (argCount < 3) return fail(notEnoughArguments);
-	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) {
-		return fail(needsIntegerIndexError);
-	}
-	int encoderIndex = obj2int(args[0]);
-	int pinA = obj2int(args[1]);
-	int pinB = obj2int(args[2]);
-	int rc = startEncoder(encoderIndex, pinA, pinB);
-	if (rc != 0) return fail(encoderNotStarted);
+    if (argCount < 3) return fail(notEnoughArguments);
+    if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) {
+        return fail(needsIntegerIndexError);
+    }
+    int encoderIndex = obj2int(args[0]);
+    int pinA = obj2int(args[1]);
+    int pinB = obj2int(args[2]);
+    int err = 1;
+    if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
+        err = encoders[encoderIndex - 1].startCounting(pinA, pinB);
+    }
+    if (err != 0) return fail(encoderNotStarted);
 
-	return falseObj;
+    return falseObj;
 }
 
 OBJ primEncoderStop(int argCount, OBJ *args) {
-	if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
-	int encoderIndex = obj2int(args[0]);
+    if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
+    int encoderIndex = obj2int(args[0]);
 
-	if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
-		stopEncoder(encoderIndex);
-	}
-	return falseObj;
+    if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
+        encoders[encoderIndex - 1].stopCounting();
+    }
+    return falseObj;
 }
 
 OBJ primEncoderReset(int argCount, OBJ *args) {
-	if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
-	int encoderIndex = obj2int(args[0]);
+    if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
+    int encoderIndex = obj2int(args[0]);
 
-	if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
-    	encoders[encoderIndex].count = 0;
-	}
-	return falseObj;
+    if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
+        encoders[encoderIndex - 1].count = 0;
+     }
+    return falseObj;
 }
 
 OBJ primEncoderCount(int argCount, OBJ *args) {
-	if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
-	int encoderIndex = obj2int(args[0]);
+    if ((argCount < 1) || !isInt(args[0])) return fail(needsIntegerIndexError);
+    int encoderIndex = obj2int(args[0]);
 
-	int result = 0;
-	if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
-    	result = encoders[encoderIndex].count;
-	}
-	return int2obj(result);
+    int result = 0;
+    if (encoderIndex >= 1 || encoderIndex <= NUM_ENCODERS) {
+        result = encoders[encoderIndex - 1].count;
+    }
+    return int2obj(result);
 }
 
 // Primitives
 
 static PrimEntry entries[] = {
-	{"start", primEncoderStart},
-	{"stop", primEncoderStop},
-	{"reset", primEncoderReset},
-	{"count", primEncoderCount},
+    {"start", primEncoderStart},
+    {"stop", primEncoderStop},
+    {"reset", primEncoderReset},
+    {"count", primEncoderCount},
 };
 
 void addEncoderPrims() {
-	addPrimitiveSet(EncoderPrims, "encoder", sizeof(entries) / sizeof(PrimEntry), entries);
+	initEncoders();
+    addPrimitiveSet(EncoderPrims, "encoder", sizeof(entries) / sizeof(PrimEntry), entries);
 }
