@@ -207,6 +207,7 @@ void readScriptsFromURL() {
 
 void addBLEPrims() {}
 void addCameraPrims() {}
+void addEncoderPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
 void addRadioPrims() {}
