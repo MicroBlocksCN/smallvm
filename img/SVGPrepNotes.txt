@@ -1,7 +1,7 @@
 SVG Preparation Notes:
   Covert shapes (e.g. circles, rectangles) to paths
   	- can use "find" menu to verify that all shapes are converted
-  Add additional control points to circles and ellipes to change Arcs to Cubic Beziers
+  Add additional control points to circles and ellipses to change Arcs to Cubic Beziers
   Select all and group objects together then:
   	- adjust the width and height (in pixels) in the top bar
   	- set x and y to zero
@@ -10,7 +10,7 @@ SVG Preparation Notes:
   	- in "scale" section, select a scale of 1 user unit per pixel
   	- verify that the zoom box is 0 0 width height (in pixels)
   Select all and group, then ungroup as many times as needed to remove all subgroups
-  Save a copy using the "optimized SVG" option. This elminates extra Inkscape clutter
+  Save a copy using the "optimized SVG" option. This eliminates extra Inkscape clutter
 
 
 Icon Sizes

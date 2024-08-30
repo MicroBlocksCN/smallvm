@@ -2210,7 +2210,7 @@ TFT touch pressure
 HTTP client
 --MISSING--
 
-_ data _ to http܃// _
+_ data _ to http #SVG#colon-double-slash _
 --MISSING--
 
 MicroBlocks is fun

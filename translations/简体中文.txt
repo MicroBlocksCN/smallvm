@@ -2335,8 +2335,8 @@ TFT 点击力度
 HTTP client
 HTTP 客户端
 
-_ data _ to http܃// _
-_ 数据 _ 到 http܃// _
+_ data _ to http #SVG#colon-double-slash _
+_ 数据 _ 到 http #SVG#colon-double-slash _
 
 port _
 端口 _

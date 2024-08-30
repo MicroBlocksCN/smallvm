@@ -2357,8 +2357,8 @@ pressió del toc a la TFT
 HTTP client
 Client HTTP
 
-_ data _ to http܃// _
-petició _ amb dades _ a http܃// _
+_ data _ to http #SVG#colon-double-slash _
+petició _ amb dades _ a http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 MicroBlocks és divertit

@@ -2207,8 +2207,8 @@ TFT touch pressure
 HTTP client
 HTTP client
 
-_ data _ to http܃// _
-_ data _ to http܃// _
+_ data _ to http #SVG#colon-double-slash _
+_ data _ to http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 MicroBlocks is fun
