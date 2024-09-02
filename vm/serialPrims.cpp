@@ -193,7 +193,7 @@ static int serialWriteBytes(uint8 *buf, uint32 byteCount) {
 #else // use Serial1 or Serial2
 
 // Use Serial2 on original ESP32 and Pico:ed boards, Serial1 on others
-#if (ESP32_ORIGINAL) || defined(PICO_ED)
+#if (ESP32_ORIGINAL) || defined(PICO_ED) || defined(COCUBE)
 	#define SERIAL_PORT Serial2
 #else
 	#define SERIAL_PORT Serial1
@@ -205,7 +205,7 @@ static OBJ setNRF52SerialPins(uint8 rxPin, uint8 txPin) {
 
 static void serialClose() {
 	isOpen = false;
-	#if defined(ESP32)
+	#if defined(ESP32) || defined(COCUBE)
 		SERIAL_PORT.flush();
 	#endif
 	SERIAL_PORT.end();
@@ -217,6 +217,8 @@ static void serialOpen(int baudRate) {
 		int txPin = mapDigitalPinNum(1);
 		int rxPin = mapDigitalPinNum(2);
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
+	#elif defined(COCUBE)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
 	#elif defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 26);
 	#elif defined(RP2040_PHILHOWER)
