@@ -1,8 +1,9 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 6
-depends TFT Strings Files NeoPixel NeoPanel
+version 1 7 
+depends TFT Strings Files NeoPixel NeoPanel 
 description '使用汉字取模数据在TFT屏幕上显示汉字
+v1.7 drawChar方法去掉了写字前刷固定黑色背景，增加宽度参数和换行功能
 v1.6 增加了neoPanel点阵屏上汉字滚动的方法
 v1.5 增加对neoPanel和OLED的支持
 v1.4 增加二进制字库文件支持
@@ -18,14 +19,13 @@ v1.1 增加了颜色设置，增加了几个汉字和数字示例
 -------
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/
-
 可以在示例的other分类找到此库的使用示例-chineseDisplay
 '
 
-variables _scrollStop _scrollPause
+variables _scrollStop _scrollPause 
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' 'data' 0 0 1 nil ''
-  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _' 'str auto auto auto color' 'text' 10 '10' '2'
+  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _ width _' 'str auto auto auto color auto' 'text' 10 '10' '2' nil '10'
   spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _' 'auto color auto num' '汉字' nil '10' 12
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
@@ -144,7 +144,7 @@ to '_l3' {
 
 to '_numbers' {
   comment '本库设计独特的16点阵数字字体'
-  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F8040202020282820202020200F800001F0040404040414140404040201F00')
+  return ('[data:makeList]' '10100000000800020202FE0000000000000000404040404040407F40404040404000' '101000000202020202020202020202807800007C4241414141414141414141404000' '10100008040202020202020202020280780000100040404040414141414141201C00' '101000000000804020100804020200F80000000C12111010101010101010107F1000' '101000FE828282828282828282828202000000100040404040404040404040201E00' '101000F80402020202020202020202000000001F0241414141414141414141201C00' '101000020202020202020202028242201C0000000000402010080402010000000000' '101000780402020202020202020202807800001C0241414141414141414141201C00' '101000F8040202020202020202020200F80000004042424242424242424242211F00' '101000F80402020202020202020202FC0000003F40404040404040404040201F0000')
 }
 
 to '_sample' {
@@ -199,18 +199,22 @@ to draw data x y size color neo {
   }
 }
 
-to drawChar foo x y size color {
-  local 'var' ('[data:convertType]' foo 'string')
-  for i (size var) {
-    local 'font' ('_getCode' (at i var))
-    local 'dz' 0
-    if (('[data:copyFromTo]' font 1 4) == ('[data:convertType]' 2020 'string')) {
-      dz = 32
-    } else {
-      dz = 16
+to drawChar foo x y size color width {
+  foo = ('[data:convertType]' foo 'string')
+  local 'dz' 16
+  if (('[data:copyFromTo]' foo 1 4) == ('[data:convertType]' 2020 'string')) {
+    dz = 32
+  }
+  local 'ii' 0
+  for i (size foo) {
+    ii += 1
+    local 'xx' (x + ((ii - 1) * (size * dz)))
+    if ((xx + (size * dz)) > (x + width)) {
+      ii = 1
+      xx = (x + ((ii - 1) * (size * dz)))
+      y += ((dz / 2) + (size * dz))
     }
-    '[tft:rect]' (x + ((i - 1) * (size * dz))) y (size * dz) (size * dz) (colorSwatch 0 0 0 255)
-    draw font (x + ((i - 1) * (size * dz))) y size color
+    draw ('_getCode' (at i foo)) xx y size color
   }
 }
 
