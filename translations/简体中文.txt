@@ -32,6 +32,9 @@ timer
 reset timer
 计时器归零
 
+seconds
+秒
+
 microseconds
 微秒
 
@@ -40,6 +43,12 @@ milliseconds
 
 board type
 主板类型
+
+version
+版本
+
+BLE connected
+BLE 已连接
 
 connected to IDE
 已连接到 IDE?
