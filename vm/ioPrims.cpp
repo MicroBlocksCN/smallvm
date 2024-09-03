@@ -1066,6 +1066,24 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+//学而思游戏机
+#elif defined(XESGAME)
+	#define BOARD_TYPE "xesgame"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED -1
+	#define PIN_BUTTON_A 34
+	#define PIN_BUTTON_B 12
+	#define DEFAULT_TONE_PIN 14
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+//学而思游戏机
+
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
@@ -1748,7 +1766,7 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE)
+		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE) || defined(XESGAME)//学而思游戏机
 			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
