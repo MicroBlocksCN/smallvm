@@ -29,7 +29,7 @@ static int deferUpdates = false;
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE)
+	defined(COCUBE) || defined(XESGAME)//学而思游戏机
 
 	#ifndef COCUBE
 	#define BLACK 0
@@ -805,6 +805,28 @@ static int deferUpdates = false;
 			tft.fillScreen(ST77XX_BLACK);
 			useTFT = true;
 		}
+
+//学而思游戏机
+	#elif defined(XESGAME)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_MOSI 23
+		#define TFT_SCLK 18
+		#define TFT_CS 5
+		#define TFT_DC 4
+		#define TFT_RST 19
+		#define TFT_WIDTH 160
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_BLACKTAB);
+			tft.setRotation(3);
+			tft.fillScreen(ST77XX_BLACK);
+			useTFT = true;
+		}
+//学而思游戏机
 
 	#elif defined(TTGO_RP2040)
 		#include "Adafruit_GFX.h"
