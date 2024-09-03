@@ -29,6 +29,9 @@
 #if defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
+#elif defined(XESGAME) //学而思游戏机
+	#define PIN_WIRE_SCL 15
+	#define PIN_WIRE_SDA 21
 #elif defined(COCUBE)
 	#define PIN_WIRE_SCL 22
 	#define PIN_WIRE_SDA 21
@@ -1241,6 +1244,92 @@ static int readTemperature() {
 	int fudgeFactor = 3;
 	return (fix16bitSign((msb << 8) | lsb) >> 8) - fudgeFactor; // temperture C
 }
+
+//学而思游戏机
+#elif defined(XESGAME)
+
+#define MPU6050 0x68
+#define MPU6050_ACCEL_XOUT_H 59
+#define MPU6050_PWR_MGMT_1 107
+
+static uint8 mpuData[6];
+
+static void mpu6050readData() {
+	if (!accelStarted) {
+		if (!wireStarted) startWire();
+		if (!wireStarted) return;
+
+		writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
+		delay(1); // xxx 10 works
+		accelStarted = true;
+	}
+
+	// Request accelerometer data
+	Wire.beginTransmission(MPU6050);
+	Wire.write(MPU6050_ACCEL_XOUT_H);
+	Wire.endTransmission();
+
+	// Read data
+	int count = sizeof(mpuData);
+	Wire.requestFrom(MPU6050, count);
+
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		mpuData[i] = Wire.read();
+	}
+}
+
+static int readAcceleration(int registerID) {
+	mpu6050readData();
+
+	int val = 0;
+	if (1 == registerID) val = -fix16bitSign((mpuData[0] << 8) | mpuData[1]); // x-axis
+	if (3 == registerID) val =  fix16bitSign((mpuData[2] << 8) | mpuData[3]); // y-axis
+	if (5 == registerID) val =  fix16bitSign((mpuData[4] << 8) | mpuData[5]); // z-axis
+
+	return (100 * val) >> 14;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(MPU6050, 0x1C, (range << 3));
+}
+
+static int readTemperature() {
+	setPinMode(39, INPUT);
+	// 常温下热敏电阻的阻值
+	const float nominalResistance = 10000;
+	// 常温（25°C）下的温度
+	const float nominalTemperature = 25.0;
+	// 热敏电阻的B值
+	const float bCoefficient = 3950;
+	// 串联电阻值
+	const float seriesResistor = 10000;
+	// ADC最大值
+	const int adcMaxValue = 4095;
+	// Arduino的参考电压
+	const float referenceVoltage = 3.3;
+	// 读取热敏电阻的ADC值
+	int adcValue = analogRead(39);
+	// 计算热敏电阻的电压
+	float voltage = (adcValue / (float)adcMaxValue) * referenceVoltage;
+	// 计算热敏电阻的阻值
+	float resistance = (seriesResistor * (referenceVoltage / voltage - 1.0));
+	// 计算温度（使用Steinhart-Hart方程）
+  	float steinhart;
+  	steinhart = resistance / nominalResistance;              // (R/Ro)
+  	steinhart = log(steinhart);                              // ln(R/Ro)
+  	steinhart /= bCoefficient;                               // 1/B * ln(R/Ro)
+  	steinhart += 1.0 / (nominalTemperature + 273.15);        // + (1/To)
+  	steinhart = 1.0 / steinhart;                             // Invert
+  	steinhart -= 273.15;                                     // convert to Celsius
+
+	return (steinhart);
+}
+//学而思游戏机
 
 #elif defined(COCOROBO)
 
