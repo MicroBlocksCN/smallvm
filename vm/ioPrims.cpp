@@ -962,17 +962,27 @@ void hardwareInit() {
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
 #elif defined(AIRM2MC3)
-	#define BOARD_TYPE "airm2m_core_esp32c3"
-	#define DIGITAL_PINS 22
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 22
-	static const int analogPin[] = {0, 1, 2, 3, 4};
-	#define PIN_LED 12
-	#define PIN_BUTTON_A 9
+//合宙ESP32C3
+	#define BOARD_TYPE "ESP32-C3"
+	#define DIGITAL_PINS 20
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 20
+	static const int analogPin[] = {};
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED 12
+	#endif
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 9
+		#endif
+	#endif
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
-		1, 1};
+		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
 #elif defined(ESP32_C3)
 	#define BOARD_TYPE "ESP32-C3"
