@@ -962,17 +962,27 @@ void hardwareInit() {
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
 #elif defined(AIRM2MC3)
-	#define BOARD_TYPE "airm2m_core_esp32c3"
-	#define DIGITAL_PINS 22
-	#define ANALOG_PINS 5
-	#define TOTAL_PINS 22
-	static const int analogPin[] = {0, 1, 2, 3, 4};
-	#define PIN_LED 12
-	#define PIN_BUTTON_A 9
+//合宙ESP32C3
+	#define BOARD_TYPE "ESP32-C3"
+	#define DIGITAL_PINS 20
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 20
+	static const int analogPin[] = {};
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED 12
+	#endif
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 9
+		#endif
+	#endif
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
-		1, 1};
+		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
 #elif defined(ESP32_C3)
 	#define BOARD_TYPE "ESP32-C3"
@@ -1055,6 +1065,24 @@ void hardwareInit() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
+//学而思游戏机
+#elif defined(XESGAME)
+	#define BOARD_TYPE "xesgame"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED -1
+	#define PIN_BUTTON_A 34
+	#define PIN_BUTTON_B 12
+	#define DEFAULT_TONE_PIN 14
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+//学而思游戏机
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -1738,7 +1766,7 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE)
+		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE) || defined(XESGAME)//学而思游戏机
 			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
