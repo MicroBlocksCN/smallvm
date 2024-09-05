@@ -7,12 +7,12 @@ tags button capacitive ed1
 variables _ED1_buttons_init '_capacitive threshold'
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' 'button OK'
-	spec 'r' 'cancel button' 'button X'
-	spec 'r' 'up button' 'button up'
-	spec 'r' 'down button' 'button down'
-	spec 'r' 'left button' 'button left'
-	spec 'r' 'right button' 'button right'
+	spec 'r' 'OK button' '#SVG#button-ok'
+	spec 'r' 'cancel button' '#SVG#button-x'
+	spec 'r' 'up button' '#SVG#button-up'
+	spec 'r' 'down button' '#SVG#button-down'
+	spec 'r' 'left button' '#SVG#button-left'
+	spec 'r' 'right button' '#SVG#button-right'
 	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
