@@ -2215,10 +2215,13 @@ static OBJ __not_in_flash_func(primSoftwareSerialWriteByte)(int argCount, OBJ *a
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
-#if (defined(NRF51) || defined(NRF52)) && !defined(USE_NIMBLE)
+#if (defined(NRF51) || defined(NRF52))
+
+// Note: NimBLE uses PPI channels CH4, CH5 and optionally CH17, CH18, CH19
+// so don't mess with those. (See ble_phy.c in NimBLE source code.)
 
 static void stopRF() {
-	NRF_PPI->CHEN = 0;
+	NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
 	NRF_GPIOTE->CONFIG[0] = 0;
 }
 
