@@ -284,20 +284,30 @@ static OBJ primText(int argCount, OBJ *args) {
 			var text = UTF8ToString($0);
 			// subtract a little bit from x, proportional to font scale, to make
 			// it match the font on physical boards
-			var x = $1 - $4;
-			var y = $2 - $4;
+			var textColor = $3;
+			var scale = $4;
+			var wrap = $5;
+			var bgColor = $6;
+			var x = $1 - scale;
+			var y = $2 - scale;
+			if (bgColor >= 0) {
+				var w = scale * 6 * text.length;
+				var h = scale * 8; // text height on boards is scale * 8
+				window.ctx.fillStyle = window.rgbFrom24b(bgColor);
+				window.ctx.fillRect(x + scale, y + scale, w, h);
+			}
 			// there is a weird rounding artifact at scale 3
-			var fontSize = ($4 == 3) ? ($4 * 10.5) : ($4 * 11);
+			var fontSize = (scale == 3) ? (scale * 10.5) : (scale * 11);
 			window.ctx.font = fontSize + 'px adafruit';
-			window.ctx.fillStyle = window.rgbFrom24b($3);
+			window.ctx.fillStyle = window.rgbFrom24b(textColor);
 			window.ctx.textBaseline = 'top';
 			text.split("").forEach(
 				(c) => {
 					window.ctx.fillText(c, x, y);
-					x += $4 * 6;
-					if ($5 && (x + $4 * 6 >= window.ctx.canvas.width)) {
+					x += scale * 6;
+					if (wrap && (x + scale * 6 >= window.ctx.canvas.width)) {
 						// wrap
-						x = 0 - $4;
+						x = 0 - scale;
 						y += fontSize * 3 / 4;
 					}
 				}
@@ -306,9 +316,10 @@ static OBJ primText(int argCount, OBJ *args) {
 		text, // text
 		obj2int(args[1]), // x
 		obj2int(args[2]), // y
-		obj2int(args[3]), // color
+		obj2int(args[3]), // text color
 		(argCount > 4) ? obj2int(args[4]) : 2, // scale
-		(argCount > 5) ? (trueObj == args[5]) : true // wrap
+		(argCount > 5) ? (trueObj == args[5]) : true, // wrap
+		(argCount > 6) ? obj2int(args[6]) : -1 // background color
 	);
 
 	tftChanged();
