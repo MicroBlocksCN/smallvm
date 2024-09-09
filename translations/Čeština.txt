@@ -1,0 +1,4029 @@
+# MicroBlocks translation file
+# Last updated: March 14 2023
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+Výstup	
+
+set user LED _
+nastav uživatelskou LED _
+
+say _
+ukaž _
+
+graph _
+Graf _
+
+Input
+Vstup
+
+button A
+tlačítko A
+
+button B
+tlačítko B
+
+timer
+časovač
+
+reset timer
+vynulovat časovač
+
+microseconds
+mikrosekundy
+
+milliseconds
+milisekundy
+
+board type
+Typ desky
+
+connected to IDE
+připojeno k IDE
+
+Pins
+Piny
+
+read digital pin _
+přečtená logická hodnota z pinu _
+
+read analog pin _
+přečtená analogová hodnota z pinu _
+
+pullup _
+pullup _
+
+set digital pin _ to _
+zapiš do pinu _ logickou hodnotu _
+
+set pin _ to _
+zapiš do pinu _ číslo _
+
+analog pins
+analogové piny
+
+digital pins
+digitalní piny
+
+Control
+Řízení
+
+when started
+při startu
+
+when button _ pressed
+při stisku tlačítka _
+
+forever _
+opakuj stále _
+
+repeat _ _
+opakuj _ _ krát
+
+wait _ millisecs
+čekej _ milisekund
+
+if _ _
+když _ _
+
+if _ _ else _
+když _ _ jinak _
+
+else if _ _
+jinak když _ _
+
+else
+jinak
+
+when _
+dokud _
+
+wait until _
+čekej dokud _
+
+wait _ microsecs
+čekej _ mikrosekund
+
+return _
+vrať _
+
+when _ received
+když _ přijato
+
+go!
+--MISSING--
+
+broadcast _
+rozešli _
+
+comment _
+kommentář _
+
+How this works...
+Jak toto funguje...
+
+range _ to _
+rozsah od _ do _
+
+by _
+o? _
+
+for _ in _ _
+pro _ z _ _
+
+repeat until _ _
+opakuj dokud _ _
+
+stop this task
+zastav tuto úlohu
+
+stop other tasks
+zastav ostatní úlohy
+
+stop all
+zastav vše
+
+last message
+poslední zpráva
+
+arg _ default _
+parametr _ default _
+
+default
+default
+
+call _
+zavolej _
+
+function name
+jméno funkce
+
+parameter list
+seznam parametrů
+
+with _
+s _
+
+Operators
+Operátory
+
+_ mod _
+_ modulo _
+
+abs _
+abs _
+
+min _ _
+min _ _
+
+max _ _
+max _ _
+
+random _ to _
+náhodné číslo od _ do _
+
+not _
+ne _
+
+_ and _
+_ a _
+
+and _
+a _
+
+_ or _
+_ nebo _
+
+or _
+nebo _
+
+_ is a _
+_ ist ein(e) _
+
+convert _ to _
+převést _ do _
+
+boolean
+logika
+
+number
+číslo
+
+string
+text
+
+list
+seznam
+
+byte array
+--MISSING--
+
+Advanced:
+Rozšířené bloky:
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+mapuj _ z rozsahu ( _ , _ ) do ( _ , _ )
+
+hex _
+hex _
+
+Variables
+Proměnné
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Přidej proměnnou
+
+Delete a variable
+Smaž proměnnou
+
+# New variable dialog
+
+New variable name?
+JMéno nové proměnné?
+
+set _ to _
+nastav _ na _
+
+change _ by _
+změň _ o _
+
+initialize local _ to _
+nastav lokální proměnnou _ na _
+
+Data
+Data
+
+list
+seznam
+
+cat
+kočka
+
+dog
+pes
+
+bird
+pták
+
+fish
+ryba
+
+length of _
+délka _
+
+item _ of _
+prvek _ z _
+
+replace item _ of list _ with _
+nahraď prvek _ v seznamu _ hodnotou _
+
+delete item _ of list _
+smaž prvek _ ze seznamu _
+
+add _ to list _
+přidej _ do seznamu
+
+join _ _
+spoj _ _
+
+copy _ from _
+kopíruj _ od _
+
+smiles
+smajlíky
+
+to _
+do _
+
+find _ in _
+najdi _ v _
+
+starting at _
+začínající na _
+
+join items of list _
+spoje prvky seznamu _
+
+separator _
+oddělovač _
+
+unicode _ of _
+unicode _ pro _
+
+string from unicode _
+řetězec z unicode _
+
+new list length _
+nová délka seznamu _
+
+new byte array _
+nové pole bajtů _
+
+as byte array _
+jako pole bajtů _
+
+aByteListOrString
+--MISSING--
+
+with all _
+se všemi _
+
+free memory
+volná paměť
+
+all
+vše
+
+last
+poslední
+
+random
+náhodný
+
+split _ by _
+rozděl _ podle _
+
+My Blocks
+Moje bloky
+
+Generic
+Obecné
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+Přidej blok povelů
+
+Add a reporter block
+Přidej blok povelů s návratovou hodnotou
+
+# Make a block dialog
+
+Enter function name:
+Zadej jméno funkce:
+
+Comm
+Komunikace
+
+i2c get device _ register _
+čti z I2C zařízení _ registr _
+
+i2c set device _ register _ to _
+zapiš do I2C zařízení _ do registru _ hodnotu _
+
+i2c device _ read list _
+z I2C zařízení _ přečti seznam _
+
+i2c device _ write list _
+do I2C zařízení _ zapiš seznam _
+
+spi send _
+pošli do SPI _
+
+spi receive
+přijmi z SPI
+
+spi setup speed _
+SPI nastav rychlost
+
+mode _
+režim _
+
+spi channel _
+SPI kanál _
+
+spi exchange bytes _
+SPI přenes bajty _
+
+aByteArray
+--MISSING--
+
+serial open _ baud
+otevři seriový port pro rychlost _
+
+serial close
+zavři seriový port
+
+serial read
+přeči ze seriového portu
+
+serial write _
+do serivého portu zapiš _
+
+anIntegerStringListOrByteArray
+--MISSING--
+
+serial write _ starting at _
+zapiš do seriového portu _ od _
+
+aStringListOrByteArray
+--MISSING--
+
+soft serial write byte _ pin _ baud _
+--MISSING--
+
+print _
+tiskni _
+
+no op
+no op
+
+ignore
+ignoruj
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+nakresli tvar _ na x _ y _
+
+shape for letter _
+tvar pro písmeno _
+
+send NeoPixel rgb _
+nastav NeoPixel RGB _
+
+has tone support
+podporuje tóny
+
+play tone pin _ frequency _
+na pinu _ hrej tón o frekvenci _
+
+has WiFi support
+podporuje WiFi
+
+start WiFi _ password _
+připoj WiFi _ heslo _
+
+stop WiFi
+zastav WiFi
+
+WiFi status
+WiFi stav
+
+my IP address
+moje IP adresa
+
+radio send number _
+odešli rádiem číslo _
+
+radio send string _
+odešli rádiem text _
+
+Hello!
+--MISSING--
+
+radio send pair _ = _
+odešli rádiem jméno _ hodnota _
+
+light
+světlo
+
+radio message received?
+přijata rádiová zpráva?
+
+radio last number
+poslední rádiem přijaté číslo
+
+radio last string
+poslední rádiem přijaý text
+
+radio last message type
+typ poslední radiové zprávy
+
+radio set group _ (0-255)
+nastav skupinu rádia na  _ (0-255)
+
+radio set channel (0-83) _
+nastav kanál rádia (0-83) _
+
+radio set power (0-7) _
+nastav výkon rádia (0-7) _
+
+radio last signal strength
+síla posledního radivého signálu 
+
+radio receive packet _
+přijmi packet _ rádia
+
+radio send packet _
+odešli packet _ rádiem
+
+disable radio
+deaktivuj radio
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+Jednoduché Senzory
+
+tilt x
+náklon x
+
+tilt y
+náklon y
+
+tilt z
+náklon z
+
+acceleration
+zrychlení
+
+light level
+intenzita světla
+
+temperature (°C)
+teplota (°C)
+
+magnetic field
+magnetické pole
+
+set acceleration range _ g = 100
+nastav rozsah akcelerace _ g = 100
+
+####
+# NeoPixel library
+
+NeoPixel
+NeoPixel
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+nastav NeoPixel _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+zhasni NeoPixel
+
+set NeoPixel _ color _
+nastav NeoPixel _ barva _
+
+set all NeoPixels color _
+nastav na všech NepoPixelech barvu _
+
+rotate NeoPixels by _
+rotuj NeoPixel o _
+
+brighten NeoPixel _ by _
+zjasni NeoPixel _ o _
+
+brighten all NeoPixels by _
+zjasni všechny NeoPixely _ o _
+
+color r _ g _ b _ (0-255)
+barva R _ G _ B _ (0-255)
+
+random color
+náhodná barva
+
+attach _ LED NeoPixel strip to pin _
+připoj pásek _ NeoPixel LED na Pin _
+
+has white _
+s bílou _
+
+PIR
+PIR
+
+PIR at pin _ detected movement
+PIR na pinu _ zjištěn pohyb
+
+#### NeoPanel library
+
+NeoPanel
+NepoPixel panel
+
+attach NeoPixel panel width _ height _ at pin _
+připoj NeoPixel panel šířka _ výška _ na Pin _
+
+NeoPanel set x _ y _ color _
+NeoPanel nastav x _ y _ barva
+
+NeoPanel fill column _ color _
+NeoPanel sloupec _ barva _
+
+NeoPanel fill row _ color _
+NeoPanel řádek _ barva _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+--MISSING--
+
+NeoPanel draw text _ at x _ y _ color _
+--MISSING--
+
+NeoPanel draw BMP file _ at x _ y _
+--MISSING--
+
+####
+# Microphone library
+
+Microphone
+Mikrofon
+
+microphone
+mikrofon
+
+turn on microphone
+zapni mikrofon
+
+loudness
+hlasitos
+
+clap count
+počet tesknutí
+
+set clap threshold _
+nastav práh tlesknují _
+
+estimate clap threshold
+odhadni práh tlesknutí
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+--MISSING--
+
+move motor _ _ steps _
+--MISSING--
+
+move motor 1 _ and motor 2 _ _ steps
+--MISSING--
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
+--MISSING--
+
+stop steppers
+--MISSING--
+
+clockwise
+--MISSING--
+
+counter-clockwise
+--MISSING--
+
+ED1 Buttons
+--MISSING--
+
+button OK
+--MISSING--
+
+button X
+--MISSING--
+
+button up
+--MISSING--
+
+button down
+--MISSING--
+
+button left
+--MISSING--
+
+button right
+--MISSING--
+
+capacitive sensor _
+--MISSING--
+
+set capacitive threshold to _
+--MISSING--
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+--MISSING--
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+--MISSING--
+
+Hummingbird Position Servo _ _ °
+--MISSING--
+
+Hummingbird Rotation Servo _ _ %
+--MISSING--
+
+Hummingbird _ _
+--MISSING--
+
+Hummingbird Battery (mV)
+--MISSING--
+
+Light
+--MISSING--
+
+Distance (cm)
+--MISSING--
+
+Dial
+--MISSING--
+
+Sound
+--MISSING--
+
+Other
+--MISSING--
+
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+vzdálenost (cm) trigger _ echo _
+
+####
+# Infrared remote library
+
+IR Remote
+IR Ovladač
+
+receive IR code
+přijmi IR kód
+
+receive IR code from device _
+přijmi IR kód z zařízení _
+
+test IR
+test IR
+
+attach IR receiver to pin _
+přípoj IR přijímač k pinu _
+
+IR transmit device _ command _
+IR odešli zařízení _ povel _
+
+####
+# Keyboard and Mouse library
+
+Keyboard and Mouse
+Keyboard and Mouse
+
+press key _ : while holding _
+press key _ : while holding _
+
+hold key _
+hold key _
+
+release key _
+release key _
+
+release all keys
+release all keys
+
+Shift
+Shift
+
+Ctrl
+Ctrl
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+enter
+
+return
+return
+
+tab
+tab
+
+backspace
+backspace
+
+delete
+delete
+
+insert
+insert
+
+home
+home
+
+end
+end
+
+PgUp
+PgUp
+
+PgDown
+PgDown
+
+CapsLock
+CapsLock
+
+NumLock
+NumLock
+
+ScrollLock
+ScrollLock
+
+PrintScreen
+PrintScreen
+
+ESC
+ESC
+
+_ mouse click
+_ mouse click
+
+left
+left
+
+right
+right
+
+middle
+middle
+
+both
+both
+
+move mouse pointer by _ , _
+move mouse pointer by _ , _
+
+scroll mouse by _
+scroll mouse by _
+
+hold _ mouse button
+hold _ mouse button
+
+release mouse buttons
+release mouse buttons
+
+####
+# Lists library
+# Extra utilities for list manipulation and access
+
+Lists
+Seznamy
+
+list _ contains _
+seznam _ obsahuje _
+
+circular item _ of _
+--MISSING--
+
+aListOrString
+--MISSING--
+
+map _ over _
+mapuj _ pomocí _
+
+aFunction
+--MISSING--
+
+filter _ with _
+filtruj _ podle _
+
+pick _ from _
+vyber _ ze _
+
+a few
+několik
+
+some
+nějaký
+
+most
+většina
+
+reverse _
+obrať _
+
+shuffle _
+proházej _
+
+sort _
+setřiď _
+
+shuffled _
+proházený _
+
+reversed _
+obrácený _
+
+sorted _
+seřazný _
+
+####
+# BLE Keyboard library
+
+BLE Keyboard
+--MISSING--
+
+start BLE Keyboard
+--MISSING--
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+Scrollen
+
+scroll text _
+zobraz text _
+
+HELLO ROSA!
+AHOJ!
+
+scroll number _
+zobraz číslo _
+
+pausing _ ms
+pauza _ ms
+
+stop scrolling
+zastav zobrazení
+
+####
+# Servo motor library
+
+Servo
+Servo
+
+set servo _ to _ degrees (-90 to 90)
+nastav servo _ na úhel _ (-90 až 90)
+
+set servo _ to speed _ (-100 to 100)
+nastav Servo _ na rychlost _ (-100 až 100)
+
+stop servo _
+zastav Servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+LED Displej
+
+display _
+zobraz _
+
+clear display
+smaž displej
+
+set display color _
+nastav barvu displeje _
+
+plot x _ y _
+rozsviť x _ y _
+
+unplot x _ y _
+zhasni x _ y _
+
+display character _
+zobraz znak _
+
+display image _
+zobraz ikonu _
+
+led image _
+ikona _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+aktivuj I2C _ adresa (hex) _ reset pin# _ otoč _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+aktivuj SPI _ adresa (hex) _ reset pin# _ otoč _
+
+write _ at x _ y _ inverse _
+zapiš _ na x _ y _ inverze
+
+show display buffer
+ukaž obraz z paměti displeje
+
+clear
+vymaž
+
+set contrast (1-4) _
+nastav kontrast (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+nakresli kružnici střed x _ y _ poloměr _ výmaz
+
+draw image _ at x _ y _
+nakresli obrázek na x _ y _ 
+
+draw line from x _ y _ to x _ y _ erase _
+nakresli přímku z x _ y _ do x _ y _ 
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+nakresli obdélník x _ y _ š _ d _ výmaz _ zaoblení (3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+vyplň obdélník x _ y _ š _ d _ výmaz _ 
+
+_flip display top _
+_překlop displej nahoře
+
+make image _
+vytvoř obrázek
+
+set pixel x _ y _ erase _
+nastav bod x _ y _ výmaz _ 
+
+set video _
+nastav video _
+
+cursor location
+pozice kurzoru
+
+defer display updates
+odlož aktualizaci displeje
+
+####
+# TFT display library
+
+enable TFT _
+aktivuj TFT
+
+TFT width
+TFT šírka
+
+TFT height
+TFT výška
+
+set TFT pixel x _ y _ to _
+naastav TFT-Pixel x _ y _ na _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+nakresli na TFT přímku z x _ y _ do x _ y _ barva _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+nakresli na TFT obdélník na x _ y _ šířka _ výška _ barva _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+nakresli na TFT zaoblený obdélník na  x _ y _ _ šířka _ výška _ poloměr _ barva _
+
+draw circle on TFT at x _ y _ radius _ color _
+nakresli na TFT kružnící se středem x _ y _ poloměr _ barva _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+nakresli na TFT trojúhelník s vrcholy x _ y_ , x _ y, x _ y _ barva _
+
+filled _
+vyplněno _
+
+write _ on TFT at x _ y _ color _
+na TFT napiš _ od x _ y _ barva _
+
+Hello World!
+--MISSING--
+
+scale _ wrap _
+měřítko _ zalomení _
+
+####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _ at x _ y _
+zobraz BMP soubor _ na x _ y _
+
+image.bmp
+obrázek.bmp
+
+####
+# HSV color library
+
+HSV Colors
+HSV barvy
+
+RGB of hue _ saturation _ brightness _ (0-100)
+--MISSING--
+
+####
+# Fractions library
+
+Fractions
+Zlomky
+
+fract _ / _
+zlomek _ / _
+
+fract _ + _
+zlomek _ + _
+
+fract _ - _
+zlomek _ - _
+
+fract _ × _
+zlomek _ * _
+
+fract _ = _
+zlomek _ = _
+
+fract _ < _
+zlomek _ < _
+
+fract _ > _
+zlomek _ > _
+
+simplify fraction _
+zjednoduš zlomek _
+
+integer part of fraction _
+celá část zlomku _
+
+numerator of fraction _
+čitatel zlomku _
+
+denominator of fraction _
+jmenovatel zlomku _
+
+gcd _ _
+NSD _ _
+
+lcm _ _
+NSN
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+Tóny
+
+attach buzzer to pin _
+připoj bzučák k pinu Pin _
+
+play note _ octave _ for _ ms
+hraj notu _ oktáva _ po _ ms
+
+play frequency _ for _ ms
+hraj kmitočet _ po _ ms
+
+play midi key _ for _ ms
+hraj MIDI notu _ po _ ms
+
+start tone _ Hz
+spusť tón _ Hz
+
+stop tone
+zastav tón
+
+c
+c
+
+c#
+c#
+
+d
+d
+
+d#
+d#
+
+e
+e
+
+f
+f
+
+f#
+f#
+
+g
+g
+
+g#
+g#
+
+a
+a
+
+a#
+a#
+
+b
+b
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+--MISSING--
+
+play ringtone _
+--MISSING--
+
+current song name
+--MISSING--
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+--MISSING--
+
+pluck note _ octave _ for _ ms
+--MISSING--
+
+pluck MIDI key _ for _ msecs
+--MISSING--
+
+set pluck pin _
+--MISSING--
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+--MISSING--
+
+filename
+--MISSING--
+
+####
+# Rhythm
+# Send broadcasts -and call functions- according to a tempo and time signature.
+# Useful to create musical patterns
+
+Rhythm
+--MISSING--
+
+set tempo to _ bpm at _ / _ signature
+--MISSING--
+
+start counting _ bars
+--MISSING--
+
+stop counting
+--MISSING--
+
+wait until next _
+--MISSING--
+
+current beat
+--MISSING--
+
+current bar
+--MISSING--
+
+####
+# MIDI
+# Control MIDI devices from MicroBlocks
+
+# General MIDI drum instrument names
+
+Acoustic Bass Drum
+--MISSING--
+
+Bass Drum 1
+--MISSING--
+
+Side Stick
+--MISSING--
+
+Acoustic Snare
+--MISSING--
+
+Hand Clap
+--MISSING--
+
+Electric Snare
+--MISSING--
+
+Low Floor Tom
+--MISSING--
+
+Closed Hi-Hat
+--MISSING--
+
+High Floor Tom
+--MISSING--
+
+Pedal Hi-Hat
+--MISSING--
+
+Low Tom
+--MISSING--
+
+Open Hi-Hat
+--MISSING--
+
+Low-Mid Tom
+--MISSING--
+
+Hi-Mid Tom
+--MISSING--
+
+Crash Cymbal 1
+--MISSING--
+
+High Tom
+--MISSING--
+
+Ride Cymbal 1
+--MISSING--
+
+Chinese Cymbal
+--MISSING--
+
+Ride Bell
+--MISSING--
+
+Tambourine 
+--MISSING--
+
+Splash Cymbal
+--MISSING--
+
+Cowbell 
+--MISSING--
+
+Crash Cymbal 2
+--MISSING--
+
+Vibraslap 
+--MISSING--
+
+Ride Cymbal 2
+--MISSING--
+
+Hi Bongo
+--MISSING--
+
+Low Bongo
+--MISSING--
+
+Mute Hi Conga
+--MISSING--
+
+Open Hi Conga
+--MISSING--
+
+Low Conga
+--MISSING--
+
+High Timbale
+--MISSING--
+
+Low Timbale
+--MISSING--
+
+High Agogo
+--MISSING--
+
+Low Agogo
+--MISSING--
+
+Cabasa
+--MISSING--
+
+Maracas 
+--MISSING--
+
+Short Whistle
+--MISSING--
+
+Long Whistle
+--MISSING--
+
+Short Guiro
+--MISSING--
+
+Long Guiro
+--MISSING--
+
+Claves 
+--MISSING--
+
+Hi Wood Block
+--MISSING--
+
+Low Wood Block
+--MISSING--
+
+Mute Cuica
+--MISSING--
+
+Open Cuica
+--MISSING--
+
+Mute Triangle
+--MISSING--
+
+Open Triangle
+--MISSING--
+
+# General MIDI instrument categories
+
+piano 
+--MISSING--
+
+chromatic percussion
+--MISSING--
+
+organ
+--MISSING--
+
+guitar
+--MISSING--
+
+bass
+--MISSING--
+
+strings
+--MISSING--
+
+ensemble
+--MISSING--
+
+brass
+--MISSING--
+
+reed
+--MISSING--
+
+pipe 
+--MISSING--
+
+synth lead
+--MISSING--
+
+synth pad
+--MISSING--
+
+synth SFX
+--MISSING--
+
+ethnic
+--MISSING--
+
+percussive
+--MISSING--
+
+SFX 
+--MISSING--
+
+# General MIDI drum sets
+
+standard
+--MISSING--
+
+room
+--MISSING--
+
+power
+--MISSING--
+
+electronic 
+--MISSING--
+
+TR-808
+--MISSING--
+
+jazz
+--MISSING--
+
+brush
+--MISSING--
+
+orchestra
+--MISSING--
+
+SFX 
+--MISSING--
+
+CM-64/CM-32L
+--MISSING--
+
+# General MIDI control changes
+
+bank select 1
+--MISSING--
+
+bank select 2
+--MISSING--
+
+modulation 
+--MISSING--
+
+portamento time
+--MISSING--
+
+volume
+--MISSING--
+
+pan
+--MISSING--
+
+expression
+--MISSING--
+
+hold
+--MISSING--
+
+portamento
+--MISSING--
+
+sostenuto
+--MISSING--
+
+soft
+--MISSING--
+
+resonance 
+--MISSING--
+
+release time
+--MISSING--
+
+attack time
+--MISSING--
+
+cutoff 
+--MISSING--
+
+decay time
+--MISSING--
+
+vibrato rate
+--MISSING--
+
+vibrato depth
+--MISSING--
+
+vibrato delay
+--MISSING--
+
+portamento control
+--MISSING--
+
+effect 1
+--MISSING--
+
+effect 2
+--MISSING--
+
+# library blocks
+
+play MIDI note _ for _ ms on channel _ volume _
+--MISSING--
+
+set MIDI note _ to _ on channel _ volume _
+--MISSING--
+
+note _ octave _ to MIDI key
+--MISSING--
+
+select MIDI instrument _ for channel _
+--MISSING--
+
+instrument _ number _
+--MISSING--
+
+select MIDI drum kit _
+--MISSING--
+
+play MIDI drum _ for _ ms volume _
+--MISSING--
+
+drum _
+--MISSING--
+
+change MIDI control _ on channel _ to _
+--MISSING--
+
+pitch bend MIDI channel _ to _ %
+--MISSING--
+
+send MIDI reset
+--MISSING--
+
+send MIDI start playing
+--MISSING--
+
+send MIDI stop playing
+--MISSING--
+
+send MIDI continue playing
+--MISSING--
+
+set MIDI signal to pin _
+--MISSING--
+
+####
+# Scales & Chords
+# Abstractions for musical theory
+
+Scales & Chords
+--MISSING--
+
+# scale names
+
+ionian
+--MISSING--
+
+dorian
+--MISSING--
+
+phrygian
+--MISSING--
+
+lydian
+--MISSING--
+
+mixolydian
+--MISSING--
+
+aeolian
+--MISSING--
+
+locrian
+--MISSING--
+
+major
+--MISSING--
+
+minor 
+--MISSING--
+
+# chord types
+
+major
+--MISSING--
+
+minor
+--MISSING--
+
+diminished
+--MISSING--
+
+major 7th
+--MISSING--
+
+minor 7th
+--MISSING--
+
+Maj7 
+--MISSING--
+
+# sound destinations for arpeggiate block
+
+MIDI channel
+--MISSING--
+
+tone pin 
+--MISSING--
+
+# library blocks
+
+_ scale root _
+--MISSING--
+
+steps _
+--MISSING--
+
+pentatonic _ scale root _
+--MISSING--
+
+_ chord root _
+--MISSING--
+
+_ chord for root _
+--MISSING--
+
+arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvise over _ for _ bars with durations _ on _ _ volume _
+--MISSING--
+
+_ transposed _ semitones
+--MISSING--
+
+chord progression _ with root _
+--MISSING--
+
+and _ steps per chord
+--MISSING--
+
+rotation _ of circle of 5ths _ M _ m _ º
+--MISSING--
+
+####
+# Chiptune
+# Old-school sound generation on digital pins and DACs
+
+kick for _ ms on pin _
+--MISSING--
+
+tom for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+laser for _ ms with frequency _ speed _ on pin _
+--MISSING--
+
+noise for _ ms pitch shifted by _ on pin _
+--MISSING--
+
+fade noise for _ ms pitch shifted by _ on DAC pin _
+--MISSING--
+
+snare for _ ms on DAC pin _
+--MISSING--
+
+hihat for _ ms on DAC pin _
+--MISSING--
+
+####
+# Square Wave Chords
+# Play chords on 3 digital pins
+
+Square Wave Chords
+--MISSING--
+
+play chord _ for _ ms
+--MISSING--
+
+set digital chord pins _ _ _
+--MISSING--
+
+####
+# Turtle geometry library
+
+Turtle
+Želva
+
+home
+domů
+
+move _
+jdi _
+
+turn _ degrees
+otoč o _ stupnů
+
+turn _ / _ of circle
+otoč o _/ _ kruhu
+
+pen down
+pero dolů
+
+pen up
+zveni pero
+
+set pen color to _
+nastav barvu pera na _
+
+set pen to random color
+nastav náhodnou barvu pera
+
+fill display with _
+fülle Display mit _
+
+go to x _ y _
+jdi na x _ y _
+
+point in direction _
+směr _
+
+####
+# File system library
+
+Files
+Soubory
+
+open file _
+otevři soubor _
+
+close file _
+zavři soubor _
+
+delete file _
+smaž soubor 
+
+append line _ to file _
+přidej řádek _ do souboru _
+
+append bytes _ to file _
+přidej bajty _ do souboru _ 
+
+end of file _
+konec souboru _
+
+next line of file _
+další řádek souboru _
+
+next _ bytes of file _
+dalších _ bajtů ze souboru _
+
+read into _ from file _
+načti do _ ze souboru
+
+
+a ByteArray
+--MISSING--
+
+starting at _
+začínající od _
+
+file names
+jménAa souborů
+
+in directory _
+v adresáři _
+
+size of file _
+velikost souboru _
+
+file system info
+informace os systému souborů
+
+####
+# Strings
+# string (text) processing functions
+
+Strings
+Řetězce
+
+_ is a digit
+_ je číslice
+
+_ is lowercase
+_ je malé písmeno
+
+_ is uppercase
+- je velké písmeno
+
+_ begins with _
+_ začíná textem _
+
+prefix
+prefix
+
+pre
+pre
+
+_ ends with _
+_ končí textem _
+
+suffix
+suffix
+
+fix
+fix
+
+_ contains _
+_ obsahuje text _
+
+lowercase _
+malá písmena _
+
+THIS is a String! :)
+TOTO je řetězec! :-)
+
+uppercase _
+velká písmena _
+
+Hello, world!
+Ahoj světe!
+
+_ without white space
+_ bez mezer (bílych znaků)
+
+join string list _ separator _
+spoj seznam řetězců _ oddělovač
+
+unicodes _
+unicodes _
+
+aString
+aString
+
+string from unicodes _
+řetězec z Unicode _
+
+aList
+aList
+
+num2str _
+číslo->text _
+
+str2num _
+text->číslo _
+
+####
+# WiFi library
+
+WiFi
+WiFi
+
+wifi connect to _ password _
+WiFi připojení k AP _ heslo _
+
+Network_Name
+Jméno sítě
+
+IP _ gateway _ subnet _
+IP _ brána _ maska _
+
+wifi create hotspot _ password _
+WiFi vytvoř hotspot _ heslo _
+
+Network_Password
+--MISSING--
+
+IP address
+IP addresa
+
+MAC address
+MAC adresa
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+Pohyb
+
+motion
+pohyb
+
+start step counter
+Zahaj počítání kroků
+
+step count
+počet kroků
+
+clear step count
+vynuluj počet kroků
+
+set step threshold _ (0-50)
+nastav práh kroku _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+Události tlačítek
+
+button _ double pressed
+dvakrát stisknuto tlačítko _ 
+
+button _ long pressed
+dlouze stisknuto tlačítko _ 
+
+button _ pressed
+stisknuto tlačítko _ 
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+Calliope setze LED rot _ grün _ blau _
+
+Calliope set speaker _
+Calliope setze Lautsprecher _
+
+Calliope loudness
+Calliope Lautstärke
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+Circuit Playground setze Lautsprecher _
+
+Circuit Playground slide switch
+Circuit Playground Schiebeschalter
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+schließe _ DotStar LEDs an Daten-Pin _ Uhr-Pin _ an
+
+set all DotStar LEDs to r _ g _ b _
+setze alle DotStar LEDs auf r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+setze DotStar LED _ auf r _ g _ b _
+
+set DotStar brightness _
+setze DotStar Helligkeit _
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+bme280 verbunden
+
+bmp280 connected
+bmp280 verbunden
+
+bmx280 temperature
+bmx280 Temperatur
+
+bmx280 pressure
+bmx280 Luftdruck
+
+bme280 humidity
+bme280 Luftfeuchtigkeit
+
+bmx280 set base altitude _ meters
+--MISSING--
+
+bmx280 altitude (cm)
+--MISSING--
+
+bmx280 altitude (feet)
+--MISSING--
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+TCS34725 verbunden
+
+TCS34725 rgb
+TCS34725 RGB
+
+color _ name
+Farbe _ Name
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+Temperatur (Celsius) DHT11 Pin _
+
+humidity DHT11 pin _
+Luftfeuchtigkeit DHT11 Pin _
+
+temperature (Celsius) DHT22 pin _
+Temperatur (Celsius) DHT22 Pin _
+
+humidity DHT22 pin _
+Luftfeuchtigkeit DHT22 Pin _
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+lies PN532 RFID
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+PN532 firmware version
+
+####
+# Touch Screen
+
+Touch Screen
+--MISSING--
+
+TFT touched
+--MISSING--
+
+TFT touch X position
+--MISSING--
+
+TFT touch Y position
+--MISSING--
+
+TFT touch pressure
+--MISSING--
+
+####
+# HTTP Client
+
+HTTP client
+HTTP Client
+
+_ data _ to http܃// _
+_ Daten _ URL http:// _
+
+MicroBlocks is fun
+--MISSING--
+
+port _
+--MISSING--
+
+####
+# HTTP Server
+
+HTTP server
+HTTP Server
+
+start HTTP server
+spustit HTTP Server
+
+HTTP server request
+požadavek na HTTP server
+
+respond _ to HTTP request
+odpověď _ na HTTP požadavek
+
+with body _
+mit Body _
+
+Welcome to the MicroBlocks HTTP server
+--MISSING--
+
+and headers _
+a záhlaví _
+
+body of request _
+tělo požadavku _
+
+path of request _
+cesta požadavku _
+
+headers of request _
+záhlaví požadavku
+
+method of request _
+metoda pro odpověď _
+
+content length of request _
+délka obsahu požadavku _
+
+####
+# WebSocket server
+
+WebSocket server
+--MISSING--
+
+start WebSocket server
+spustit WebSocket server
+
+last WebSocket event
+poslední událost WebSocekt
+
+client ID for WebSocket event _
+ID klienta pro WebSocket událost _
+
+payload for WebSocket event _
+payload pro WebSocket událost _
+
+
+type of WebSocket event _
+typ WebSocket události _
+
+
+send _ to WebSocket client _
+odešli _ WebSocket klientu _
+
+Hello, Client!
+--MISSING--
+
+####
+# Web Things library
+
+Web Thing
+Web Thing
+
+set thing name to _
+nastav jméno WebThing na _
+
+set thing capability to _
+nastav schopnost WebThing na _
+
+set boolean property _ title _ @Type _
+nastav logickou hodnotu _ jméno _ @Typ _
+
+set string property _ title _ @Type _
+nastav textovou hodnotu _ jméno _ @Typ _
+
+set number property _ title _ @Type _
+nastav číselnou hodnotu _ jméno _ @Typ _
+
+set number property _ title _ min _ max _ @Type _
+nastav číselnou hodnotu _ jméno _ min _ max _ @Typ _
+
+read only _
+pouze pro čtení
+
+register event _ type _
+registruj událost _ typ _
+
+start WebThing server
+spustit WebThing Server
+
+trigger event _
+trigger události _
+
+thing description JSON
+WebThing JSON popis
+
+properties JSON
+vlastnosti JSON
+
+event definitions JSON
+definice událostí JSON
+
+events JSON
+události JSON
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+--MISSING--
+
+move fantàstic _ mm
+--MISSING--
+
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+--MISSING--
+
+MiKe _ obstacle ?
+--MISSING--
+
+MiKe black line on _ ?
+--MISSING--
+
+MiKe back light
+--MISSING--
+
+MiKe IR
+--MISSING--
+
+MiKe digital D8 sensor
+--MISSING--
+
+MiKe stop motors
+--MISSING--
+
+MiKe Robot go _ at _ %
+--MISSING--
+
+MiKe Robot speed _ %
+--MISSING--
+
+MiKe Robot direction _
+--MISSING--
+
+MiKe turn _ motor _
+--MISSING--
+
+MiKe speed _ motor at _ %
+--MISSING--
+
+MiKe front lights off
+--MISSING--
+
+MiKe front lights to _
+--MISSING--
+
+MiKe circle lights off
+--MISSING--
+
+MiKe circle ligths to _
+--MISSING--
+
+MiKe circle light _ (1-18) to _
+--MISSING--
+
+MiKe rotate lights by _
+--MISSING--
+
+MiKe digital D8 to _
+--MISSING--
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+--MISSING--
+
+plotter move _ steps
+--MISSING--
+
+plotter turn _ degrees
+--MISSING--
+
+plotter turn _ / _ of circle
+--MISSING--
+
+plotter point in direction _
+--MISSING--
+
+plotter pen down
+--MISSING--
+
+plotter pen up
+--MISSING--
+
+plotter stop
+--MISSING--
+
+set plotter speed to _ %
+--MISSING--
+
+####
+# Innova Didactic libraries
+
+red
+--MISSING--
+
+yellow
+--MISSING--
+
+green
+--MISSING--
+
+forward
+--MISSING--
+
+backward
+--MISSING--
+
+turn right
+--MISSING--
+
+turn left
+--MISSING--
+
+stop
+--MISSING--
+
+right sensor
+--MISSING--
+
+left sensor
+--MISSING--
+
+both sensors
+--MISSING--
+
+TdR test buzzer
+--MISSING--
+
+TdR set blue LED _
+--MISSING--
+
+TdR set red LED _
+--MISSING--
+
+TdR set RGB LED _
+--MISSING--
+
+TdR clear RGB LED
+--MISSING--
+
+TdR LM35 temperature ºC
+--MISSING--
+
+TdR DHT11 temperature ºC
+--MISSING--
+
+TdR DHT11 humidity
+--MISSING--
+
+TdR rotation
+--MISSING--
+
+TdR light level
+--MISSING--
+
+TdR button 1
+--MISSING--
+
+TdR button 2
+--MISSING--
+
+TdR receive IR code
+--MISSING--
+
+Imagina set _ led to _
+--MISSING--
+
+Imagina play _ octave _ for _ ms
+--MISSING--
+
+Imagina temperature (°C)
+--MISSING--
+
+Imagina light
+--MISSING--
+
+Imagina distance (cm)
+--MISSING--
+
+Imagina button (D2) pressed?
+--MISSING--
+
+Imagina digital reading _
+--MISSING--
+
+Imagina analog reading A1
+--MISSING--
+
+Imagina set digital pin _ to _
+--MISSING--
+
+Imagina stop servo _
+--MISSING--
+
+Imagina set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Imagina set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Imagina set _ speed to _ %
+--MISSING--
+
+Imagina set _ to _
+--MISSING--
+
+Imagina IR reading
+--MISSING--
+
+Imagina IR transmit device _ command _
+--MISSING--
+
+_ steps
+--MISSING--
+
+at _ % speed
+--MISSING--
+
+3dBot set speed at _ %
+--MISSING--
+
+3dBot obstacle < _ cm?
+--MISSING--
+
+3dBot line on _ ?
+--MISSING--
+
+####
+# MQTT
+
+MQTT connect to broker _
+--MISSING--
+
+buffer sizes _ client id _
+--MISSING--
+
+username _ password _
+--MISSING--
+
+MQTT connected
+--MISSING--
+
+MQTT disconnect
+--MISSING--
+
+MQTT sub _
+--MISSING--
+
+testTopic
+--MISSING--
+
+MQTT unsub _
+--MISSING--
+
+MQTT pub topic _ payload _
+--MISSING--
+
+Hello!
+--MISSING--
+
+retain _ QoS _
+--MISSING--
+
+MQTT event
+--MISSING--
+
+binary _
+--MISSING--
+
+topic for MQTT event _
+--MISSING--
+
+payload for MQTT event _
+--MISSING--
+
+MQTT set will topic _ payload _
+--MISSING--
+
+testWill
+--MISSING--
+
+Last will!
+--MISSING--
+
+buffer sizes _
+--MISSING--
+
+####
+# UDP
+
+UDP start port _
+--MISSING--
+
+UDP stop
+--MISSING--
+
+UDP send packet _ to ip _ port _
+--MISSING--
+
+UDP receive packet
+--MISSING--
+
+binary data _
+--MISSING--
+
+UDP remote IP address
+--MISSING--
+
+UDP remote port
+--MISSING--
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
+
+####
+# Cutebot
+
+Cutebot
+--MISSING--
+
+Cutebot set wheel left _ right _ (-100 to 100)
+--MISSING--
+
+Cutebot stop wheels
+--MISSING--
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Cutebot set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Cutebot set headlight _ to _
+--MISSING--
+
+Cutebot set NeoPixel _ to _
+--MISSING--
+
+Cutebot _ line sensor
+--MISSING--
+
+Cutebot sees line on left _ right _
+--MISSING--
+
+Cutebot distance (cm)
+--MISSING--
+
+left
+--MISSING--
+
+right
+--MISSING--
+
+both
+--MISSING--
+
+# Wukong
+
+Wukong
+--MISSING--
+
+Wukong set motor _ to _ (-100 to 100)
+--MISSING--
+
+Wukong stop motor _
+--MISSING--
+
+Wukong stop all
+--MISSING--
+
+Wukong set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Wukong set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Wukong set NeoPixels _ _ _ _
+--MISSING--
+
+Wukong set LED brightness to _
+--MISSING--
+
+####
+# Sphero-RVR
+
+wake
+--MISSING--
+
+sleep
+--MISSING--
+
+reset the yaw
+--MISSING--
+
+drive with speed _ and heading _
+--MISSING--
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+--MISSING--
+
+stop with heading _
+--MISSING--
+
+set RGB LED _ to red _ green _ blue _
+--MISSING--
+
+set all LEDs to red _ green _ blue _
+--MISSING--
+
+####
+# Joystick:bit
+
+button _ is pressed
+--MISSING--
+
+rocker value of _
+--MISSING--
+
+motor vibrate for _ ms
+--MISSING--
+
+####
+# NeZha
+
+NeZha
+--MISSING--
+
+NeZha set motor _ speed to _ %
+--MISSING--
+
+NeZha stop motor _
+--MISSING--
+
+NeZha stop all motors
+--MISSING--
+
+NeZha set _ servo _ angle to _
+--MISSING--
+
+NeZha set continuous rotation servo _ speed to _ %
+--MISSING--
+
+####
+# WuKong2040
+
+WuKong2040
+--MISSING--
+
+WuKong2040 rainbowLED _ color to _
+--MISSING--
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+--MISSING--
+
+WuKong2040 clear all rainbowLED
+--MISSING--
+
+WuKong2040 motor _ speed to _ (-100~100)
+--MISSING--
+
+WuKong2040 stop motor _
+--MISSING--
+
+WuKong2040 stop all motors
+--MISSING--
+
+WuKong2040 buzzer beep _ ms
+--MISSING--
+
+####
+# Octopus
+
+Octopus
+--MISSING--
+
+Octopus LED pin _ toggle to _
+--MISSING--
+
+Octopus LED pin _ brightness _ %
+--MISSING--
+
+Octopus motor fan pin _ speed to _ %
+--MISSING--
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+--MISSING--
+
+Octopus sonar trig _ echo _ distance (cm)
+--MISSING--
+
+Octopus value of light intensity (Lux) at pin _
+--MISSING--
+
+Octopus value of DHT11 temperature (°C) at pin _
+--MISSING--
+
+Octopus value of DHT11 humidity (0~100) at pin _
+--MISSING--
+
+Octopus value of water level (0~40mm) at pin _
+--MISSING--
+
+Octopus value of trimpot (0~1023) at pin _
+--MISSING--
+
+Octopus value of noise (dB) at pin _
+--MISSING--
+
+Octopus OLED show _ at x _ y _
+--MISSING--
+
+Octopus OLED clear
+--MISSING--
+
+Octopus OLED draw pixel x _ y _
+--MISSING--
+
+Octopus OLED draw line from x _ y _ to x _ y _
+--MISSING--
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+--MISSING--
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+--MISSING--
+
+Octopus OLED draw circle x _ y _ radius _
+--MISSING--
+
+Octopus OLED fill circle x _ y _ radius _
+--MISSING--
+
+
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+Nový
+
+Open
+Otevřít
+
+Open from board
+Otevřít z mikropočítače
+
+Copy project URL to clipboard
+Zkopírovat projekt z URL do schránky
+
+Information
+Informace
+
+Plug in the board.
+Připojit mikropočítač
+
+Plug in the board and click the USB icon to connect.
+Připoj mikropočítač a klikni na ikonu USB pro pčipjení
+
+
+Reading project from board...
+Načítání projektu z mikropočítače...
+
+Loading project...
+Nahrávání projektu...
+
+Found a newer version of
+Byla nalezena nová verze
+
+Do you want me to update the one in the project?
+Chcete toto aktualizovat v projektu?
+
+Save
+Uložit
+
+Connect
+Připojit
+
+connect
+připojit
+
+connect (BLE)
+připojit (BLE(
+
+open Boardie
+spustit Boardie
+
+disconnect
+odpojit
+
+Serial port:
+Seriový port:
+
+Connect board and try again
+Připoj desku z zkus znovu
+
+other...
+jiné...
+
+none
+žádné připojení
+
+Port name?
+Název portu?
+
+Board type:
+Typ mikropočítače:
+
+Select board:
+Vybrat desku mikropočítače:
+
+Could not read:
+Nelze přečíst:
+
+by
+od
+
+Created with GP
+Vytvořeno s použitím GP
+
+More info at http://microblocks.fun
+Další informace na http://microblocks.fun
+
+Function "
+Funkce "
+
+" is too large to send to board.
+" je příliš velká aby mohla být odeslána do mikropočítače.
+
+Script is too large to send to board.
+Skript je příliš velký aby mohl být odeslán do mikropočítače.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Použijte tlačítko "Připojit" pro připojení zařízeni s MicroBlocks.
+
+No boards found; is your board plugged in?
+Nenalezen žádný mikropočítač, je připojen?
+
+For AdaFruit boards, double-click reset button and try again.
+Pro mikropočítače AdaFruit stiskněte dvakrát tlačítko reset a zkuste znovu.
+
+Only recent Chrome and Edge browsers support WebSerial.
+Pouze nejnovější prohlížeče Chrome a Edge podporují WebSerial. 
+
+The board is not responding.
+Mikropočítačová deska neodpovídá.
+
+Try to Install MicroBlocks on the board?
+Instalovat MicroBlocks do mikropočítače?
+
+The MicroBlocks in your board is not current
+Verze MicroBlocks v mikropočítači není aktuální
+
+Try to update MicroBlocks on the board?
+Aktualizovat MicroBlocks v mikropočítači?
+
+MicroBlocks
+--MISSING--
+
+Stop
+Stop
+
+Start
+Start
+
+Quit MicroBlocks?
+Ukončit MicroBlocks?
+
+Discard current project?
+Zahodit aktuální projekt?
+
+# Scripting area right-click context menu
+
+set block size...
+nastavit velikost bloku...
+
+make blocks bigger or smaller
+zvětšit / zmenšit bloky
+
+clean up
+vyčistit
+
+arrange scripts
+urovnat skripty
+
+undrop (ctrl-Z)
+vrátit zpět (Strg-Z)
+
+undo the last block drop
+vrátit zpět poslední položení bloku
+
+copy all scripts to clipboard
+zkopírovat všechny skripty do schránky
+
+copy all scripts to clipboard as URL
+zkopírovat všechny skripty do schránky jako URL
+
+paste all scripts
+načíst všechny skripty ze schránky
+
+paste script
+načíst skript ze schránky
+
+paste script from clipboard
+načíst skript ze schránky
+
+save a picture of all visible scripts
+uložit obrázky všech viditelných skriptů
+
+set exported script scale
+nastavit měřítko exportovaných skriptů
+
+small (50%)
+malé (50%)
+
+normal (65%)
+standard (65%)
+
+large (100%)
+velké (100%)
+
+printable (200%)
+pro tisk (200%)
+
+duplicate selection
+duplikovat vybrané
+
+drag selection
+přetáhnout vybrané
+
+delete selection
+smazat vybrané
+
+about...
+o...
+
+About MicroBlocks
+--MISSING--
+
+virtual machine version
+verze virtuálního stroje
+
+update firmware on board
+aktualizace firmware v mikropočítači
+
+enable or disable BLE
+povolit/zakázat BLE
+
+Allow the attached board to be connected via BLE?
+Povolit připojení mikropočítače pomocí BLE
+
+show data graph
+zobrazit data v grafu
+
+set serial delay
+nastav prodlevu sériové linky
+
+firmware version
+verze firmware
+
+start WebThing server
+spustit WebThing Server
+
+stop WebThing server
+zastavit WebThing Server
+
+HTTP Server
+HTTP Server
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP Server poslouchá na portu 6473
+
+disable autoloading board libraries
+deaktivovat automatické načítání knihoven mikropočítače
+
+compact code store
+--MISSING--
+
+enable autoloading board libraries
+aktivovat automatické načítání knihoven mikropočítače
+
+enable PlugShare when project empty
+aktivovat PlugShare, když je projekt prázdný
+
+disable PlugShare when project empty
+deaktivovat PlugShare, když je projekt prázdný
+
+hide implementation blocks
+skrýt implementační bloky
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+skrýt interní bloky a proměnné knihoven (t.j. začínající znakem _ )
+
+show implementation blocks
+zobrazovat implementační bloky
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+zobrazovat interní bloky a proměnné knihoven (t.j. začínající znakem _ )
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+nenačítat automaticky bloky z mikropočítače i když je aktuální projekt prázdný
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+načíst automaticky bloky z mikropočítače i když je aktuální projekt prázdný
+
+erase flash and update firmware on ESP board
+vymazat flash mikropočítače a aktualizovat firmware ESP desky
+
+install ESP firmware from URL
+instalovat ESP firmware z URL
+
+Use board type
+Použít mikropočítač typu
+
+Firmware Install
+Instalace firmware
+
+Firmware Installed
+Firmware instalován
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+Znovu připojte mikropočítač stisknutím tlačítka "Připojit" (ikona USB)
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+Před pokračováním stiskněte a držte bílé tlačítko BOOTSEL a připojte USB kabel  
+
+You will be asked to save the firmware file.
+Budete dotázáni na uložení souboru s firmware.
+
+Select
+Výběr
+
+as the destination drive, then click Save.
+jako cílový disk a pak stiskněte "Uložit"
+
+If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
+Pokud micro:bit zobrazí sad face, uložte soubor firmware.hex na disk a potom jej přeneste na disk MICROBITu
+
+Installing firmware...
+Instaluji firmware...
+
+Plug in the board.
+Připojte mikropočítač.
+
+Board not connected
+Mikropočítač není připojen.
+
+Wiping board...
+Mazání mikropočítače...
+
+(press ESC to cancel)
+Stiskněte ESC pro přerušení)
+
+Done!
+Hotovo!
+
+download and install latest VM
+stáhnout a instalovat nejnovější virtuální stroj
+
+Select board type:
+Výběr mikropočítače:
+
+Uploading MicroBlocks to board...
+MicroBlocks bude instalován do mikropočítče...
+
+copy data to clipboard
+kopírovat data do schránky
+
+clear data
+smazat data
+
+clear memory and variables
+smazat paměť a proměnné
+
+show advanced blocks
+zobrazit pokročilé bloky
+
+export functions as library
+exportovat funkce jako knihovnu
+
+hide advanced blocks
+skrýt pokročilé bloky
+
+put file on board
+ulož soubor do mikropočítačw
+
+get file from board
+načti soubor z mikropočítače
+
+uploaded
+nahráno
+
+downloaded
+staženo
+
+Data Graph
+Graf dat
+
+Graph
+Graf
+
+clear graph
+smazat graf
+
+zero at bottom
+0 dole
+
+zero in middle
+0 uprostřed
+
+export data to CSV file
+export dat do CSV souboru
+
+import data from CSV file
+import dat z CSV souboru
+
+copy graph data to clipboard
+kopírovat graf do schránky
+
+show instructions
+ukázat kódy instrukcí
+
+show compiled bytes
+ukázat kompilované bajty
+
+expand
+rozbalit
+
+collapse
+sbalit
+
+rename...
+přejmenovat...
+
+find variable accessors
+najít použití proměnné
+
+find scripts or block definitions where this variable is being read
+najít skripty nebo bloky kde je proměnná čtena
+
+find variable modifiers
+najít modifikátory proměnné
+
+find scripts or block definitions where this variable is being set or changed
+najít skripty nebo bloky kde je do proměnná zapisováno
+
+find uses of this block
+najít použití aktuálního bloku
+
+find scripts or block definitions using this block
+najít skripty nebo definice bloků které používají aktuální blok
+
+show block definition...
+zobraz definici bloku...
+
+show the definition of this block
+zobraz definici aktuálního bloku
+
+delete block definition...
+smaž definici bloku...
+
+delete the definition of this block
+smaž definici aktuálního bloku
+
+duplicate
+duplikovat
+
+help
+nápověda
+
+duplicate this block
+duplikovat tento blok
+
+delete block
+smazat blok
+
+delete this block
+smazat tento blok
+
+just this one block
+jen tento blok
+
+copy to clipboard
+kopírovat do schránky
+
+copy to clipboard as URL
+kopírovat do schránky jako URL
+
+copy these blocks to the clipboard as a URL
+kopírovat vybrané bloky do schránky jako URL
+
+copy these blocks to the clipboard
+kopírovat vybrané bloky do schránky
+
+duplicate all
+duplikovat vše
+
+duplicate this block and all blocks below it
+duplikovat aktuální blok a všechny bloky pod ním
+
+duplicate these blocks
+duplikovat vybrané bloky
+
+extract block
+extrahovat blok
+
+pull out this block
+vytáhnout blok 
+
+show help for this block in a browser
+zobrazit nápovědu k bloku v prohlížeči
+
+save picture of script
+uložit obrázek skriptu
+
+save picture of script with result
+uložit obrázek skriptu s výsledkem
+
+save a picture of this block definition as a PNG file
+uložit obrázek definice bloku jako PNG
+
+save a picture of these blocks as a PNG file
+uložit obrázek vybraných bloků jako PNG
+
+save a picture of these blocks and their result as a PNG file
+uložit obrázek vybraných bloků a jejich výsledku jako PNG
+
+copy script
+kopírovat skript
+
+delete
+vymazat
+
+Input type:
+Vstupní typ:
+
+string only
+pouze řetězec
+
+string or number
+řetězec nebo číslo
+
+number only
+pouze číslo
+
+stop editing
+ukončit úpravy
+
+cut
+vyjmout
+
+copy
+kopírovat
+
+paste
+vložit
+
+accept
+přijmout
+
+revert
+vrátit
+
+select all
+vybrat vše
+
+define
+definovat
+
+number/string
+číslo/řetězec
+
+editable number or string
+editovatelné číslo/řetězec
+
+label
+štítek
+
+input
+vstup
+
+hide block definition
+skrýt definici bloku
+
+Are you sure you want to remove this block definition?
+Jsi si jistý že chceš odstranit definici tohoto bloku?
+
+Language
+Jazyk
+
+Custom...
+Uživatelský...
+
+Obsolete
+Zastaralé
+
+OK
+OK
+
+Ok
+Ok
+
+Yes
+Ano
+
+No
+Ne
+
+Cancel
+Zrušit
+
+Okay
+Okay
+
+Confirm
+Potvrdit
+
+# Library folders
+
+Libraries
+Knihovny
+
+AI
+--MISSING--
+
+Graphics and Displays
+--MISSING--
+
+Kits and Boards
+--MISSING--
+
+Network
+--MISSING--
+
+Other
+Jiné
+
+Robots
+--MISSING--
+
+Sensing
+--MISSING--
+
+Sound
+Zvuk
+
+System
+--MISSING--
+
+# File picker and library dialogs
+
+New library name?
+--MISSING--
+
+show all block definitions
+--MISSING--
+
+hide all block definitions
+--MISSING--
+
+export this library
+--MISSING--
+
+delete library
+--MISSING--
+
+Examples
+Příklady
+
+Desktop
+Plocha
+
+Computer
+Počitač
+
+Cloud
+Cloud
+
+File
+Soubor
+
+File Open
+Otevřít soubor
+
+File Save
+Uložit soubor
+
+File name:
+Soubor:
+
+New Folder
+Nová složka
+
+by
+od
+
+Depends:
+Závislost:
+
+Tags:
+Klíčová slova:
+
+Path, name or URL for library?
+Cesta, jméno nebo URL knihovny?
+
+Invalid URL
+Neplatné URL
+
+Could not fetch library.
+Nelze načíst knihovnu.
+
+Host does not exist or is currently down.
+Server neexistuje nebo jem momentálně nedostupný.
+
+File not found in server.
+Soubor na serveru nenalezen.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+Server očekává HTTPS, momentálně MicroBlocks nepodporuje.
+
+library information
+informace o knihovně
+
+built-in library
+vestavěná knihovna
+
+Dependency path, name or URL?
+Závislost - cesta, jméno nebo URL?
+
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+Při přidání knihovny která je vestavěna v MicroBlocks lze zadat pouze její jméno
+--MISSING--
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+Pokud je tvá knihovna ve složce Libraries v lokální složce projektu Microblocks je třeba před názvem použít lomítko (/) 
+
+If the library is hosted online, please input its full URL.
+Pokud je knihovna hostována online, je třeba zadat celou URL adresu
+
+Tag name?
+Klíčové slovo?
+
+user library
+uživatelská knihovna
+
+Add Library
+Přidat Knihovnu
+
+seconds remaining
+chybí sekundy
+
+Decrease block size
+Zmenšit velikost bloku
+
+Restore block size to 100%
+Obnovit velikost bloku (100%)
+
+Increase block size
+Zvětšit velikost bloku
+
+############
+# Tips Bar #
+############
+
+Button
+Tlačítko
+
+Boolean Input
+Zadání logické hodnoty
+
+[l] toggle value, or drop a reporter into it.
+[l] přepni hodnotu nebo sem hodnotu přetáhni
+
+Color Input
+Zadání barvy
+
+[l] change the color, or drop a reporter into it.
+[l] změň barvu nebo sem přetáhni hodnotu
+
+Input
+Vstup
+
+[l] edit its value, or drop a reporter into it.
+[l] uprav hodnotu nebo sem hodnotu přetáhni
+
+
+Block Extension
+Rozšířené bloky
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] šipka doprava pro zobrazení volitelných parametrů, šipka doleva pro skrytí
+
+
+Command Block
+Blok Příkazů
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Hat Block
+--MISSING--
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Reporter Block
+--MISSING--
+
+[l] to see value, or drop into an input slot. [r] menu.
+--MISSING--
+
+Script
+--MISSING--
+
+[l] to run. [r] menu.
+--MISSING--
+
+Pane Divider
+--MISSING--
+
+Drag to change pane width.
+--MISSING--
+
+Library
+--MISSING--
+
+[l] to show the blocks in this library. [r] menu.
+--MISSING--
+
+Block Category
+--MISSING--
+
+[l] to show the blocks in this category.
+--MISSING--
+
+Palette
+--MISSING--
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+--MISSING--
+
+Scripts Pane
+--MISSING--
+
+Drag blocks here to build scripts. [r] menu.
+--MISSING--
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+--MISSING--
+
+Display a bubble showing the value.
+--MISSING--
+
+Graph the value.
+--MISSING--
+
+Report the state of button A ( (-o) or (o-) ).
+--MISSING--
+
+Report the state of button B ( (-o) or (o-) ).
+--MISSING--
+
+Report the milliseconds since the timer was last reset.
+--MISSING--
+
+Reset the timer.
+--MISSING--
+
+Report the milliseconds since power up.
+--MISSING--
+
+Report the microseconds since power up.
+--MISSING--
+
+Report the board type.
+--MISSING--
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+--MISSING--
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+--MISSING--
+
+Turn a pin on or off ( (-o) or (o-) ).
+--MISSING--
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+--MISSING--
+
+Report number of analog pins on this device.
+--MISSING--
+
+Report number of digital pins on this device.
+--MISSING--
+
+Report the value of a register (0-255) of an I2C device (0-127).
+--MISSING--
+
+Set an I2C device and register to given value (0-255).
+--MISSING--
+
+Receive multiple bytes from an I2C device.
+--MISSING--
+
+Send multiple bytes to an I2C device.
+--MISSING--
+
+Send a byte (0-255) to an SPI device.
+--MISSING--
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+--MISSING--
+
+Set the SPI clock speed and mode.
+--MISSING--
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+--MISSING--
+
+Open the serial port at the given baud rate.
+--MISSING--
+
+Close the serial port.
+--MISSING--
+
+Report data received from the serial port (a byte array).
+--MISSING--
+
+Send a byte array to the serial port.
+--MISSING--
+
+Run when the board powers up or when the IDE start button is clicked.
+--MISSING--
+
+Run when buttons A, B, or A+B are pressed.
+--MISSING--
+
+Repeat the enclosed blocks indefinitely.
+--MISSING--
+
+Repeat the enclosed blocks the given number of times.
+--MISSING--
+
+Wait the given number of milliseconds.
+--MISSING--
+
+Run the first set of blocks whose test condition is (-o) .
+--MISSING--
+
+Run when the condition becomes (-o) .
+--MISSING--
+
+Wait until the condition becomes (-o) .
+--MISSING--
+
+Return (report) the given value from a function or script.
+--MISSING--
+
+Run when the given message is broadcast.
+--MISSING--
+
+Broadcast the given message.
+--MISSING--
+
+Do nothing. Used to add notes and documentation.
+--MISSING--
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+--MISSING--
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+--MISSING--
+
+Stop this task.
+--MISSING--
+
+Stop all tasks except this one.
+--MISSING--
+
+Wait the given number of microseconds.
+--MISSING--
+
+Report the last broadcast message received.
+--MISSING--
+
+Call the function with the given name and optional parameter list.
+--MISSING--
+
+Call the function with the given name and optional parameter list and report its return value.
+--MISSING--
+
+Report the sum of the given numbers.
+--MISSING--
+
+Report the first number minus the second.
+--MISSING--
+
+Report the product of the given numbers.
+--MISSING--
+
+Report the first number divided by the second.
+--MISSING--
+
+Report the remainder of dividing the first number by the second.
+--MISSING--
+
+Report the absolute value of the given number (always >= 0).
+--MISSING--
+
+Report the minimum of the values.
+--MISSING--
+
+Report the maximum of the values.
+--MISSING--
+
+Report a randomly chosen number in the given range.
+--MISSING--
+
+Report (-o) if the first value is less than the second one.
+--MISSING--
+
+Report (-o) if the first value is less than or equal to the second one.
+--MISSING--
+
+Report (-o) if the two values are equal.
+--MISSING--
+
+Report (-o) if the two values are not equal.
+--MISSING--
+
+Report (-o) if the first value is greater than or equal to the second one.
+--MISSING--
+
+Report (-o) if the first value is greater than the second one.
+--MISSING--
+
+Boolean constant ( (-o) or (o-) ).
+--MISSING--
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+--MISSING--
+
+Report (-o) if both values are (-o)
+--MISSING--
+
+Report (-o) if either value is (-o)
+--MISSING--
+
+Report (-o) if first input is a value of the given data type.
+--MISSING--
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+--MISSING--
+
+Report bitwise AND of two numbers.
+--MISSING--
+
+Report bitwise OR of two numbers.
+--MISSING--
+
+Report bitwise XOR (exclusive OR) of two numbers.
+--MISSING--
+
+Report bitwise inverse of the given number.
+--MISSING--
+
+Report the given number shifted left by the given number of bits.
+--MISSING--
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+--MISSING--
+
+Set a variable to the given value.
+--MISSING--
+
+Change a variable by the given amount.
+--MISSING--
+
+Create a variable local to the containing script with the given initial value.
+--MISSING--
+
+Report the Nth item of a list, string, or byte array.
+--MISSING--
+
+Report the number of items in a list, string, or byte array.
+--MISSING--
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+--MISSING--
+
+Create and report a short list containing the given items. Length limited by available stack space.
+--MISSING--
+
+Add an item to the end of a list.
+--MISSING--
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+--MISSING--
+
+Delete the Nth item (or all items) of a list.
+--MISSING--
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+--MISSING--
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+--MISSING--
+
+Split the given string with the given delimiter and report the result (a list of strings).
+--MISSING--
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+--MISSING--
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+--MISSING--
+
+Report a string containing the given Unicode value ("code point") or list of values.
+--MISSING--
+
+Report a new list of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a new byte array of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a byte array containing the UTF-8 bytes of the given string.
+--MISSING--
+
+Report the number of words of memory available. Stop button frees up memory.
+--MISSING--
+
+
