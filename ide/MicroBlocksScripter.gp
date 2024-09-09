@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection cornerIcon spacer
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -62,6 +62,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
   addRoundedCorner this
+  addTrashcan this
 
   scriptsPane = (newScriptEditor 10 10 nil)
   scriptsFrame = (scrollFrame scriptsPane (microBlocksColor 'white'))
@@ -94,11 +95,23 @@ method addRoundedCorner MicroBlocksScripter {
   addPart morph cornerIcon
 }
 
+method addTrashcan MicroBlocksScripter {
+  scale = (global 'scale')
+  trashcanIcon = (newMorph)
+  if (darkModeEnabled projectEditor) {
+	  setCostume trashcanIcon (readSVGIcon 'trashcan-dark')
+  } else {
+	  setCostume trashcanIcon (readSVGIcon 'trashcan-light')
+  }
+  setPosition trashcanIcon ((right (morph blocksFrame)) - ((32 + 8) * scale)) ((height (morph blocksFrame)) + (8 * scale))
+  addPart morph trashcanIcon
+}
+
 method darkModeChanged MicroBlocksScripter {
   changed morph // report damage
   if (darkModeEnabled projectEditor) {
-    scriptsFrameColor = (microBlocksColor 'blueGray' 800)
-    blocksFrameColor = (microBlocksColor 'blueGray' 700)
+    scriptsFrameColor = (microBlocksColor 'blueGray' 900)
+    blocksFrameColor = (microBlocksColor 'blueGray' 800)
     sliderBGColor = (microBlocksColor 'blueGray' 600)
     sliderFGColor = (microBlocksColor 'blueGray' 800)
   } else {
@@ -112,6 +125,9 @@ method darkModeChanged MicroBlocksScripter {
   setColor blocksFrame blocksFrameColor
   setSliderColors scriptsFrame sliderBGColor sliderFGColor
   setSliderColors blocksFrame sliderBGColor sliderFGColor
+
+  removePart morph trashcanIcon
+  addTrashcan this
 }
 
 method languageChanged MicroBlocksScripter {
@@ -324,6 +340,8 @@ method fixLayout MicroBlocksScripter {
 
   // rounded corner at bottom left of palette
   setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
+  // trashcan at bottom right of palette
+  setPosition trashcanIcon ((right (morph blocksFrame)) - ((32 + 8) * scale)) ((height (morph blocksFrame)) + (8 * scale))
 }
 
 method fixResizerLayout MicroBlocksScripter {

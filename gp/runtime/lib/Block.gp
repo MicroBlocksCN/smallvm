@@ -520,7 +520,6 @@ method openCSlot Block {
 method justDropped Block hand {
   cancelSelection
   snap this
-  hideTrashcan (findMicroBlocksEditor)
 }
 
 method snap Block {
@@ -575,13 +574,6 @@ method aboutToBeGrabbed Block {
   removeSignalPart (morph tb)
   removeStackPart (morph tb)
   removeHighlight (morph tb)
-
-  // show trashcan icon
-  if (isPrototypeHat this) {
-	  showTrashcan (findMicroBlocksEditor) 'hide'
-  } else {
-	  showTrashcan (findMicroBlocksEditor) 'delete'
-  }
 
   if (or
 		(commandKeyDown (keyboard (global 'page')))
@@ -1335,7 +1327,6 @@ method delete Block {
   }
   aboutToBeGrabbed this
   removeFromOwner morph
-  hideTrashcan (findMicroBlocksEditor)
 }
 
 method editAsText Block {

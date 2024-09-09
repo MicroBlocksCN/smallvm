@@ -162,32 +162,18 @@ method deleteBlocks MicroBlocksSelection {
 
 method duplicateBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan (findMicroBlocksEditor)
 	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true scripter)
 	grab (hand (global 'page')) contents
 }
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan this
 	if ((count blocks) == 1) {
 		grab (hand (global 'page')) (first blocks)
 	} else {
 		contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
 		grab (hand (global 'page')) contents
 	}
-}
-
-method showTrashcan MicroBlocksSelection {
-	purpose = 'delete'
-	containsDefs = (containsDefinitions this)
-	containsBlocks = (containsBlocks this)
-	if (and containsDefs containsBlocks) {
-		purpose = 'hideAndDelete'
-	} containsDefs {
-		purpose = 'hide'
-	}
-	showTrashcan (findMicroBlocksEditor) purpose
 }
 
 defineClass MicroBlocksSelectionContents morph
@@ -217,7 +203,6 @@ method justDropped MicroBlocksSelectionContents aHand {
 		restoreScripts scripter
 		scriptChanged scripter
 	}
-	hideTrashcan (findMicroBlocksEditor)
 }
 
 method destroy MicroBlocksSelectionContents {
