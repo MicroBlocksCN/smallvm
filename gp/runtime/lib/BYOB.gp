@@ -592,7 +592,9 @@ method addLabel BlockSectionDefinition {
 method addLabelText BlockSectionDefinition aString {
   // private
   txt = (labelText this aString)
-  setEditRule txt 'line'
+  if (not (isClass txt 'SVGImage')) { 
+  	setEditRule txt 'line'
+  }
   addPart morph (morph txt)
 }
 
