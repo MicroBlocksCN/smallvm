@@ -1,6 +1,6 @@
 // Morphic Menu handler
 
-defineClass Menu morph label target items reverseCall selection returnFocus
+defineClass Menu morph label target items reverseCall selection returnFocus isContext
 
 to menu label target reverseCall returnFocus {
   if (isNil reverseCall) {reverseCall = false}
@@ -28,6 +28,8 @@ method addLine Menu lineWidth {
   if (lastItemIsLine this) { return }
   add items (array (array 0 lineWidth))
 }
+
+method setIsContext Menu aBool { isContext = aBool }
 
 method lastItemIsLine Menu {
   if ((count items) == 0) { return true }
@@ -96,12 +98,26 @@ method buildMorph Menu page yPos {
   border = (scale * 1)
   corner = (scale * 2)
   itemPaddingV = (scale * 1)
-  itemPaddingH = (scale * 32)
-  color = (microBlocksColor 'blueGray' 900)
-  borderColor = (microBlocksColor 'blueGray' 700)
-  itemTextColorNormal = (microBlocksColor 'blueGray' 50)
-  itemTextColorHighlighted = color
-  itemTextColorPressed = color
+  if isContext {
+	itemPaddingH = (scale * 6)
+  } else {
+	itemPaddingH = (scale * 32)
+  }
+
+  if isContext {
+	color = (microBlocksColor 'blueGray' 50)
+	borderColor = (microBlocksColor 'blueGray' 100)
+	itemTextColorNormal = (microBlocksColor 'blueGray' 900)
+	itemTextColorHighlighted = itemTextColorNormal
+	itemTextColorPressed = itemTextColorNormal
+  } else {
+	color = (microBlocksColor 'blueGray' 900)
+	borderColor = (microBlocksColor 'blueGray' 700)
+	itemTextColorNormal = (microBlocksColor 'blueGray' 50)
+	itemTextColorHighlighted = color
+	itemTextColorPressed = color
+  }
+
   itemBackgroundColorHighlighted = (microBlocksColor 'yellow')
   itemBackgroundColorPressed = itemBackgroundColorHighlighted
 
