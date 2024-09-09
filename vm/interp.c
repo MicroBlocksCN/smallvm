@@ -147,11 +147,11 @@ OBJ primBroadcastToIDEOnly(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// Timer
+// Timing Support
 
 static uint32 timerStart = 0;
 
-static void resetTimer() { timerStart = millisecs(); }
+void resetTimer() { timerStart = millisecs(); }
 
 static int timer() {
 	// Return the number of milliseconds since the timer was last reset.
@@ -167,6 +167,28 @@ static int timer() {
 		return (msecWrap - timerStart) + now; // time to wrap + time since wrap
 	}
 	return now - timerStart;
+}
+
+static OBJ primMSecsSince(int argCount, OBJ *args) {
+	int startTime = obj2int(args[0]);
+	int endTime = ((argCount > 1) && isInt(args[1])) ?
+		obj2int(args[1]) :
+		((uint32) ((totalMicrosecs() / 1000))) & 0x3FFFFFFF;
+
+	int deltaTime = endTime - startTime;
+	if (deltaTime < 0) deltaTime += 0x40000000;
+	return int2obj(deltaTime);
+}
+
+static OBJ primUSecsSince(int argCount, OBJ *args) {
+	int startTime = obj2int(args[0]);
+	int endTime = ((argCount > 1) && isInt(args[1])) ?
+		obj2int(args[1]) :
+		microsecs() & 0x3FFFFFFF;
+
+	int deltaTime = endTime - startTime;
+	if (deltaTime < 0) deltaTime += 0x40000000;
+	return int2obj(deltaTime);
 }
 
 // String Access
@@ -537,9 +559,9 @@ static void runTask(Task *task) {
 		&&spiRecv_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&secs_op,
+		&&millisSince_op,
+		&&microsSince_op,
 		&&mbDisplay_op,
 		&&mbDisplayOff_op,
 		&&mbPlot_op,
@@ -776,7 +798,7 @@ static void runTask(Task *task) {
 			DISPATCH();
 		}
 		task->status = waiting_micros;
-		task->wakeTime = (microsecs() + tmp) - 10; // adjusted for approximate scheduler overhead
+		task->wakeTime = (microsecs() + tmp) - 7; // adjusted for approximate scheduler overhead
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
@@ -787,7 +809,7 @@ static void runTask(Task *task) {
 	 		goto error;
 	 	}
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + ((1000 * tmp) - 10);
+		task->wakeTime = microsecs() + ((1000 * tmp) - 7);
 		goto suspend;
 	sendBroadcast_op:
 		primSendBroadcast(arg, sp - arg);
@@ -1208,6 +1230,20 @@ static void runTask(Task *task) {
 		DISPATCH();
 	spiRecv_op:
 		*(sp - arg) = primSPIRecv(sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+
+	// more time operations
+	secs_op:
+		STACK_CHECK(1);
+		*sp++ = int2obj((uint32) ((totalMicrosecs() / 1000000)) & 0x3FFFFFFF); // result range is 0 - 1073741823
+		DISPATCH();
+	millisSince_op:
+		*(sp - arg) = primMSecsSince(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	microsSince_op:
+		*(sp - arg) = primUSecsSince(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 

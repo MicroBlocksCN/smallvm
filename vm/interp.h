@@ -7,6 +7,9 @@
 // interp.h - Simple interpreter based on 32-bit opcodes
 // John Maloney, April 2017
 
+#include "mem.h"
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +22,7 @@ extern "C" {
 
 // Global Variables
 
-#define MAX_VARS 100
+#define MAX_VARS 128
 extern OBJ vars[MAX_VARS];
 
 // Code Chunks
@@ -200,6 +203,7 @@ extern int extraByteDelay;
 #define cannotUseWithBLE		50	// Cannot use this feature when board is connected to IDE via Bluetooth
 #define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
 #define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
+#define encoderNotStarted		53	// Encoder not started; pin may not support interrupts
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
@@ -286,6 +290,7 @@ int pinCount();
 int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
+void resetTimer();
 int hasI2CPullups();
 void updateMicrobitDisplay();
 void checkButtons();
@@ -357,6 +362,7 @@ void tftSetHugePixelBits(int bits);
 
 extern int BLE_connected_to_IDE;
 extern char BLE_ThreeLetterID[4];
+extern uint32 lastRcvTime;
 
 void BLE_initThreeLetterID();
 void BLE_start();
@@ -364,12 +370,13 @@ void BLE_stop();
 
 void BLE_pauseAdvertising();
 void BLE_resumeAdvertising();
-
-void BLE_suspendIDEService();
-void BLE_resumeIDEService();
+void BLE_setPicoAdvertisingData(char *name, const char *uuidString);
 
 void BLE_setEnabled(int enableFlag);
 int BLE_isEnabled();
+
+void BLE_UART_ReceiveCallback(uint8 *data, int byteCount);
+void BLE_UART_Send(uint8 *data, int byteCount);
 
 void getMACAddress(uint8 *sixBytes);
 
@@ -393,6 +400,7 @@ typedef enum {
 	HIDPrims,
 	CameraPrims,
 	OneWirePrims,
+	EncoderPrims,
 	PrimitiveSetCount
 } PrimitiveSetIndex;
 
@@ -411,6 +419,7 @@ void addTFTPrims();
 void addHIDPrims();
 void addCameraPrims();
 void addOneWirePrims();
+void addEncoderPrims();
 
 // Named Primitive Support
 

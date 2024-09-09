@@ -1,0 +1,107 @@
+module PID Operators
+author 'Russell Owen'
+version 0 9 
+description 'PID Control Loop'
+variables _pid__initialized _pid__numPIDs _pid__prevError _pid__prevMicros _pid__prevIntegral 
+
+  spec 'r' 'pid_computePID' 'compute pid at index _ error _ p coeff _ i coeff _ d coeff _ max integral _ (ignored if 0)' 'num num num num num num' 1 0 1 0 0 0
+  spec ' ' 'pid_resetPID' 'reset pid at index _' 'num' 1
+  space
+  spec 'r' 'pid_constrainValue' 'constrain value _ deadband _ minimum _ maximum _' 'num num num num' 0 0 0 1000
+  spec 'r' 'pid_applySign' 'apply sign of _ to value _' 'num num' 1 0
+  space
+  spec ' ' '_pid_extendPIDLists' '_extend pid lists; index _' 'num' 1
+  spec ' ' '_pid_initLibrary' '_init pid library'
+
+to '_pid_extendPIDLists' index {
+  comment 'Extend global list variables, if needed,
+so that they are large enough to use the specified index.'
+  '_pid_initLibrary'
+  repeatUntil ((size _pid__prevError) >= index) {
+    '[data:addLast]' 0 _pid__prevError
+    '[data:addLast]' -1 _pid__prevMicros
+    '[data:addLast]' 0 _pid__prevIntegral
+  }
+  comment 'Set _pid__numPIDs so pid_computePID can efficiently decide if the list needs to be extended'
+  _pid__numPIDs = (size _pid__prevError)
+}
+
+to '_pid_initLibrary' {
+  comment 'Create global lists.'
+  if (not _pid__initialized) {
+    _pid__prevError = (newList 0)
+    _pid__prevMicros = (newList 0)
+    _pid__prevIntegral = (newList 0)
+    _pid__initialized = (booleanConstant true)
+  }
+}
+
+to pid_applySign sign value {
+  comment 'If sign < 0 return -value else return value'
+  return (ifExpression (sign >= 0) value (0 - value))
+}
+
+to pid_computePID index error pCoeff iCoeff dCoeff maxIntegral {
+  comment 'Compute the next PID value value, using inputs:
+* index: index of the PID loop
+* error: error to correct
+* pCoeff: proportional coefficient (corr/error)
+* iCoeff: integral coefficient (corr-msec/error)
+* dCoeff: derivitive coefficient (corr/error-msec)
+* maxIntegral: maximum absolute value of the integrated error; ignored if 0'
+  if (_pid__numPIDs < index) {
+    '_pid_extendPIDLists' index
+  }
+  local 'pValue' 0
+  local 'iValue' 0
+  local 'dValue' 0
+  local 'integral' 0
+  local 'currMicros' (microsOp)
+  local 'prevMicros' (at index _pid__prevMicros)
+  pValue = (pCoeff * error)
+  if (prevMicros >= 0) {
+    comment 'We have old data for this PID loop, so compute derivitive and integral contributions.'
+    local 'deltaMicros' (microsSince prevMicros currMicros)
+    local 'deltaErrorr' (error - (at index _pid__prevError))
+    dValue = (((dCoeff * deltaErrorr) * 1000) / deltaMicros)
+    integral = (((error * deltaMicros) / 1000) + (at index _pid__prevIntegral))
+    if (and (maxIntegral > 0) ((absoluteValue integral) > maxIntegral)) {
+      integral = (pid_applySign integral maxIntegral)
+    }
+    iValue = (iCoeff * integral)
+  }
+  atPut index _pid__prevMicros currMicros
+  atPut index _pid__prevError error
+  atPut index _pid__prevIntegral integral
+  return (pValue + (iValue + dValue))
+}
+
+to pid_constrainValue value deadband minimum maximum {
+  comment 'Constrain a value as follows:
+If |value| < deadband: return 0.
+If |value| < minimum: return minimum with sign of value.
+If |value| > maximum: return maximum with sign of value.'
+  local 'absValue' (absoluteValue value)
+  if (absValue < deadband) {
+    return 0
+  } (absValue < minimum) {
+    return (pid_applySign value minimum)
+  } (absValue > maximum) {
+    return (pid_applySign value maximum)
+  } else {
+    return value
+  }
+}
+
+to pid_resetPID index {
+  comment 'Zero the recorded error data for a specific PID loop.
+Call this before starting each move, to avoid unwanted values
+from the integral and derivitive terms.'
+  if (_pid__numPIDs < index) {
+    '_pid_extendPIDLists' index
+  }
+  atPut index _pid__prevError 0
+  atPut index _pid__prevMicros -1
+  atPut index _pid__prevIntegral 0
+}
+

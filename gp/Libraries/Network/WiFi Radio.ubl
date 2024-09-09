@@ -1,6 +1,6 @@
 module 'WiFi Radio' Comm
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends WiFi 
 tags radio communication messaging network 
 description 'This library supports easy message exchange among WiFi-enabled boards on the same network.
@@ -11,7 +11,7 @@ This library is similar to the Radio library, but messages are sent via UDP over
 
 This library can only communicate with other boards that support WiFi; it cannot interoperate with Nordic-based boards like the micro:bit.
 '
-variables _wifiRadio_Started _wifiRadio_group _wifiRadio_lastNumber _wifiRadio_lastString 
+variables _wifiRadio_broadcastAddr _wifiRadio_group _wifiRadio_lastNumber _wifiRadio_lastString 
 
   spec ' ' 'wifiRadio_sendNumber' 'wifi send number _' 'num' 123
   spec ' ' 'wifiRadio_sendString' 'wifi send string _' 'str' 'Hello!'
@@ -27,10 +27,20 @@ variables _wifiRadio_Started _wifiRadio_group _wifiRadio_lastNumber _wifiRadio_l
 
 to '_wifiRadio_init' {
   comment 'Open WiFi Radio UDP port if necessary.'
-  if (not _wifiRadio_Started) {
-    '[net:udpStart]' 34567
-    _wifiRadio_group = 0
-    _wifiRadio_Started = true
+  if (_wifiRadio_broadcastAddr == 0) {
+    if ((getIPAddress) == '0.0.0.0') {
+      sayIt 'Connect to WiFi to use WiFi Radio.'
+    } else {
+      '[net:udpStart]' 34567
+      _wifiRadio_group = 0
+      local 'myIPAddr' (getIPAddress)
+      for i ('[data:range]' (size myIPAddr) 1) {
+        if ((at i (getIPAddress)) == '.') {
+          _wifiRadio_broadcastAddr = ('[data:join]' ('[data:copyFromTo]' myIPAddr 1 i) '255')
+          return 0
+        }
+      }
+    }
   }
 }
 
@@ -89,7 +99,7 @@ to wifiRadio_sendPair s n {
   atPut 8 msg ((n >> 24) & 255)
   msg = ('[data:join]' msg ('[data:asByteArray]' s))
   comment 'Broadcast msg to the WiFi Radio port number on all boards on the WiFi network.'
-  '[net:udpSendPacket]' msg '255.255.255.255' 34567
+  '[net:udpSendPacket]' msg _wifiRadio_broadcastAddr 34567
 }
 
 to wifiRadio_sendString s {

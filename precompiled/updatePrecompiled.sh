@@ -8,8 +8,8 @@ pio run -e microbitV2-ble
 cp .pio/build/microbitV2-ble/firmware.hex precompiled/vm_microbitV2.hex
 pio run -e calliope
 cp .pio/build/calliope/firmware.hex precompiled/vm_calliope.hex
-pio run -e calliopeV3
-cp .pio/build/calliopeV3/firmware.hex precompiled/vm_calliopeV3.hex
+pio run -e calliopeV3-ble
+cp .pio/build/calliopeV3-ble/firmware.hex precompiled/vm_calliopeV3-ble.hex
 pio run -e nodemcu
 cp .pio/build/nodemcu/firmware.bin precompiled/vm_nodemcu.bin
 pio run -e ed1
@@ -24,10 +24,6 @@ pio run -e cplay52
 python precompiled/uf2conv.py -c .pio/build/cplay52/firmware.hex -f 0xADA52840 -o precompiled/vm_cplay52.uf2
 pio run -e clue
 python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o precompiled/vm_clue.uf2
-# pio run -e itsybitsy
-# python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
-pio run -e metroM0
-python precompiled/uf2conv.py -c .pio/build/metroM0/firmware.bin -o precompiled/vm_metroM0.uf2
 pio run -e pico-w
 cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
 pio run -e pico-ed
@@ -48,5 +44,5 @@ cd precompiled
 npm install
 node buildUniversalHex.js
 rm vm_microbitV1.hex vm_microbitV2.hex
-rm vm_calliope.hex vm_calliopeV3.hex
+rm vm_calliope.hex vm_calliopeV3-ble.hex
 

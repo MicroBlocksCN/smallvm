@@ -1,0 +1,517 @@
+module 'PicoBricks-mb'
+author MicroBlocks
+version 0 89 
+depends 'IR Motion (PIR)' 'IR Remote' 'Light & Gesture (APDS9960)' NeoPixel 'Temperature Humidity (SHTC3)' Tone 
+choices servoNumMenu '1' '2' '3' '4' ALL 
+choices dcNumMenu 'M1:1' 'M2:2' ALL 
+choices configMenu 'ALL:FF,7F' 'X&Y Only:07,00' 'Arrows Only:F1,00' 'Keyboard Only:09,7F' 'X&Y and Arrows Only:F7,00' 
+choices touchMenu ANY X Y Up Right Down Left c d e f g a b c1 
+description 'Robotistan PicoBricks Library
+*** micro:bit version ***
+
+This library controls these PicoBricks components:
+
+- Temperature and humidity (SHTC3) I2C:0x70
+- IR Motion (PIR:Passive Infrared)
+- Relay Switch (5V-250V, 5A)
+- 2xDC & 4xSERVO Motors (HK32F030) I2C:0x22
+- IR Remote
+- Light & Gesture (APDS9960) I2C:0x39
+- Light sensor (ALS-PDIC243-3B)
+- Potentiometer (variable resistor)
+- Button on POT w/ pull-down
+- 14ch TOUCH Panel (CY8CMBR3116) I2C:0x37
+
+Use separate libraries to control:
+- LED Display
+- NeoPixel WS2812 3xRGB LED
+- OLED Graphic display (TFT or OLED Libs)
+- WIFI-ESP01 expansion board
+
+See https://www.robotistan.com,
+https://wiki.microblocks.fun/en/picobricks,
+https://github.com/Robotistan/picobricks-for-microbit-ext/tree/master
+'
+variables _pbmb_initialized _pbmb_pin_Button _pbmb_pin_Relay _pbmb_pin_Pot _pbmb_pin_LDR _pbmb_pin_Buzzer _pbmb_pin_RGB_LED _pbmb_pin_TX _pbmb_pin_RX _pbmb_motor_i2c _pbmb_touch_i2c _pbmb_pin_PIR _pbmb_pin_IRrecv i2cStat _pbmb_touched i2cBuffer _pbmb_kvTable _pbmb_lastKeyTouched _pbmb_current_config _pbmb_config_completed _pbmb_crcTable _pbmb_configNames _pbmb_configTable 
+
+  spec ' ' 'pbmb_beep' 'PicoBricks-mb beep _ ms' 'auto' 100
+  space
+  spec 'r' 'pbmb_humidity' 'PicoBricks-mb humidity'
+  spec 'r' 'pbmb_temperature' 'PicoBricks-mb temperature (°C)'
+  space
+  spec 'r' 'pbmb_pir' 'PicoBricks-mb PIR detected'
+  space
+  spec ' ' 'pbmb_set_relay' 'PicoBricks-mb set relay _' 'bool' true
+  space
+  spec 'r' 'pbmb_ir_code_received' 'PicoBricks-mb IR Code Received?'
+  spec 'r' 'pbmb_ir_code' 'PicoBricks-mb IR Code'
+  spec 'r' 'pbmb_ir_recv_code' 'PicoBricks-mb Receive IR Code'
+  space
+  spec 'r' 'pbmb_gest_color' 'PicoBricks-mb GS color'
+  spec 'r' 'pbmb_gest_avail' 'PicoBricks-mb GS Detected'
+  spec 'r' 'pbmb_gest_lastgest' 'PicoBricks-mb GS Last Gesture'
+  spec 'r' 'pbmb_gest_light' 'PicoBricks-mb GS Light'
+  spec 'r' 'pbmb_gest_prox' 'PicoBricks-mb GS Proximity'
+  space
+  spec 'r' 'pbmb_light_sensor' 'PicoBricks-mb light sensor (0-100) %'
+  space
+  spec 'r' 'pbmb_potentiometer' 'PicoBricks-mb Potentiometer'
+  spec 'r' 'pbmb_button' 'PicoBricks-mb Pot Button'
+  space
+  spec 'r' 'pbmb key _ pressed' 'PicoBricks-mb Touchkey _ pressed ?' 'menu.touchMenu' 'ANY'
+  spec 'r' 'pbmb Last key touched' 'PicoBricks-mb Last key touched'
+  space
+  spec ' ' 'pbmb_set_motor_speed' 'PicoBricks-mb set motor _ speed _ (-100 to 100)' 'menu.dcNumMenu num' 1 50
+  spec ' ' 'pbmb_set_servo_angle' 'PicoBricks-mb set servo _ angle _ (0-180)' 'menu.servoNumMenu num' 1 90
+  space
+  spec ' ' '_pbmb_init_lib' '_PicoBricks-mb init Library'
+  spec ' ' '_pbmb_wakeup' '_PicoBricks-mb WakeUp'
+  spec ' ' '_pbmb_configureTouch' '_PicoBricks-mb configure Touch Options _' 'menu.configMenu' 'FF,7F'
+  spec ' ' '_pbmb_Config-2' '_Config-2'
+  spec ' ' '_pbmb_Config-3' '_Config-3'
+  spec ' ' '_pbmb_read_ConfigRegs' '_pbmb_read_ConfigRegs'
+  spec 'r' '_pbmb_Config&CRC' '_PicoBricks-mb show Touch Config&CRC'
+  spec 'r' '_pbmb_dec2hex' '_pbmb_dec2hex _ Pad _' 'num num' 0 2
+  spec ' ' '_pbmb_config_initTables' '_pbmb_config_initTables'
+
+to '_pbmb_Config&CRC' {
+  comment 'OK'
+  '_pbmb_config_initTables'
+  '_pbmb_read_ConfigRegs'
+  if (_pbmb_current_config != 0) {
+    local 'idx' ('[data:find]' _pbmb_current_config _pbmb_configTable)
+  } else {
+    local 'crc' ('[data:join]' (at 127 i2cBuffer) ',' (at 128 i2cBuffer))
+    local 'idx' ('[data:find]' crc _pbmb_crcTable)
+  }
+  if (-1 != idx) {
+    _pbmb_current_config = (at idx _pbmb_configTable)
+    local 'config' (at idx _pbmb_configNames)
+  } else {
+    comment 'Config search Failed...
+variable config contains an Error message.'
+    local 'config' 'Unrecognized Config.'
+  }
+  local 'crc' ('[data:join]' 'CRC: ' '0x' ('_pbmb_dec2hex' (at 127 i2cBuffer) 2) ', ' '0x' ('_pbmb_dec2hex' (at 128 i2cBuffer) 2) '  (' (at 127 i2cBuffer) ', ' (at 128 i2cBuffer) ')')
+  return ('[data:join]' 'Config: ' config ('[data:unicodeString]' 10) crc)
+}
+
+to '_pbmb_Config-2' {
+  comment 'I2C write 128 byte CONFIG @ memory 0'
+  _pbmb_touch_i2c = (hexToInt '37')
+  '_pbmb_wakeup'
+  local 'idx' 1
+  for reg ('[data:range]' 0 127) {
+    i2cSet _pbmb_touch_i2c reg (at idx i2cBuffer)
+    idx += 1
+  }
+  sayIt 'CONFIG Written' idx
+  '_pbmb_Config-3'
+}
+
+to '_pbmb_Config-3' {
+  comment 'Wait till processor is ready.'
+  _pbmb_touch_i2c = (hexToInt '37')
+  waitUntil (0 == (i2cGet _pbmb_touch_i2c (hexToInt '86')))
+  comment 'CTRL_CMD / SAVE_CHECK_CRC '
+  i2cSet _pbmb_touch_i2c (hexToInt '86') 2
+  sayIt 'CONFIG2EEPROM attempted.'
+  waitMillis 300
+  comment 'CTRL_CMD Error check:
+0: Command was successful
+253: Write to flash failed
+254: Stored configuration CRC checksum (in CONFIG_CRC register) did not match
+calculated configuration CRC checksum
+255: Invalid command '
+  i2cStat = ('[data:makeList]' 44)
+  '[sensors:i2cWrite]' _pbmb_touch_i2c ('[data:makeList]' (hexToInt '89'))
+  '[sensors:i2cRead]' _pbmb_touch_i2c i2cStat
+  if ('0' == ('[data:joinStrings]' i2cStat)) {
+    comment 'Wait till processor is ready.'
+    waitUntil (0 == (i2cGet _pbmb_touch_i2c (hexToInt '86')))
+    comment 'CTRL_CMD / SW_RESET '
+    i2cSet _pbmb_touch_i2c (hexToInt '86') 255
+    waitMillis 500
+    _pbmb_config_completed = (booleanConstant true)
+    sayIt 'CONFIG Successful...'
+  } ('254' == ('[data:joinStrings]' i2cStat)) {
+    sayIt 'CRC ERROR: Correcting'
+    waitMillis 500
+    comment 'Write CRC into CONFIG 0x7E, 0x7F'
+    atPut 127 i2cBuffer (i2cGet _pbmb_touch_i2c (hexToInt '94'))
+    atPut 128 i2cBuffer (i2cGet _pbmb_touch_i2c (hexToInt '95'))
+    '_pbmb_Config-2'
+  } else {
+    sayIt 'ERROR: Aborting'
+    _pbmb_config_completed = ('[data:join]' 'Error: ' ('[data:joinStrings]' i2cStat))
+  }
+}
+
+to '_pbmb_config_initTables' {
+  _pbmb_configNames = ('[data:makeList]' 'ALL' 'X&Y Only' 'Arrows Only' 'Keyboard Only' 'X&Y and Arrows Only')
+  _pbmb_configTable = ('[data:makeList]' 'FF,7F' '07,00' 'F1,00' '09,7F' 'F7,00')
+  _pbmb_crcTable = ('[data:makeList]' '135,4' '50,139' '104,197' '221,74' '77,84')
+  _pbmb_kvTable = ('[data:makeList]' 'X' '2,0' 'Y' '4,0' 'Up' '16,0' 'Right' '32,0' 'Down' '64,0' 'Left' '128,0' 'c' '8,0' 'd' '0,64' 'e' '0,32' 'f' '0,16' 'g' '0,8' 'a' '0,4' 'b' '0,2' 'c2' '0,1' 'None' '0,0')
+}
+
+to '_pbmb_configureTouch' option {
+  comment '*** DO NOT make a Config change with any of the Touch blocks running ***
+
+128 Byte CONFIG Register settings:
+
+FIRST 126 bytes are CONFIG DATA (starts with Options)
+Last 2 bytes are CRC.
+CRC is initially 00,00.
+It is calculated by the sensor during the config process based on the options selected
+and adjusted (Config-3).
+
+*** WARNING ***
+DO NOT CHANGE VALUES BELOW UNLESS YOU ARE SURE ABOUT THEIR
+MEANING AND REGISTER LOCATIONS.
+'
+  local 'configData' ('[data:joinStrings]' ('[data:split]' option ','))
+  configData = ('[data:join]' configData 'FE7F00000000000000000E848484848484848484848484848484030000000000000000000181060000FFF002000000000000000000000000000000000000')
+  comment 'I2CAddr is byte# 82 = 0x37
+CRC-16 : LAST TWO hex-BYTES below'
+  configData = ('[data:join]' configData '00FFFFFFFFFFFFFFFF0000000003015800370600000A000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+  local 'idx' 1
+  i2cBuffer = ('[data:newByteArray]' 128)
+  for i ('[data:range]' 1 (size configData) 2) {
+    atPut idx i2cBuffer (hexToInt ('[data:copyFromTo]' configData i (i + 1)))
+    idx += 1
+  }
+  sayIt 'I2Cbuffer Ready.'
+  '_pbmb_Config-2'
+  waitUntil (_pbmb_config_completed != (booleanConstant false))
+  if _pbmb_config_completed {
+    _pbmb_current_config = option
+  } else {
+    comment '_pbmb_current_config contains ERROR info'
+  }
+}
+
+to '_pbmb_dec2hex' num pad {
+  comment 'Fast version w/o inversion. (~115uSecs)'
+  local '_hexTbl' '0123456789ABCDEF'
+  local 'hexNum' ''
+  repeatUntil (num < 0) {
+    if ((num / 16) != 0) {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = (num / 16)
+    } else {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = -1
+    }
+  }
+  comment 'If not half-byte length, pad it.'
+  repeatUntil (((size hexNum) % pad) == 0) {
+    hexNum = ('[data:join]' '0' hexNum)
+  }
+  return hexNum
+}
+
+to '_pbmb_init_lib' {
+  comment 'OK'
+  comment 'Touch sensor remembers previous config and starts with it
+upon power on.
+
+Current running Config can be displayed with
+show Touch Config&CRC block; and changed with
+configure Touch Options.
+'
+  if _pbmb_initialized {
+    return
+  }
+  '_pbmb_config_initTables'
+  _pbmb_motor_i2c = 34
+  _pbmb_touch_i2c = 55
+  _pbmb_pin_RGB_LED = 8
+  neoPixelAttach 3 _pbmb_pin_RGB_LED
+  _pbmb_pin_Button = 2
+  _pbmb_pin_PIR = 13
+  _pbmb_pin_Relay = 16
+  _pbmb_pin_Pot = 1
+  _pbmb_pin_LDR = 0
+  _pbmb_pin_IRrecv = 15
+  attachIR _pbmb_pin_IRrecv
+  if ((boardType) == 'micro:bit v2') {
+    _pbmb_pin_Buzzer = 27
+    'attach buzzer to pin' _pbmb_pin_Buzzer
+    _pbmb_pin_TX = 14
+    _pbmb_pin_RX = 15
+    '[serial:close]'
+    callCustomCommand '[serial:setPins]' ('[data:makeList]' 15 14)
+  }
+  _pbmb_initialized = (booleanConstant true)
+}
+
+to '_pbmb_read_ConfigRegs' {
+  comment 'OK'
+  _pbmb_touch_i2c = (hexToInt '37')
+  '_pbmb_wakeup'
+  comment 'I2C read only reads 32 bytes !!!!'
+  i2cBuffer = ('[data:makeList]')
+  i2cStat = (newList 32 99)
+  for i ('[data:makeList]' 0 32 64 96) {
+    '[sensors:i2cWrite]' _pbmb_touch_i2c ('[data:makeList]' i)
+    '[sensors:i2cRead]' _pbmb_touch_i2c i2cStat
+    i2cBuffer = ('[data:join]' i2cBuffer i2cStat)
+  }
+  i2cBuffer = ('[data:asByteArray]' i2cBuffer)
+  sayIt 'CONFIG copied into i2cBuffer'
+}
+
+to '_pbmb_wakeup' {
+  comment 'WAKE UP'
+  _pbmb_touch_i2c = (hexToInt '37')
+  repeat 4 {
+    i2cStat = (i2cGet _pbmb_touch_i2c 0)
+  }
+}
+
+to 'pbmb Last key touched' {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return _pbmb_lastKeyTouched
+}
+
+to 'pbmb key _ pressed' touchKey {
+  comment 'OK: non-looping version
+Reentrant to allow <when _> use.'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  comment 'Read TOUCH Status'
+  local 'buttonStat' 0
+  local '_pbmb_touched' (newList 1)
+  '_pbmb_wakeup'
+  '[sensors:i2cWrite]' _pbmb_touch_i2c ('[data:makeList]' (hexToInt 'AE'))
+  '[sensors:i2cRead]' _pbmb_touch_i2c _pbmb_touched
+  if (255 == (at 1 _pbmb_touched)) {
+    comment '255 = I2C error occurred.'
+    _pbmb_touched = (booleanConstant false)
+    waitMillis 50
+    return (booleanConstant false)
+  } else {
+    _pbmb_touched = ('[data:convertType]' (at 1 _pbmb_touched) 'boolean')
+  }
+  comment 'Read Button Status'
+  buttonStat = (newList 2)
+  '[sensors:i2cWrite]' _pbmb_touch_i2c ('[data:makeList]' (hexToInt 'AA'))
+  '[sensors:i2cRead]' _pbmb_touch_i2c buttonStat
+  if _pbmb_touched {
+    local 'touchVal' ('[data:joinStrings]' buttonStat ',')
+    local 'idx' ('[data:find]' touchVal _pbmb_kvTable)
+    if (-1 != idx) {
+      _pbmb_lastKeyTouched = (at (idx - 1) _pbmb_kvTable)
+    } else {
+      return (booleanConstant false)
+    }
+    if ('ANY' == touchKey) {
+      comment 'This check has to happen after the key name is determined.'
+      return (booleanConstant true)
+    } else {
+      if (touchVal == (at (('[data:find]' touchKey _pbmb_kvTable) + 1) _pbmb_kvTable)) {
+        return (booleanConstant true)
+      } else {
+        return (booleanConstant false)
+      }
+    }
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to pbmb_beep duration {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  '[io:playTone]' _pbmb_pin_Buzzer 100
+  waitMillis duration
+  '[io:playTone]' _pbmb_pin_Buzzer 0
+}
+
+to pbmb_button {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (digitalReadOp _pbmb_pin_Button 'down')
+}
+
+to pbmb_gest_avail {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (apds9960_gestureAvailable)
+}
+
+to pbmb_gest_color {
+  comment 'OK
+Use COLOR library to get RGB'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  local 'color' (apds9960_color)
+  local 'r' (at 1 color)
+  local 'g' (at 2 color)
+  local 'b' (at 3 color)
+  color = ((r << 16) + ((g << 8) + b))
+  return color
+}
+
+to pbmb_gest_lastgest {
+  comment 'OK'
+  comment 'GESTURE Transpose:
+For correct lookup, names have to be different.
+left =  Up
+right =  Down
+down = Left
+up = Right
+'
+  local 'transposeTable' ('[data:makeList]' 'down' 'Left' 'left' 'Up' 'right' 'Down' 'up' 'Right' 'none' 'None')
+  return (at (('[data:find]' (apds9960_lastGesture) transposeTable) + 1) transposeTable)
+}
+
+to pbmb_gest_light {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (apds9960_light)
+}
+
+to pbmb_gest_prox {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (apds9960_proximity)
+}
+
+to pbmb_humidity {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (shtc3_humidity)
+}
+
+to pbmb_ir_code {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (ir_last_code)
+}
+
+to pbmb_ir_code_received {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (ir_code_received)
+}
+
+to pbmb_ir_recv_code {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (receiveIR)
+}
+
+to pbmb_light_sensor {
+  comment 'OK'
+  comment 'Returns Light Values s a percentage:
+0: dark ,  100: light'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return ('[misc:rescale]' (analogReadOp _pbmb_pin_LDR) 0 700 0 100)
+}
+
+to pbmb_pir {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (PIR _pbmb_pin_PIR)
+}
+
+to pbmb_potentiometer {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (analogReadOp _pbmb_pin_Pot)
+}
+
+to pbmb_set_motor_speed which speed {
+  comment 'OK'
+  comment 'Fwd:0 Bwd:1
+WORKING Motor Control
+Does not drive single motor @ 60 and below
+and dual motors @128 and below'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  speed = (ifExpression (speed < -100) -100 (ifExpression (speed > 100) 100 speed))
+  local 'dir' (ifExpression (speed >= 0) 0 1)
+  speed = ('[misc:rescale]' (absoluteValue speed) 0 100 0 255)
+  if ('ALL' == which) {
+    local 'from' 1
+    local 'to' 2
+  } else {
+    local 'from' which
+    local 'to' which
+  }
+  for i ('[data:range]' from to) {
+    '[sensors:i2cWrite]' _pbmb_motor_i2c ('[data:asByteArray]' ('[data:makeList]' (hexToInt '26') i speed dir ((i ^ speed) ^ dir)))
+  }
+}
+
+to pbmb_set_relay aBoolean {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  digitalWriteOp _pbmb_pin_Relay aBoolean
+}
+
+to pbmb_set_servo_angle which angle {
+  comment 'OK'
+  comment 'WORKING Servo Control
+Can drive +13 degrees for adjustment.
+S1:3 S2:4 S3:5 S4:6 ALL'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  angle = (maximum 0 (minimum angle 193))
+  if ('ALL' == which) {
+    local 'from' 3
+    local 'to' 6
+  } else {
+    local 's#' ('[data:makeList]' 3 4 5 6)
+    which = (at which s#)
+    local 'from' which
+    local 'to' which
+  }
+  for i ('[data:range]' from to) {
+    '[sensors:i2cWrite]' _pbmb_motor_i2c ('[data:asByteArray]' ('[data:makeList]' (hexToInt '26') i 0 angle (i ^ angle)))
+    waitMillis 75
+  }
+}
+
+to pbmb_temperature {
+  comment 'OK'
+  if (not _pbmb_initialized) {
+    '_pbmb_init_lib'
+  }
+  return (shtc3_temperature)
+}
+

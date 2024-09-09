@@ -1,0 +1,223 @@
+module 'XGO Lite' Output
+author MicroBlocks
+version 0 2 
+choices xgo_joint_Menu 'Upper(-30°~30°)' 'Middle(-70°~90°)' 'Lower(-85°~50°)' 
+choices xgo_rotate_Menu 'X(-20°~20°)' 'Y(-20°~20°)' 'Z(-12°~12°)' 
+choices xgo_slide_Menu 'X(-25mm~25mm)' 'Y(-18mm~18mm)' 'Z(60mm~110mm)' 
+choices xgo_speed_Menu Slow Normal Fast 
+choices xgo_action_Menu 'Lie Down' 'Stand Up' Crawl 'Turn Around' Squat 'Turn Roll' 'Turn Pitch' 'Turn Yaw' '3-axis Rotation' Pee 'Sit Down' 'Wave Hand' 'Stretch Oneself' 'Wave Body' Stagger Begging 'Hunt for food' Handshake 'Pigeon Head' 'Push-up' 'Look Around' Dance Naughty 'Grab Up' 'Grab Middle' 'Grab Down' 
+choices xgo_leg_Menu 'Left Front' 'Right Front' 'Right Rear' 'Left Rear' 
+choices xgo_gait_Menu Trot Walk 
+choices xgo_arm_Menu 'Middle(-115°~70°)' 'Lower(-90°~105°)' 
+description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
+'
+variables _xgo_actions 
+
+  spec ' ' 'xgo_init' 'XGO init'
+  spec ' ' 'xgo_reset_pose' 'XGO reset pose'
+  space
+  spec ' ' 'xgo_action' 'XGO action _' 'menu.xgo_action_Menu' 'Lie Down'
+  space
+  spec ' ' 'xgo_walk' 'XGO walk step size _ (-100 to 100)' 'num' 50
+  spec ' ' 'xgo_walk_sideways' 'XGO walk sideways step size _ (-100 to 100)' 'num' 50
+  spec ' ' 'xgo_turn' 'XGO turn _ (-100 to 100)' 'num' 50
+  spec ' ' 'xgo_stop' 'XGO stop'
+  space
+  spec ' ' 'xgo_set_walk_speed' 'XGO set walk speed _' 'menu.xgo_speed_Menu' 'Normal'
+  spec ' ' 'xgo_set_gait' 'XGO set gait _' 'menu.xgo_gait_Menu' 'Trot'
+  space
+  spec ' ' 'xgo_slide_body' 'XGO slide body _ by _ mm' 'menu.xgo_slide_Menu num' 'X(-25mm~25mm)' 10
+  spec ' ' 'xgo_rotate_body' 'XGO rotate body _ by _ °' 'menu.xgo_rotate_Menu num' 'X(-20°~20°)' 10
+  space
+  spec 'r' 'xgo_battery_level' 'XGO get battery level'
+  space
+  spec ' ' 'xgo_set_claw_open' 'XGO claw open _ %' 'num' 50
+  spec ' ' 'xgo_set_arm_joints' 'XGO set arm _ joints to _ °' 'menu.xgo_arm_Menu num' 'Middle(-115°~70°)' 40
+  space
+  spec ' ' 'xgo_set_leg_joint' 'XGO set _ leg _ joint to _ °' 'menu.xgo_leg_Menu menu.xgo_joint_Menu num' 'Left Front' 'Upper(-30°~30°)' 40
+  space
+  spec ' ' '_xgo_do_action' '_xgo_do_action _' 'num' 1
+  spec ' ' '_xgo_set_joint_angle' '_xgo_set_joint _  angle _ °' 'num num' 1 40
+  space
+  spec 'r' '_xgo_scaledToMinMax' '_xgo_scaledToMinMax _ _ _' 'num num num' 50 0 100
+  spec ' ' '_xgo_sendCmd' '_xgo_sendCmd _ _' 'num num' 0 0
+  spec ' ' '_xgo_sendRequest' '_xgo_sendRequest _ _' 'num num' 1 1
+
+to '_xgo_do_action' data {
+  '_xgo_sendCmd' 62 data
+}
+
+to '_xgo_scaledToMinMax' value min max {
+  value = (maximum min (minimum value max))
+  return ((255 * (value - min)) / (max - min))
+}
+
+to '_xgo_sendCmd' cmd arg {
+  local 'checksum' (255 - ((10 + (cmd + arg)) & 255))
+  '[serial:write]' ('[data:convertType]' ('[data:makeList]' 85 0 9 1 cmd arg checksum 0 170) 'byte array')
+  waitMillis 50
+}
+
+to '_xgo_sendRequest' request arg {
+  local 'checksum' (255 - ((11 + (request + arg)) & 255))
+  '[serial:write]' ('[data:convertType]' ('[data:makeList]' 85 0 9 2 request arg checksum 0 170) 'byte array')
+  waitMillis 50
+}
+
+to '_xgo_set_joint_angle' nums steps {
+  if (nums == 1) {
+    '_xgo_sendCmd' 80 ('_xgo_scaledToMinMax' steps -70 50)
+  } (nums == 2) {
+    '_xgo_sendCmd' 81 ('_xgo_scaledToMinMax' steps -70 90)
+  } (nums == 3) {
+    '_xgo_sendCmd' 82 ('_xgo_scaledToMinMax' steps -30 30)
+  } (nums == 4) {
+    '_xgo_sendCmd' 83 ('_xgo_scaledToMinMax' steps -70 50)
+  } (nums == 5) {
+    '_xgo_sendCmd' 84 ('_xgo_scaledToMinMax' steps -70 90)
+  } (nums == 6) {
+    '_xgo_sendCmd' 85 ('_xgo_scaledToMinMax' steps -30 30)
+  } (nums == 7) {
+    '_xgo_sendCmd' 86 ('_xgo_scaledToMinMax' steps -70 50)
+  } (nums == 8) {
+    '_xgo_sendCmd' 87 ('_xgo_scaledToMinMax' steps -70 90)
+  } (nums == 9) {
+    '_xgo_sendCmd' 88 ('_xgo_scaledToMinMax' steps -30 30)
+  } (nums == 10) {
+    '_xgo_sendCmd' 89 ('_xgo_scaledToMinMax' steps -70 50)
+  } (nums == 11) {
+    '_xgo_sendCmd' 90 ('_xgo_scaledToMinMax' steps -70 90)
+  } (nums == 12) {
+    '_xgo_sendCmd' 91 ('_xgo_scaledToMinMax' steps -30 30)
+  } (nums == 13) {
+    '_xgo_sendCmd' 113 ('_xgo_scaledToMinMax' steps -65 65)
+  } (nums == 14) {
+    '_xgo_sendCmd' 93 ('_xgo_scaledToMinMax' steps -115 70)
+  } (nums == 15) {
+    '_xgo_sendCmd' 94 ('_xgo_scaledToMinMax' steps -85 100)
+  }
+}
+
+to xgo_action action {
+  if (not (isType _xgo_actions 'list')) {_xgo_actions = ('[data:split]' 'Lie Down,Stand Up,Crawl,Turn Around,Mark Time,Squat,Turn Roll,Turn Pitch,Turn Yaw,3-axis Rotation,Pee,Sit Down,Wave Hand,Stretch Oneself,Wave Body,Stagger,Begging,Hunt for food,Handshake,Pigeon Head,Push-up,Look Around,Dance,Naughty,Grab Up,Grab Middle,Grab Down' ',')}
+  local 'actionID' ('[data:find]' action _xgo_actions)
+  if (actionID < 1) {
+    actionID = 255
+  }
+  if (actionID == 25) {
+    actionID = 128
+  } (actionID == 26) {
+    actionID = 129
+  } (actionID == 27) {
+    actionID = 130
+  }
+  '_xgo_do_action' actionID
+}
+
+to xgo_battery_level {
+  '_xgo_sendRequest' 1 1
+  local 'rx_data' ('[serial:read]')
+  if ((at 'last' rx_data) == 170) {
+    return (at 6 rx_data)
+  } else {
+    sayIt 'Communication Failure!!!'
+  }
+}
+
+to xgo_init {
+  if ('micro:bit v2' == (boardType)) {callCustomCommand '[serial:setPins]' ('[data:makeList]' 13 14)}
+  '[serial:open]' 115200
+}
+
+to xgo_reset_pose {
+  '_xgo_do_action' 255
+  waitMillis 100
+}
+
+to xgo_rotate_body direction steps {
+  if (direction == 'X(-20°~20°)') {
+    '_xgo_sendCmd' 54 ('_xgo_scaledToMinMax' steps -20 20)
+  } (direction == 'Y(-20°~20°)') {
+    '_xgo_sendCmd' 55 ('_xgo_scaledToMinMax' steps -20 20)
+  } (direction == 'Z(-12°~12°)') {
+    '_xgo_sendCmd' 56 ('_xgo_scaledToMinMax' steps -12 12)
+  }
+}
+
+to xgo_set_arm_joints arm degree {
+  if (arm == 'Middle(-115°~70°)') {
+    '_xgo_set_joint_angle' 14 degree
+  } (arm == 'Lower(-90°~105°)') {
+    '_xgo_set_joint_angle' 15 degree
+  }
+}
+
+to xgo_set_claw_open amount {
+  local 'val' ('[misc:rescale]' (maximum 0 (minimum amount 100)) 0 100 255 0)
+  '_xgo_sendCmd' 113 val
+}
+
+to xgo_set_gait mode {
+  comment 'High Walk does not work well and Micro Trot does not work at all'
+  if (mode == 'Trot') {
+    '_xgo_sendCmd' 9 0
+  } (mode == 'Walk') {
+    '_xgo_sendCmd' 9 1
+  } (mode == 'High Walk') {
+    '_xgo_sendCmd' 9 2
+  } (mode == 'Micro Trot') {
+    '_xgo_sendCmd' 9 3
+  }
+}
+
+to xgo_set_leg_joint leg joint degrees {
+  local 'legIndex' ('[data:find]' leg ('[data:makeList]' 'Left Front' 'Right Front' 'Right Rear' 'Left Rear'))
+  local 'jointIndex' ('[data:find]' joint ('[data:makeList]' 'Lower(-85°~50°)' 'Middle(-70°~90°)' 'Upper(-30°~30°)'))
+  if (and (legIndex > 0) (jointIndex > 0)) {
+    '_xgo_set_joint_angle' ((3 * (legIndex - 1)) + jointIndex) degrees
+  }
+}
+
+to xgo_set_walk_speed speed {
+  if (speed == 'Normal') {
+    '_xgo_sendCmd' 61 0
+  } (speed == 'Slow') {
+    '_xgo_sendCmd' 61 1
+  } (speed == 'Fast') {
+    '_xgo_sendCmd' 61 2
+  }
+}
+
+to xgo_slide_body direction steps {
+  if (direction == 'X(-25mm~25mm)') {
+    '_xgo_sendCmd' 51 ('_xgo_scaledToMinMax' steps -25 25)
+  } (direction == 'Y(-18mm~18mm)') {
+    '_xgo_sendCmd' 52 ('_xgo_scaledToMinMax' steps -18 18)
+  } (direction == 'Z(60mm~110mm)') {
+    '_xgo_sendCmd' 53 ('_xgo_scaledToMinMax' steps 60 110)
+  }
+}
+
+to xgo_stop {
+  comment 'Zero speed is 127'
+  '_xgo_sendCmd' 48 127
+  '_xgo_sendCmd' 49 127
+  '_xgo_sendCmd' 50 127
+}
+
+to xgo_turn speed {
+  '_xgo_sendCmd' 50 ('_xgo_scaledToMinMax' speed -100 100)
+}
+
+to xgo_walk speed {
+  comment 'Zero speed is 127'
+  '_xgo_sendCmd' 49 127
+  '_xgo_sendCmd' 48 ('_xgo_scaledToMinMax' speed -100 100)
+}
+
+to xgo_walk_sideways speed {
+  comment 'Zero speed is 127'
+  '_xgo_sendCmd' 48 127
+  '_xgo_sendCmd' 49 ('_xgo_scaledToMinMax' speed -100 100)
+}
+

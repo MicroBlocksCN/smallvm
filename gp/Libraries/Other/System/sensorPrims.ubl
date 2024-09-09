@@ -19,3 +19,4 @@ tags tilt acceleration light sensor capacitive button
 	spec 'r' '[sensors:touchRead]'		'capacitive sensor _' 'num' 1
 	space
 	spec ' ' '[sensors:i2cSetClockSpeed]' 'set i2c clock speed _' 'num' 400000
+	spec ' ' '[sensors:i2cSetPins]' 'set i2c pins SDA _ SCL _' 'num num' 4 5

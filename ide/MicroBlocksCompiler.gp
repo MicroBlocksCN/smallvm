@@ -46,18 +46,23 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'timer'				'timer')
 		(array ' ' 'resetTimer'			'reset timer')
 		'-'
-		(array 'r' '[misc:seconds]'		'seconds')
+		(array 'r' 'secsOp'				'seconds')
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
-		(array 'r' 'boardType'				'board type')
-		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
-		'-'
+		(array 'r' 'boardType'			'board type')
 		(array 'r' '[misc:version]'		'version')
+		'-'
 		(array 'r' '[misc:bleID]'		'BLE id')
+		(array 'r' '[ble:bleConnected]' 'BLE connected')
+	'Input-Advanced'
+		(array 'r' 'millisSince'		'milliseconds since _ : end time _' 'num auto' 0 'now')
+		(array 'r' 'microsSince'		'microseconds since _ : end time _' 'num auto' 0 'now')
+		'-'
+		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
-		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
-		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
+		(array 'r' 'digitalReadOp'		'read digital pin _ : pull _' 'num menu.pullMenu' 1 'none')
+		(array 'r' 'analogReadOp'		'read analog pin _ : pull _' 'num menu.pullMenu' 1 'none')
 		'-'
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
@@ -70,6 +75,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
 		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
+		'-'
+		(array 'r' '[sensors:i2cExists]' 'i2c device _ exists?' 'num')
 		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
@@ -145,7 +152,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'ifExpression'		'if _ then _ else _' 'bool auto auto' true 1 0)
 		'-'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
-		'-'
+		(array 'r' '[misc:sqrt]'		'sqrt _' 'num' 9)
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
@@ -172,16 +179,18 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
+		'-'
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
+		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' 'a list of strings' ' ')
 	'Data-Advanced'
-		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
+		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
+		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		'-'
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
 		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
-		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
-		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
+		'-'
 		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly
@@ -211,6 +220,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
 		(array 'r' '[sensors:microphone]'	'microphone')
 		(array ' ' '[sensors:i2cSetClockSpeed]'	'set i2c clock speed _' 'num' 400000)
+		(array ' ' '[sensors:i2cSetPins]'	'set i2c pins SDA _ SCL _' 'num num' 4 5)
 	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
@@ -230,7 +240,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
-		(array 'r' '[misc:sqrt]'		'fixed sqrt _' 'num' 2)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)
@@ -452,9 +461,9 @@ method initOpcodes SmallCompiler {
 		spiRecv 94
 	RESERVED 95
 	RESERVED 96
-	RESERVED 97
-	RESERVED 98
-	RESERVED 99
+		secsOp 97
+		millisSince 98
+		microsSince 99
 	RESERVED 100
 	RESERVED 101
 	RESERVED 102
@@ -1009,7 +1018,7 @@ method globalVarIndex SmallCompiler varName {
 	if (isNil id) {
 		error 'Unknown variable' varName
 	}
-	if (id >= 100) { error 'Id' id 'for variable' varName 'is out of range' }
+	if (id >= 128) { error 'Id' id 'for variable' varName 'is out of range' }
 	return (id - 1) // VM uses zero-based index
 }
 
@@ -1086,7 +1095,9 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// collect local variable names
 	localVarAndArgNames = (list)
 	for pair (sortedPairs localVars) {
-		add localVarAndArgNames (last pair)
+		if (isClass (last pair) 'String') { // skip if non-string (can happen due to syntax error)
+			add localVarAndArgNames (last pair)
+		}
 	}
 
 	// defaults (empty for non-functions)

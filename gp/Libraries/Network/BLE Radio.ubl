@@ -1,0 +1,70 @@
+module 'BLE Radio' Comm
+author MicroBlocks
+version 1 0 
+description 'This library supports easy message exchange among boards that support Bluetooth Low Energy (BLE).
+
+A message can contain a string, a number, or both. Messages are received by all boards in the same BLE radio group as the sender.
+
+This library is similar to the Radio library, but messages are sent via BLE advertisements instead of the Nordic radio system.
+'
+variables _bleRadio_lastNumber _bleRadio_lastString 
+
+  spec ' ' 'bleRadio_sendNumber' 'ble send number _' 'num' 123
+  spec ' ' 'bleRadio_sendString' 'ble send string _' 'str' 'Hello!'
+  spec ' ' 'bleRadio_sendPair' 'ble send pair _ = _' 'str num' 'light' 10
+  space
+  spec 'r' 'bleRadio_messageReceived' 'ble message received?'
+  spec 'r' 'bleRadio_receivedInteger' 'ble last number'
+  spec 'r' 'bleRadio_receivedString' 'ble last string'
+  space
+  spec ' ' '[ble:radioSetGroup]' 'ble set group _ (0-255)' 'num' 0
+
+to bleRadio_messageReceived {
+  local 'msg' ('[ble:radioReceive]')
+  if ((size msg) < 4) {
+    return (booleanConstant false)
+  }
+  _bleRadio_lastNumber = ((at 1 msg) | (((at 2 msg) << 8) | (((at 3 msg) << 16) | ((at 4 msg) << 24))))
+  local 'highByte' (at 4 msg)
+  if (and (64 <= highByte) (highByte <= 127)) {
+    _bleRadio_lastNumber = 'out of range number (positve)'
+  }
+  if (and (128 <= highByte) (highByte <= 191)) {
+    _bleRadio_lastNumber = 'out of range number (negative)'
+  }
+  _bleRadio_lastString = ('[data:join]' '' ('[data:copyFromTo]' msg 5))
+  return (booleanConstant true)
+}
+
+to bleRadio_receivedInteger {
+  return _bleRadio_lastNumber
+}
+
+to bleRadio_receivedString {
+  if (_bleRadio_lastString == 0) {_bleRadio_lastString = ''}
+  return _bleRadio_lastString
+}
+
+to bleRadio_sendNumber n {
+  bleRadio_sendPair '' n
+}
+
+to bleRadio_sendPair s n {
+  local 'msg' ('[data:newByteArray]' 4)
+  comment 'MicroBlocks BLE Radio message format:
+    MicroBlocks integer (4 bytes, LSB first)
+    string (UTF8, variable length)'
+  atPut 1 msg (n & 255)
+  atPut 2 msg ((n >> 8) & 255)
+  atPut 3 msg ((n >> 16) & 255)
+  atPut 4 msg ((n >> 24) & 255)
+  msg = ('[data:join]' msg ('[data:asByteArray]' s))
+  '[ble:radioStartBeam]' msg
+  waitMillis 250
+  '[ble:radioStopBeam]'
+}
+
+to bleRadio_sendString s {
+  bleRadio_sendPair s 0
+}
+

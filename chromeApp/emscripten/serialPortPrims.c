@@ -55,6 +55,8 @@ static PortHandle openPort(int portID, char *portName, int baudRate) {
 }
 
 static void closePort(int portID, PortHandle h) {
+	if (CLOSED == h) return;
+
 	// restore the serial port settings to their original state
 	tcsetattr(h, TCSANOW, &originalSettings[portID]);
 	close(h);
@@ -216,6 +218,8 @@ static PortHandle openPort(int portID, char *portName, int baudRate) {
 }
 
 static void closePort(int portID, PortHandle port) {
+	if (CLOSED == h) return;
+
 	PurgeComm((HANDLE) port, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
 	CloseHandle((HANDLE) port);
 }
@@ -293,6 +297,7 @@ static PortHandle openPort(int portID, char *portName, int baudRate) {
 }
 
 static void closePort(int portID, PortHandle h) {
+	// Always call GP_closeSerialPort()
 	EM_ASM({
 		GP_closeSerialPort();
 	}, 0);
@@ -437,8 +442,6 @@ OBJ primCloseSerialPort(int nargs, OBJ args[]) {
 	int portID = obj2int(args[0]);
 
 	PortHandle h = getPortHandle(portID);
-	if (h == CLOSED) return nilObj;  // already closed
-
 	closePort(portID, h);
 	portHandle[portID] = CLOSED;
 	return nilObj;

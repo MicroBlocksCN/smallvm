@@ -1,0 +1,138 @@
+module 'Gizmo'
+author 'Matthew Barulic'
+version 1 0
+choices gizmo_buttons X A B Y 'Left Shoulder' 'Right Shoulder' 'Left Trigger' 'Right Trigger' Back Start 'Left Stick' 'Right Stick'
+choices gizmo_axes 'Left X' 'Left Y' 'Right X' 'Right Y' 'Dpad X' 'Dpad Y'
+depends Servo
+description 'Provides blocks for using the Gizmo control system.
+More information about the Gizmo at https://github.com/gizmo-platform'
+
+variables _gizmoGamepadState
+
+  spec 'r' 'gizmo_get_button' 'gamepad button _' 'menu.gizmo_buttons' 'X'
+  spec 'r' 'gizmo_get_axis' 'gamepad axis _' 'menu.gizmo_axes' 'Left X'
+  space
+  spec ' ' 'gizmo_set_servo_pos' 'set servo _ to position _' 'menu.range:1-4 num' 1 0
+  spec ' ' 'gizmo_set_motor_speed' 'set motor _ to speed _' 'menu.range:1-4 num' 1 0
+  space
+  spec 'r' 'gizmo_read_gpio' 'read GPIO port _' 'menu.range:1-8' 1
+  spec ' ' 'gizmo_set_gpio' 'set GPIO port _ to _' 'menu.range:1-8 bool' 1 true
+  spec 'r' 'gizmo_read_adc' 'read ADC port _' 'menu.range:1-3' 1
+
+to '_gizmo_init_gamepad_state' {
+  _gizmoGamepadState = ('[data:newByteArray]' 18 0)
+  for i 6 {
+    atPut i _gizmoGamepadState 127
+  } 
+}
+
+to '_gizmo_refresh_loop' {
+  forever {
+    '[sensors:i2cRead]' 8 _gizmoGamepadState
+    waitMillis 20
+  }
+}
+
+to 'gizmo_get_button' button_name {
+  if (_gizmoGamepadState == 0) {
+    _gizmo_init_gamepad_state
+    sendBroadcast '_gizmo_refresh_loop'
+  }
+  local button_index -1
+  if (button_name == 'X') {
+    button_index = 7
+  } (button_name == 'A') {
+    button_index = 8
+  } (button_name == 'B') {
+    button_index = 9
+  } (button_name == 'Y') {
+    button_index = 10
+  } (button_name == 'Left Shoulder') {
+    button_index = 11
+  } (button_name == 'Right Shoulder') {
+    button_index = 12
+  } (button_name == 'Left Trigger') {
+    button_index = 13
+  } (button_name == 'Right Trigger') {
+    button_index = 14
+  } (button_name == 'Back') {
+    button_index = 15
+  } (button_name == 'Start') {
+    button_index = 16
+  } (button_name == 'Left Stick') {
+    button_index = 17
+  } (button_name == 'Right Stick') {
+    button_index = 18
+  }
+  if (button_index == -1) {
+    comment 'Bad button name.'
+    return (booleanConstant false)
+  }
+  return ((at button_index _gizmoGamepadState) != 0)
+}
+
+to 'gizmo_get_axis' axis_name {
+  if (_gizmoGamepadState == 0) {
+    _gizmo_init_gamepad_state
+    sendBroadcast '_gizmo_refresh_loop'
+  }
+  local axis_index -1
+  if (axis_name == 'Left X') {
+    axis_index = 1
+  } (axis_name == 'Left Y') {
+    axis_index = 2
+  } (axis_name == 'Right X') {
+    axis_index = 3
+  } (axis_name == 'Right Y') {
+    axis_index = 4
+  } (axis_name == 'Dpad X') {
+    axis_index = 5
+  } (axis_name == 'Dpad Y') {
+    axis_index = 6
+  }
+  if (axis_index == -1) {
+    comment 'Bad axis name.'
+    return 0
+  }
+  return (at axis_index _gizmoGamepadState)
+}
+
+to 'gizmo_set_servo_pos' port position {
+  if (or (port < 1) (port > 4)) {
+    comment 'Bad port'
+    return
+  }
+  setServoAngle (port + 17) position
+}
+
+to 'gizmo_set_motor_speed' port speed {
+  if (or (port < 1) (port > 4)) {
+    comment 'Bad port'
+    return
+  }
+  setServoSpeed (port + 13) speed
+}
+
+to 'gizmo_read_gpio' port {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  return (digitalReadOp (port + 5))
+}
+
+to 'gizmo_set_gpio' port value {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  digitalWriteOp (port + 5) value
+}
+
+to 'gizmo_read_adc' port {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  return (analogReadOp (port + 25))
+}

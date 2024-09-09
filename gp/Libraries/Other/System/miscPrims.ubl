@@ -1,14 +1,9 @@
 module 'Misc Primitives'
 author MicroBlocks
-version 1 5 
+version 1 7 
 description 'Miscellaneous system primitives.
 '
 
-  spec 'r' '[misc:seconds]' 'seconds'
-  space
-  spec 'r' '[misc:usecsSince]' 'microseconds since _ : end time _' 'num auto' 0 'now'
-  spec 'r' '[misc:msecsSince]' 'milliseconds since _ : end time _' 'num auto' 0 'now'
-  space
   spec ' ' 'noop' 'no op'
   spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
   space
@@ -18,6 +13,7 @@ description 'Miscellaneous system primitives.
   spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
   spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
   spec 'r' '[misc:atan2]' 'arctan x _ y _' 'num num' 1 1
+  spec 'r' '[misc:sqrt]' 'sqrt _' 'num' 9
   space
   spec 'r' '[misc:pressureToAltitude]' 'altitude diff for pressure change from _ to _' 'num num' 30 29
   spec 'r' '[misc:bme680GasResistance]' 'bme680 gas resistance adc _ range _ calibration range error  _' 'num num num' 500 0 0

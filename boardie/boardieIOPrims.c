@@ -37,15 +37,17 @@ void stopServos() { }
 
 OBJ primButtonA(OBJ *args) {
 	// simulate button A with the left arrow key or A key
+	// simulate A+B with T key (ASCII 84)
 	return EM_ASM_INT({
-		return window.keys.get(37) || window.keys.get(65);
+		return window.keys.get(37) || window.keys.get(65) || window.keys.get(84);
 	}) ? trueObj : falseObj;
 }
 
 OBJ primButtonB(OBJ *args) {
 	// simulate button B with the right arrow key or B key
+	// simulate A+B with T key (ASCII 84)
 	return EM_ASM_INT({
-		return window.keys.get(39) || window.keys.get(66);
+		return window.keys.get(39) || window.keys.get(66) || window.keys.get(84);
 	}) ? trueObj : falseObj;
 }
 

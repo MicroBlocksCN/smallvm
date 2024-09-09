@@ -424,7 +424,9 @@ OBJ primMBDisplay(int argCount, OBJ *args) {
 
 OBJ primMBDisplayOff(int argCount, OBJ *args) {
 	microBitDisplayBits = 0;
-	if (useTFT) tftClear();
+	#if !defined(OLED_128_64)
+	    if (useTFT) tftClear();
+	#endif
 	return falseObj;
 }
 
@@ -773,6 +775,8 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 			pinNum = 27; // internal NeoPixel pin
+		#elif defined(ARDUINO_M5Atom_Lite_ESP32)
+			pinNum = 27;
 		#elif defined(ARDUINO_Mbits)
 			pinNum = 13; // internal NeoPixel pin
 		#elif defined(DATABOT)

@@ -17,35 +17,6 @@
 #include "tinyJSON.h"
 #include "version.h"
 
-OBJ primUSecsSince(int argCount, OBJ *args) {
-	int startTime = obj2int(args[0]);
-	int endTime = ((argCount > 1) && isInt(args[1])) ?
-		obj2int(args[1]) :
-		microsecs() & 0x3FFFFFFF;
-
-	int deltaTime = endTime - startTime;
-	if (deltaTime < 0) deltaTime += 0x40000000;
-	return int2obj(deltaTime);
-}
-
-OBJ primMSecsSince(int argCount, OBJ *args) {
-	int startTime = obj2int(args[0]);
-	int endTime = ((argCount > 1) && isInt(args[1])) ?
-		obj2int(args[1]) :
-		((uint32) ((totalMicrosecs() / 1000))) & 0x3FFFFFFF;
-
-	int deltaTime = endTime - startTime;
-	if (deltaTime < 0) deltaTime += 0x40000000;
-	return int2obj(deltaTime);
-}
-
-OBJ primSeconds(int argCount, OBJ *args) {
-	// Seconds since start. Wraps at 1073741823 seconds (34 years).
-
-	uint32 secs = ((uint32) ((totalMicrosecs() / 1000000))) &  0x3FFFFFFF;
-	return int2obj(secs);
-}
-
 OBJ primVersion(int argCount, OBJ *args) {
 	int result = atoi(&VM_VERSION[1]); // skip initial "v"
 	return int2obj(result);
@@ -200,10 +171,14 @@ static OBJ primSine(int argCount, OBJ *args) {
 }
 
 static OBJ primSqrt(int argCount, OBJ *args) {
-	// Returns the integer part of a square root of a given number multiplied by
-	// 1000 (e.g. sqrt(2) = 1414).
+	// Returns the integer square root of a given number rounded to the nearest integer.
+	// For example, sqrt(9) = 3. To get more precision, you can pre-multiply by a scaling
+	// factor squared. For example, to get two digits of precision you can multiple by
+	// 100 * 100 = 10000. The square root of two with two digits: sqrt(20000) = 141
 
-	return int2obj((int) round(1000 * sqrt(evalInt(args[0]))));
+	int n = evalInt(args[0]);
+	if (n < 0) n = -n; // xxx should we give an error here?
+	return int2obj((int) round(sqrt(n)));
 }
 
 static OBJ primArctan(int argCount, OBJ *args) {
@@ -369,9 +344,6 @@ static OBJ primBMP680GasResistance(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	{"usecsSince", primUSecsSince},
-	{"msecsSince", primMSecsSince},
-	{"seconds", primSeconds},
 	{"version", primVersion},
 	{"bleID", primBLE_ID},
 	{"hexToInt", primHexToInt},

@@ -63,10 +63,12 @@ method drawOn MicroBlocksSpinner ctx {
 }
 
 method spinnerChanged MicroBlocksSpinner {
+	// Must increase bounding rectangle by half the pen width due to rounded ends.
+
 	bnds = (bounds morph)
-	left = ((hCenter bnds) - 60)
-	top = ((vCenter bnds) - 60)
-	reportDamage (owner morph) (rect left top 120 120)
+	left = ((hCenter bnds) - 65)
+	top = ((vCenter bnds) - 65)
+	reportDamage (owner morph) (rect left top 130 130)
 }
 
 method task MicroBlocksSpinner { return task }

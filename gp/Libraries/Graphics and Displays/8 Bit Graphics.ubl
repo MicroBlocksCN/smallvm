@@ -1,6 +1,7 @@
 module '8 Bit Graphics' Output
 author MicroBlocks
 version 1 4 
+depends TFT Files 
 tags graphics 
 choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
 choices mirrorAxis horizontal vertical 'ascending diagonal' 'descending diagonal' 

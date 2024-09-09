@@ -38,7 +38,7 @@
 // update (forward) references of objects that move during compaction and object resizing.
 
 #if defined(NRF51)
-  #define OBJSTORE_BYTES 1300
+  #define OBJSTORE_BYTES 1200
 #elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI_V3)
   #define OBJSTORE_BYTES 48000
 #elif defined(ARDUINO_NRF52_PRIMO)
@@ -48,7 +48,7 @@
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 14000
 #elif defined(HAS_CAMERA)
-  #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
+  #define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
 #elif defined(ESP32_S3) || defined(ESP32_C3)
   #define OBJSTORE_BYTES 80000
 #elif defined(ARDUINO_ARCH_ESP32)
@@ -64,6 +64,8 @@
   #define OBJSTORE_BYTES 100000
 #elif defined(ARDUINO_SAM_DUE)
   #define OBJSTORE_BYTES 80000
+#elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+  #define OBJSTORE_BYTES 40000
 #else
   #define OBJSTORE_BYTES 4000
   // max that works on Wemos D1 mini (ESP8266) is 11000

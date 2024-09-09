@@ -4,9 +4,9 @@ version 1 0
 description ''
 variables coordX coordY 
 
-script 50 50 {
+script 50 40 {
 whenStarted
-'[display:mbDisplayOff]'
+'[tft:clear]'
 forever {
   coordX = (((('[sensors:tiltX]') + 100) * ('[tft:getWidth]')) / 200)
   coordY = (((('[sensors:tiltY]') + 100) * ('[tft:getHeight]')) / 200)
@@ -39,10 +39,10 @@ to '_setAccelRange' n {
 
 module TFT Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:clear]' 'clear TFT display'
   space
   spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true

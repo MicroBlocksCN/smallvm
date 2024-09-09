@@ -109,6 +109,9 @@ void initKeyboardHandler() {
 			window.parent.document.querySelector('[data-button="b"]');
 		window.buttons[66] = window.buttons[39]; // "b" key
 
+		window.buttons[84] =
+			window.parent.document.querySelector('[data-button="ab"]'); // "a+b" button
+
 		window.addEventListener('keydown', function (event) {
 			if (window.buttons[event.keyCode]) {
 				window.buttons[event.keyCode].classList.add('--is-active');
@@ -204,6 +207,7 @@ void readScriptsFromURL() {
 
 void addBLEPrims() {}
 void addCameraPrims() {}
+void addEncoderPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
 void addRadioPrims() {}

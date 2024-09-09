@@ -48,6 +48,7 @@ int ramSize();
 // File-Based Persistent Memory Operations
 
 int initCodeFile(uint8 *flash, int flashByteCount);
+void initFileSystem();
 void writeCodeFile(uint8 *code, int byteCount);
 void writeCodeFileWord(int word);
 void clearCodeFile(int cycleCount);

@@ -1,0 +1,184 @@
+module 'Smart Farm'
+author 'Josep Ferràndiz'
+version 1 2
+depends 'LCD Display' 'Temperature Humidity (DHT11, DHT22)' Tone Servo 'Distance (HC-SR04)'
+choices smartfarm_notes c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
+choices smartfarm_startstop start stop
+choices smartfarm_fan clockwise 'counter-clockwise' stop
+choices smartfarm_trapdoor open close
+choices smartfarm_power 'voltage (V)' 'current (mA)' 'power (mW)'
+choices smartfarm_onoff on off
+description 'Library for Keyestudio ESP32 IoT Control Smart Farm Starter Kit
+
+Pin Connection Values
+------------------------------------------
+Fan: -IN io18, +IN io19    Led: io27
+Steam sensor: io35         Relay (water pump): io25
+PIR: io23                         Light Sensor: io34
+Button: io5                       Water level: io4
+DHT11: io17                    Buzzer: io16
+Servo (window): io14      Soil moisture: io2
+LCD display: I2C
+
+HC-SR04 ultrasound distance sensor:
+Trigger: io12                    Echo: io13
+-------------------------------------------
+
+https://shop.innovadidactic.com/ca/standard-placas-shields-y-kits/1666-keyestudio-kit-smart-farm-para-arduino-con-placa-esp32-steamakers.html
+https://www.keyestudio.com/products/keyestudio-esp32-iot-control-smart-farm-starter-kit-for-arduino-scratch-30-graphical-programming'
+
+  spec ' ' 'smartFarm_setFan' 'Farm fan _' 'menu.smartfarm_fan' 'clockwise'
+  spec ' ' 'smartFarm_displayText' 'Farm display _ in line _' 'auto auto' 'ESP32 Smart Farm' 1
+  spec ' ' 'smartFarm_setTrapdoor' 'Farm _ the trapdoor' 'menu.smartfarm_trapdoor' 'open'
+  spec ' ' 'smartFarm_playNote' 'Farm play _ octave _ for _ ms' 'menu.smartfarm_notes num num' 'c' 0 100
+  spec ' ' 'smartFarm_setLight' 'Farm set light _' 'menu.smartfarm_onoff' 'on'
+  spec ' ' 'smartFarm_setWaterPump' 'Farm water pump _' 'menu.smartfarm_startstop' 'start'
+  space
+  spec 'r' 'smartFarm_temperature' 'Farm temperature ºC'
+  spec 'r' 'smartFarm_humidity' 'Farm humidity'
+  spec 'r' 'smartFarm_motion' 'Farm movement detected?'
+  spec 'r' 'smartFarm_button' 'Farm button pressed?'
+  spec 'r' 'smartFarm_distance' 'Farm distance (cm)'
+  spec 'r' 'smartFarm_lightLevel' 'Farm light level'
+  space
+  spec 'r' 'smartFarm_waterLevel' 'Farm water level'
+  spec 'r' 'smartFarm_moisture' 'Farm soil moisture'
+  spec 'r' 'smartFarm_steamLevel' 'Farm steam level'
+  space
+  spec 'r' 'smartFarm_electric' 'Farm electric consumption _' 'menu.smartfarm_power' 'voltage (V)'
+
+to 'read samples' n pin {
+  local 'sum' 0
+  repeat n {
+    sum += (analogReadOp pin)
+  }
+  return (sum / n)
+}
+
+to smartFarm_button {
+  local 'pin_Button' 5
+  return (not (digitalReadOp pin_Button))
+}
+
+to smartFarm_displayText text line {
+  LCD1602_write text line
+  waitMillis 1000
+  for i ((size text) - 15) {
+    LCD1602_write ('[data:copyFromTo]' text i (16 + i)) line
+    waitMillis 350
+  }
+}
+
+to smartFarm_distance {
+  local 'pin_Trigger' 12
+  local 'pin_Echo' 13
+  return ('distance (cm)' pin_Trigger pin_Echo)
+}
+
+to smartFarm_electric magnitude {
+  local 'Vo' ('read samples' 500 36)
+  local 'V' ('read samples' 500 39)
+  local 'Vout' ((V * 323) / 500)
+  local 'Vsen' (Vo - V)
+  local 'Iout' (Vsen * 17)
+  local 'value' 0
+  if (magnitude == 'voltage (V)') {
+    value = ('[data:join]' (Vout / 100) ',' (Vout % 100))
+  }
+  if (magnitude == 'current (mA)') {
+    value = Iout
+  }
+  if (magnitude == 'power (mW)') {
+    value = (((Vout * 10) * Iout) / 1000)
+  }
+  return value
+}
+
+to smartFarm_humidity {
+  local 'pin_DHT11' 17
+  return (humidity_DHT11 pin_DHT11)
+}
+
+to smartFarm_lightLevel {
+  local 'pin_LightSensor' 34
+  return (analogReadOp pin_LightSensor)
+}
+
+to smartFarm_moisture {
+  local 'pin_SoilMoisture' 2
+  return (analogReadOp pin_SoilMoisture)
+}
+
+to smartFarm_motion {
+  local 'pin_PIR' 23
+  return (digitalReadOp pin_PIR)
+}
+
+to smartFarm_playNote note octave time {
+  local 'pin_Buzzer' 16
+  'attach buzzer to pin' pin_Buzzer
+  'play tone' note octave time
+}
+
+to smartFarm_setFan state {
+  local 'pin_FanPos' 19
+  local 'pin_FanNeg' 18
+  if (state == 'clockwise') {
+    digitalWriteOp pin_FanNeg true
+    digitalWriteOp pin_FanPos false
+  }
+  if (state == 'counter-clockwise') {
+    digitalWriteOp pin_FanNeg false
+    digitalWriteOp pin_FanPos true
+  }
+  if (state == 'stop') {
+    digitalWriteOp pin_FanNeg false
+    digitalWriteOp pin_FanPos false
+  }
+}
+
+to smartFarm_setLight state {
+  local 'pin_LED' 27
+  if (state == 'on') {
+    digitalWriteOp pin_LED true
+  }
+  if (state == 'off') {
+    digitalWriteOp pin_LED false
+  }
+}
+
+to smartFarm_setTrapdoor position {
+  local 'pin_Servo' 14
+  if (position == 'open') {
+    setServoAngle pin_Servo 90
+  }
+  if (position == 'close') {
+    setServoAngle pin_Servo -90
+  }
+}
+
+to smartFarm_setWaterPump state {
+  local 'pin_Relay' 25
+  if (state == 'start') {
+    digitalWriteOp pin_Relay true
+  }
+  if (state == 'stop') {
+    digitalWriteOp pin_Relay false
+  }
+}
+
+to smartFarm_steamLevel {
+  local 'pin_Steam' 35
+  return (analogReadOp pin_Steam)
+}
+
+to smartFarm_temperature {
+  local 'pin_DHT11' 17
+  return (temperature_DHT11 pin_DHT11)
+}
+
+to smartFarm_waterLevel {
+  local 'pin_WaterLevel' 4
+  return (analogReadOp pin_WaterLevel)
+}
+

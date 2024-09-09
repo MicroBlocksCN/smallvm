@@ -416,13 +416,13 @@ serial write _
 escriu _ al port sèrie
 
 anIntegerStringListOrByteArray
---MISSING--
+unEnterTextLlistaOllistaDeBytes
 
 serial write _ starting at _
 escriu _ al port sèrie començant per _
 
 aStringListOrByteArray
---MISSING--
+unTextLlistaOllistaDeBytes
 
 soft serial write byte _ pin _ baud _
 escriu byte _ al port sèrie virtual al pin _ a _ bauds
@@ -573,7 +573,7 @@ rotate NeoPixels by _
 rota NeoPíxels en _
 
 brighten NeoPixel _ by _
-il·luminar NeoPíxel _ en _ 
+il·luminar NeoPíxel _ en _
 
 brighten all NeoPixels by _
 il·luminar tots els NeoPíxels en _
@@ -877,8 +877,8 @@ Alt / ⌥
 Logo / ⌘
 Logo / ⌘
 
-AltGr 
-AltGr 
+AltGr
+AltGr
 
 enter
 intro
@@ -998,6 +998,9 @@ barreja _
 sort _
 ordena _
 
+unique _
+elimina duplicats de _
+
 shuffled _
 _ barrejada
 
@@ -1006,6 +1009,22 @@ _ invertida
 
 sorted _
 _ ordenada
+
+uniqued _
+_ sense duplicats
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudo-aleatorietat
+
+pseudorandom _ to _ with seed _
+nombre pseudo-aleatori entre _ i _ amb llavor _
+
+_ pseudorandom numbers _ to _ with seed _
+_ nombres pseudo-aleatoris entre _ i _ amb llavor _
 
 ####
 # BLE Keyboard library
@@ -1072,6 +1091,9 @@ Pantalla LED
 display _
 pantalla _
 
+display image _
+mostra imatge _
+
 clear display
 neteja pantalla
 
@@ -1087,44 +1109,166 @@ apaga x _ y _
 display character _
 mostra caràcter _
 
+# Image names for the "display image" block
+
+heart
+cor
+
+small heart
+cor petit
+
+yes
+sí
+
+no
+no
+
+happy
+feliç
+
+sad
+trist
+
+confused
+confós
+
+angry
+enfadat
+
+asleep
+adormit
+
+surprised
+sorprès
+
+silly
+esbojarrat
+
+fabulous
+genial
+
+meh
+apàtic
+
+t-shirt
+samarreta
+
+roller skate
+patí
+
+duck
+aneguet
+
+house
+casa
+
+tortoise
+tortuga
+
+butterfly
+papallona
+
+stick figure
+persona
+
+ghost
+fantasma
+
+sword
+espasa
+
+giraffe
+girafa
+
+skull
+calavera
+
+umbrella
+paraigua
+
+snake
+serp
+
+rabbit
+conill
+
+cow
+vaca
+
+quarter note
+nota
+
+eight note
+corxera
+
+pitchfork
+forca
+
+target
+diana
+
+triangle
+triangle
+
+left triangle
+triangle rectangle
+
+chess board
+escacs
+
+diamond
+diamant
+
+small diamond
+diamant petit
+
+square
+quadrat
+
+small square
+quadrat petit
+
+scissors
+tisores
+
 ####
 # OLED Graphics library
 
 initialize i2c _ address(hex) _ reset pin# _ flip _
---MISSING--
+inicialitzar i2c _ adreça(hex) _ reset pin# _ girar _
 
 initialize spi _ d/c pin# _ reset pin# _ flip _
---MISSING--
+inicialitzar spi _ d/c pin# _ reset pin# _ girar _
 
 write _ at x _ y _ inverse _
---MISSING--
+mostrar _ a x _ y _ invertir _
 
 show display buffer
---MISSING--
+mostrar memòria intermèdia de visualització
 
 clear
---MISSING--
+netejar
 
 set contrast (1-4) _
---MISSING--
+configurar el contrast (1-4) _
 
 draw circle at x _ y _ radius _ erase _
---MISSING--
+dibuixar cercle en x _ i _ radi _ esborrar _
 
 draw image _ at x _ y _
---MISSING--
+dibuixar la imatge _ a x _ y _
 
 draw line from x _ y _ to x _ y _ erase _
---MISSING--
+dibuixar una línia de x _ y _ a x _ y _ esborrar _
 
 draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
---MISSING--
+dibuixar un rectangle x _ y _ amplada _ alçada _ esborrar _ arrodoniment (3-15) _
 
 fill rectangle x _ y _ w _ h _ erase _
---MISSING--
+dibuixar un rectangle sòlid x _ y _ amplada _ alçada _ esborrar _
 
 _flip display top _
---MISSING--
+_girar la part superior de la pantalla _
 
 make image _
 --MISSING--
@@ -1133,13 +1277,13 @@ set pixel x _ y _ erase _
 --MISSING--
 
 set video _
---MISSING--
+configurar el vídeo _
 
 cursor location
---MISSING--
+posició del cursor
 
 defer display updates
---MISSING--
+ajornar les actualitzacions de la pantalla
 
 ####
 # TFT display library
@@ -1356,22 +1500,25 @@ Rhythm
 Ritme
 
 set tempo to _ bpm at _ / _ signature
-fixa tempo a _ bmp i compàs a _ / _
+fixa tempo a _ bpm i compàs a _ / _
 
-start counting _ bars
-comença a comptar a _ compassos
-
-stop counting
-deixa de comptar
-
-wait until next _
-espera fins el proper _
+set pattern to _ bars
+fixa el patró a _ compassos
 
 current beat
 temps actual
 
 current bar
 compàs actual
+
+wait until next _ duration
+espera fins la propera durada _
+
+wait until beat _
+espera fins al temps _
+
+wait until bar _
+espera fins al compàs _
 
 ####
 # MIDI
@@ -1380,149 +1527,149 @@ compàs actual
 # General MIDI drum instrument names
 
 Acoustic Bass Drum
---MISSING--
+Bombo acústic
 
 Bass Drum 1
---MISSING--
+Bombo 1
 
 Side Stick
---MISSING--
+Vora de caixa
 
 Acoustic Snare
---MISSING--
+Caixa acústica
 
 Hand Clap
---MISSING--
+Aplaudiment
 
 Electric Snare
---MISSING--
+Caixa elèctrica
 
 Low Floor Tom
---MISSING--
+Goliat greu
 
 Closed Hi-Hat
---MISSING--
+Xarles tancat
 
 High Floor Tom
---MISSING--
+Goliat agut
 
 Pedal Hi-Hat
---MISSING--
+Xarles (pedal)
 
 Low Tom
---MISSING--
+Tom-tom greu
 
 Open Hi-Hat
---MISSING--
+Xarles obert
 
 Low-Mid Tom
---MISSING--
+Tom-tom mig-greu
 
 Hi-Mid Tom
---MISSING--
+Tom-tom mig-agut
 
 Crash Cymbal 1
---MISSING--
+Plat d'accents (crash) 1
 
 High Tom
---MISSING--
+Tom-tom agut
 
 Ride Cymbal 1
---MISSING--
+Plat de ritme (ride) 1
 
 Chinese Cymbal
---MISSING--
+Plat xinès
 
 Ride Bell
---MISSING--
+Campana
 
-Tambourine 
---MISSING--
+Tambourine
+Pandereta
 
 Splash Cymbal
---MISSING--
+Plat splash
 
-Cowbell 
---MISSING--
+Cowbell
+Esquellot
 
 Crash Cymbal 2
---MISSING--
+Plat d'accents (crash) 2
 
-Vibraslap 
---MISSING--
+Vibraslap
+Vibraslap
 
 Ride Cymbal 2
---MISSING--
+Plat de ritme (ride) 2
 
 Hi Bongo
---MISSING--
+Bongo agut
 
 Low Bongo
---MISSING--
+Bongo greu
 
 Mute Hi Conga
---MISSING--
+Conga aguda sorda
 
 Open Hi Conga
---MISSING--
+Conga aguda oberta
 
 Low Conga
---MISSING--
+Conga greu
 
 High Timbale
---MISSING--
+Timbala aguda
 
 Low Timbale
---MISSING--
+Timbala greu
 
 High Agogo
---MISSING--
+Agogó agut
 
 Low Agogo
---MISSING--
+Agogó greu
 
 Cabasa
---MISSING--
+Cabassa
 
-Maracas 
---MISSING--
+Maracas
+Maraques
 
 Short Whistle
---MISSING--
+Xiulet curt
 
 Long Whistle
---MISSING--
+Xiulet llarg
 
 Short Guiro
---MISSING--
+Güiro curt
 
 Long Guiro
---MISSING--
+Güiro llarg
 
-Claves 
---MISSING--
+Claves
+Bastons
 
 Hi Wood Block
---MISSING--
+Caixa xinesa aguda
 
 Low Wood Block
---MISSING--
+Caixa xinesa greu
 
 Mute Cuica
---MISSING--
+Cuica sorda
 
 Open Cuica
---MISSING--
+Cuica oberta
 
 Mute Triangle
---MISSING--
+Triangle sord
 
 Open Triangle
---MISSING--
+Triangle obert
 
 # General MIDI instrument categories
 
-piano 
+piano
 piano
 
 chromatic percussion
@@ -1541,7 +1688,7 @@ strings
 secció de cordes
 
 ensemble
-secció de vents
+cors
 
 brass
 vent metall
@@ -1549,8 +1696,8 @@ vent metall
 reed
 vent de canya
 
-pipe 
-flauta
+pipe
+vent fusta
 
 synth lead
 sintetitzador solista
@@ -1559,116 +1706,116 @@ synth pad
 sintetitzador ambient
 
 synth SFX
-efecte de sintetitzador
+efectes sintetitzats
 
 ethnic
 ètnic
 
 percussive
-percussiu
+percussió
 
-SFX 
---MISSING--
+SFX
+efectes especials
 
 # General MIDI drum sets
 
 standard
---MISSING--
+estàndard
 
 room
---MISSING--
+estudi
 
 power
---MISSING--
+potent
 
-electronic 
---MISSING--
+electronic
+electrònica
 
 TR-808
---MISSING--
+TR-808
 
 jazz
---MISSING--
+jazz
 
 brush
---MISSING--
+escombretes
 
 orchestra
---MISSING--
+orquèstra
 
-SFX 
---MISSING--
+SFX
+efectes especials
 
 CM-64/CM-32L
---MISSING--
+CM-64/CM-32L
 
 # General MIDI control changes
 
 bank select 1
---MISSING--
+selecció de banc 1
 
 bank select 2
---MISSING--
+selecció de banc 2
 
-modulation 
---MISSING--
+modulation
+modulació
 
 portamento time
---MISSING--
+temps de portamento
 
 volume
---MISSING--
+volum
 
 pan
---MISSING--
+panning
 
 expression
---MISSING--
+expressió
 
 hold
---MISSING--
+temps de sosteniment
 
 portamento
---MISSING--
+portamento
 
 sostenuto
---MISSING--
+sostenuto
 
 soft
---MISSING--
+suau
 
-resonance 
---MISSING--
+resonance
+ressonància
 
 release time
---MISSING--
+temps d'extinció
 
 attack time
---MISSING--
+temps d'atac
 
-cutoff 
---MISSING--
+cutoff
+filtre de freqüència
 
 decay time
---MISSING--
+temps de decaïment
 
 vibrato rate
---MISSING--
+freqüència del vibrato
 
 vibrato depth
---MISSING--
+intensitat del vibrato
 
 vibrato delay
---MISSING--
+retard del vibrato
 
 portamento control
---MISSING--
+control del portamento
 
 effect 1
---MISSING--
+efecte 1
 
 effect 2
---MISSING--
+efecte 2
 
 # library blocks
 
@@ -1750,7 +1897,7 @@ lòcria
 major
 major
 
-minor 
+minor
 menor
 
 # chord types
@@ -1770,7 +1917,7 @@ major 7th
 minor 7th
 7ª menor
 
-Maj7 
+Maj7
 Maj7
 
 # sound destinations for arpeggiate block
@@ -1778,7 +1925,7 @@ Maj7
 MIDI channel
 canal MIDI
 
-tone pin 
+tone pin
 pin de brunzidor
 
 # library blocks
@@ -1849,13 +1996,13 @@ hihat for _ ms on DAC pin _
 # Play chords on 3 digital pins
 
 Square Wave Chords
---MISSING--
+Acords d'onda quadrada
 
 play chord _ for _ ms
---MISSING--
+reproduir acord _ durant _ ms
 
 set digital chord pins _ _ _
---MISSING--
+establir pins digitals _ _ _ per a acord
 
 ####
 # Turtle geometry library
@@ -2139,13 +2286,13 @@ bme280 humidity
 humitat del bme280
 
 bmx280 set base altitude _ meters
---MISSING--
+bmx280 estableix l'altitud de referència en _ metres
 
 bmx280 altitude (cm)
---MISSING--
+bmx280 altitud (cm)
 
 bmx280 altitude (feet)
---MISSING--
+bmx280 altitud (peus)
 
 ####
 # TCS34725 color sensor
@@ -2485,10 +2632,10 @@ TdR clear RGB LED
 TdR apaga el led RGB
 
 TdR LM35 temperature ºC
---MISSING--
+TdR LM35 temperatura en ºC
 
 TdR DHT11 temperature ºC
---MISSING--
+TdR DHT11 temperatura en ºC
 
 TdR DHT11 humidity
 TdR DHT11 humitat
@@ -2570,6 +2717,132 @@ al _ % de la velocitat
 
 3dBot line on _ ?
 3dBot _ en la línia?
+
+####
+# ESP32 Smart Farm
+
+voltage (V)
+voltatge (V)
+
+current (mA)
+corrent (mA)
+
+power (mW)
+potència (mW)
+
+open
+obre
+
+close
+tanca
+
+on
+obre
+
+off
+tanca
+
+Farm fan _
+Farm ventilador _
+
+start
+encén
+
+Farm display _ in line _
+Farm envia a la pantalla el text _ a la línia _
+
+Farm _ the trapdoor
+Farm _ la portella
+
+Farm play _ octave _ for _ ms
+Farm toca la nota _ a l'octava _ durant _ ms
+
+Farm set light _
+Farm _ el llum
+
+Farm water pump _
+Farm _ la bomba d'aigua
+
+Farm temperature ºC
+Farm temperatura ºC
+
+Farm humidity
+Farm humitat
+
+Farm movement detected?
+Farm es detecta moviment?
+
+Farm button pressed?
+Farm botó premut?
+
+Farm distance (cm)
+Farm distància (cm)
+
+Farm light level
+Farm nivell de llum ambiental
+
+Farm water level
+Farm nivell d'aigua
+
+Farm soil moisture
+Farm humitat del sol
+
+Farm steam level
+Farm nivell de vapor
+
+Farm electric consumption _
+Farm consum elèctric _
+
+####
+# ESP32 Smart Home
+
+Home fan _
+Home _ el ventilador
+
+Home display _ in line _
+Home envia a la pantalla el text _ a la línia _
+
+Home _ the window
+Home _ la finestra
+
+Home activate the door
+Home activa la porta giratòria
+
+Home play _ octave _ for _ ms
+Home toca la nota _ a l'octava _ durant _ ms
+
+Home set light _
+Home _ el llum
+
+Home temperature ºC
+Home temperatura ºC
+
+Home humidity
+Home humitat
+
+Home steam level
+Home nivell de vapor
+
+Home read RFID card
+Home llegeix la targeta RFID
+
+Home movement detected?
+Home es detecta moviment?
+
+Home _ button pressed?
+Home botó _ premut?
+
+Home gas detected?
+Home es detecta gas?
+
+Home set NeoPixels _ _ _ _
+Home posa _ _ _ _ als Neopixels
+
+Home clear leds
+Home apaga els Neopixels
+
+Home electric consumption _
+Home consum elèctric _
 
 ####
 # MQTT
@@ -2659,25 +2932,25 @@ port remot UDP
 # WiFi Radio
 
 wifi send number _
---MISSING--
+wifi envia numero _
 
 wifi send string _
---MISSING--
+wifi envia text _
 
 wifi send pair _ = _
---MISSING--
+wifi envia parell _ = _
 
 wifi message received?
---MISSING--
+wifi missatge rebut?
 
 wifi last number
---MISSING--
+wifi últim número
 
 wifi last string
---MISSING--
+wifi últim text
 
 wifi set group _ (0-255)
---MISSING--
+wifi establir el grup _ (0-255)
 
 ####
 # Cutebot
@@ -2713,7 +2986,7 @@ Cutebot distance (cm)
 Distància frontal (cm)
 
 left
-esquerre
+esquerra
 
 right
 dret
@@ -2841,62 +3114,61 @@ Octopus
 --MISSING--
 
 Octopus LED pin _ toggle to _
---MISSING--
+Octopus pin LED _ canviar a _
 
 Octopus LED pin _ brightness _ %
---MISSING--
+Octopus pin LED _ brillantor al _ %
 
 Octopus motor fan pin _ speed to _ %
---MISSING--
+Octopus motor del ventilador al pin _ velocitat al _ %
 
 Octopus 180° servo pin _ angle to _ ° (0~180)
---MISSING--
+Octopus servo de 180° al pin _ angle a _ ° (0~180)
 
 Octopus sonar trig _ echo _ distance (cm)
---MISSING--
+Octopus sensor de distància (cm) trigger _ echo _
 
 Octopus value of light intensity (Lux) at pin _
---MISSING--
+Octopus valor de la intensitat lluminosa (Lux) al pin _
 
 Octopus value of DHT11 temperature (°C) at pin _
---MISSING--
+Octopus temperatura (°C) del DHT11 al pin _
 
 Octopus value of DHT11 humidity (0~100) at pin _
---MISSING--
+Octopus humitat (0~100) del DHT11 al pin _
 
 Octopus value of water level (0~40mm) at pin _
---MISSING--
+Octopus nivell d'aigua (0~40mm) al pin _
 
 Octopus value of trimpot (0~1023) at pin _
---MISSING--
+Octopus valor del potenciòmetre (0~1023) al pin _
 
 Octopus value of noise (dB) at pin _
---MISSING--
+Octopus nivell de so (dB) al pin _
 
 Octopus OLED show _ at x _ y _
---MISSING--
+Octopus OLED mostra _ a les coordenades x _ y _
 
 Octopus OLED clear
---MISSING--
+Octopus esborra pantalla OLED
 
 Octopus OLED draw pixel x _ y _
---MISSING--
+Octopus OLED pinta un píxel a les coordenades x _ y _
 
 Octopus OLED draw line from x _ y _ to x _ y _
---MISSING--
+Octopus dibuixa una línia des de les coordenades x _ y _ a x _ y _ a la pantalla OLED
 
 Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
---MISSING--
+Octopus OLED dibuixa un rectangle x _ y _ amplada _ alçada _ arrodonit _ (3~15)
 
 Octopus OLED fill rectangle x _ y _ w _ h _
---MISSING--
+Octopus OLED dibuixa un rectangle sòlid x _ y _ amplada _ alçada _
 
 Octopus OLED draw circle x _ y _ radius _
---MISSING--
+Octopus OLED dibbuixa un cercle x _ y _ radi _
 
 Octopus OLED fill circle x _ y _ radius _
---MISSING--
-
+Octopus OLED dibbuixa un cercle sòlid x _ y _ radi _
 
 ####
 # OctoStudio
@@ -2950,7 +3222,7 @@ Loading project...
 Carregant projecte...
 
 Found a newer version of
-S'ha trobat una nova versió de 
+S'ha trobat una nova versió de
 
 Do you want me to update the one in the project?
 Vols actualitzar el projecte amb aquesta nova versió?
@@ -3159,7 +3431,7 @@ disable autoloading board libraries
 no carreguis llibreries de placa automàticament
 
 compact code store
---MISSING--
+compacta el codi emmagatzemat
 
 enable autoloading board libraries
 carrega llibreries de placa automàticament
@@ -3192,7 +3464,7 @@ erase flash and update firmware on ESP board
 esborra i reparticiona el firmware en placa ESP
 
 install ESP firmware from URL
-instal·lar firmware ESP des de l'URL 
+instal·lar firmware ESP des de l'URL
 
 Use board type
 La placa connectada és de tipus
@@ -4012,5 +4284,7 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
+
+
 
 

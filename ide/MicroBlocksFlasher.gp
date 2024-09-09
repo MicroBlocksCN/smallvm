@@ -55,6 +55,8 @@ method startFlasher MicroBlocksFlasher serialPortID {
 		(action 'installFirmware' espTool boardName eraseFlag downloadFlag))
 }
 
+// Installing from data
+
 // Downloading from URL
 
 method installFromURL MicroBlocksFlasher serialPortID url {
@@ -64,8 +66,13 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 		data = (downloadURL this url)
 	}
 	if ((byteCount data) == 0) { return }
+	installFromData this serialPortID url data
+}
 
-    if (and ('Browser' == (platform)) (isNil serialPortID)) {
+method installFromData MicroBlocksFlasher serialPortID fileNameOrURL data {
+ 	if ((byteCount data) == 0) { return }
+
+	if (and ('Browser' == (platform)) (isNil serialPortID)) {
         // must request a user gesture to open port in browser after long download
         ok = (confirm (global 'page') nil (join (localized 'Open port?')))
         if (not ok) { return }
@@ -95,13 +102,13 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 		return
 	}
 
-	if (notNil (findSubstring 'databot2.0_' url)) { setAllInOneBinary espTool true }
+	if (notNil (findSubstring 'databot2.0_' fileNameOrURL)) { setAllInOneBinary espTool true }
 
     // install the downloaded firmware
 	spinner = (newSpinner (action 'espToolStatus' this) (action 'espToolDone' this))
 	setTask spinner (launch
 		(global 'page')
-		(action 'installFirmware' espTool url false false data))
+		(action 'installFirmware' espTool fileNameOrURL false false data))
 	addPart (global 'page') spinner
 }
 

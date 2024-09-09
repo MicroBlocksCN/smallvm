@@ -42,7 +42,7 @@ board type
 tipo de placa
 
 connected to IDE
---MISSING--
+conectado a la IDE
 
 Pins
 Pines
@@ -126,10 +126,10 @@ How this works...
 Así funciona...
 
 range _ to _
---MISSING--
+números de _ a _
 
 by _
---MISSING--
+en incrementos de _
 
 for _ in _ _
 por cada _ en _ _
@@ -216,7 +216,7 @@ string
 texto
 
 list
-listas
+lista
 
 byte array
 lista de bytes
@@ -259,7 +259,7 @@ Data
 Datos
 
 list
-listas
+lista
 
 cat
 gato
@@ -537,7 +537,7 @@ tilt z
 inclinación z
 
 acceleration
-acceleración
+aceleración
 
 light level
 nivel de luz
@@ -877,8 +877,8 @@ Alt / ⌥
 Logo / ⌘
 Logo / ⌘
 
-AltGr 
-AltGr 
+AltGr
+AltGr
 
 enter
 intro
@@ -957,55 +957,74 @@ suelta los botones del ratón
 # Extra utilities for list manipulation and access
 
 Lists
---MISSING--
+Listas
 
 list _ contains _
---MISSING--
+la lista _ contiene _
 
 circular item _ of _
---MISSING--
+elemento circular _ de _
 
 aListOrString
---MISSING--
+unaListaOTexto
 
 map _ over _
---MISSING--
+aplica _ sobre _
 
 aFunction
---MISSING--
+unaFunción
 
 filter _ with _
---MISSING--
+filtra _ utilizando _
 
 pick _ from _
---MISSING--
+escoge _ elementos de _
 
 a few
---MISSING--
+unos pocos
 
 some
---MISSING--
+unos cuantos
 
 most
---MISSING--
+la mayoría de
 
 reverse _
---MISSING--
+invierte _
 
 shuffle _
---MISSING--
+mezcla _
 
 sort _
---MISSING--
+ordena _
+
+unique _
+elimina duplicados de _
 
 shuffled _
---MISSING--
+_ mezclada
 
 reversed _
---MISSING--
+_ invertida
 
 sorted _
---MISSING--
+_ ordenada
+
+uniqued _
+_ sin duplicados
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+Pseudoaleatoriedad
+
+pseudorandom _ to _ with seed _
+número pseudoaleatorio entre _ y _ con semilla _
+
+_ pseudorandom numbers _ to _ with seed _
+_ números pseudoaleatorios entre _ y _ con semilla _
 
 ####
 # BLE Keyboard library
@@ -1072,6 +1091,9 @@ Pantalla LED
 display _
 pantalla _
 
+display image _
+muestra imagen _
+
 clear display
 limpia pantalla
 
@@ -1087,44 +1109,166 @@ apaga x _ y _
 display character _
 muestra carácter _
 
+# Image names for the "display image" block
+
+heart
+corazón
+
+small heart
+corazón pequeño
+
+yes
+sí
+
+no
+no
+
+happy
+feliz
+
+sad
+triste
+
+confused
+confuso
+
+angry
+enfadado
+
+asleep
+dormido
+
+surprised
+sorprendido
+
+silly
+alocado
+
+fabulous
+genial
+
+meh
+apático
+
+t-shirt
+camiseta
+
+roller skate
+patín
+
+duck
+patito
+
+house
+casa
+
+tortoise
+tortuga
+
+butterfly
+mariposa
+
+stick figure
+persona
+
+ghost
+fantasma
+
+sword
+espada
+
+giraffe
+jirafa
+
+skull
+calavera
+
+umbrella
+paraguas
+
+snake
+serpiente
+
+rabbit
+conejo
+
+cow
+vaca
+
+quarter note
+nota
+
+eight note
+corchea
+
+pitchfork
+horca
+
+target
+diana
+
+triangle
+triángulo
+
+left triangle
+triángulo rectángulo
+
+chess board
+ajedrez
+
+diamond
+diamante
+
+small diamond
+diamante pequeño
+
+square
+cuadrado
+
+small square
+cuadrado pequeño
+
+scissors
+tijeras
+
 ####
 # OLED Graphics library
 
 initialize i2c _ address(hex) _ reset pin# _ flip _
---MISSING--
+inicializar i2c _ dirección(hex) _ reset pin# _ girar _
 
 initialize spi _ d/c pin# _ reset pin# _ flip _
---MISSING--
+inicializar spi _ d/c pin# _ reset pin# _ girar _
 
 write _ at x _ y _ inverse _
---MISSING--
+mostrar _ en x _ y _ invertir _
 
 show display buffer
---MISSING--
+mostrar búfer de visualización
 
 clear
---MISSING--
+limpiar
 
 set contrast (1-4) _
---MISSING--
+establecer contraste (1-4) _
 
 draw circle at x _ y _ radius _ erase _
---MISSING--
+dibujar círculo en x _ y _ radio _ borrar _
 
 draw image _ at x _ y _
---MISSING--
+dibujar imagen _ en x _ y _
 
 draw line from x _ y _ to x _ y _ erase _
---MISSING--
+dibujar una línea desde x _ y _ hasta x _ y _ borrar _
 
 draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
---MISSING--
+dibujar un rectángulo x _ y _ ancho _ alto _ borrar _ redondeado (3-15) _
 
 fill rectangle x _ y _ w _ h _ erase _
---MISSING--
+dibujar un rectángulo sólido x _ y _ ancho _ alto _ borrar _
 
 _flip display top _
---MISSING--
+_girar la parte superior de la pantalla _
 
 make image _
 --MISSING--
@@ -1133,13 +1277,13 @@ set pixel x _ y _ erase _
 --MISSING--
 
 set video _
---MISSING--
+configurar vídeo _
 
 cursor location
---MISSING--
+posición del cursor
 
 defer display updates
---MISSING--
+posponer las actualizaciones de la pantalla
 
 ####
 # TFT display library
@@ -1353,25 +1497,28 @@ nombre de archivo
 # Useful to create musical patterns
 
 Rhythm
---MISSING--
+Ritmo
 
 set tempo to _ bpm at _ / _ signature
---MISSING--
+fija tempo a _ bpm y compás a _ / _
 
-start counting _ bars
---MISSING--
-
-stop counting
---MISSING--
-
-wait until next _
---MISSING--
+set pattern to _ bars
+fija el patrón a _ compases
 
 current beat
---MISSING--
+tiempo actual
 
 current bar
---MISSING--
+compás actual
+
+wait until next _ duration
+espera hasta la próxima duración _
+
+wait until beat _
+espera hasta el tiempo _
+
+wait until bar _
+espera hasta el compás _
 
 ####
 # MIDI
@@ -1380,441 +1527,444 @@ current bar
 # General MIDI drum instrument names
 
 Acoustic Bass Drum
---MISSING--
+Bombo acústico
 
 Bass Drum 1
---MISSING--
+Bombo 1
 
 Side Stick
---MISSING--
+Aro de caja
 
 Acoustic Snare
---MISSING--
+Caja acústica
 
 Hand Clap
---MISSING--
+Palmada
 
 Electric Snare
---MISSING--
+Caja eléctrica
 
 Low Floor Tom
---MISSING--
+Goliat grave
 
 Closed Hi-Hat
---MISSING--
+Charles cerrado
 
 High Floor Tom
---MISSING--
+Goliat agudo
 
 Pedal Hi-Hat
---MISSING--
+Charles (pedal)
 
 Low Tom
---MISSING--
+Tom-tom grave
 
 Open Hi-Hat
---MISSING--
+Charles abierto
 
 Low-Mid Tom
---MISSING--
+Tom-tom medio-grave
 
 Hi-Mid Tom
---MISSING--
+Tom-tom medio-agudo
 
 Crash Cymbal 1
---MISSING--
+Plato de acentos (crash) 1
 
 High Tom
---MISSING--
+Tom-tom agudo
 
 Ride Cymbal 1
---MISSING--
+Plato de ritmo (ride) 1
 
 Chinese Cymbal
---MISSING--
+Plato chino
 
 Ride Bell
---MISSING--
+Campana
 
-Tambourine 
---MISSING--
+Tambourine
+Pandereta
 
 Splash Cymbal
---MISSING--
+Plato splash
 
-Cowbell 
---MISSING--
+Cowbell
+Cencerro
 
 Crash Cymbal 2
---MISSING--
+Plato de acentos (crash) 2
 
-Vibraslap 
---MISSING--
+Vibraslap
+Vibraslap
 
 Ride Cymbal 2
---MISSING--
+Plato de ritmo (ride) 2
 
 Hi Bongo
---MISSING--
+Bongo agudo
 
 Low Bongo
---MISSING--
+Bongo grave
 
 Mute Hi Conga
---MISSING--
+Conga aguda sorda
 
 Open Hi Conga
---MISSING--
+Conga aguda abierta
 
 Low Conga
---MISSING--
+Conga grave
 
 High Timbale
---MISSING--
+Timbal agudo
 
 Low Timbale
---MISSING--
+Timbal grave
 
 High Agogo
---MISSING--
+Agogô agudo
 
 Low Agogo
---MISSING--
+Agogô grave
 
 Cabasa
---MISSING--
+Cabasa
 
-Maracas 
---MISSING--
+Maracas
+Maracas
 
 Short Whistle
---MISSING--
+Silbato corto
 
 Long Whistle
---MISSING--
+Silbato largo
 
 Short Guiro
---MISSING--
+Güiro corto
 
 Long Guiro
---MISSING--
+Güiro largo
 
-Claves 
---MISSING--
+Claves
+Clave
 
 Hi Wood Block
---MISSING--
+Caja china aguda
 
 Low Wood Block
---MISSING--
+Caja china grave
 
 Mute Cuica
---MISSING--
+Cuica sorda
 
 Open Cuica
---MISSING--
+Cuica abierta
 
 Mute Triangle
---MISSING--
+Triángulo sordo
 
 Open Triangle
---MISSING--
+Triángulo abierto
 
 # General MIDI instrument categories
 
-piano 
---MISSING--
+piano
+piano
 
 chromatic percussion
---MISSING--
+percusión cromática
 
 organ
---MISSING--
+órgano
 
 guitar
---MISSING--
+guitarra
 
 bass
---MISSING--
+bajo
 
 strings
---MISSING--
+sección de cuerdas
 
 ensemble
---MISSING--
+ensemble
 
 brass
---MISSING--
+viento metal
 
 reed
---MISSING--
+viento caña
 
-pipe 
---MISSING--
+pipe
+viento fusta
 
 synth lead
---MISSING--
+sintetizador solista
 
 synth pad
---MISSING--
+sintetizador ambiente
 
 synth SFX
---MISSING--
+efectos sintetizados
 
 ethnic
---MISSING--
+étnico
 
 percussive
---MISSING--
+percusión
 
-SFX 
---MISSING--
+SFX
+efectos especiales
 
 # General MIDI drum sets
 
 standard
---MISSING--
+estándar
 
 room
---MISSING--
+estudio
 
 power
---MISSING--
+potente
 
-electronic 
---MISSING--
+electronic
+electrónica
 
 TR-808
---MISSING--
+TR-808
 
 jazz
---MISSING--
+jazz
 
 brush
---MISSING--
+escobillas
 
 orchestra
---MISSING--
+orquesta
 
-SFX 
---MISSING--
+SFX
+efectos especiales
 
 CM-64/CM-32L
---MISSING--
+CM-64/CM-32L
 
 # General MIDI control changes
 
 bank select 1
---MISSING--
+selección de banco 1
 
 bank select 2
---MISSING--
+selección de banco 2
 
-modulation 
---MISSING--
+modulation
+modulación
 
 portamento time
---MISSING--
+tiempo de portamento
 
 volume
---MISSING--
+volumen
 
 pan
---MISSING--
+panning
 
 expression
---MISSING--
+expresión
 
 hold
---MISSING--
+tiempo de sostenido
 
 portamento
---MISSING--
+portamento
 
 sostenuto
---MISSING--
+sostenuto
 
 soft
---MISSING--
+suave
 
-resonance 
---MISSING--
+resonance
+resonancia
 
 release time
---MISSING--
+tiempo de extinción
 
 attack time
---MISSING--
+tiempo de ataque
 
-cutoff 
---MISSING--
+cutoff
+filtro de frecuencia
 
 decay time
---MISSING--
+tiempo de decaimiento
 
 vibrato rate
---MISSING--
+frecuencia del vibrato
 
 vibrato depth
---MISSING--
+intensidad del vibrato
 
 vibrato delay
---MISSING--
+retraso del vibrato
 
 portamento control
---MISSING--
+control del portamento
 
 effect 1
---MISSING--
+efecto 1
 
 effect 2
---MISSING--
+efecto 2
 
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
---MISSING--
+toca nota MIDI _ durante _ ms en el canal _ volumen _
 
 set MIDI note _ to _ on channel _ volume _
---MISSING--
+pon la nota MIDI _ a _ en el canal _ volumen _
 
 note _ octave _ to MIDI key
---MISSING--
+nota _ octava _ a tecla MIDI
 
 select MIDI instrument _ for channel _
---MISSING--
+selecciona instrumento MIDI _ para el canal _
 
 instrument _ number _
---MISSING--
+instrumento _ número _
 
 select MIDI drum kit _
---MISSING--
+selecciona batería MIDI _
 
 play MIDI drum _ for _ ms volume _
---MISSING--
+toca percusión MIDI _ durante _ ms volumen _
 
 drum _
---MISSING--
+percusión _
 
 change MIDI control _ on channel _ to _
---MISSING--
+pon control MIDI _ del canal _ a _
 
 pitch bend MIDI channel _ to _ %
---MISSING--
+modula canal MIDI _ en un _ %
 
 send MIDI reset
---MISSING--
+reinicializa MIDI
 
 send MIDI start playing
---MISSING--
+inicia secuenciador MIDI
 
 send MIDI stop playing
---MISSING--
+pausa secuenciador MIDI
 
 send MIDI continue playing
---MISSING--
+reanuda secuenciador MIDI
 
 set MIDI signal to pin _
---MISSING--
+configura MIDI al pin _
 
 ####
 # Scales & Chords
 # Abstractions for musical theory
 
 Scales & Chords
---MISSING--
+Escalas y acordes
 
 # scale names
 
 ionian
---MISSING--
+jónica
 
 dorian
---MISSING--
+dórica
 
 phrygian
---MISSING--
+frigia
 
 lydian
---MISSING--
+lidia
 
 mixolydian
---MISSING--
+mixolidia
 
 aeolian
---MISSING--
+eólica
 
 locrian
---MISSING--
+locria
 
 major
---MISSING--
+mayor
 
-minor 
---MISSING--
+minor
+menor
 
 # chord types
 
 major
---MISSING--
+mayor
 
 minor
---MISSING--
+menor
 
 diminished
---MISSING--
+disminuida
 
 major 7th
---MISSING--
+7ª mayor
 
 minor 7th
---MISSING--
+7ª menor
 
-Maj7 
---MISSING--
+Maj7
+May7
 
 # sound destinations for arpeggiate block
 
 MIDI channel
---MISSING--
+canal MIDI
 
-tone pin 
---MISSING--
+tone pin
+pin de zumbador
 
 # library blocks
 
 _ scale root _
---MISSING--
+escala _ con raíz _
 
 steps _
---MISSING--
+y _ grados
 
 pentatonic _ scale root _
---MISSING--
+escala pentatónica _ con raíz _
 
 _ chord root _
---MISSING--
+acorde _ con raíz _
 
 _ chord for root _
---MISSING--
+acorde _ para raíz _
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
---MISSING--
+arpegia _ en orden _ duración _ y volumen _ en el _ _
+
+improvised arpeggio over _ for _ bars with durations _
+arpegio improvisado sobre _ durante _ compases con duraciones _
 
 improvise over _ for _ bars with durations _ on _ _ volume _
---MISSING--
+improvisa sobre _ durante _ compases con duraciones _ en el _ _ volumen _
 
 _ transposed _ semitones
---MISSING--
+_ transportado _ semitonos
 
 chord progression _ with root _
---MISSING--
+progresión de acordes _ con raíz _
 
 and _ steps per chord
---MISSING--
+y _ grados por acorde
 
 rotation _ of circle of 5ths _ M _ m _ º
---MISSING--
+rotación _ del círculo de quintas _ M _ m _ º
 
 ####
 # Chiptune
@@ -1846,13 +1996,13 @@ hihat for _ ms on DAC pin _
 # Play chords on 3 digital pins
 
 Square Wave Chords
---MISSING--
+Acordes de onda cuadrada
 
 play chord _ for _ ms
---MISSING--
+reproducir acorde _ durante _ ms
 
 set digital chord pins _ _ _
---MISSING--
+establecer pines digitales _ _ _ para acorde
 
 ####
 # Turtle geometry library
@@ -2136,13 +2286,13 @@ bme280 humidity
 humedad del bme280
 
 bmx280 set base altitude _ meters
---MISSING--
+bmx280 establecer altitud de referencia _ metros
 
 bmx280 altitude (cm)
---MISSING--
+bmx280 altitud (cm)
 
 bmx280 altitude (feet)
---MISSING--
+bmx280 altitud (pies)
 
 ####
 # TCS34725 color sensor
@@ -2482,10 +2632,10 @@ TdR clear RGB LED
 TdR apaga el LED RGB
 
 TdR LM35 temperature ºC
---MISSING--
+TdR LM35 temperatura en ºC
 
 TdR DHT11 temperature ºC
---MISSING--
+TdR DHT11 temperatura en ºC
 
 TdR DHT11 humidity
 TdR DHT11 humedad
@@ -2567,6 +2717,132 @@ al _ % de la velocidad
 
 3dBot line on _ ?
 3dBot _ en la línea?
+
+####
+# ESP32 Smart Farm
+
+voltage (V)
+voltaje (V)
+
+current (mA)
+corriente (mA)
+
+power (mW)
+potencia (mW)
+
+open
+abre
+
+close
+cierra
+
+on
+abre
+
+off
+cierra
+
+Farm fan _
+Farm ventilador _
+
+start
+arranca
+
+Farm display _ in line _
+Farm envia a la pantalla el texto _ a la línea _
+
+Farm _ the trapdoor
+Farm _ la trampilla
+
+Farm play _ octave _ for _ ms
+Farm toca la nota _ en la octava _ durante _ ms
+
+Farm set light _
+Farm _ la luz
+
+Farm water pump _
+Farm _ la bomba de agua
+
+Farm temperature ºC
+Farm temperatura ºC
+
+Farm humidity
+Farm humedad
+
+Farm movement detected?
+Farm se detecta movimiento?
+
+Farm button pressed?
+Farm ¿botón presionado?
+
+Farm distance (cm)
+Farm distancia (cm)
+
+Farm light level
+Farm nivell de luz ambiental
+
+Farm water level
+Farm nivell de agua
+
+Farm soil moisture
+Farm humedad del suelo
+
+Farm steam level
+Farm nivel de vapor
+
+Farm electric consumption _
+Farm consumo eléctrico _
+
+####
+# ESP32 Smart Home
+
+Home fan _
+Home _ el ventilador
+
+Home display _ in line _
+Home envia a la pantalla el texto _ a la línea _
+
+Home _ the window
+Home _ la ventana
+
+Home activate the door
+Home activa la puerta giratoria
+
+Home play _ octave _ for _ ms
+Home toca la nota _ en la octava _ durante _ ms
+
+Home set light _
+Home _ la luz
+
+Home temperature ºC
+Home temperatura ºC
+
+Home humidity
+Home humedad
+
+Home steam level
+Home nivel de vapor
+
+Home read RFID card
+Home lee la targeta RFID
+
+Home movement detected?
+Home ¿se detecta movimiento?
+
+Home _ button pressed?
+Home botón _ presionado?
+
+Home gas detected?
+Home ¿se detecta gas?
+
+Home set NeoPixels _ _ _ _
+Home pon _ _ _ _ en Neopixels
+
+Home clear leds
+Home apaga Neopixels
+
+Home electric consumption _
+Home consumo eléctrico _
 
 ####
 # MQTT
@@ -2656,25 +2932,25 @@ puerto remoto de UDP
 # WiFi Radio
 
 wifi send number _
---MISSING--
+wifi envia numero _
 
 wifi send string _
---MISSING--
+wifi envia texto _
 
 wifi send pair _ = _
---MISSING--
+wifi enviar par _ = _
 
 wifi message received?
---MISSING--
+wifi ¿mensaje recibido?
 
 wifi last number
---MISSING--
+wifi último número
 
 wifi last string
---MISSING--
+wifi último texto
 
 wifi set group _ (0-255)
---MISSING--
+wifi establecer grupo _ (0-255)
 
 ####
 # Cutebot
@@ -2838,80 +3114,79 @@ Octopus
 --MISSING--
 
 Octopus LED pin _ toggle to _
---MISSING--
+Octopus pin LED _ cambiar a _
 
 Octopus LED pin _ brightness _ %
---MISSING--
+Octopus pin LED _ brillo al _ %
 
 Octopus motor fan pin _ speed to _ %
---MISSING--
+Octopus motor del ventilador en pin _ velocidad al _ %
 
 Octopus 180° servo pin _ angle to _ ° (0~180)
---MISSING--
+Octopus servo de 180° en pin _ ángulo a _ ° (0~180)
 
 Octopus sonar trig _ echo _ distance (cm)
---MISSING--
+Octopus sensor de distancia (cm) trigger _ echo _
 
 Octopus value of light intensity (Lux) at pin _
---MISSING--
+Octopus valor de la intensidad luminosa (Lux) en el pin _
 
 Octopus value of DHT11 temperature (°C) at pin _
---MISSING--
+Octopus temperatura (°C) del DHT11 en el pin _
 
 Octopus value of DHT11 humidity (0~100) at pin _
---MISSING--
+Octopus humedad (0~100) del DHT11 en el pin _
 
 Octopus value of water level (0~40mm) at pin _
---MISSING--
+Octopus nivel de agua (0~40mm) en el pin _
 
 Octopus value of trimpot (0~1023) at pin _
---MISSING--
+Octopus valor del potenciometro (0~1023) en el pin _
 
 Octopus value of noise (dB) at pin _
---MISSING--
+Octopus nivel de sonido (dB) en el pin _
 
 Octopus OLED show _ at x _ y _
---MISSING--
+Octopus OLED muestra _ en las coordenadas x _ y _
 
 Octopus OLED clear
---MISSING--
+Octopus limpiar pantalla OLED
 
 Octopus OLED draw pixel x _ y _
---MISSING--
+Octopus OLED pinta un píxel en las coordenades x _ y _
 
 Octopus OLED draw line from x _ y _ to x _ y _
---MISSING--
+Octopus OLED dibuja una línea desde las coordenadas x _ y _ a x _ y _
 
 Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
---MISSING--
+Octopus OLED dibuja un rectángulo x _ y _ ancho _ alto _ redondeado _ (3~15)
 
 Octopus OLED fill rectangle x _ y _ w _ h _
---MISSING--
+Octopus OLED dibuja un rectángulo sólido x _ y _ ancho _ alto _
 
 Octopus OLED draw circle x _ y _ radius _
---MISSING--
+Octopus OLED dibuja un círculo x _ y _ radio _
 
 Octopus OLED fill circle x _ y _ radius _
---MISSING--
-
+Octopus OLED dibuja un círculo sólido x _ y _ radio _
 
 ####
 # OctoStudio
 
 Octo start
---MISSING--
+inicia Octo
 
 Octo beam to phones _
---MISSING--
+envía _ a teléfonos vía Octo
 
 duration _ ms
---MISSING--
+duración _ ms
 
 Octo receive beam
---MISSING--
+recibe de teléfonos vía Octo
 
 Octo stop
---MISSING--
+detén Octo
 
 ##################
 # MicroBlocks UI #
@@ -3171,13 +3446,13 @@ hide implementation blocks
 ocultar los bloques de implementación
 
 do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-ocultar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo) 
+ocultar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo)
 
 show implementation blocks
 mostrar los bloques de implementación
 
 show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
-mostrar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo) 
+mostrar los bloques y variables internos de las librerias (aquellos cuyo nombre comienza con guión bajo)
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 al conectar una placa, no leas automáticamente sus contenidos aunque el proyecto actual esté en blanco
@@ -4009,5 +4284,6 @@ Reporta una lista de bytes que contenga los bytes UTF-8 de la cadena de texto es
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de palabras (grupos de 32 bits, o 4 bytes) de memoria disponibles.
+
 
 

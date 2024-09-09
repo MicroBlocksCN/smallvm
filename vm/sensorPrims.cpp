@@ -16,8 +16,12 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(PICO_ED) || defined(XRP)
+#if defined(PICO_ED) || defined(XRP) || defined(GIZMO_MECHATRONICS)
 	#define Wire Wire1
+#endif
+
+#if defined(MAKERPORT_V2) || defined(MAKERPORT_V3)
+	#define MAKERPORT_ACCEL
 #endif
 
 // Override the default i2c pins on some boards
@@ -25,6 +29,9 @@
 #if defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
+#elif defined(GIZMO_MECHATRONICS)
+	#define PIN_WIRE_SCL 3
+	#define PIN_WIRE_SDA 2
 #elif defined(WUKONG2040)
 	#define PIN_WIRE_SCL 17
 	#define PIN_WIRE_SDA 16
@@ -81,6 +88,10 @@ static void startWire() {
 	#endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+	#if defined(ARDUINO_ARCH_RP2040)
+		// Needed on RP2040 to reset the I2C bus after a timeout
+		Wire.setTimeout(100, true);
+	#endif
 	wireStarted = true;
 }
 
@@ -151,17 +162,39 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primI2cExists(int argCount, OBJ *args) {
+	// Return true if there is an i2c device at the given address. Used for i2c scanning.
+
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int i2cAddress = obj2int(args[0]);
+
+	if (!wireStarted) startWire();
+	if (!wireStarted) return falseObj;
+
+	Wire.beginTransmission(i2cAddress);
+    int error = Wire.endTransmission();
+    return error ? falseObj : trueObj;
+}
+
 static OBJ primI2cRead(int argCount, OBJ *args) {
 	// Read multiple bytes from the given I2C device into the given list and return the
 	// number of bytes read. The list size determines the number of bytes to read (up to a
 	// max of 32). This operation is usually preceded by an I2C write to request some data.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ obj = args[1];
-	if (!IS_TYPE(obj, ListType)) return int2obj(0);
+	int count = 0;
+	uint8 *bytes = NULL; // will point to byte array bytes if obj is a byte array
 
-	int count = obj2int(FIELD(obj, 0));
+	if (IS_TYPE(obj, ListType)) {
+		count = obj2int(FIELD(obj, 0));
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		count = BYTES(obj);
+		bytes = (uint8 *) &FIELD(obj, 0);
+	} else {
+		return fail(needsByteArray);
+	}
 	if (count <= 0) return zeroObj;
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
@@ -178,8 +211,12 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	#endif
 
 	for (int i = 0; i < count; i++) {
-		int byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
-		FIELD(obj, i + 1) = int2obj(byte);
+		uint8 byte = Wire.available() ? Wire.read() : 255; // 255 if no data available
+		if (bytes) {
+			bytes[i] = byte;
+		} else {
+			FIELD(obj, i + 1) = int2obj(byte);
+		}
 	}
 	return int2obj(count);
 }
@@ -189,7 +226,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// integer, write it as a single byte. If it is a byte array or list of bytes, write them.
 	// The list should contain integers in the range 0..255.
 
-	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	if ((argCount < 2) || !isInt(args[0])) return zeroObj;
 	int deviceID = obj2int(args[0]);
 	OBJ data = args[1];
 	int stop = ((argCount < 3) || (trueObj == args[2]));
@@ -245,6 +282,53 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+#if defined(ARDUINO_ARCH_RP2040)
+
+static int legal_rp2040_SDA_pin(int pin) {
+	if ((pin < 0) || (pin > 29)) return false;
+	return (&Wire != &Wire1) ? ((pin % 4) == 0) : ((pin % 4) == 2);
+}
+
+static int legal_rp2040_SCL_pin(int pin) {
+	if ((pin < 0) || (pin > 29)) return false;
+	return (&Wire != &Wire1) ? ((pin % 4) == 1) : ((pin % 4) == 3);
+}
+
+#endif
+
+static OBJ primI2cSetPins(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int pinSDA = obj2int(args[0]);
+	int pinSCL = obj2int(args[1]);
+
+	#if defined(ARDUINO_ARCH_ESP32) || defined(NRF52_SERIES)
+		Wire.end();
+		Wire.setPins(pinSDA, pinSCL);
+		Wire.begin();
+	#elif defined(ARDUINO_ARCH_RP2040)
+		if (!legal_rp2040_SDA_pin(pinSDA)) return falseObj;
+		if (!legal_rp2040_SCL_pin(pinSCL)) return falseObj;
+
+		// stop Wire and set pins
+		Wire.end();
+		Wire.setSDA(pinSDA);
+		Wire.setSCL(pinSCL);
+
+		// restart Wire
+		Wire.begin();
+		Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+		#if defined(ARDUINO_ARCH_RP2040)
+			// Needed on RP2040 to reset the I2C bus after a timeout
+			Wire.setTimeout(100, true);
+		#endif
+		wireStarted = true;
+	#else
+		return fail(primitiveNotImplemented);
+	#endif
+	return falseObj;
+}
+
 // SPI prims
 
 #if defined(PICO_ED)
@@ -277,7 +361,7 @@ static void initSPI() {
 		setPinMode(MISO, INPUT);
 		setPinMode(MOSI, OUTPUT);
 		setPinMode(SCK, OUTPUT);
-	#else
+	#elif !defined(__ZEPHYR__)
 		setPinMode(PIN_SPI_MISO, INPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 		setPinMode(PIN_SPI_MOSI, OUTPUT);
@@ -618,9 +702,16 @@ static void setAccelRange(int range) {
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(MAKERPORT_ACCEL)
 
 #define LIS3DH_ID 25
+
+#if defined(MAKERPORT_ACCEL)
+  // use Wire on MakerPort_v2/v3
+  #define Wire1 Wire
+  #undef LIS3DH_ID
+  #define LIS3DH_ID 24
+#endif
 
 static void setAccelRange(int range); // forward reference
 
@@ -632,23 +723,25 @@ static int readAcceleration(int registerID) {
 		// turn on the accelerometer
 		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
-		Wire1.write(0x8F); // 1600 Hz sampling rate, Low Power, Enable x/y/z
+		Wire1.write(0x77); // 400 Hz sampling rate, 10-bit resolution, enable x/y/z
 		Wire1.endTransmission();
 		delay(2);
-		setAccelRange(0); // also disable block data update
+		setAccelRange(0); // also disables block data update
+		#if defined(MAKERPORT_ACCEL)
+			writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		#endif
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
-	Wire1.write(0x28 + registerID);
+	Wire1.write((0x28 + registerID) | 0x80); // address + auto-increment flag
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
-	Wire1.requestFrom(LIS3DH_ID, 1);
-	int val = Wire1.available() ? Wire1.read() : 0;
-
-	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
-	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 200) / 127); // scale to range 0-200
+	Wire1.requestFrom(LIS3DH_ID, 2);
+	signed char highBits = Wire1.available() ? Wire1.read() : 0;
+	signed char lowBits = Wire1.available() ? Wire1.read() : 0;
+	int val =  (highBits << 2) | ((lowBits >> 6) & 3);
+	val = (200 * val) >> 9;
 	if (1 == registerID) val = -val; // invert sign for x axis
 	return val;
 }
@@ -666,10 +759,26 @@ static void setAccelRange(int range) {
 static int readTemperature() {
 	// Return the temperature in Celcius
 
-	setPinMode(A9, INPUT);
-	int adc = analogRead(A9);
+	int adc = 0;
 
-	return ((int) (0.116 * adc)) - 37; // linear approximation
+	#if defined(MAKERPORT_ACCEL)
+		int degreesC = 0;
+		uint8 regValue = readI2CReg(LIS3DH_ID, 0x23);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue | 0x80); // enable block data update (needed for temperature)
+		uint8 hiByte = readI2CReg(LIS3DH_ID, 0x0D);
+		uint8 lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+		writeI2CReg(LIS3DH_ID, 0x23, regValue); // disable block data update
+		if (hiByte <= 127) { // positive offset
+			degreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
+		} else { // negative offset
+			degreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+		}
+		return  20 + degreesC; // adjusted temperature
+	#else
+		setPinMode(A9, INPUT);
+		adc = analogRead(A9);
+		return ((int) (0.116 * adc)) - 37; // linear approximation
+	#endif
 
 	// The following unused code does not seem as accurate as the linear approximation
 	// above (based on comparing the thermistor to a household digital thermometer).
@@ -745,7 +854,8 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2 || \
+	defined(ARDUINO_M5Atom_Lite_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
 	#define Wire1 Wire
@@ -873,7 +983,6 @@ static void startAccelerometer() {
 	delay(2);
 	accelStarted = true;
 }
-
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) startAccelerometer();
@@ -1033,13 +1142,16 @@ static AccelerometerType_t accelType = accel_unknown;
 #define ICM20948_BANK_SEL 0x7F
 #define ICM20948_FILTERING 0x11
 
-
 // MPU9250 registers (decimal, following datasheet)
 #define MPU9250_BYPASS_EN 55
 #define MPU9250_ACCEL_XOUT_H 59
 #define MPU9250_PWR_MGMT_1 107
 
 static uint8 databotData[6];
+
+// forward references
+static int databotAK09916MageneticField();
+static int databotAK8963MageneticField();
 
 static void setRegisterBank(int regBank) {
 	// Set ICM20948 register bank
@@ -1064,12 +1176,15 @@ static void startAccelerometer() {
 		setRegisterBank(2);
 		writeI2CReg(ICM20948, ICM20948_ACCEL_CONFIG, ICM20948_FILTERING);
 		setRegisterBank(0);
+		databotAK09916MageneticField(); // initialize magnetometer
 	} else {
 		accelType = accel_MPU9250;
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
 		writeI2CReg(MPU9250, MPU9250_BYPASS_EN, 2); // allows i2c access to magnetometer
+		databotAK8963MageneticField();  // initialize magnetometer
+		delay(20); // allow time for accelerometer startup
 	}
 	accelStarted = true;
 }
@@ -1181,7 +1296,6 @@ static int databotAK09916MageneticField() {
 	static uint8 magData[6];
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		setRegisterBank(0);
 		writeI2CReg(ICM20948, 3, 32);  // set up I2C communications with magnetometer
 		setRegisterBank(3);
@@ -1190,6 +1304,7 @@ static int databotAK09916MageneticField() {
 		delay(10);
 		writeAK09916Register(0x31, 8); // sample magnetometer at 100 Hz
 		startReadingAK09916();
+		delay(20); // allow time to aquire the first sample
 		databotMagStarted = true;
 	}
 
@@ -1217,7 +1332,6 @@ static int databotAK8963MageneticField() {
 	static uint8 magData[7]; // includes ST2 register
 
 	if (!databotMagStarted) {
-		readAcceleration(1); // start accelerometer
 		delay(1);
 		writeI2CReg(AK8963, AK8963_CONTROL_1, 0); // switch to powerdown mode
 		delay(1);
@@ -1582,7 +1696,7 @@ static OBJ primTouchRead(int argCount, OBJ *args) {
 
 #else // stubs for non-ESP32 boards
 
-static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primTouchRead(int argCount, OBJ *args) { return zeroObj; }
 
 #endif // Capacitive Touch Primitives
 
@@ -1978,9 +2092,11 @@ static PrimEntry entries[] = {
 	{"setAccelerometerRange", primSetAccelerometerRange},
 	{"magneticField", primMagneticField},
 	{"touchRead", primTouchRead},
+	{"i2cExists", primI2cExists},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"i2cSetClockSpeed", primI2cSetClockSpeed},
+	{"i2cSetPins", primI2cSetPins},
 	{"spiExchange", primSPIExchange},
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},

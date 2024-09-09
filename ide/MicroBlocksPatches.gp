@@ -124,6 +124,16 @@ method AtoDMenu InputSlot {
   return menu
 }
 
+// Pull resistor Menu
+
+method pullMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'none'
+  addItem menu 'up'
+  addItem menu 'down'
+  return menu
+}
+
 // List Menus
 
 method itemOfMenu InputSlot {
@@ -907,7 +917,9 @@ method handDownOn ScriptEditor aHand {
 		}
 	}
 	if (isClass (objectAt aHand) 'ScriptEditor') {
-		startSelecting scripter aHand
+		if (not (isMobile)) {
+			startSelecting scripter aHand
+		}
 	}
 	return true
 }

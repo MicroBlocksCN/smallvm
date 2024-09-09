@@ -1,0 +1,347 @@
+module main
+author 'Matthew Barulic'
+version 1 0 
+description '
+This is the default BEST Robotics program for the Gizmo.
+This program offers remote control of simple robots using 3 motors and a servo.
+This may serve as a useful starting point for your team's competition code. You
+will almost certainly need to edit or extend this code to meet your needs.
+
+This code has two control modes: Tank Mode and Arcade Mode. The Start
+button on your gamepad switches the robot between the two modes.
+
+Here are the controls for Tank Mode:
+Left Joystick Up/Down    - Motor 1 Fwd/Rev
+Right Joystick Up/Down   - Motor 3 Fwd/Rev
+
+Here are the controls for Arcade Mode:
+Left Joystick Up/Down    - Robot Fwd/Rev
+Left Joystick Left/Right - Robot Turn Left/Right
+
+These controls work in both modes:
+Right Trigger            - Motor 4 Forward
+Right Shoulder Button    - Motor 4 Reverse
+Left Trigger             - Servo 1 to 0 degrees
+Left Shoulder Button     - Servo 1 to 90 degrees
+
+When neither the left trigger nor shoulder button are pressed, the servo will
+go to 45 degrees.
+'
+
+  spec ' ' 'arcadeModeDriving' 'arcadeModeDriving'
+  spec 'r' 'clamp' 'clamp _' 'num' 10
+  spec 'r' 'normalizeAxisValue' 'normalizeAxisValue _' 'auto' '10'
+  spec ' ' 'tankModeDriving' 'tankModeDriving'
+
+to arcadeModeDriving {
+  local 'speed' (normalizeAxisValue (gizmo_get_axis 'Left X'))
+  local 'steering' (normalizeAxisValue (gizmo_get_axis 'Left Y'))
+  gizmo_set_motor_speed 1 (clamp (speed - steering))
+  gizmo_set_motor_speed 3 (clamp (speed + steering))
+}
+
+to clamp value {
+  return (minimum (maximum value -100) 100)
+}
+
+to normalizeAxisValue value {
+  return ('[misc:rescale]' value 0 255 -100 100)
+}
+
+to tankModeDriving {
+  gizmo_set_motor_speed 1 (normalizeAxisValue (gizmo_get_axis 'Left Y'))
+  gizmo_set_motor_speed 3 (normalizeAxisValue (gizmo_get_axis 'Right Y'))
+}
+
+script 480 40 {
+to tankModeDriving {}
+}
+
+script 41 60 {
+whenStarted
+local 'useTankMode' (booleanConstant true)
+local 'prevButtonState' (booleanConstant false)
+forever {
+  setUserLED (((secsOp) % 2) == 0)
+  local 'buttonState' (gizmo_get_button 'Start')
+  if (and buttonState (not prevButtonState)) {
+    useTankMode = (not useTankMode)
+  }
+  prevButtonState = buttonState
+  if useTankMode {
+    tankModeDriving
+  } else {
+    arcadeModeDriving
+  }
+  if (gizmo_get_button 'Right Trigger') {
+    gizmo_set_motor_speed 4 100
+  } (gizmo_get_button 'Right Shoulder') {
+    gizmo_set_motor_speed 4 -100
+  } else {
+    gizmo_set_motor_speed 4 0
+  }
+  if (gizmo_get_button 'Left Trigger') {
+    gizmo_set_servo_pos 1 0
+  } (gizmo_get_button 'Left Shoulder') {
+    gizmo_set_servo_pos 1 90
+  } else {
+    gizmo_set_servo_pos 1 45
+  }
+}
+}
+
+script 481 253 {
+to arcadeModeDriving {}
+}
+
+script 484 557 {
+to normalizeAxisValue {}
+}
+
+script 488 683 {
+to clamp {}
+}
+
+
+module Gizmo
+author 'Matthew Barulic'
+version 1 0 
+depends Servo 
+choices gizmo_buttons X A B Y 'Left Shoulder' 'Right Shoulder' 'Left Trigger' 'Right Trigger' Back Start 'Left Stick' 'Right Stick' 
+choices gizmo_axes 'Left X' 'Left Y' 'Right X' 'Right Y' 'Dpad X' 'Dpad Y' 
+description 'Provides blocks for using the Gizmo control system.
+More information about the Gizmo at https://github.com/gizmo-platform'
+variables _gizmoGamepadState 
+
+  spec 'r' 'gizmo_get_button' 'gamepad button _' 'menu.gizmo_buttons' 'X'
+  spec 'r' 'gizmo_get_axis' 'gamepad axis _' 'menu.gizmo_axes' 'Left X'
+  space
+  spec ' ' 'gizmo_set_servo_pos' 'set servo _ to position _' 'menu.range:1-4 num' 1 0
+  spec ' ' 'gizmo_set_motor_speed' 'set motor _ to speed _' 'menu.range:1-4 num' 1 0
+  space
+  spec 'r' 'gizmo_read_gpio' 'read GPIO port _' 'menu.range:1-8' 1
+  spec ' ' 'gizmo_set_gpio' 'set GPIO port _ to _' 'menu.range:1-8 bool' 1 true
+  spec 'r' 'gizmo_read_adc' 'read ADC port _' 'menu.range:1-3' 1
+
+to '_gizmo_init_gamepad_state' {
+  _gizmoGamepadState = ('[data:newByteArray]' 18 0)
+  for i 6 {
+    atPut i _gizmoGamepadState 127
+  }
+}
+
+to '_gizmo_refresh_loop' {
+  forever {
+    '[sensors:i2cRead]' 8 _gizmoGamepadState
+    waitMillis 20
+  }
+}
+
+to gizmo_get_axis axis_name {
+  if (_gizmoGamepadState == 0) {
+    '_gizmo_init_gamepad_state'
+    sendBroadcast '_gizmo_refresh_loop'
+  }
+  local 'axis_index' -1
+  if (axis_name == 'Left X') {
+    axis_index = 1
+  } (axis_name == 'Left Y') {
+    axis_index = 2
+  } (axis_name == 'Right X') {
+    axis_index = 3
+  } (axis_name == 'Right Y') {
+    axis_index = 4
+  } (axis_name == 'Dpad X') {
+    axis_index = 5
+  } (axis_name == 'Dpad Y') {
+    axis_index = 6
+  }
+  if (axis_index == -1) {
+    comment 'Bad axis name.'
+    return 0
+  }
+  return (at axis_index _gizmoGamepadState)
+}
+
+to gizmo_get_button button_name {
+  if (_gizmoGamepadState == 0) {
+    '_gizmo_init_gamepad_state'
+    sendBroadcast '_gizmo_refresh_loop'
+  }
+  local 'button_index' -1
+  if (button_name == 'X') {
+    button_index = 7
+  } (button_name == 'A') {
+    button_index = 8
+  } (button_name == 'B') {
+    button_index = 9
+  } (button_name == 'Y') {
+    button_index = 10
+  } (button_name == 'Left Shoulder') {
+    button_index = 11
+  } (button_name == 'Right Shoulder') {
+    button_index = 12
+  } (button_name == 'Left Trigger') {
+    button_index = 13
+  } (button_name == 'Right Trigger') {
+    button_index = 14
+  } (button_name == 'Back') {
+    button_index = 15
+  } (button_name == 'Start') {
+    button_index = 16
+  } (button_name == 'Left Stick') {
+    button_index = 17
+  } (button_name == 'Right Stick') {
+    button_index = 18
+  }
+  if (button_index == -1) {
+    comment 'Bad button name.'
+    return (booleanConstant false)
+  }
+  return ((at button_index _gizmoGamepadState) != 0)
+}
+
+to gizmo_read_adc port {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  return (analogReadOp (port + 25))
+}
+
+to gizmo_read_gpio port {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  return (digitalReadOp (port + 5))
+}
+
+to gizmo_set_gpio port value {
+  if (or (port < 1) (port > 8)) {
+    comment 'Bad port'
+    return (booleanConstant false)
+  }
+  digitalWriteOp (port + 5) value
+}
+
+to gizmo_set_motor_speed port speed {
+  if (or (port < 1) (port > 4)) {
+    comment 'Bad port'
+    return
+  }
+  setServoSpeed (port + 13) speed
+}
+
+to gizmo_set_servo_pos port position {
+  if (or (port < 1) (port > 4)) {
+    comment 'Bad port'
+    return
+  }
+  setServoAngle (port + 17) position
+}
+
+
+module Servo Output
+author MicroBlocks
+version 1 2 
+tags servo motor angle rotation position 
+description 'Control both positional (angle) and rotational servo motors.'
+variables _servoPin _servoPulseWidth 
+
+  spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
+  spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'num num' 1 100
+  spec ' ' 'stopServo' 'stop servo _' 'num' 1
+  spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+  spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
+  spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
+
+to '_servoIndex' which {
+  if (_servoPin == 0) {
+    _servoPin = ('[data:makeList]')
+    _servoPulseWidth = ('[data:makeList]')
+    sendBroadcast '_servoUpdateLoop'
+  }
+  local 'i' ('[data:find]' which _servoPin)
+  if (i < 0) {
+    comment 'Add new pin'
+    '[data:addLast]' which _servoPin
+    '[data:addLast]' '1500' _servoPulseWidth
+    i = (size _servoPin)
+  }
+  return i
+}
+
+to '_servoPulse' pin usecs {
+  if (usecs == 0) {
+    comment 'Servo stopped; do nothing'
+    return 0
+  }
+  usecs = (maximum 850 (minimum usecs 2150))
+  comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
+  local 'endTime' ((microsOp) + usecs)
+  digitalWriteOp pin true
+  waitMicros (usecs - 30)
+  waitMicros (endTime - (microsOp))
+  digitalWriteOp pin false
+}
+
+to '_servoUpdateLoop' {
+  forever {
+    if (_servoPin != 0) {
+      comment 'If the _servoPin list is not 0, update the servos'
+      for i (size _servoPin) {
+        local 'pin' (at i _servoPin)
+        local 'usecs' (at i _servoPulseWidth)
+        if (and (pin >= 0) (usecs != 0)) {
+          '_servoPulse' pin usecs
+        }
+      }
+      waitMillis 15
+    }
+  }
+}
+
+to setServoAngle which degrees optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    degrees = (0 - degrees)
+  }
+  local 'pulseWidth' (1500 - (10 * degrees))
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
+to setServoSpeed which speed optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    speed = (0 - speed)
+  }
+  local 'pulseWidth' (1500 - (5 * speed))
+  if ((absoluteValue speed) < 2) {
+    pulseWidth = 0
+  }
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
+to stopServo which {
+  if ('[io:hasServo]') {
+    '[io:setServo]' which 0
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth 0
+  }
+}
+

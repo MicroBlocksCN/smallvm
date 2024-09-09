@@ -189,7 +189,7 @@ method scrollToXY MicroBlocksScripter x y {
 	scrollToY scriptsFrame (y + (top (morph scriptsFrame)))
 }
 
-method hideAllMyBlocks MicroBlocksScripter libName {
+method hideAllMyBlocks MicroBlocksScripter {
   for f (functions (main mbProject)) {
 	internalHideDefinition this (functionName f)
   }
@@ -576,6 +576,7 @@ method loadNewProjectFromData MicroBlocksScripter aString updateLibraries {
 
   mbProject = (newMicroBlocksProject)
   clearBoardIfConnected (smallRuntime) true
+  saveNeeded = false // don't save scripts while project is loading
   loadFromString mbProject aString updateLibraries
   restoreScripts this
 }
@@ -740,6 +741,9 @@ method restoreScripts MicroBlocksScripter {
 		  block = nil
 		}
       } else {
+        isReporter = ('r' == (blockType (specForOp (authoringSpecs) (primName dta))))
+        if (and isReporter (isClass dta 'Command')) { dta = (toReporter dta) }
+        if (and (not isReporter) (isClass dta 'Reporter')) { dta = (toCommand dta) }
         block = (toBlock dta)
       }
       if (notNil block) {
@@ -879,6 +883,8 @@ method createFunction MicroBlocksScripter isReporter {
   recordBlockSpec mbProject opName spec
   addToBottom this (scriptForFunction func)
   updateBlocks this
+  saveScripts this
+  restoreScripts this
 }
 
 method copyFunction MicroBlocksScripter definition {
@@ -1185,6 +1191,10 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   }
 
   libName = (withoutExtension (filePart fileName))
+  if (notNil (libraryNamed mbProject libName)) {
+    // replacing library; first hide its block definitions
+    hideAllLibraryDefinitions this libName
+  }
   importLibraryFromString this (toString data) libName fileName
 }
 
@@ -1358,7 +1368,7 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
   scriptString = (normalizeLineEndings scriptString)
   for entry (parse scriptString) {
     args = (argList entry)
-    if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
+    if (and ('script' == (primName entry)) ((count args) >= 3) (notNil (last args))) {
       script = (last args)
       if ('to' == (primName script)) {
         funcName = (first (argList script))

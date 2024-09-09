@@ -288,7 +288,7 @@ method toggleZeroAtBottom MicroBlocksDataGraph {
 	redraw this
 }
 
-method exportData MicroBlocksDataGraph {
+method csvData MicroBlocksDataGraph {
 	// collect data as .csv entries
 	result = (list)
 	for entry (loggedData (smallRuntime)) {
@@ -309,7 +309,12 @@ method exportData MicroBlocksDataGraph {
 		}
 		add result (joinStrings csvLine)
 	}
-	data = (joinStrings result (newline))
+	add result '' // adds a final newline
+	return (joinStrings result (newline))
+}
+
+method exportData MicroBlocksDataGraph {
+	data = (csvData this)
 
 	if ('Browser' == (platform)) {
 		browserWriteFile data 'data.csv' 'graphData'
@@ -335,8 +340,7 @@ method importDataFromCSVFile MicroBlocksDataGraph fileName {
 }
 
 method copyDataToClipboard MicroBlocksDataGraph {
-  data = (loggedData (smallRuntime))
-  setClipboard (joinStrings data (newline))
+  setClipboard (csvData this)
 }
 
 method showRecentData MicroBlocksDataGraph {

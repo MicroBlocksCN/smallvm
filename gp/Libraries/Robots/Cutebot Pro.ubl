@@ -1,0 +1,350 @@
+module 'Cutebot Pro' Output
+author MicroBlocks
+version 0 9 
+depends 'Distance (HC-SR04)' 'IR Remote' NeoPixel 
+choices wheelMenu left right both 
+choices leftRightMenu left right 
+choices turnAngleMenu '45 degrees' '90 degrees' '135 degrees' '180 degrees' 
+choices directionMenu forward backward 
+choices servoTypeMenu '180 degree' '270 degree' '360 degree' 
+choices turnTypeMenu left right 'left-in-place' 'right-in-place' 
+description 'The ELECFREAKS Cutebot Pro features:
+- 2 x Encoder Motors
+- HC-SR04 Distance Sensor (pins 8 and 12)
+- IR Remote Receiver (pin 16)
+- Buzzer (pin 0)
+- 2 x RGB LEDs
+- 2 x NeoPixels (pin 15)
+- 4 x Line tracking Sensors with calibration
+- 2 x I2C expansion ports
+- 4 x GPIO expansion ports
+- 4 x Servo expansion ports
+- 1 x DC Motor expansion port
+- micro:bit edge connector
+- 18650 Li-Ion battery holder with charger
+- Power on/off switch and battery charge indicator
+- Program accessible PID engine
+
+I2C Commands:
+(see https://github.com/elecfreaks/pxt-Cutebot-Pro)
+
+0 - turn PID on/off (commented out; PID should always be enabled)
+1 - set wheel power (simple PWM; does not use PID to adjust speed)
+2 - PID speed control
+3 - PID move distance
+4 - PID turn by angle (with turn style)
+
+5 - read motor speed
+
+7 - full speed ahead
+8 - full speed reverse
+9 - stop immediately
+
+0xA - clear wheel counts
+
+0xB - set external motor power
+0xC - stop external motor
+
+0xD - set servo angle/speed
+
+0xF - set headlight RGB
+0x10 - turn off headlights
+
+0x11 - get tracking sensor gray level for a given sensor
+0x12 - get tracking state
+0x14 - get track state fused offset (-3000 to 3000)
+0x15 - read version
+0x16 - read wheel counts
+0x17 (23) - PID turn by a specific angle (use one or both wheels)
+'
+variables _cbpro_leftCount _cbpro_rightCount _cppro_orientation 
+
+  spec ' ' 'cbpro_setWheelSpeed' 'CBPro set wheel speed left _ right _ (-60 to 60 cm/s)' 'num num' 30 30
+  spec 'r' 'cbpro_wheelSpeed' 'CBPro speed of _ wheel (cm/s)' 'menu.leftRightMenu' 'left'
+  spec ' ' 'cbpro_stopWheel' 'CBPro stop wheel _' 'menu.wheelMenu' 'both'
+  spec ' ' 'cbpro_stopAll' 'CBPro stop all'
+  space
+  spec ' ' 'cbpro_move' 'CBPro move _ (-255 to 255 cm)' 'num' 10
+  spec ' ' 'cbpro_turn' 'CBPro turn _ degrees' 'num' 90
+  space
+  spec ' ' 'cbpro_setHeadlight' 'CBPro set headlight _ to _' 'menu.wheelMenu color' 'both'
+  spec ' ' 'cbpro_setNeopixels' 'CBPro set NeoPixel _ to _' 'menu.wheelMenu color' 'both'
+  space
+  spec 'r' 'cbpro_distance' 'CBPro distance (cm)'
+  space
+  spec 'r' 'cbpro_trackingSensorState' 'CBPro tracking state is (L - - R) _ _ _ _' 'bool bool bool bool' false false false false
+  spec 'r' 'cbpro_getTrackingState' 'CBPro tracking state'
+  spec 'r' 'cbpro_getTrackingOffset' 'CBPro tracking offset'
+  space
+  spec 'r' 'cbpro_irCodeReceived' 'CBPro IR code received?'
+  spec 'r' 'cbpro_irCode' 'CBPro IR code'
+  space
+  spec ' ' 'cbpro_setServoAngle' 'CBPro set _ servo _ angle to _ deg' 'menu.servoTypeMenu menu.range:1-4 num' '180 degree' 1 90
+  spec ' ' 'cbpro_setServoSpeed' 'CBPro servo _ speed to _ (-100 to 100)' 'menu.range:1-4 num' 1 50
+  space
+  spec ' ' 'cbpro_setMotorPower' 'CBPro set external motor power to _ (-100 to 100)' 'num' 100
+  spec ' ' 'cbpro_stopMotor' 'CBPro stop external motor'
+  space
+  spec 'r' 'cbpro_getVersion' 'CBPro version'
+  space
+  spec ' ' '_cbpro_setWheelPower' '_cbpro_setWheel _ power _ (-100 to 100)' 'menu.wheelMenu num' 'both' 100
+  spec ' ' '_cbpro_clearEncodersAndOrientation' '_cbpro_clearEncodersAndOrientation'
+  spec 'r' '_cbpro_getOrientation' '_cbpro_getOrientation'
+  spec ' ' '_cbpro_readEncoders' '_cbpro_readEncoders'
+  spec ' ' '_cbpro_writeCmd' '_cbpro_writeCmd _ args _ _ _ _' 'num num num num num' 9 3 0 0 0
+  spec 'r' '_cbpro_readByte' '_cbpro_readByte'
+  spec 'r' '_cbpro_wheelsMoving' '_cbpro_wheelsMoving'
+
+to '_cbpro_clearEncodersAndOrientation' {
+  comment 'Clear wheel counts and orientation.'
+  '_cbpro_writeCmd' (hexToInt '0A') 3 0 0 0
+  _cbpro_leftCount = 0
+  _cbpro_rightCount = 0
+  _cppro_orientation = 0
+}
+
+to '_cbpro_getOrientation' wheel {
+  comment 'Get the approximate robot orientation based on the turns it has made.'
+  return _cppro_orientation
+}
+
+to '_cbpro_readByte' {
+  local 'data' (newList 1 99)
+  '[sensors:i2cRead]' 16 data
+  return (at 1 data)
+}
+
+to '_cbpro_readEncoders' {
+  comment 'Read the wheel encoder counts into:
+  _cbpro_leftCount
+  _cbpro_rightCount
+negative means = reverse'
+  '_cbpro_writeCmd' (hexToInt '16') 0 0 0 0
+  local 'data' (newList 10 99)
+  '[sensors:i2cRead]' 16 data
+  _cbpro_leftCount = (((((at 1 data) << 24) | ((at 2 data) << 16)) | ((at 3 data) << 8)) | (at 4 data))
+  _cbpro_rightCount = (((((at 5 data) << 24) | ((at 6 data) << 16)) | ((at 7 data) << 8)) | (at 8 data))
+  if (1 == (at 9 data)) {
+    _cbpro_leftCount = (0 - _cbpro_leftCount)
+  }
+  if (1 == (at 10 data)) {
+    _cbpro_rightCount = (0 - _cbpro_rightCount)
+  }
+}
+
+to '_cbpro_setWheelPower' wheels power {
+  comment 'Set wheel power (-100 to 100) for one or both wheels.
+Note: This block does not adjust wheel power to maintain a set speed. It is included for experimentation.
+REVERSE: NEGATIVE values
+FORWARD: POSITIVE values
+#3: L=1 R=2 B=3 (wheels)
+#4: BWD=0  FWD=1 (dir)
+#5: POWER range: 0-100%
+
+On rescale, min power is set to +/-10 since any less number does not
+move car.
+'
+  wheels = (ifExpression ('left' == wheels) 1 (ifExpression ('right' == wheels) 2 3))
+  if (0 == power) {
+    cbpro_stopWheel wheels
+  } else {
+    local 'dir' (ifExpression (power >= 0) 1 0)
+    power = (maximum -100 (minimum power 100))
+    power = ('[misc:rescale]' (absoluteValue power) 0 100 10 100)
+    '_cbpro_writeCmd' 1 wheels dir power 0
+  }
+}
+
+to '_cbpro_wheelsMoving' {
+  return (or ((cbpro_wheelSpeed 'left') > 0) ((cbpro_wheelSpeed 'right') > 0))
+}
+
+to '_cbpro_writeCmd' cmd arg1 arg2 arg3 arg4 {
+  '[sensors:i2cWrite]' 16 ('[data:makeList]' (hexToInt '99') cmd arg1 arg2 arg3 arg4 (hexToInt '88'))
+}
+
+to cbpro_distance {
+  comment 'Trigger: pin8,  Echo: pin12
+Uses Distance HC-SR04 library'
+  return ('distance (cm)' 8 12)
+}
+
+to cbpro_getTrackingOffset {
+  comment 'Return the estimated offset of the four-way line sensor from
+the center of the black line. Range is -3000 to 3000.'
+  '_cbpro_writeCmd' (hexToInt '14') 0 0 0 0
+  local 'offsetLow' ('_cbpro_readByte')
+  '_cbpro_writeCmd' (hexToInt '14') 1 0 0 0
+  local 'offsetHigh' ('_cbpro_readByte')
+  local 'offset' ((offsetHigh << 8) | offsetLow)
+  offset = ('[misc:rescale]' offset 0 6000 -3000 3000)
+  return offset
+}
+
+to cbpro_getTrackingState {
+  '_cbpro_writeCmd' (hexToInt '12') 0 0 0 0
+  return ('_cbpro_readByte')
+}
+
+to cbpro_getVersion {
+  '_cbpro_writeCmd' (hexToInt '15') 0 0 0 0
+  local 'minor' ('_cbpro_readByte')
+  '_cbpro_writeCmd' (hexToInt '15') 1 0 0 0
+  local 'major' ('_cbpro_readByte')
+  if (minor > 10) {
+    return ('[data:join]' 'v' ('[data:convertType]' major 'string') '.' ('[data:convertType]' (minor / 10) 'string') '.' ('[data:convertType]' (minor % 10) 'string'))
+  } else {
+    return ('[data:join]' 'v' ('[data:convertType]' major 'string') '.0.' ('[data:convertType]' (minor % 10) 'string'))
+  }
+}
+
+to cbpro_irCode {
+  comment 'Return the last IR code received.'
+  return _ir_last_code
+}
+
+to cbpro_irCodeReceived {
+  comment 'Return true when an IR code is received.'
+  attachIR 16
+  return (ir_code_received)
+}
+
+to cbpro_move dist {
+  comment 'Move in direction specified distance, FWD: dir = 1, BWD: dir = 0
+Distance range: 0 - 255 cm'
+  cbpro_setWheelSpeed 0 0
+  local 'dir' 1
+  if (dist == 0) {
+    return 0
+  } (dist < 0) {
+    dir = 0
+    dist = (absoluteValue dist)
+  }
+  if (dist > 3) {
+    dist = (dist - ((dist / 50) + 1))
+  }
+  '_cbpro_writeCmd' (hexToInt '3') dir dist 0 0
+  comment 'Wait for motors to start and then stop'
+  waitUntil ('_cbpro_wheelsMoving')
+  waitUntil (not ('_cbpro_wheelsMoving'))
+  comment 'Leave time for robot to stop moving'
+  waitMillis 250
+}
+
+to cbpro_setHeadlight led color {
+  whichLEDs = (ifExpression ('right' == led) 1 (ifExpression ('left' == led) 2 3))
+  local 'r' ((color >> 16) & 255)
+  local 'g' ((color >> 8) & 255)
+  local 'b' (color & 255)
+  '_cbpro_writeCmd' (hexToInt '0F') whichLEDs r g b
+}
+
+to cbpro_setMotorPower power {
+  comment 'Set the external motor power (-100 to 100).'
+  power = (maximum -100 (minimum power 100))
+  '_cbpro_writeCmd' (hexToInt '0B') (ifExpression (power >= 0) 1 0) (ifExpression (power >= 0) power (0 - power)) 0 0
+}
+
+to cbpro_setNeopixels which_NeoPixel color {
+  if (0 == _np_pixels) {neoPixelAttach 2 15}
+  if (which_NeoPixel == 'left') {
+    atPut 1 _np_pixels color
+  } (which_NeoPixel == 'right') {
+    atPut 2 _np_pixels color
+  } else {
+    atPut 1 _np_pixels color
+    atPut 2 _np_pixels color
+  }
+  '_NeoPixel_update'
+}
+
+to cbpro_setServoAngle servoType servoNum angle {
+  local 'types' ('[data:makeList]' '180 degree' '270 degree' '360 degree')
+  servoType = ('[data:find]' servoType types)
+  local 'value' (ifExpression (servoType == 1) ('[misc:rescale]' angle 0 180 0 180) (ifExpression (servoType == 2) ('[misc:rescale]' angle 0 270 0 180) ('[misc:rescale]' angle 0 360 0 180)))
+  '_cbpro_writeCmd' (hexToInt '0D') servoNum value 0 0
+}
+
+to cbpro_setServoSpeed servo speed {
+  comment 'Set continuous servo speed (-100 to 100).'
+  speed = ('[misc:rescale]' speed -100 100 0 180)
+  cbpro_setServoAngle '180 degree' servo speed
+}
+
+to cbpro_setWheelSpeed leftSpeed rightSpeed {
+  comment 'Set the wheels to the given speeds. Negative speeds mean reverse.
+Usable speed range: 10cm/s - 60cm/s (absolute value)
+NOTE: speed=0 is used internally to reset.'
+  local 'leftDir' 1
+  local 'rightDir' 1
+  if (leftSpeed < 0) {
+    leftDir = 0
+    leftSpeed = (minimum (absoluteValue leftSpeed) 255)
+  }
+  if (rightSpeed < 0) {
+    rightDir = 0
+    rightSpeed = (minimum (absoluteValue rightSpeed) 255)
+  }
+  '_cbpro_writeCmd' (hexToInt '2') leftDir leftSpeed rightDir rightSpeed
+}
+
+to cbpro_stopAll {
+  comment 'Stop wheels, external motor, and servos. Turn off headlights and NeoPixels.'
+  cbpro_stopWheel 'both'
+  cbpro_stopMotor
+  cbpro_setHeadlight 'both' 0
+  cbpro_setNeopixels 'both' 0
+  for i 4 {
+    cbpro_setServoSpeed i 0
+  }
+}
+
+to cbpro_stopMotor {
+  comment 'Stop the external motor.'
+  '_cbpro_writeCmd' (hexToInt '0C') 2 (hexToInt 'C8') 0 0
+}
+
+to cbpro_stopWheel wheel {
+  comment 'FULL SPEED/STOP any wheel
+#2: FWD=7  BWD=8  STOP=9
+#3: L=1 R=2 B=3'
+  wheel = (ifExpression ('left' == wheel) 1 (ifExpression ('right' == wheel) 2 3))
+  '_cbpro_writeCmd' 9 wheel 0 0 0
+}
+
+to cbpro_trackingSensorState L2 L1 R1 R2 {
+  comment 'Returns TRUE if the sensor state matches the argument booleans.
+A TRUE argument indicates the corresponding sensor light is ON.'
+  local 'stateQuery' ((('[data:convertType]' R2 'number') << 3) | ((('[data:convertType]' R1 'number') << 2) | ((('[data:convertType]' L1 'number') << 1) | ('[data:convertType]' L2 'number'))))
+  return (stateQuery == (cbpro_getTrackingState))
+}
+
+to cbpro_turn angle {
+  comment 'Do an in-place turn of the given number of degrees. Negative angles turn counter-clockwise.
+Note: Small angles (under 5 degrees are less accurate).'
+  _cppro_orientation += angle
+  local 'dir' (ifExpression (angle > 0) 0 1)
+  angle = (absoluteValue angle)
+  local 'turnAmount' (((angle * 1324) + 180) / 360)
+  if (angle < 15) {
+    comment 'Adjust turn amount for small angles.
+Min turn amount is 4.'
+    turnAmount = (maximum 4 (turnAmount - 5))
+  }
+  comment 'In-place turn'
+  cbpro_setWheelSpeed 0 0
+  '_cbpro_writeCmd' 23 3 ((turnAmount >> 8) & (hexToInt 'FF')) ((turnAmount >> 0) & (hexToInt 'FF')) dir
+  comment 'Wait for motors to start and then stop'
+  waitUntil ('_cbpro_wheelsMoving')
+  waitUntil (not ('_cbpro_wheelsMoving'))
+  comment 'Leave time for robot to stop moving'
+  waitMillis 250
+}
+
+to cbpro_wheelSpeed wheel {
+  comment 'Return the speed of the given wheel (cm/s).'
+  wheel = (ifExpression ('left' == wheel) 1 2)
+  '_cbpro_writeCmd' 5 wheel 0 0 0
+  return ('_cbpro_readByte')
+}
+
