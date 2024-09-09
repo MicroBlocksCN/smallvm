@@ -1,6 +1,6 @@
 module NeoPanel Output
 author 'José García Yeste & Víctor Casado'
-version 1 1 
+version 1 2 
 depends NeoPixel BMP 
 description 'Draw lines, rectangles, text, and images on a NeoPixel panels (e.g. 8x8, 16x16 or 32x8) in either horizontal or vertical orientation. Panels can be daisy-chained to create larger displays if there is sufficient power to drive them.
 See: https://www.btf-lighting.com/collections/led-matrix-display/products/ws2812b-panel-screen-8-8-16-16-8-32-pixel-256-pixels-digital-flexible-led-programmed-individually-addressable-full-color-dc5v#
@@ -69,24 +69,11 @@ to neoPanel_drawBMP filename originX originY {
 }
 
 to neoPanel_drawHorizontalLine y color {
-  if (and (y > 0) (y <= _neoPanel_width)) {
-    if _neoPanel_isHorizontal {
-      local 'index' (((y - 1) * _neoPanel_height) + 1)
-      repeat _neoPanel_height {
-        atPut index _np_pixels color
-        index += 1
-      }
-    } else {
-      local 'index' ((_neoPanel_width - y) + 1)
-      repeat (_neoPanel_height / 2) {
-        atPut index _np_pixels color
-        index += (((y - 1) * 2) + 1)
-        atPut index _np_pixels color
-        index += ((((_neoPanel_width - y) + 1) * 2) - 1)
-      }
-    }
-    '_NeoPixel_update'
+  if (and (y > 0) (y <= _neoPanel_height)) {for x _neoPanel_width {
+    atPut ('_neoPanel_indexForXY' x y) _np_pixels color
   }
+}
+  '_NeoPixel_update'
 }
 
 to neoPanel_drawPixel x y color {
@@ -120,25 +107,11 @@ to neoPanel_drawText text x0 y0 color {
 }
 
 to neoPanel_drawVerticalLine x color {
-  if (and (x > 0) (x <= _neoPanel_height)) {
-    if _neoPanel_isHorizontal {
-      local 'index' x
-      repeat (_neoPanel_width / 2) {
-        atPut index _np_pixels color
-        index += (((_neoPanel_height - x) * 2) + 1)
-        atPut index _np_pixels color
-        index += ((x * 2) - 1)
-      }
-    } else {
-      local 'index' (((x - 1) * _neoPanel_width) + 1)
-      atPut index _np_pixels color
-      repeat _neoPanel_width {
-        atPut index _np_pixels color
-        index += 1
-      }
-    }
-    '_NeoPixel_update'
+  if (and (x > 0) (x <= _neoPanel_width)) {for y _neoPanel_height {
+    atPut ('_neoPanel_indexForXY' x y) _np_pixels color
   }
+}
+  '_NeoPixel_update'
 }
 
 to neoPanel_fillRectangle x y width height color {
