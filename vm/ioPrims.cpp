@@ -908,6 +908,7 @@ void hardwareInit() {
 	#define TOTAL_PINS 24
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 	#define PIN_LED LED_BUILTIN
+	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
 
 #else // unknown board
 
