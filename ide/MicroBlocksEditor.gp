@@ -1146,6 +1146,7 @@ method fixScripterLayout MicroBlocksEditor {
 
 method gearMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
+  setIsTopMenu menu true
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
@@ -1350,6 +1351,7 @@ method stopHTTPServer MicroBlocksEditor {
 
 method languageMenu MicroBlocksEditor {
   menu = (menu 'Language' this)
+  setIsTopMenu menu true
   if ('Browser' == (platform)) {
 	for fn (sorted (listFiles 'translations')) {
 	  fn = (withoutExtension fn)
@@ -1436,6 +1438,7 @@ method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
 
 method projectMenu MicroBlocksEditor {
   menu = (menu 'File' this)
+  setIsTopMenu menu true
   addItem menu 'Save' 'saveProjectToFile'
   addLine menu
   addItem menu 'New' 'newProject'

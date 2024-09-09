@@ -959,7 +959,6 @@ method contextMenu Block {
 
   if (isPrototype this) {return nil}
   menu = (menu nil this)
-  setIsContext menu true
   
   pe = (findProjectEditor)
   scripter = (scripter pe)
