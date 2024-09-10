@@ -1,9 +1,14 @@
 module Turtle Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends TFT 
-tags tft graphics draw 
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
+
+Home is the center of the screen.
+
+Coordinates for the "go to" command are the same as the TFT library: origin at top-left, y increasing down.
+
+Default direction is to the right. Positive turn and direction angles are counter-clockwise.
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
@@ -40,8 +45,8 @@ to clearDisplay color {
 to 'go to x' x y {
   local 'startX' (_turtleX >> 14)
   local 'startY' (_turtleY >> 14)
-  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
+  _turtleX = (x << 14)
+  _turtleY = (y << 14)
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
@@ -55,7 +60,7 @@ to home {
     '[display:mbDisplayOff]'
     'pen up'
   }
-  'go to x' 0 0
+  'go to x' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 2)
   setHeading 0
 }
 
@@ -64,7 +69,7 @@ to move n {
   local 'startY' (_turtleY >> 14)
   comment 'The cosine is just the sine shifted by 90 degrees.'
   _turtleX += (n * ('[misc:sin]' (_turtleHeading + 9000)))
-  _turtleY += (n * ('[misc:sin]' _turtleHeading))
+  _turtleY += (n * ('[misc:sin]' (_turtleHeading + 18000)))
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
