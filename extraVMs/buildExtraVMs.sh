@@ -11,6 +11,8 @@ pio run -e mbits
 cp .pio/build/mbits/firmware.bin extraVMs/vm_mbits.bin
 pio run -e pico
 cp .pio/build/pico/firmware.uf2 extraVMs/vm_pico.uf2
+pio run -e pico-w-ble
+cp .pio/build/pico-w-ble/firmware.uf2 extraVMs/vm_pico_w_ble.uf2
 pio run -e pico-xrp
 cp .pio/build/pico-xrp/firmware.uf2 extraVMs/vm_pico_xrp.uf2
 pio run -e makerportV2

@@ -1,0 +1,52 @@
+module TouchPin Input
+author MicroBlocks
+version 1 0 
+description 'Capacitive pin touch sensing for micro:bit, Calliope mini, and other boards with touch pins. Works with pins that have 1M ohm external pullup resistors.
+'
+variables _touchPin_isTouched _touchPin_releaseCount 
+
+  spec 'r' 'touchPin_pinTouched' 'pin _ touched' 'num' 0
+  spec 'r' 'touchPin_logoTouched' 'logo touched'
+
+to touchPin_logoTouched {
+  if ('micro:bit v2' == (boardType)) {
+    return (touchPin_pinTouched 26)
+  } ('Calliope v3' == (boardType)) {
+    return (touchPin_pinTouched 26)
+  }
+  return (booleanConstant false)
+}
+
+to touchPin_pinTouched pin {
+  local 'threshold' 20
+  comment 'Discharge pin'
+  digitalWriteOp pin false
+  waitMillis 5
+  local 'n' 0
+  comment 'Wait for pin to become high, incrementing n'
+  repeatUntil (digitalReadOp pin) {
+    n += 1
+    if (n >= threshold) {
+      comment 'Long charging time means pin is touched'
+      _touchPin_isTouched = (booleanConstant true)
+      _touchPin_releaseCount = 0
+      digitalWriteOp pin false
+      return _touchPin_isTouched
+    }
+  }
+  digitalWriteOp pin false
+  if (_touchPin_isTouched == 0) {
+    _touchPin_isTouched = (booleanConstant false)
+  }
+  comment 'count is < threshold so pin not touched'
+  if _touchPin_isTouched {
+    comment 'Require several low counts in a row
+to exit "isTouched" state to avoid jitter.'
+    _touchPin_releaseCount += 1
+    if (_touchPin_releaseCount > 3) {
+      _touchPin_isTouched = (booleanConstant false)
+    }
+  }
+  return _touchPin_isTouched
+}
+
