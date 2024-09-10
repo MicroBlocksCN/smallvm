@@ -1,7 +1,8 @@
 module 'Touch (microbit)' Input
 author MicroBlocks
-version 1 1 
-description 'Capacitive touch sensing for micro:bit v1 and v2.'
+version 1 2 
+description 'Capacitive touch sensing for micro:bit, Calliope mini, and other boards with touch pins. Works with pins that have 1M ohm external pullup resistors.
+'
 variables _lowCount _isHigh 
 
   spec 'r' 'touch' 'pin _ touched : threshold _' 'num num' 0 0
@@ -13,20 +14,10 @@ to 'logo touched' {
 }
 
 to touch pin optionalThreshold {
+  local 'threshold' (argOrDefault 2 15)
   comment 'Discharge pin'
   digitalWriteOp pin false
-  local 'threshold' 0
-  if ((pushArgCount) > 1) {
-    threshold = optionalThreshold
-  }
-  if (threshold <= 0) {
-    comment 'Select threshold based on board type'
-    if ((boardType) == 'micro:bit') {
-      threshold = 9
-    } else {
-      threshold = 15
-    }
-  }
+  waitMillis 5
   local 'n' 0
   comment 'Wait for pin to become high, incrementing n'
   repeatUntil (digitalReadOp pin) {
@@ -48,7 +39,7 @@ to touch pin optionalThreshold {
     comment 'Require several low counts in a row
 to exit "isHigh" state to avoid jitter.'
     _lowCount += 1
-    if (_lowCount > 2) {
+    if (_lowCount > 3) {
       _isHigh = (booleanConstant false)
     }
   }
