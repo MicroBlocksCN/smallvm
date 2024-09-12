@@ -482,7 +482,7 @@ static void runTask(Task *task) {
 		&&jmpTrue_op,
 		&&jmpFalse_op,
 		&&decrementAndJmp_op,
-		&&callFunction_op,
+		&&callFunction_op, // 20
 		&&returnResult_op,
 		&&waitMicros_op,
 		&&waitMillis_op,
@@ -492,7 +492,7 @@ static void runTask(Task *task) {
 		&&forLoop_op,
 		&&initLocals_op,
 		&&getArg_op,
-		&&getLastBroadcast_op,
+		&&getLastBroadcast_op, // 30
 		&&jmpOr_op,
 		&&jmpAnd_op,
 		&&minimum_op,
@@ -502,7 +502,7 @@ static void runTask(Task *task) {
 		&&equal_op,
 		&&notEqual_op,
 		&&greaterOrEq_op,
-		&&greaterThan_op,
+		&&greaterThan_op, // 40
 		&&not_op,
 		&&add_op,
 		&&subtract_op,
@@ -512,7 +512,7 @@ static void runTask(Task *task) {
 		&&absoluteValue_op,
 		&&random_op,
 		&&hexToInt_op,
-		&&bitAnd_op,
+		&&bitAnd_op, // 50
 		&&bitOr_op,
 		&&bitXor_op,
 		&&bitInvert_op,
@@ -522,7 +522,7 @@ static void runTask(Task *task) {
 		&&isType_op,
 		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
 		&&pop_op, // this is the ignoreArgs opcode, an alias for pop_op
-		&&newList_op,
+		&&newList_op, // 60
 		&&RESERVED_op,
 		&&fillList_op,
 		&&at_op,
@@ -532,7 +532,7 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&millis_op,
+		&&millis_op, // 70
 		&&micros_op,
 		&&timer_op,
 		&&resetTimer_op,
@@ -542,7 +542,7 @@ static void runTask(Task *task) {
 		&&comment_op,
 		&&argOrDefault_op,
 		&&RESERVED_op,
-		&&analogPins_op,
+		&&analogPins_op, // 80
 		&&digitalPins_op,
 		&&analogRead_op,
 		&&analogWrite_op,
@@ -552,7 +552,7 @@ static void runTask(Task *task) {
 		&&digitalClear_op,
 		&&buttonA_op,
 		&&buttonB_op,
-		&&setUserLED_op,
+		&&setUserLED_op, // 90
 		&&i2cSet_op,
 		&&i2cGet_op,
 		&&spiSend_op,
@@ -562,18 +562,7 @@ static void runTask(Task *task) {
 		&&secs_op,
 		&&millisSince_op,
 		&&microsSince_op,
-		&&mbDisplay_op,
-		&&mbDisplayOff_op,
-		&&mbPlot_op,
-		&&mbUnplot_op,
-		&&mbTiltX_op,
-		&&mbTiltY_op,
-		&&mbTiltZ_op,
-		&&mbTemp_op,
-		&&neoPixelSend_op,
-		&&drawShape_op,
-		&&shapeForLetter_op,
-		&&neoPixelSetPin_op,
+		&&RESERVED_op, // 100
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -582,14 +571,25 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&pushHugeInteger_op,
+		&&RESERVED_op,
+		&&RESERVED_op, // 110
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&pushHugeInteger_op, // 120
 		&&RESERVED_op,
 		&&primitiveCommand_op,
 		&&primitiveReporter_op,
 		&&callCustomCommand_op,
 		&&callCustomReporter_op,
-		&&callCommandPrimitive_op,
-		&&callReporterPrimitive_op,
+		&&RESERVED_op,
+		&&halt_op,  // this is the endCode opcode, an alias for halt_op
 	};
 
 	// Restore task state
@@ -1367,16 +1367,6 @@ static void runTask(Task *task) {
 		}
 		// failed: bad arguments
 		*sp++ = falseObj; // push a dummy return value
-		DISPATCH();
-
-	// named primitives:
-	callCommandPrimitive_op:
-		callPrimitive(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	callReporterPrimitive_op:
-		*(sp - arg) = callPrimitive(arg, sp - arg);
-		POP_ARGS_REPORTER();
 		DISPATCH();
 }
 
