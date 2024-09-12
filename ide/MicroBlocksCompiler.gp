@@ -907,12 +907,13 @@ method instructionsForIfExpression SmallCompiler args {
 }
 
 method instructionsForJump SmallCompiler jumpOp offset {
-	if (or (offset < -128) (offset > 127)) { // extended jump: offset is in the next word
-		return (list
-			(array jumpOp offset)
-			(array 'placeholder' 0))
+	if (and (offset != 0) (-128 <= offset) (offset <= 127)) {
+		return (list (array jumpOp offset)) // non-zero offset that fits into 8 bits
 	}
-	return (list (array jumpOp offset)) // jump offset fits in the 8 bit arg field
+	// extended jump: signed offset in the next word
+	return (list
+		(array jumpOp offset)
+		(array 'placeholder' 0))
 }
 
 // instruction generation utility methods
@@ -1172,7 +1173,7 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 		add bytes ((arg >> 23) & 255)
 	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
 		// arg is the signed offset from instruction pointer
-		if (and (-128 < arg) (arg < 127)) { // offset fits into 8 bits
+		if (and (arg != 0) (-128 <= arg) (arg <= 127)) { // non-zero offset that fits into 8 bits
 			add bytes (arg & 255)
 		} else {
 			add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
