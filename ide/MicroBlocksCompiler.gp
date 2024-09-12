@@ -730,7 +730,7 @@ method instructionsForIf SmallCompiler args {
 		if (not finalCase) {
 			jumpToEnd = (array 'longJmp' (count result)) // jump offset to be fixed later
 			add result jumpToEnd
-			add result (array 'placeholder' 0)  // longJmp is always two words
+			add result (array 'placeholder' 0) // longJmp is always two words
 			add jumpsToFix jumpToEnd
 		}
 		i += 2
@@ -1205,7 +1205,7 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 		// metadata should be the last instruction, following the literals
  		addAll bytes (toArray (toBinaryData (at instr 2))) // function name
  		add bytes 0 // null terminator
-  		addAll bytes (toArray (toBinaryData (at instr 3))) // function library
+		addAll bytes (toArray (toBinaryData (at instr 3))) // function library
  		add bytes 0 // null terminator
 		addAll bytes (toArray (toBinaryData (at instr 4))) // function metadata
  		add bytes 0 // null terminator
