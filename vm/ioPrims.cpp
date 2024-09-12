@@ -154,6 +154,22 @@ void hardwareInit() {
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
 		cocubeSensorInit();
 	#endif
+	#if defined(TX_FT_BOX)
+		pinMode(37, OUTPUT);
+		pinMode(33, OUTPUT);
+		pinMode(34, OUTPUT);
+		pinMode(35, OUTPUT);
+		digitalWrite(37, LOW);
+		digitalWrite(33, HIGH);
+		digitalWrite(34, HIGH);
+		digitalWrite(35, HIGH);
+		delay(200);
+		digitalWrite(37, HIGH);
+		delay(200);
+		digitalWrite(37, LOW);
+		delay(400);
+		digitalWrite(37, HIGH);
+	#endif
 }
 
 // General Purpose I/O Pins
@@ -836,6 +852,30 @@ void hardwareInit() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
+#elif defined(TX_FT_BOX)
+	#define BOARD_TYPE "TX_FT_BOX"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_LED -1
+	#define PIN_BUTTON_A 21
+	#define PIN_BUTTON_B 0
+	#define DEFAULT_TONE_PIN 26
+	// #undef BUTTON_PRESSED
+	// #define BUTTON_PRESSED HIGH
+	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
+	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// USB pins: 19 (USB D-), 20 (USB D+)
+	// also possibly: 39-42 (JTAG pins)
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
+		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
 #elif defined(M5_ATOMS3LITE)
