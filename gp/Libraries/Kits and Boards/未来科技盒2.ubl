@@ -1,0 +1,194 @@
+module '未来科技盒 2.0'
+author '邵悦'
+version 1 4 
+depends Tone Servo 
+choices PosMenu left right 
+choices ServoMenu s1 s2 
+description '未来科技盒 2.0 驱动
+主控 esp32s3
+A/B 按键 
+4个电机
+3x3 led点阵屏幕
+蜂鸣器
+grove 端口映射
+超声波，巡线，舵机
+yue.shao@gmail.com
+'
+variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_last zeroCount _tx_line_pins 
+
+  spec ' ' '点亮所有LED' '点亮所有LED'
+  spec ' ' '熄灭所有LED' '熄灭所有LED'
+  spec ' ' 'tx setLED x' '点亮LED x _ y _ _' 'auto auto bool' 2 2 true
+  spec ' ' 'tx_mcar_move' '麦轮小车移动 x _ y _ z _' 'auto auto auto' 0 20 0
+  spec ' ' '麦轮小车停止' '麦轮小车停止'
+  spec ' ' '设置电机' '设置电机 _ 速度 _ (-100~100)' 'auto auto' 1 30
+  spec ' ' '设置舵机' '设置舵机 _ 角度 _ 度(-90~90)' 'menu.ServoMenu auto' 's1' 0
+  spec 'r' 'tx distance cm' '超声波测距 cm 连接到端口grove _' 'auto' 4
+  spec 'r' '巡线传感器' '巡线传感器 _ 检测到黑线?' 'menu.PosMenu' 'left'
+  spec 'r' '巡线状态' '巡线状态 左在线 _ 右在线 _' 'bool bool' true true
+  spec ' ' 'tx set line port' '设置巡线传感器端口 grove _' 'auto' 3
+  spec 'r' 'tx_getPort' '连接端口 grove _' 'auto' 1
+  spec ' ' '_tx_motor pos' '_tx_motor pos _ speed _' 'auto auto' 1 '10'
+  spec ' ' '_led_all_off' '_led_all_off'
+  spec 'r' '_get_led_status x' '_get_led_status x _ y _' 'auto auto' 1 1
+  spec ' ' '_leds_loop' '_leds_loop'
+  spec ' ' '_tx_box_init' '_tx_box_init'
+
+to '_get_led_status x' foo bar {
+  return ((at (((bar - 1) * 3) + foo) _leds_status) == 1)
+}
+
+to '_led_all_off' {
+  _leds_status = (newList 9 0)
+}
+
+to '_leds_loop' {
+  forever {
+    for i 3 {
+      digitalWriteOp (at i _led_x_col) false
+      for j 3 {
+        digitalWriteOp (at j _led_y_row) ('_get_led_status x' i j)
+      }
+      waitMillis 5
+      for j 3 {
+        digitalWriteOp (at j _led_y_row) false
+      }
+      digitalWriteOp (at i _led_x_col) true
+    }
+    waitMillis 10
+  }
+}
+
+to '_tx_box_init' {
+  if (0 == _tx_init_flag) {
+    _tx_pins_list = ('[data:makeList]' 6 5 39 40 2 1 8 7 39 40 4 3)
+    _led_x_col = ('[data:makeList]' 36 37 38)
+    _led_y_row = ('[data:makeList]' 35 34 33)
+    _leds_status = (newList 9 0)
+    _tx_line_pins = ('[data:makeList]' 2 1)
+    sendBroadcast '_leds_loop'
+  }
+  _tx_init_flag = 1
+}
+
+to '_tx_motor pos' foo bar {
+  '_tx_box_init'
+  comment '1 左前 2 右前 3左后 4右后
+左侧 速度正 前进
+右边 速度负 前进'
+  foo = (minimum 4 (maximum 1 foo))
+  if ((foo % 2) == 0) {
+    bar = (0 - bar)
+  }
+  if (bar >= 0) {
+    analogWriteOp (((foo - 1) * 2) + 11) (bar * 10)
+    analogWriteOp (((foo - 1) * 2) + 12) 0
+  } else {
+    analogWriteOp (((foo - 1) * 2) + 11) 0
+    analogWriteOp (((foo - 1) * 2) + 12) (bar * -10)
+  }
+}
+
+to 'tx distance cm' pin {
+  '_tx_box_init'
+  if (isType pin 'number') {
+    pin = (tx_getPort 4)
+  }
+  if (isType pin 'list') {
+    pin = (at 'last' pin)
+  }
+  comment 'Contributed by Joan Guillén and Josep Ferràndiz'
+  digitalWriteOp pin false
+  waitMicros 2
+  digitalWriteOp pin true
+  waitMicros 50
+  digitalWriteOp pin false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp pin)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp pin) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp pin)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
+to 'tx set line port' foo {
+  '_tx_box_init'
+  _tx_line_pins = (tx_getPort foo)
+}
+
+to 'tx setLED x' foo bar baz {
+  '_tx_box_init'
+  if baz {
+    atPut (((bar - 1) * 3) + foo) _leds_status 1
+  } else {
+    atPut (((bar - 1) * 3) + foo) _leds_status 0
+  }
+}
+
+to tx_getPort foo {
+  '_tx_box_init'
+  return ('[data:copyFromTo]' _tx_pins_list (1 + (2 * (foo - 1))) (2 + (2 * (foo - 1))))
+}
+
+to tx_mcar_move x y z {
+  if (z != 0) {
+    x = ((x * (100 - (absoluteValue z))) / 100)
+    y = ((y * (100 - (absoluteValue z))) / 100)
+  }
+  '_tx_motor pos' 2 (maximum -100 (minimum 100 ((y + x) - z)))
+  '_tx_motor pos' 1 (maximum -100 (minimum 100 ((y - x) + z)))
+  '_tx_motor pos' 3 (maximum -100 (minimum 100 ((y + x) + z)))
+  '_tx_motor pos' 4 (maximum -100 (minimum 100 ((y - x) - z)))
+}
+
+to '巡线传感器' lr {
+  comment '检测到在黑线返回True真，否则返回 False 假'
+  '_tx_box_init'
+  if (lr == 'left') {
+    return (digitalReadOp (at 2 _tx_line_pins))
+  } (lr == 'right') {
+    return (digitalReadOp (at 1 _tx_line_pins))
+  }
+}
+
+to '巡线状态' leftSide rightSide {
+  comment '在线上是指检测到在黑线上'
+  return (and (leftSide == ('巡线传感器' 'left')) (rightSide == ('巡线传感器' 'right')))
+}
+
+to '点亮所有LED' {
+  '_tx_box_init'
+  _leds_status = (newList 9 1)
+}
+
+to '熄灭所有LED' {
+  '_led_all_off'
+}
+
+to '设置电机' pos speed {
+  '_tx_motor pos' pos speed
+}
+
+to '设置舵机' foo angle {
+  local 'var' 47
+  if ('s1' == foo) {
+    var = 48
+  }
+  setServoAngle var angle
+}
+
+to '麦轮小车停止' {
+  tx_mcar_move 0 0 0
+}
+
