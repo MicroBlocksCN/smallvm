@@ -1,4 +1,4 @@
-module '未来科技盒 2.0'
+module '未来科技盒v2.0'
 author '邵悦'
 version 1 4 
 depends Tone Servo 
