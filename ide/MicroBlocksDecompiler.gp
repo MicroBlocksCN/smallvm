@@ -203,52 +203,6 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 	return gpCode
 }
 
-// 	if ('pushImmediate' == op) {
-// 		// immedate object (integer or boolean) fits into the 8 bit arg byte
-// 		add bytes (arg & 255)
-// 	} ('pushLargeInteger' == op) {
-// 		// append a 24-bit integer object (little endian)
-// 		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
-// 		add bytes ((arg >> 7) & 255)
-// 		add bytes ((arg >> 15) & 255)
-// 	} ('pushHugeInteger' == op) {
-// 		add bytes 0 // arg byte (unused)
-// 		// append a 32-bit integer object (little endian)
-// 		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
-// 		add bytes ((arg >> 7) & 255)
-// 		add bytes ((arg >> 15) & 255)
-// 		add bytes ((arg >> 23) & 255)
-// 	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
-// 		// arg is the signed offset from instruction pointer
-// 		if (and (-128 < arg) (arg < 127)) { // offset fits into 8 bits
-// 			add bytes (arg & 255)
-// 		} else {
-// 			add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
-// 			add bytes (arg & 255)
-// 			add bytes ((arg >> 8) & 255)
-// 		}
-// 	} (isOneOf op 'longJmp' 'pushLiteral') {
-// 		if ('longJmp' == op) {
-// 			// replace longJmp with jmp opcode but use two words regardless of offset
-// 			atPut bytes (count bytes) (at opcodes 'jmp')
-// 		}
-// 		add bytes 0 // zero arg byte
-// 		// append 16-bit signed offset from instruction pointer (little endian)
-// 		add bytes (arg & 255)
-// 		add bytes ((arg >> 8) & 255)
-// 	} ('callFunction' == op) {
-// 		// callFunction: arg is chunk ID (high bytes) and arg count (low byte)
-// 		add bytes 0
-// 		add bytes (arg & 255)
-// 		add bytes ((arg >> 8) & 255)
-// 	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
-// 		add bytes (arg & 255)
-// 		add bytes ((arg >> 8) & 255)
-// 		add bytes ((arg >> 16) & 255)
-// 	} (and (-128 <= arg) (arg <= 127)) {
-// 		// 8-bit arg for all other instructions
-// 		add bytes (arg & 255)
-
 method extractOpcodes MicroBlocksDecompiler chunkData {
 	// 16-bit version
 
@@ -264,10 +218,11 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 	byteCount = (count chunkData)
 	i = 1
 	while (and (i < byteCount) ('codeEnd' != op)) { // stop if last op was codeEnd
-		addr = i // instruction address
+		addr = (round (i / 2)) // 16-bit instruction address (1-based)
 		op = (at opcodeToName ((at chunkData i) + 1)) // opcode
 		arg = (at chunkData (i + 1)) // arg byte
-		isReporter = false
+		extraWords = 0
+		primCall = nil
 		i += 2
 		if ('pushImmediate' == op) { // arg is a boolean or an integer object that fits in 8 bits
 			if (1 == (arg & 1)) {
@@ -283,27 +238,27 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			arg = (arg | ((at chunkData i) << 8))
 			arg = (arg | ((at chunkData (i + 1)) << 16))
 			arg = ((arg << 8) >> 9) // convert integer object to integer with sign extenion
-			i += 2
+			extraWords += 1
 		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
 			arg = (at chunkData i)
 			arg = (arg | ((at chunkData (i + 1)) << 8))
 			arg = (arg | ((at chunkData (i + 2)) << 16))
 			arg = (arg | ((at chunkData (i + 3)) << 24))
 			arg = (arg >> 1) // convert integer object to integer
-			i += 4
+			extraWords += 2
 		} ('pushLiteral' == op) { // literal string
 			offset = (at chunkData i)
 			offset = (offset | ((at chunkData (i + 1)) << 8))
 			// Use offset to extract the actual literal string.
 			startByte = (i + (2 * offset))
 			arg = (readLiteral this chunkData startByte)
-			i += 2
+			extraWords += 1
 		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
 			if (arg == 0) { // extended jump; 16-bit signed offset in following two bytes
 				arg = (at chunkData i)
 				arg = (arg | ((at chunkData (i + 1)) << 8))
 				if (arg > 32767) { arg = (arg - 65536) }
-				i += 2
+				extraWords += 1
 			} else { // arg is 8-bit signed offset
 				if (arg > 127) { arg = (arg - 256) }
 			}
@@ -316,16 +271,19 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			primNameOffset = ((arg >> 8) & 1023) // offset to primitive name literal string, 10 bits
 			primName = (readLiteral this chunkData (i + (2 * primNameOffset)))
 			arg = (arg & 255) // argument count, low 8 bits
-			isReporter = ('reporterPrimitive' == op)
-			op = (join '[' primSetName ':' primName ']') // replace op with primitive call
-			i += 2
+			primCall = (join '[' primSetName ':' primName ']') // replace op with primitive call
+			extraWords += 1
 		} ('callFunction' == op) {
 			// 16-bit arg is chunk ID (high byte) and arg count (low byte); arg byte ignored
 			arg = ((at chunkData i)  | ((at chunkData (i + 1)) << 8))
-			i += 2
+			extraWords += 1
 		}
 		if ('codeEnd' != op) {
-		  add opcodes (array addr op arg isReporter)
+			add opcodes (array addr op arg primCall)
+			repeat extraWords { // add temporary placeholders so jump offsets are correct
+				add opcodes (array (addr + 1) 'placeholder' 0 nil)
+				i += 2
+			}
 		}
 	}
 //	hasMetadata = (readDecompilerMetadata this lastInstruction) // xxx To Do
@@ -463,8 +421,6 @@ method prettyPrint MicroBlocksDecompiler expression {
 method readLiteral MicroBlocksDecompiler chunkData startByte {
 	// Return the literal string starting at the given byte index.
 
-print 'startByte' startByte
-print chunkData
 	chunkByteCount = (count chunkData)
 	byte0 = (at chunkData startByte)
 	objType = (byte0 & 15)
@@ -488,29 +444,6 @@ print chunkData
 		i += 1
 	}
 	return (callWith 'string' (toArray stringBytes))
-}
-
-method readLiteralOLD MicroBlocksDecompiler literalIndex {
-	// Return the literal string starting at the given index in the opcode list.
-
-	header = (at opcodes literalIndex)
-	lowByte = (at header 2)
-	if (4 != (lowByte & 15)) {
-		print 'bad string literal (should not happen)'
-		return ''
-	}
-	highBytes = (at header 3)
-	wordCount = ((highBytes << 4) | (lowByte >> 4))
-	bytes = (list)
-	for i (range (literalIndex + 2) (+ literalIndex 2 (2 * wordCount))) {
-		instr = (at opcodes i)
-		add bytes (at instr 2)
-		add bytes (at instr 3)
-	}
-	while (and (notEmpty bytes) (0 == (last bytes))) {
-		removeLast bytes // remove trailing zero bytes
-	}
-	return (callWith 'string' (toArray bytes))
 }
 
 method readDecompilerMetadata MicroBlocksDecompiler lastInstruction {
@@ -560,64 +493,6 @@ method findArgs MicroBlocksDecompiler {
 		i += 1
 	}
 }
-
-// xxx
-// method readLiteralStrings MicroBlocksDecompiler chunkData {
-// 	// Replace offsets in 'pushLiteral' instructions with the actual literal strings.
-// 	// Return the index of the last instruction in opcodes.
-//
-// 	for i (count opcodes) {
-// 		instr = (at opcodes i)
-// 		if ('pushLiteral' == (cmdOp this instr)) {
-// 			startByte = (+ (first instr) 2 (2 * (cmdArg this instr)))
-// 			literalString = (readLiteral this chunkData startByte)
-// 			atPut instr 3 literalString // insert the literal into instruction
-// 		}
-// 	}
-// }
-// xxx
-// method getOpNames MicroBlocksDecompiler {
-// 	// Replace the numerical opcode of each opcode entry with its name except
-// 	// for entries immediately following a pushBigImmediate instruction, which
-// 	// are inline integer constants.
-//
-// 	opcodeDefs = (opcodes (initialize (new 'SmallCompiler')))
-// 	opcodeToName = (range 0 255)
-// 	for p (sortedPairs opcodeDefs false) {
-// 		atPut opcodeToName ((first p) + 1) (last p)
-// 	}
-// 	for i (count opcodes) {
-// 		op = nil
-// 		if ('pushBigImmediate' != lastOp) {
-// 			instr = (at opcodes i)
-// 			op = (at opcodeToName ((at instr 2) + 1))
-// 			atPut instr 2 op
-// 		}
-// 		lastOp = op
-// 	}
-// }
-//
-// method decodeImmediates MicroBlocksDecompiler {
-// 	// Decode values encoded in pushImmediate instructions (true, false, or small integer.)
-//
-// 	for i (count opcodes) {
-// 		instr = (at opcodes i)
-// 		if ('pushImmediate' == (cmdOp this instr)) {
-// 			val = (last instr)
-// 			decoded = val
-// 			if (1 == (val & 1)) {
-// 				decoded = (floor (val / 2)) // small integer
-// 			} (0 == val) {
-// 				decoded = false
-// 			} (4 == val) {
-// 				decoded = true
-// 			} else {
-// 				print 'cannot decode immediate value:' val
-// 			}
-// 			atPut instr 3 decoded
-// 		}
-// 	}
-// }
 
 method recordControlStructure MicroBlocksDecompiler i newRec {
 	// Record a control structure record for the given index.
@@ -783,8 +658,10 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
-		} (and (i == (count opcodes)) (2 == (jumpTarget this cmd))) {
-			return 'ignore' // ignore the final jump of a 'whenCondition'
+		// xxx need a way to detect 'whenCondition' hat blocks
+// 		} (and (i == (count opcodes)) (2 == (jumpTarget this cmd))) {
+// print 'final jump of whenCondition'
+// 			return 'ignore' // ignore the final jump of a 'whenCondition'
 		} else {
 			return 'forever'
 		}
@@ -885,14 +762,12 @@ method codeForSequence MicroBlocksDecompiler start end {
 			op = (first ctrl)
 			next = ((at ctrl 2) + 1)
 		}
-		if ('jmpTrue' == op) { // conditional rexpression
+		if ('placeholder' == op) { // skip placeholders
+			i = next
+		} ('jmpTrue' == op) { // conditional expression
 			i = (decodeConditionalExpression this op i)
 		} (isOneOf op 'jmpAnd' 'jmpOr') { // new style "and" or "or" reporter
 			i = (decodeNewANDorORreporter this op i)
-// 		} ('pushBigImmediate' == op) {
-// 			nextCmd = (at opcodes (i + 1))
-// 			add stack ((((at nextCmd 3) << 8) | (at nextCmd 2)) >> 1) // convert obj to int
-// 			i += 2
 		} ('callFunction' == op) {
 			cmdArg = (cmdArg this cmd)
 			argCount = (cmdArg & 255)
@@ -1098,6 +973,14 @@ method decodeCmd MicroBlocksDecompiler i {
 		}
 		add code whenHat
 
+	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
+		primName = (at cmd 4)
+		if ('commandPrimitive' == op) {
+			add code (buildCmdOrReporter this primName cmdArg false)
+		} else { // reporterPrimitive
+			add stack (buildCmdOrReporter this primName cmdArg true)
+		}
+
 	// everything else
 	} (contains reporters op) {
 		add stack (buildCmdOrReporter this op cmdArg true)
@@ -1110,14 +993,6 @@ method decodeCmd MicroBlocksDecompiler i {
 method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
 	// If optional isReporter arg is not supplied, look up the op in the reporters dictionary.
-
-// xxx can be removed...
-	if (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
-// primSetIndex = ((argCount >> 18) & 63) // 6 bits
-// primNameLiteralOffset = ((argCount >> 8) & 1023) // 10 bits
-// argCount = (argCount & 255) // 8 bits
-// print op primSetIndex primNameLiteralOffset argCount
-	}
 
 	if isReporter {
 		result = (newIndexable 'Reporter' argCount)
