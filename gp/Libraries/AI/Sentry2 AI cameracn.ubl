@@ -1,0 +1,154 @@
+module 'Sentry2 AI camera' Input
+author '邵悦'
+version 1 2 
+choices st2colorMenu red green blue yellow black white 
+choices st2cardMenu Forward Left Right TurnAround Park GreenLight RedLight Speed40 Speed60 Speed80 Check Cross Circle Square Triangle Plus Minus Divide Equal 
+choices st2modeMenu color blob apriltag line learning card face '20classes' 
+choices st2normalpropMenu X Y width heigh label
+choices st2linepropMenu topX topY bottomX bottomY angle
+description 'Sentry2 is a vision sensor which is designed by K210  
+https://tosee.readthedocs.io/zh/latest/Sentry2/Vision/index.html'
+variables _st2_init_flag _st2_i2c_address _sentry2_card_label _st2_result_data _result_data _st2_mode_list _st2_color_tags _st2_current_mode _st2_normal_prop_label _st2_line_prop_label 
+
+  spec ' ' 'Sentry2 init' 'Sentry2 初始化 _' 'num' 96
+  spec ' ' 'Sentry turn' 'Sentry2 设置模式 _ _' 'menu.st2modeMenu bool' 'card' true
+  spec 'r' 'Sentry2_detect_result' 'Sentry2 检测结果 模式编号 _ (0 跟随初始设置)' 'auto' 0
+  spec 'r' 'Sentry get obj' 'Sentry 检测对象 _ 属性 _' 'auto auto' 1 5
+  spec 'r' 'Sentry2 detect card' 'Sentry2 检测到卡片 _ 对象id _' 'menu.st2cardMenu auto' 'Forward' 1
+  spec 'r' 'Sentry2 detect color' 'Sentry2 检测到颜色 _ 对象id _' 'menu.st2colorMenu auto' 'red' 1
+  spec 'r' 'Sentry detect normalobj' 'Sentry2 一般检测对象 _ 属性 _' 'auto menu.st2normalpropMenu' 1 'X'
+  spec 'r' 'Sentry2 detect lineobj' 'Sentry2 线条检测对象 _ 属性 _' 'auto menu.st2linepropMenu' '1' 'topX' 
+  spec 'r' 'Sentry get color' 'Sentry 获取 RGB 颜色 _' 'auto' 1
+  spec 'r' 'sentry2_get_cardlabel' 'Sentry2 获取卡片标签 _' 'auto' 1
+  spec 'r' 'Sentry2 get color label' 'Sentry2 获取颜色标签 _' 'auto' 1
+  spec 'r' '_st2_get_u16' '_st2_get_u16 _' 'auto' '10'
+  spec ' ' '_st2_sensor_reg_lock' '_st2_sensor_reg_lock _' 'bool' true
+  spec 'r' '_st2_obj_data' '_st2_obj_data _' 'auto' 1
+  spec 'r' '_st2_get_modeid' '_st2_modeid _' 'auto' 'apriltag'
+  spec 'r' '_st2_get_label' '_st2_get_label _ index _' 'auto auto' 0 1
+
+to 'Sentry detect normalobj' objid foo {
+  local 'var' ('[data:find]' foo _st2_normal_prop_label)
+  if (var > 0) {
+    return ('Sentry get obj' objid var)
+  }
+  return (booleanConstant false)
+}
+
+to 'Sentry get color' objid {
+  if (and (objid > 0) (objid <= (Sentry2_detect_result 0))) {return (((at 1 (at objid _st2_result_data)) << 18) | (((at 2 (at objid _st2_result_data)) << 8) | (at 3 (at objid _st2_result_data))))}
+  return (booleanConstant false)
+}
+
+to 'Sentry get obj' id foo {
+  if (id <= (size _st2_result_data)) {return (ifExpression (foo <= (size (at id _st2_result_data))) (at foo (at id _st2_result_data)) 0)}
+  return 0
+}
+
+to 'Sentry turn' mode foo {
+  mode = ('_st2_get_modeid' mode)
+  if (or (0 == _st2_i2c_address) (0 == mode)) {
+    return 0
+  }
+  i2cSet _st2_i2c_address (hexToInt '20') mode
+  i2cSet _st2_i2c_address (hexToInt '21') (ifExpression foo 1 0)
+  if foo {
+    _st2_current_mode = mode
+  } else {
+    _st2_current_mode = 0
+  }
+}
+
+to 'Sentry2 detect card' foo bar {
+  if (and (bar > 0) (bar <= (Sentry2_detect_result 0))) {return (foo == (sentry2_get_cardlabel ('Sentry get obj' bar 5)))}
+  return (booleanConstant false)
+}
+
+to 'Sentry2 detect color' foo bar {
+  if (and (bar > 0) (bar <= (Sentry2_detect_result 0))) {return (foo == ('Sentry2 get color label' ('Sentry get obj' bar 5)))}
+  return (booleanConstant false)
+}
+
+to 'Sentry2 detect lineobj' objid foo {
+  local 'var' ('[data:find]' foo _st2_line_prop_label)
+  if (var > 0) {
+    return ('Sentry get obj' objid var)
+  }
+  return (booleanConstant false)
+}
+
+to 'Sentry2 get color label' foo {
+  return ('_st2_get_label' _st2_color_tags foo)
+}
+
+to 'Sentry2 init' foo {
+  comment 'default i2c address 0x60 96'
+  _st2_i2c_address = (minimum 99 (maximum 96 foo))
+  _st2_mode_list = ('[data:makeList]' 'color' 'blob' 'apriltag' 'line' 'learning' 'card' 'face' '20classes')
+  _st2_color_tags = ('[data:makeList]' 'black' 'white' 'red' 'green' 'blue' 'yellow')
+  _sentry2_card_label = ('[data:split]' 'Forward,Left,Right,TurnAround,Park,GreenLight,RedLight,Speed40,Speed60,Speed80,Check,Cross,Circle,Square,Triangle,Plus,Minus,Divide,Equal,' ',')
+  _st2_normal_prop_label = ('[data:makeList]' 'X' 'Y' 'width' 'heigh' 'label')
+  _st2_line_prop_label = ('[data:makeList]' 'topX' 'topY' 'bottomX' 'bottomY' 'angle')
+  if ((i2cGet _st2_i2c_address 1) == 4) {
+    i2cSet _st2_i2c_address (hexToInt '04') ((i2cGet _st2_i2c_address (hexToInt '04')) | (hexToInt '08'))
+    _st2_init_flag = 1
+  }
+}
+
+to Sentry2_detect_result mode {
+  comment '0 use current preset mode'
+  if (mode == 0) {
+    mode = _st2_current_mode
+  }
+  '_st2_sensor_reg_lock' true
+  i2cSet _st2_i2c_address (hexToInt '20') mode
+  comment 'detect count'
+  local 'result_count' (i2cGet _st2_i2c_address (hexToInt '34'))
+  if (0 != result_count) {
+    _st2_result_data = (newList result_count)
+    for i result_count {
+      atPut i _st2_result_data ('_st2_obj_data' i)
+    }
+  } else {
+    _st2_result_data = 0
+  }
+  '_st2_sensor_reg_lock' false
+  return result_count
+}
+
+to '_st2_get_label' label_list foo {
+  if (isType label_list 'list') {if (and (foo > 0) (foo < (size label_list))) {
+    return (at foo label_list)
+  }}
+  return ''
+}
+
+to '_st2_get_modeid' foo {
+  comment 'color,blob,apriltag,learning,card,face,20classes,'
+  local 'var' ('[data:find]' foo _st2_mode_list)
+  return (ifExpression (var > 0) var 0)
+}
+
+to '_st2_get_u16' foo {
+  return (((i2cGet _st2_i2c_address foo) << 8) | (i2cGet _st2_i2c_address (foo + 1)))
+}
+
+to '_st2_obj_data' obj_id {
+  comment 'get dectect obj info by obj_id'
+  i2cSet _st2_i2c_address (hexToInt '35') obj_id
+  local 'var' (newList 5)
+  for i 5 {
+    atPut i var ('_st2_get_u16' ((hexToInt '80') + ((i - 1) * 2)))
+  }
+  return var
+}
+
+to '_st2_sensor_reg_lock' foo {
+  if ((1 == (i2cGet _st2_i2c_address (hexToInt '05'))) == foo) {return 0}
+  i2cSet _st2_i2c_address (hexToInt '05') (ifExpression foo 1 0)
+}
+
+to sentry2_get_cardlabel foo {
+  return ('_st2_get_label' _sentry2_card_label foo)
+}
+
