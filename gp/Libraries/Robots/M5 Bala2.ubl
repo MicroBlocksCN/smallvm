@@ -1,0 +1,98 @@
+module 'M5 Bala2'
+author '邵悦'
+version 1 0 
+description 'M5stack BALA2 Calibration
+'
+variables _m5bala_i2c_addr _m5bala_servo3_angle 
+
+  spec ' ' 'M5 Bala set speed' 'M5 Bala set motor _ speed _' 'auto auto' 'left' 30
+  spec ' ' '_m5bala_init' '_m5bala_init'
+  spec 'r' 'M5 Bala get encoder' 'M5 Bala get encoder _' 'auto' 'left'
+  spec ' ' 'M5 Bala set encoder' 'M5 Bala set encoder _ value _' 'auto auto' 'left' '10'
+  spec ' ' 'M5 Bala set servo' 'M5 Bala set servo _ angle _' 'auto auto' 4 90
+  spec ' ' 'M5 bala set servo3 angle' 'M5 bala set servo3 angle _' 'auto' 150
+
+to 'M5 Bala get encoder' foo {
+  '_m5bala_init'
+  '[sensors:i2cWrite]' _m5bala_i2c_addr (hexToInt '10')
+  local 'var' (newList 8 0)
+  '[sensors:i2cRead]' _m5bala_i2c_addr var
+  local 'encoderL' (((at 4 var) | ((at 2 var) << 16)) | ((at 3 var) << 8))
+  local 'encoderR' (((at 8 var) | ((at 6 var) << 16)) | ((at 7 var) << 8))
+  encoderL = (ifExpression (encoderL > 16777216) (16777216 - encoderL) encoderL)
+  encoderR = (ifExpression (encoderR > 16777216) (encoderR - 2) encoderR)
+  if (foo == 'left') {
+    return encoderL
+  } (foo == 'right') {
+    return encoderR
+  } (foo == 'all') {
+    return ('[data:makeList]' encoderL encoderR)
+  }
+}
+
+to 'M5 Bala set encoder' foo bar {
+  '_m5bala_init'
+  if ('left' == foo) {
+    i2cSet _m5bala_i2c_addr (hexToInt '10') 0
+    i2cSet _m5bala_i2c_addr (hexToInt '11') 0
+    i2cSet _m5bala_i2c_addr (hexToInt '12') (bar >> 8)
+    i2cSet _m5bala_i2c_addr (hexToInt '13') (bar & 255)
+  } ('right' == foo) {
+    i2cSet _m5bala_i2c_addr (hexToInt '14') 0
+    i2cSet _m5bala_i2c_addr (hexToInt '15') 0
+    i2cSet _m5bala_i2c_addr (hexToInt '16') (bar >> 8)
+    i2cSet _m5bala_i2c_addr (hexToInt '17') (bar & 255)
+  } ('all' == foo) {
+    '[sensors:i2cWrite]' _m5bala_i2c_addr ('[data:join]' ('[data:makeList]' (hexToInt '10')) ('[data:makeList]' 0 0 (bar >> 8) (bar & 255)) ('[data:makeList]' 0 0 (bar >> 8) (bar & 255)))
+  }
+}
+
+to 'M5 Bala set servo' foo bar {
+  '_m5bala_init'
+  foo = (maximum 1 (minimum 4 foo))
+  bar = (maximum 0 (minimum 180 bar))
+  i2cSet _m5bala_i2c_addr ((hexToInt '20') + (foo - 1)) bar
+}
+
+to 'M5 Bala set speed' foo bar {
+  '_m5bala_init'
+  bar = (minimum 100 (maximum -100 bar))
+  bar = ('[misc:rescale]' bar -100 100 -1023 1023)
+  if (bar > 0) {
+    bar = (65536 - bar)
+  } else {
+    bar = (0 - bar)
+  }
+  if ('left' == foo) {
+    i2cSet _m5bala_i2c_addr 0 (bar >> 8)
+    i2cSet _m5bala_i2c_addr 1 (bar & 255)
+  } ('right' == foo) {
+    i2cSet _m5bala_i2c_addr 2 (bar >> 8)
+    i2cSet _m5bala_i2c_addr 3 (bar & 255)
+  } ('all' == foo) {
+    i2cSet _m5bala_i2c_addr 0 (bar >> 8)
+    i2cSet _m5bala_i2c_addr 1 (bar & 255)
+    i2cSet _m5bala_i2c_addr 2 (bar >> 8)
+    i2cSet _m5bala_i2c_addr 3 (bar & 255)
+  }
+}
+
+to 'M5 bala set servo3 angle' foo {
+  foo = (maximum 0 (minimum 180 foo))
+  '_m5bala_init'
+  for i ('[data:range]' _m5bala_servo3_angle foo) {
+    'M5 Bala set servo' 3 i
+    waitMillis 10
+  }
+  _m5bala_servo3_angle = foo
+}
+
+to '_m5bala_init' {
+  if (_m5bala_i2c_addr == 0) {
+    _m5bala_i2c_addr = (hexToInt '3A')
+    'M5 Bala set servo' 4 36
+    'M5 Bala set servo' 3 150
+    _m5bala_servo3_angle = 150
+  }
+}
+
