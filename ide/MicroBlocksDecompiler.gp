@@ -190,7 +190,7 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 		print '----'
 	}
 
-	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }  // remove final halt
+	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes } // remove final halt
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
 	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
@@ -275,7 +275,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			extraWords += 1
 		} ('callFunction' == op) {
 			// 16-bit arg is chunk ID (high byte) and arg count (low byte); arg byte ignored
-			arg = ((at chunkData i)  | ((at chunkData (i + 1)) << 8))
+			arg = ((at chunkData i) | ((at chunkData (i + 1)) << 8))
 			extraWords += 1
 		}
 		if ('codeEnd' != op) {
@@ -566,7 +566,7 @@ method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
 			slotType = (first (slotInfoForIndex spec i))
 			val = (at args i)
 			if (and ('color' == slotType) (isClass val 'Integer')) {
-				c = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
+				c = (color ((val >> 16) & 255) ((val >> 8) & 255) (val & 255))
 				setArg block i c
 			} (and ('bool' != slotType) (isClass val 'Boolean') ) {
 				setArg block i (newReporter 'booleanConstant' val)
@@ -783,7 +783,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 			}
 		} ('multiple' == op) {
 			// Remove and process the outer-most control structure (the last one in the list).
-			// This does  a recursive call to codeForSequence, but with one fewer control
+			// This does a recursive call to codeForSequence, but with one fewer control
 			// structures in the 'multiple' list. Recursion terminates when there are no more
 			// control structures.
 			cmd = (removeLast ctrl)
@@ -839,7 +839,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 		if (not (isEmpty stack)) { error 'incomplete sequence?' }
 		if (notEmpty code) {
 			lastCmd = nil
-			for cmd code {  // chain all commands together
+			for cmd code { // chain all commands together
 				if (notNil lastCmd) {
 					setField lastCmd 'nextBlock' cmd
 				}
