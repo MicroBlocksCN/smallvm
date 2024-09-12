@@ -490,8 +490,8 @@ method initOpcodes SmallCompiler {
 		reporterPrimitive 123
 		callCustomCommand 124
 		callCustomReporter 125
-		callCommandPrimitive 126
-		callReporterPrimitive 127
+	RESERVED 126 // old callCommandPrimitive 126
+		codeEnd 127 // old callReporterPrimitive 127
 		metadata 248'
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
@@ -1219,7 +1219,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 		add bytes (headerWord & 255)
 		headerWord = (headerWord >> 8)
 	}
-	for i byteCount {
+	for i byteCount { // add string bytes (UTF8 encoding)
 		add bytes (byteAt s i)
 	}
 	repeat (4 - (byteCount % 4)) { // pad with zeros to next word boundary
