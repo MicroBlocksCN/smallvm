@@ -540,7 +540,7 @@ method initPrimsets SmallCompiler {
 
 method instructionsFor SmallCompiler aBlockOrFunction {
 	// Return a list of instructions for the given block, script, or function.
-	// Add a 'halt' if needed and append any literals (e.g. strings) used.
+	// Add a 'codeEnd' opcode and append literal strings and metadata.
 
 	if (and (isClass aBlockOrFunction 'Block') (isPrototypeHat aBlockOrFunction)) {
 		// function definition hat: get its function
@@ -573,18 +573,17 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			addAll result (instructionsForWhenCondition this cmdOrReporter)
 		} ('whenButtonPressed' == op) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} ('whenStarted' == op) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} ('whenBroadcastReceived' == op) {
 			addAll result (instructionsForExpression this (first (argList cmdOrReporter)))
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
 			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
 				if (isEmpty (argNames func)) {
+					// Mark functions without arguments so they can be invoked
+					// by broadcasting the function name.
 					add result (array 'pushLiteral' (functionName func))
 					add result (array 'placeholder' 0)
 					add result (array 'recvBroadcast' 1)
@@ -598,10 +597,16 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			}
 		} else {
 			addAll result (instructionsForCmdList this cmdOrReporter)
-			add result (array 'halt' 0)
 		}
 	} else {
 		addAll result (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
+	}
+	add result (array 'codeEnd' 0)
+	if (((count result) % 2) == 1) {
+		// Ensure that there are an even number of 16-bit instruction words so that any
+		// literal string objects following the instructions are aligned to a 32-bit word
+		// boundary as required by the object system.
+		add result (array 'codeEnd' 0)
 	}
 	appendLiterals this result
 	appendDecompilerMetadata this aBlockOrFunction result
