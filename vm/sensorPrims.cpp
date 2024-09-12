@@ -53,6 +53,9 @@
 #elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)|| defined(M5_DIN_METER) || defined(M5_ATOMS3LITE)
 	#define PIN_WIRE_SCL 1
 	#define PIN_WIRE_SDA 2
+#elif defined(TX_FT_BOX)
+	#define PIN_WIRE_SCL 40
+	#define PIN_WIRE_SDA 39	
 #elif defined(ARDUINO_M5STACK_CORES3)
 	#define PIN_WIRE_SCL 11
 	#define PIN_WIRE_SDA 12
