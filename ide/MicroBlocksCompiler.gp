@@ -9,6 +9,9 @@
 
 defineClass SmallCompiler opcodes primsets argNames localVars trueObj falseObj zeroObj stringClassID
 
+method opcodes SmallCompiler { return opcodes }
+method primsets SmallCompiler { return primsets }
+
 method initialize SmallCompiler {
 	initOpcodes this
 	initPrimsets this
@@ -357,8 +360,6 @@ method initMicroBlocksSpecs SmallCompiler {
 		addSpecs authoringSpecs (microBlocksSpecs this)
 	}
 }
-
-method opcodes SmallCompiler { return opcodes }
 
 method initOpcodes SmallCompiler {
 	// Initialize the opcode dictionary. Note: This must match the opcode table in interp.c!
