@@ -1,0 +1,92 @@
+module '学而思掌机'
+author maikemaker
+version 1 1 
+depends Tone 
+choices DirMenu fwd bwd 
+choices FxkeyMenu up down left right 
+choices MotorMenu M1 M2 both 
+description '学而思掌机（小喵代工）
+Supports:
+右额头两颗LED
+两个马达
+6个按键
+4个IO口
+一个IIC
+一个蜂鸣器
+板载陀螺仪温度亮度请加载基础传感器库使用
+2024.9.10
+V1.1设置按键上拉模式,修改马达写法(参考麦昆) 2024.9.14
+'
+
+  spec 'r' 'port' 'port _' 'auto' 1
+  spec 'r' 'direction button' 'direction button _' 'menu.FxkeyMenu' 'up'
+  spec ' ' 'buzzer init' 'buzzer init'
+  spec ' ' 'LED1(left red)' 'LED1(left red) _' 'bool' true
+  spec ' ' 'LED2(right green)' 'LED2(right green) _' 'bool' true
+  spec ' ' '注意：马达需要使用USB供电' '注意：马达需要使用USB供电'
+  spec ' ' 'xueersi motor' 'xueersi motor _ dir _ speed(0-255) _' 'menu.MotorMenu menu.DirMenu auto' 'both' 'fwd' 200
+  spec ' ' 'stop motor' 'stop motor'
+
+to 'LED1(left red)' foo {
+  if foo {
+    i2cSet 64 160 1
+  } else {
+    i2cSet 64 160 0
+  }
+}
+
+to 'LED2(right green)' foo {
+  if foo {
+    i2cSet 64 161 1
+  } else {
+    i2cSet 64 161 0
+  }
+}
+
+to 'buzzer init' {
+  'attach buzzer to pin' 14
+}
+
+to 'direction button' foo {
+  return (not (digitalReadOp (at ('[data:find]' foo ('[data:makeList]' 'up' 'down' 'left' 'right')) ('[data:makeList]' 2 13 27 35)) 'up'))
+}
+
+to port foo {
+  return (at foo ('[data:makeList]' 33 32 26 25))
+}
+
+to 'stop motor' {
+  '[sensors:i2cWrite]' 64 ('[data:makeList]' 0 0 0 0 0)
+}
+
+to 'xueersi motor' lrb dir speed {
+  local 'B' ((speed * 16) / 256)
+  local 'A' ((speed * 16) - (B * 256))
+  local 'dataList' ('[data:makeList]' 0 0 0 0 0 0 0 0 0)
+  if (dir == 'fwd') {
+    atPut 4 dataList A
+    atPut 5 dataList B
+  } (dir == 'bwd') {
+    atPut 8 dataList A
+    atPut 9 dataList B
+  }
+  if (lrb == 'M1') {
+    atPut 1 dataList 14
+    '[sensors:i2cWrite]' 64 dataList
+  } (lrb == 'M2') {
+    atPut 1 dataList 6
+    '[sensors:i2cWrite]' 64 dataList
+  } (lrb == 'both') {
+    atPut 1 dataList 14
+    '[sensors:i2cWrite]' 64 dataList
+    waitMillis 1
+    atPut 1 dataList 6
+    '[sensors:i2cWrite]' 64 dataList
+  }
+  waitMillis 50
+}
+
+to '注意：马达需要使用USB供电' {
+  sayIt '注意：马达需要使用USB供电' 'Attention: The motor requires USB power supply'
+}
+
