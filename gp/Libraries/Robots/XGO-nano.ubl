@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 3 00 
+version 3 1 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -35,8 +35,10 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   space
   spec ' ' '设置迈步频率为' '设置迈步频率为 _' 'menu.speed_Menu num' '正常'
   spec ' ' '设置运动步态为' '设置运动步态为 _' 'menu.gait_Menu num' '对角'
-  spec ' ' '单个舵机运动' '设置 _  腿 _ 关节舵机转动至 _ °' 'menu.leg_Menu menu.motor_Menu num' '左前' '上（-30°-30°）' 40
+  spec ' ' '单个舵机运动' '设置 _  腿 _ 关节舵机转动至 _ °' 'menu.leg_Menu menu.motor_Menu num' '左前' '上（-30°-30°）' 10
   spec ' ' '机械臂运动' '设置机械臂 _ 关节舵机转动至 _ °' 'menu.arm_Menu num' '上（-65°-65°）' 40
+  spec ' ' '设置舵机运动速度' '舵机运动速度 _' 'auto' '200'
+  spec ' ' '设置机械臂运动速度' '机械臂运动速度 _' 'auto' '200'
   space
   spec ' ' '执行命令' '执行命令 _' 'menu.action_Menu' '趴下'
   spec ' ' '机器狗平移' '向 _ 步幅为 _ 毫米持续 _ 毫秒' 'menu.move_Menu num num' '前平移（0mm~25mm）' 15 3000
@@ -616,6 +618,18 @@ to '表演模式' mode {
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
     '_串口结束'
   }
+}
+
+to '设置机械臂运动速度' pos {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 117 pos))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' 127 ('_conver2u8t' 0 255 pos)))))
+  '_串口结束'
+}
+
+to '设置舵机运动速度' pos {
+  _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 92 pos))
+  _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ('_修正后的余数' 102 ('_conver2u8t' 0 255 pos)))))
+  '_串口结束'
 }
 
 to '设置转动到角度' angle {
