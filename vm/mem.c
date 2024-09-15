@@ -49,7 +49,7 @@
   #define OBJSTORE_BYTES 14000
 #elif defined(ARDUINO_M5Stick_C2)
   #define OBJSTORE_BYTES 160000
-#elif defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(HALOCODE) 
+#elif defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(HALOCODE) || defined(XESGAME)
   #define OBJSTORE_BYTES 200000 // will be allocated from PSRAM
 #elif defined(HAS_CAMERA)
   #define OBJSTORE_BYTES 240000 // will be allocated from PSRAM
