@@ -128,7 +128,7 @@ to 'MIDI_select MIDI drum kit' drumkit {
 
 to 'MIDI_select MIDI instrument' 'instrument type' 'instrument number' channel variation {
   local 'programChangeCmd' 12
-  '_MIDI command' programChangeCmd channel ((v 'instrument number') - 1)
+  '_MIDI command' programChangeCmd channel ((MIDI_instrument (v 'instrument type') (v 'instrument number')) - 1)
 }
 
 to 'MIDI_send MIDI continue playing' {
