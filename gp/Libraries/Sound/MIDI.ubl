@@ -1,12 +1,12 @@
 module MIDI Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
+choices sfx 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' seashore rain thunder wind stream bubble bird dog horse 'telephone 1' 'telephone 2' 'door creaking' door scratch windchime helicopter 'car engine' 'car stop' 'car pass' 'car crash' siren train 'jet plane' starship 'burst noise' applause laughing screaming punch 'heart beat' footstep 'gun shot' 'machine gun' 'laser gun' explosion 
 choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
-choices sfx 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' 'seashore' 'rain' 'thunder' 'wind' 'stream' 'bubble' 'bird' 'dog' 'horse' 'telephone 1' 'telephone 2' 'door creaking' 'door' 'scratch' 'windchime' 'helicopter' 'car engine' 'car stop' 'car pass' 'car crash' 'siren' 'train' 'jet plane' 'starship' 'burst noise' 'applause' 'laughing' 'screaming' 'punch' 'heart beat' 'footstep' 'gun shot' 'machine gun' 'laser gun' 'explosion'
 description 'Control MIDI devices. By default, it interfaces the hardware serial port, but it also supports software serial and USB MIDI.
 
 Software Serial Ports
@@ -54,30 +54,12 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   space
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
-to 'MIDI_play MIDI SFX' sfx duration volume channel {
-  return ('[data:makeList]' 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' 'seashore' 'rain' 'thunder' 'wind' 'stream' 'bubble' 'bird' 'dog' 'horse' 'telephone 1' 'telephone 2' 'door creaking' 'door' 'scratch' 'windchime' 'helicopter' 'car engine' 'car stop' 'car pass' 'car crash' 'siren' 'train' 'jet plane' 'starship' 'burst noise' 'applause' 'laughing' 'screaming' 'punch' 'heart beat' 'footstep' 'gun shot' 'machine gun' 'laser gun' 'explosion')
-}
-
 to 'MIDI_change MIDI control' control channel value {
   local 'controlChangeCmd' 11
   local 'controller' (at (ifExpression (isType control 'number') control ('[data:find]' control ('[data:makeList]' 'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2'))) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93))
   comment 'Make sure Roland synths get these as NRPN messages'
-  _MIDI_Roland_control controller value channel
+  '_MIDI_Roland_control' controller value channel
   '_MIDI command' controlChangeCmd channel controller value
-}
-
-to _MIDI_Roland_control control value channel {
-  if (control == 71) {
-    '_MIDI_NRPN' 1 33 channel value
-  } (control == 72) {
-    '_MIDI_NRPN' 1 102 channel value
-  } (control == 73) {
-    '_MIDI_NRPN' 1 99 channel value
-  } (control == 74) {
-    '_MIDI_NRPN' 1 32 channel value
-  } (control == 75) {
-    '_MIDI_NRPN' 1 100 channel value
-  }
 }
 
 to 'MIDI_drum note' instrument {
@@ -100,6 +82,10 @@ to 'MIDI_pitch bend channel' channel percent {
   local 'pitchBendCmd' 14
   local 'bendMSB' (maximum 0 (minimum (((64 * percent) / 100) + 64) 127))
   '_MIDI command' pitchBendCmd channel 0 bendMSB
+}
+
+to 'MIDI_play MIDI SFX' sfx duration volume channel {
+  return ('[data:makeList]' 'guitar fret noise' 'guitar cut noise' 'string slap' 'flute key click' 'seashore' 'rain' 'thunder' 'wind' 'stream' 'bubble' 'bird' 'dog' 'horse' 'telephone 1' 'telephone 2' 'door creaking' 'door' 'scratch' 'windchime' 'helicopter' 'car engine' 'car stop' 'car pass' 'car crash' 'siren' 'train' 'jet plane' 'starship' 'burst noise' 'applause' 'laughing' 'screaming' 'punch' 'heart beat' 'footstep' 'gun shot' 'machine gun' 'laser gun' 'explosion')
 }
 
 to 'MIDI_play MIDI drum' drumName duration volume {
@@ -253,6 +239,20 @@ to '_MIDI_NRPN' msb lsb channel value {
   '_MIDI command' 11 channel 99 msb
   '_MIDI command' 11 channel 98 lsb
   '_MIDI command' 11 channel 6 value
+}
+
+to '_MIDI_Roland_control' control value channel {
+  if (control == 71) {
+    '_MIDI_NRPN' 1 33 channel value
+  } (control == 72) {
+    '_MIDI_NRPN' 1 102 channel value
+  } (control == 73) {
+    '_MIDI_NRPN' 1 99 channel value
+  } (control == 74) {
+    '_MIDI_NRPN' 1 32 channel value
+  } (control == 75) {
+    '_MIDI_NRPN' 1 100 channel value
+  }
 }
 
 to '_trimmedLowercase' s {
