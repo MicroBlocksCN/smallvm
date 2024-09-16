@@ -1247,56 +1247,6 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
-	// micro:bit operations:
-	mbDisplay_op:
-		primMBDisplay(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbDisplayOff_op:
-		primMBDisplayOff(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbPlot_op:
-		primMBPlot(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbUnplot_op:
-		primMBUnplot(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbTiltX_op:
-		*(sp - arg) = primMBTiltX(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTiltY_op:
-		*(sp - arg) = primMBTiltY(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTiltZ_op:
-		*(sp - arg) = primMBTiltZ(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTemp_op:
-		*(sp - arg) = primMBTemp(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	neoPixelSend_op:
-		primNeoPixelSend(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	drawShape_op:
-		primMBDrawShape(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	shapeForLetter_op:
-		*(sp - arg) = primMBShapeForLetter(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	neoPixelSetPin_op:
-		primNeoPixelSetPin(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-
 	pushHugeInteger_op:
 		// push integer object that requires 32 bits
 		STACK_CHECK(1);
