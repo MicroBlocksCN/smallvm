@@ -911,6 +911,7 @@ method instructionsForJump SmallCompiler jumpOp offset {
 		return (list (array jumpOp offset)) // non-zero offset that fits into 8 bits
 	}
 	// extended jump: signed offset in the next word
+	if (offset < 0) { offset += -1 }  // adjust negative offset to account for extra word
 	return (list
 		(array jumpOp offset)
 		(array 'placeholder' 0))

@@ -702,28 +702,28 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
-		if (!arg) arg = *ip; // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
 #endif
 		DISPATCH();
 	jmpTrue_op:
-		if (!arg) arg = (*ip++ - 1); // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (trueObj == (*--sp)) ip += arg;
 #if USE_TASKS
 		if ((arg < 0) && (trueObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	jmpFalse_op:
-		if (!arg) arg = (*ip++ - 1); // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (trueObj != (*--sp)) ip += arg; // treat any value but true as false
 #if USE_TASKS
 		if ((arg < 0) && (trueObj != *sp)) goto suspend;
 #endif
 		DISPATCH();
 	 decrementAndJmp_op:
-		if (!arg) arg = (*ip++ - 1); // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (isInt(*(sp - 1))) {
 			tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter (normal case)
 		} else {
@@ -895,12 +895,12 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	jmpOr_op:
-		if (!arg) arg = (*ip++ - 1); // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		// if true, jump leaving true (result of "or" expression) on stack, otherwise pop
 		if (trueObj == *(sp - 1)) { ip += arg; } else { sp--; }
 		DISPATCH();
 	jmpAnd_op:
-		if (!arg) arg = (*ip++ - 1); // zero arg means offset is in the next word
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		// if not true, push false (result of "and" expression) on stack and jump
 		if (trueObj != (*--sp)) { // treat any value but true as false
 			*sp++ = falseObj;
