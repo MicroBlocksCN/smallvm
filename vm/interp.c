@@ -467,9 +467,9 @@ static void runTask(Task *task) {
 		&&pushImmediate_op,
 		&&pushLargeInteger_op,
 		&&pushLiteral_op,
-		&&pushVar_op,
-		&&storeVar_op,
-		&&incrementVar_op,
+		&&pushGlobal_op,
+		&&storeGlobal_op,
+		&&incrementGlobal_op,
 		&&pushArgCount_op,
 		&&pushArg_op,
 		&&storeArg_op, // 10
@@ -643,14 +643,14 @@ static void runTask(Task *task) {
 		tmp = *ip; // offset to the literal is in the following 16-bit word
 		*sp++ = (OBJ) (ip++ + tmp);
 		DISPATCH();
-	pushVar_op:
+	pushGlobal_op:
 		STACK_CHECK(1);
 		*sp++ = vars[arg];
 		DISPATCH();
-	storeVar_op:
+	storeGlobal_op:
 		vars[arg] = *--sp;
 		DISPATCH();
-	incrementVar_op:
+	incrementGlobal_op:
 		tmp = evalInt(vars[arg]);
 		if (!errorCode) {
 			vars[arg] = int2obj(tmp + evalInt(*--sp));

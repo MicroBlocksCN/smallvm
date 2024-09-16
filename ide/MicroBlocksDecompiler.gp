@@ -898,11 +898,11 @@ method decodeCmd MicroBlocksDecompiler i {
 		add stack cmdArg
 
 	// Variables
-	} ('pushVar' == op) {
+	} ('pushGlobal' == op) {
 		add stack (newReporter 'v' (globalVarName this cmdArg))
-	} ('storeVar' == op) {
+	} ('storeGlobal' == op) {
 		add code (newCommand '=' (globalVarName this cmdArg) (removeLast stack))
-	} ('incrementVar' == op) {
+	} ('incrementGlobal' == op) {
 		add code (newCommand '+=' (globalVarName this cmdArg) (removeLast stack))
 	} ('pushArgCount' == op) {
 		add stack (newReporter 'pushArgCount')

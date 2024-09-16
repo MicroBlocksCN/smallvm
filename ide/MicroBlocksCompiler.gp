@@ -370,9 +370,9 @@ method initOpcodes SmallCompiler {
 		pushImmediate 2		// true, false, and ints that fit in 8 bits
 		pushLargeInteger 3	// ints that fit in 24 bits
 		pushLiteral 4		// string or array constant from literals frame
-		pushVar 5
-		storeVar 6
-		incrementVar 7
+		pushGlobal 5
+		storeGlobal 6
+		incrementGlobal 7
 		pushArgCount 8
 		pushArg 9
 		storeArg 10
@@ -996,7 +996,7 @@ method getVar SmallCompiler varName {
 		return (array 'pushArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'pushVar' globalID) }
+	if (notNil globalID) { return (array 'pushGlobal' globalID) }
 }
 
 method setVar SmallCompiler varName {
@@ -1006,7 +1006,7 @@ method setVar SmallCompiler varName {
 		return (array 'storeArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'storeVar' globalID) }
+	if (notNil globalID) { return (array 'storeGlobal' globalID) }
 }
 
 method incrementVar SmallCompiler varName {
@@ -1016,7 +1016,7 @@ method incrementVar SmallCompiler varName {
 		return (array 'incrementArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'incrementVar' globalID) }
+	if (notNil globalID) { return (array 'incrementGlobal' globalID) }
 }
 
 method globalVarIndex SmallCompiler varName {
