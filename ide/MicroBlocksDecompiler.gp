@@ -226,7 +226,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		i += 2
 		if ('pushImmediate' == op) { // arg is a boolean or an integer object that fits in 8 bits
 			if (1 == (arg & 1)) {
-				arg = (floor (arg / 2)) // small integer
+				arg = ((arg << 24) >> 25) // small integer (7 bits, signed)
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
