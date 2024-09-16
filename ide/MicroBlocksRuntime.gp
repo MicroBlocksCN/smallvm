@@ -150,6 +150,13 @@ method showInstructions SmallRuntime aBlock {
 		} ('placeholder' == (first item)) {
 			addWithLineNum this result '<data>'
 		} else {
+	        if (isOneOf (first item) 'commandPrimitive' 'reporterPrimitive') {
+	            // re-order item to display argCount last
+	            item = (copy item)
+	            argCount = (at item 4)
+	            atPut item 4 (at item 5)
+	            atPut item 5 argCount
+	        }
 			// instruction (an array of form <cmd> <args...>)
 			instr = (join '[' (opcodeForInstr compiler (at item 1)) '] ')
 			for s item { instr = (join instr s ' ') }
@@ -159,7 +166,7 @@ method showInstructions SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	setExtent (morph ws) (400 * (global 'scale')) (400 * (global 'scale'))
 	fixLayout ws
 }
 
@@ -169,8 +176,13 @@ method addWithLineNum SmallRuntime aList instruction items {
 	if (and
 		(notNil items)
 		(isOneOf (first items)
-			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
+			'pushLiteral' 'jmp' 'longJmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
 		offset = (toInteger (last items))
+		if ('pushLiteral' != (first items)) {
+		    if (or (0 == offset) (offset < -128) (offset > 127) ('longJmp' != (first items))) {
+		        offset += 1
+		    }
+		}
 		targetLine = (join ' (line ' (+ currentLine 1 offset) ')')
 	}
 	add aList (join '' currentLine ' ' instruction targetLine)
