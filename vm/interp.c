@@ -613,6 +613,7 @@ static void runTask(Task *task) {
 		tmp = ((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
 		task->status = unusedTask;
+		if (unusedTask == tasks[taskCount - 1].status) taskCount--;
 		errorCode = noError; // clear the error
 		goto suspend;
 	suspend:
@@ -625,6 +626,7 @@ static void runTask(Task *task) {
 	halt_op:
 		sendTaskDone(task->taskChunkIndex);
 		task->status = unusedTask;
+		if (unusedTask == tasks[taskCount - 1].status) taskCount--;
 		goto suspend;
 	noop_op:
 		DISPATCH();
@@ -1322,13 +1324,12 @@ static void runTask(Task *task) {
 
 // Interpreter Entry Point
 
-static int currentTaskIndex = -1;
-
 #if !defined(EMSCRIPTEN)
 
 void vmLoop() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
+	int currentTaskIndex = 0;
 	int count = 0;
 	while (true) {
 		if (count-- < 0) {
@@ -1357,12 +1358,12 @@ void vmLoop() {
 				break;
 			} else if (waiting_micros == task->status) {
 				if (!usecs) usecs = microsecs(); // get usecs
-				if ((usecs - task->wakeTime) < RECENT) task->status = running;
-			}
-			if (running == task->status) {
-				runTask(task);
-				runCount++;
-				break;
+				if ((usecs - task->wakeTime) < RECENT) {
+					task->status = running;
+					runTask(task);
+					runCount++;
+					break;
+				}
 			}
 		}
 		if (taskSleepMSecs) {
@@ -1402,6 +1403,8 @@ void vmLoop() {
 
 int shouldYield = false;
 void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
+
+static int currentTaskIndex = 0; // remember this across calls to interpretStep()
 
 void interpretStep() {
 	uint32 endTime = millisecs() + 15;
