@@ -1,0 +1,240 @@
+module 'M5 Roller485'
+author '邵悦'
+version 1 0 
+description 'Roller485 Unit with BLDC Motor 
+https://shop.m5stack.com/products/roller485-unit-with-bldc-motor-stm32'
+variables _M5_roller_addr 
+
+  spec ' ' 'M5 Roller set mode' 'M5 Roller set mode _' 'auto' 1
+  spec ' ' 'M5 Roller set output' 'M5 Roller set output _' 'bool' false
+  spec ' ' '_M5_Roller_init' '_M5_Roller_init'
+  spec ' ' 'M5 Roller set speed' 'M5 Roller set speed _' 'auto' 1000
+  spec ' ' '_M5_setReg' '_M5_setReg _ int2byte4 _' 'auto auto' '10' 1
+  spec ' ' 'M5 Roller set pos' 'M5 Roller set pos _' 'auto' '10'
+  spec ' ' 'M5 Roller set speedMaxCurrent' 'M5 Roller set speedMaxCurrent _' 'auto' '10'
+  spec 'r' '_M5_roller_int2byte4' '_M5_roller_int2byte4 _' 'auto' '10'
+  spec ' ' 'M5 Roller set SpeedPid p' 'M5 Roller set SpeedPid p _ i _ d _' 'auto auto auto' 1 1 1
+  spec ' ' 'M5 Roller set PosMaxCurrent' 'M5 Roller set PosMaxCurrent _' 'auto' '10'
+  spec ' ' 'M5 Roller set posPID' 'M5 Roller set posPID p _ i _ d _' 'auto auto auto' 1 1 1
+  spec ' ' 'M5 Roller set current' 'M5 Roller set current _' 'auto' '10'
+  spec ' ' 'M5 Roller set dialCounter' 'M5 Roller set dialCounter _' 'auto' '10'
+  spec ' ' 'M5 Roller set RGB mode' 'M5 Roller set RGB mode _' 'auto' 0
+  spec ' ' 'M5 Roller set RGB' 'M5 Roller set RGB _' 'color'
+  spec ' ' 'M5 Roller set RGB brightness' 'M5 Roller set RGB brightness _ (0~100)' 'auto' '10'
+  spec ' ' 'M5 Roller set motorID' 'M5 Roller set motorID _ (0~255)' 'auto' '10'
+  spec 'r' '_M5_roller_bytelist2int' '_M5_roller_bytelist2int _' 'auto' '10'
+  spec 'r' '_M5_roller_get reg' '_M5_roller_get reg _ 4bytes2int' 'auto' '10'
+  spec 'r' 'M5 Roller get speed' 'M5 Roller get speed'
+  spec 'r' 'M5 Roller get speedMaxCurrent' 'M5 Roller get speedMaxCurrent'
+  spec 'r' 'M5 Roller get speedReadback' 'M5 Roller get speedReadback'
+  spec 'r' 'M5 Roller get pos' 'M5 Roller get pos'
+  spec 'r' 'M5 Roller get posMaxCurrent' 'M5 Roller get posMaxCurrent'
+  spec 'r' 'M5 Roller get posReadback' 'M5 Roller get posReadback'
+  spec 'r' 'M5 Roller get errorCode' 'M5 Roller get errorCode'
+  spec 'r' 'M5 Roller get outputStatus' 'M5 Roller get outputStatus'
+  spec 'r' 'M5 Roller get motorMode' 'M5 Roller get motorMode'
+  spec 'r' 'M5 Roller get BPS' 'M5 Roller get BPS'
+  spec 'r' 'M5 Roller get RGB brightness' 'M5 Roller get RGB brightness'
+  spec 'r' 'M5 Roller get RGB mode' 'M5 Roller get RGB mode'
+  spec 'r' 'M5 Roller get I2C addr' 'M5 Roller get I2C addr'
+  spec 'r' 'M5 Roller get firmware version' 'M5 Roller get firmware version'
+  spec 'r' 'M5 Roller get motorID' 'M5 Roller get motorID'
+  spec 'r' 'M5 Roller get systemStaus' 'M5 Roller get systemStatus'
+  spec 'r' 'M5 Roller get Temperature' 'M5 Roller get Temperature'
+  spec 'r' 'M5 Roller get Vin' 'M5 Roller get Vin'
+  spec 'r' 'M5 Roller get currentReadback' 'M5 Roller get currentReadback'
+  spec 'r' 'M5 Roller get dialCounter' 'M5 Roller get dialCounter'
+  spec 'r' 'M5 Roller get current' 'M5 Roller get current'
+  spec 'r' '_M5_roller_getPID' '_M5_roller_getPID _' 'auto' '10'
+  spec 'r' 'M5 Roller get speed PID' 'M5 Roller get speed PID'
+  spec 'r' 'M5 Roller get pos PID' 'M5 Roller get pos PID'
+
+to 'M5 Roller get BPS' {
+  return (i2cGet _M5_roller_addr (hexToInt '11'))
+}
+
+to 'M5 Roller get I2C addr' {
+  return (i2cGet _M5_roller_addr (hexToInt 'FF'))
+}
+
+to 'M5 Roller get RGB brightness' {
+  return (i2cGet _M5_roller_addr (hexToInt '12'))
+}
+
+to 'M5 Roller get RGB mode' {
+  return (i2cGet _M5_roller_addr (hexToInt '33'))
+}
+
+to 'M5 Roller get Temperature' {
+  return ('_M5_roller_get reg' (hexToInt '38'))
+}
+
+to 'M5 Roller get Vin' {
+  return ('_M5_roller_get reg' (hexToInt '34'))
+}
+
+to 'M5 Roller get current' {
+  return ('_M5_roller_get reg' (hexToInt 'B0'))
+}
+
+to 'M5 Roller get currentReadback' {
+  return ('_M5_roller_get reg' (hexToInt 'C0'))
+}
+
+to 'M5 Roller get dialCounter' {
+  return ('_M5_roller_get reg' (hexToInt '3C'))
+}
+
+to 'M5 Roller get errorCode' {
+  return (i2cGet _M5_roller_addr (hexToInt '0D'))
+}
+
+to 'M5 Roller get firmware version' {
+  return (i2cGet _M5_roller_addr (hexToInt 'FE'))
+}
+
+to 'M5 Roller get motorID' {
+  return (i2cGet _M5_roller_addr (hexToInt '10'))
+}
+
+to 'M5 Roller get motorMode' {
+  comment '1: Speed Mode  2: Position Mode  3: Current Mode  4: Encoder'
+  return (i2cGet _M5_roller_addr (hexToInt '01'))
+}
+
+to 'M5 Roller get outputStatus' {
+  return (i2cGet _M5_roller_addr (hexToInt '00'))
+}
+
+to 'M5 Roller get pos' {
+  return ('_M5_roller_get reg' (hexToInt '80'))
+}
+
+to 'M5 Roller get pos PID' {
+  return ('_M5_roller_getPID' (hexToInt 'A0'))
+}
+
+to 'M5 Roller get posMaxCurrent' {
+  return ('_M5_roller_get reg' (hexToInt '20'))
+}
+
+to 'M5 Roller get posReadback' {
+  return ('_M5_roller_get reg' (hexToInt '90'))
+}
+
+to 'M5 Roller get speed' {
+  return ('_M5_roller_get reg' (hexToInt '40'))
+}
+
+to 'M5 Roller get speed PID' {
+  return ('_M5_roller_getPID' (hexToInt '70'))
+}
+
+to 'M5 Roller get speedMaxCurrent' {
+  return ('_M5_roller_get reg' (hexToInt '50'))
+}
+
+to 'M5 Roller get speedReadback' {
+  return ('_M5_roller_get reg' (hexToInt '60'))
+}
+
+to 'M5 Roller get systemStaus' {
+  comment '0: Standby  1: Running  2: Error Other values may'
+  return (i2cGet _M5_roller_addr (hexToInt '0C'))
+}
+
+to 'M5 Roller set PosMaxCurrent' foo {
+  '_M5_setReg' (hexToInt '20') foo
+}
+
+to 'M5 Roller set RGB' foo {
+  '[sensors:i2cWrite]' _M5_roller_addr ('[data:makeList]' (hexToInt '30') (foo & 255) ((foo >> 8) & 255) ((foo >> 16) & 255))
+}
+
+to 'M5 Roller set RGB brightness' foo {
+  i2cSet _M5_roller_addr (hexToInt '12') foo
+}
+
+to 'M5 Roller set RGB mode' foo {
+  i2cSet _M5_roller_addr (hexToInt '33') foo
+}
+
+to 'M5 Roller set SpeedPid p' p i d {
+  '[sensors:i2cWrite]' _M5_roller_addr ('[data:join]' ('[data:makeList]' (hexToInt '70')) ('_M5_roller_int2byte4' p) ('_M5_roller_int2byte4' i) ('_M5_roller_int2byte4' d))
+}
+
+to 'M5 Roller set current' foo {
+  '_M5_setReg' (hexToInt 'B0') foo
+}
+
+to 'M5 Roller set dialCounter' foo {
+  '_M5_setReg' (hexToInt '3C') foo
+}
+
+to 'M5 Roller set mode' foo {
+  comment '1: Speed Mode  2: Position Mode  3: Current Mode  4: Encoder Mode'
+  i2cSet _M5_roller_addr (hexToInt '01') (minimum 4 (maximum 1 foo))
+}
+
+to 'M5 Roller set motorID' foo {
+  i2cSet _M5_roller_addr (hexToInt '10') foo
+}
+
+to 'M5 Roller set output' foo {
+  '_M5_Roller_init'
+  i2cSet _M5_roller_addr (hexToInt '00') ('[data:convertType]' foo 'number')
+}
+
+to 'M5 Roller set pos' foo {
+  '_M5_setReg' (hexToInt '80') foo
+}
+
+to 'M5 Roller set posPID' p i d {
+  '[sensors:i2cWrite]' _M5_roller_addr ('[data:join]' ('[data:makeList]' (hexToInt 'A0')) ('_M5_roller_int2byte4' p) ('_M5_roller_int2byte4' i) ('_M5_roller_int2byte4' d))
+}
+
+to 'M5 Roller set speed' foo {
+  '_M5_setReg' (hexToInt '40') foo
+}
+
+to 'M5 Roller set speedMaxCurrent' foo {
+  comment 'he valid range is from -120,000 to 120,000 '
+  '_M5_setReg' (hexToInt '50') foo
+}
+
+to '_M5_Roller_init' {
+  if (_M5_roller_addr == 0) {_M5_roller_addr = (hexToInt '64')}
+}
+
+to '_M5_roller_bytelist2int' foo {
+  local 'var' 0
+  if (isType foo 'list') {
+    for i (size foo) {
+      var = (var | ((at i foo) << ((i - 1) * 8)))
+    }
+  }
+  return var
+}
+
+to '_M5_roller_get reg' reg {
+  local 'var' (newList 4)
+  '[sensors:i2cWrite]' _M5_roller_addr reg
+  '[sensors:i2cRead]' _M5_roller_addr var
+  return ('_M5_roller_bytelist2int' var)
+}
+
+to '_M5_roller_getPID' reg {
+  local 'var' (newList 12)
+  '[sensors:i2cWrite]' _M5_roller_addr reg
+  '[sensors:i2cRead]' _M5_roller_addr var
+  return ('[data:makeList]' ('_M5_roller_bytelist2int' ('[data:copyFromTo]' var 1 4)) ('_M5_roller_bytelist2int' ('[data:copyFromTo]' var 5 8)) ('_M5_roller_bytelist2int' ('[data:copyFromTo]' var 9 12)))
+}
+
+to '_M5_roller_int2byte4' d {
+  return ('[data:makeList]' (d & 255) ((d >> 8) & 255) ((d >> 16) & 255) ((d >> 24) & 255))
+}
+
+to '_M5_setReg' reg foo {
+  '[sensors:i2cWrite]' _M5_roller_addr ('[data:makeList]' reg (foo & 255) ((foo >> 8) & 255) ((foo >> 16) & 255) ((foo >> 24) & 255))
+}
+
