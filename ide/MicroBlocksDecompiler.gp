@@ -609,7 +609,6 @@ method findLoops MicroBlocksDecompiler {
 				((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
-// print 'found loop' loopType // xxx
 			if ('ignore' == loopType) {
 				loopRec = nil
 				loopEnd = i
@@ -641,8 +640,9 @@ method findLoops MicroBlocksDecompiler {
 				loopStart = bodyStart
 				loopEnd = i
 				if ('for' == loopType) {
-					loopStart = (bodyStart - 3)
-					bodyEnd = (i - 2)
+					loopStart = (bodyStart - 2)
+					bodyStart = (opcodeAfter this bodyStart)
+					bodyEnd = (opcodeBefore this (opcodeBefore this i))
 					loopEnd = (opcodeAfter this i)
 					if (notNil (at controlStructures (bodyStart - 1))) {
 						cmd2 = (at controlStructures (bodyStart - 1))
@@ -691,12 +691,13 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 				(2 == (jumpTarget this (last seq)))) {
 					return 'whenCondition'
 		}
-		if ('jmp' == (cmdOp this (at seq loopStart))) {
-			// xxx remove this test once compiler generates 'waitUntil' opcodes
-			return 'repeatUntil'
-		} else {
-			return 'waitUntil'
-		}
+// xxx
+// 		if ('jmp' == (cmdOp this (at seq loopStart))) {
+// 			// xxx remove this test once compiler generates 'waitUntil' opcodes
+// 			return 'repeatUntil'
+// 		} else {
+// 			return 'waitUntil'
+// 		}
 	}
 	return 'unknown loop type'
 }
