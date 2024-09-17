@@ -179,7 +179,7 @@ method addWithLineNum SmallRuntime aList instruction items {
 			'pushLiteral' 'jmp' 'longJmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
 		offset = (toInteger (last items))
 		if ('pushLiteral' != (first items)) {
-		    if (or (0 == offset) (offset < -128) (offset > 127) ('longJmp' != (first items))) {
+		    if (or (0 == offset) (offset < -128) (offset > 127) ('longJmp' == (first items))) {
 		        offset += 1
 		    }
 		}
