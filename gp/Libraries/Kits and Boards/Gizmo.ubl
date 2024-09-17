@@ -1,6 +1,6 @@
 module 'Gizmo'
 author 'Matthew Barulic'
-version 1 0
+version 1 1
 choices gizmo_buttons X A B Y 'Left Shoulder' 'Right Shoulder' 'Left Trigger' 'Right Trigger' Back Start 'Left Stick' 'Right Stick'
 choices gizmo_axes 'Left X' 'Left Y' 'Right X' 'Right Y' 'Dpad X' 'Dpad Y'
 depends Servo
@@ -110,7 +110,7 @@ to 'gizmo_set_motor_speed' port speed {
     comment 'Bad port'
     return
   }
-  setServoSpeed (port + 13) speed
+  setServoSpeed (port + 13) (speed / 2)
 }
 
 to 'gizmo_read_gpio' port {
