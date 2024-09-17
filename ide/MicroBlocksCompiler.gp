@@ -9,6 +9,9 @@
 
 defineClass SmallCompiler opcodes primsets argNames localVars trueObj falseObj zeroObj stringClassID
 
+method opcodes SmallCompiler { return opcodes }
+method primsets SmallCompiler { return primsets }
+
 method initialize SmallCompiler {
 	initOpcodes this
 	initPrimsets this
@@ -358,20 +361,18 @@ method initMicroBlocksSpecs SmallCompiler {
 	}
 }
 
-method opcodes SmallCompiler { return opcodes }
-
 method initOpcodes SmallCompiler {
 	// Initialize the opcode dictionary. Note: This must match the opcode table in interp.c!
 
 	opcodeDefinitions = '
 		halt 0
 		noop 1
-		pushImmediate 2		// true, false, and ints that fit in 24 bits
-		pushBigImmediate 3	// ints that do not fit in 24 bits
+		pushImmediate 2		// true, false, and ints that fit in 8 bits
+		pushLargeInteger 3	// ints that fit in 24 bits
 		pushLiteral 4		// string or array constant from literals frame
-		pushVar 5
-		storeVar 6
-		incrementVar 7
+		pushGlobal 5
+		storeGlobal 6
+		incrementGlobal 7
 		pushArgCount 8
 		pushArg 9
 		storeArg 10
@@ -484,15 +485,15 @@ method initOpcodes SmallCompiler {
 	RESERVED 117
 	RESERVED 118
 	RESERVED 119
-	RESERVED 120
-	RESERVED 121
+		pushHugeInteger 120
+		longJmp 121
 		commandPrimitive 122
 		reporterPrimitive 123
 		callCustomCommand 124
 		callCustomReporter 125
-		callCommandPrimitive 126
-		callReporterPrimitive 127
-		metadata 240'
+	RESERVED 126 // old callCommandPrimitive 126
+		codeEnd 127 // old callReporterPrimitive 127
+		metadata 248'
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
 		words = (words line)
@@ -540,7 +541,7 @@ method initPrimsets SmallCompiler {
 
 method instructionsFor SmallCompiler aBlockOrFunction {
 	// Return a list of instructions for the given block, script, or function.
-	// Add a 'halt' if needed and append any literals (e.g. strings) used.
+	// Add a 'codeEnd' opcode and append literal strings and metadata.
 
 	if (and (isClass aBlockOrFunction 'Block') (isPrototypeHat aBlockOrFunction)) {
 		// function definition hat: get its function
@@ -573,39 +574,40 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			addAll result (instructionsForWhenCondition this cmdOrReporter)
 		} ('whenButtonPressed' == op) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} ('whenStarted' == op) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} ('whenBroadcastReceived' == op) {
 			addAll result (instructionsForExpression this (first (argList cmdOrReporter)))
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
 			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
 				if (isEmpty (argNames func)) {
+					// Mark functions without arguments so they can be invoked
+					// by broadcasting the function name.
 					add result (array 'pushLiteral' (functionName func))
+					add result (array 'placeholder' 0)
 					add result (array 'recvBroadcast' 1)
 				}
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
-			add result (array 'pushImmediate' falseObj)
-			add result (array 'returnResult' 0)
+			if ('returnResult' != (first (last result))) {
+				// Add a "return false" if the function body does not end with a return
+				add result (array 'pushImmediate' falseObj)
+				add result (array 'returnResult' 0)
+			}
 		} else {
 			addAll result (instructionsForCmdList this cmdOrReporter)
-			add result (array 'halt' 0)
 		}
 	} else {
 		addAll result (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
 	}
-	if (and
-		((count result) == 2)
-		(isOneOf (first (first result)) 'halt' 'stopAll')) {
-			// In general, just looking at the final instructon isn't enough because
-			// it could just be the end of a conditional body that is jumped
-			// over; in that case, we need the final halt as the jump target.
-			removeLast result // remove the final halt
+	add result (array 'codeEnd' 0)
+	if (((count result) % 2) == 1) {
+		// Ensure that there are an even number of 16-bit instruction words so that any
+		// literal string objects following the instructions are aligned to a 32-bit word
+		// boundary as required by the object system.
+		add result (array 'codeEnd' 0)
 	}
 	appendLiterals this result
 	appendDecompilerMetadata this aBlockOrFunction result
@@ -623,12 +625,12 @@ method instructionsForWhenCondition SmallCompiler cmdOrReporter {
 	addAll result (instructionsForExpression this 10)
 	add result (array 'waitMillis' 1)
 	addAll result condition
-	add result (array 'jmpFalse' (0 - ((count condition) + 3)))
+	addAll result (instructionsForJump this 'jmpFalse' (0 - ((count condition) + 3)))
 
 	addAll result body
 
 	// loop back to condition test
-	add result (array 'jmp' (0 - ((count result) + 1)))
+	addAll result (instructionsForJump this 'jmp' (0 - ((count result) + 1)))
 	return result
 }
 
@@ -687,7 +689,6 @@ method instructionsForCmd SmallCompiler cmd {
 		return (primitive this 'sendBroadcast' args true)
 	} ('comment' == op) {
 		// skip comments; do not generate any code
-		// xxx remove this case later to store comments (once the VM supports them)
 	} ('ignoreArgs' == op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
@@ -722,14 +723,15 @@ method instructionsForIf SmallCompiler args {
 		if (or (true != test) (not finalCase) (i == 1)) {
 			addAll result (instructionsForExpression this test)
 			offset = (count body)
-			if (not finalCase) { offset += 1 }
-			add result (array 'jmpFalse' offset)
+			if (not finalCase) { offset += 2 }
+			addAll result (instructionsForJump this 'jmpFalse' offset)
 		}
 		addAll result body
 		if (not finalCase) {
-			jumpToEnd = (array 'jmp' (count result)) // jump offset to be fixed later
-			add jumpsToFix jumpToEnd
+			jumpToEnd = (array 'longJmp' (count result)) // jump offset to be fixed later
 			add result jumpToEnd
+			add result (array 'placeholder' 0) // longJmp is always two words
+			add jumpsToFix jumpToEnd
 		}
 		i += 2
 	}
@@ -742,16 +744,16 @@ method instructionsForIf SmallCompiler args {
 
 method instructionsForForever SmallCompiler args {
 	result = (instructionsForCmdList this (at args 1))
-	add result (array 'jmp' (0 - ((count result) + 1)))
+	addAll result (instructionsForJump this 'jmp' (0 - ((count result) + 1)))
 	return result
 }
 
 method instructionsForRepeat SmallCompiler args {
 	result = (instructionsForExpression this (at args 1)) // loop count
 	body = (instructionsForCmdList this (at args 2))
-	add result (array 'jmp' (count body))
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
-	add result (array 'decrementAndJmp' (0 - ((count body) + 1)))
+	addAll result (instructionsForJump this 'decrementAndJmp' (0 - ((count body) + 1)))
 	return result
 }
 
@@ -759,10 +761,10 @@ method instructionsForRepeatUntil SmallCompiler args {
 	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
 	body = (instructionsForCmdList this (at args 2))
-	add result (array 'jmp' (count body))
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result conditionTest
-	add result (array 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
+	addAll result (instructionsForJump this 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
 	return result
 }
 
@@ -780,12 +782,13 @@ method instructionsForForLoop SmallCompiler args {
 	body = (instructionsForCmdList this (at args 3))
 	addAll result (array
 		(array 'pushImmediate' falseObj) // this will be N, the total loop count
-		(array 'pushImmediate' falseObj) // this will be a decrementing loop counter
-		(array 'jmp' (count body)))
+		(array 'pushImmediate' falseObj)) // this will be a decrementing loop counter
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result (array
 		(array 'forLoop' loopVarIndex)
-		(array 'jmp' (0 - ((count body) + 2)))
+		(array 'longJmp' (0 - ((count body) + 2)))
+		(array 'placeholder' 0) // longJmp is always two words (forLoop skips over it at and of loop)
 		(array 'pop' 3))
 	return result
 }
@@ -801,14 +804,23 @@ method instructionsForExpression SmallCompiler expr {
 	} (isNil expr) {
 		return (list (array 'pushImmediate' zeroObj))
 	} (isClass expr 'Integer') {
-		if (and (-4194304 <= expr) (expr <= 4194303)) { // 23-bit encoded as 24 bit int object
-			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
-		} else {
-			// pushBigImmediate instruction followed by a 4-byte integer object
-			return (list (array 'pushBigImmediate' 0) expr)
+		if (and (-64 <= expr) (expr <= 63)) { // 7-bit encoded as 8 bit int object
+			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FF')) ))
+		} (and (-4194304 <= expr) (expr <= 4194303)) { // int object fits in 3 bytes
+			return (list
+				(array 'pushLargeInteger' expr) // not yet encoded as an integer
+				(array 'placeholder' 0))
+
+		} else { // int object requires 4 bytes
+			return (list
+				(array 'pushHugeInteger' expr) // not yet encoded as an integer
+				(array 'placeholder' 0)
+				(array 'placeholder' 0))
 		}
 	} (isClass expr 'String') {
-		return (list (array 'pushLiteral' expr))
+		return (list
+			(array 'pushLiteral' expr)
+			(array 'placeholder' 0))
 	} (isClass expr 'Float') {
 		error 'Floats are not supported'
 	} (isClass expr 'Color') {
@@ -856,7 +868,7 @@ method instructionsForAnd SmallCompiler args {
 	for i (count tests) {
 		addAll result (at tests i)
 		if (i < (count tests)) {
-			add result (array 'jmpAnd' (totalInstrCount - ((count result) + 1)))
+			addAll result (instructionsForJump this 'jmpAnd' (totalInstrCount - ((count result) + 1)))
 		}
 	}
 	return result
@@ -876,60 +888,33 @@ method instructionsForOr SmallCompiler args {
 	for i (count tests) {
 		addAll result (at tests i)
 		if (i < (count tests)) {
-			add result (array 'jmpOr' (totalInstrCount - ((count result) + 1)))
+			addAll result (instructionsForJump this 'jmpOr' (totalInstrCount - ((count result) + 1)))
 		}
 	}
-	return result
-}
-
-method instructionsForAndOLD SmallCompiler args { // xxx remove later
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		add result (array 'jmpFalse' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' trueObj) // all conditions were true: push result
-	add result (array 'jmp' 1) // skip over false case
-	add result (array 'pushImmediate' falseObj) // some condition was false: push result
-	return result
-}
-
-method instructionsForOrOLD SmallCompiler args { // xxx remove later
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		add result (array 'jmpTrue' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
-	add result (array 'jmp' 1) // skip over true case
-	add result (array 'pushImmediate' trueObj) // some condition was true: push result
 	return result
 }
 
 method instructionsForIfExpression SmallCompiler args {
 	trueCase = (instructionsForExpression this (at args 2))
 	falseCase = (instructionsForExpression this (at args 3))
-	add falseCase (array 'jmp' (count trueCase))
+	addAll falseCase (instructionsForJump this 'jmp' (count trueCase))
 
 	result = (instructionsForExpression this (first args)) // test
-	add result (array 'jmpTrue' (count falseCase))
+	addAll result (instructionsForJump this 'jmpTrue' (count falseCase))
 	addAll result falseCase
 	addAll result trueCase
 	return result
+}
+
+method instructionsForJump SmallCompiler jumpOp offset {
+	if (and (offset != 0) (-128 <= offset) (offset <= 127)) {
+		return (list (array jumpOp offset)) // non-zero offset that fits into 8 bits
+	}
+	// extended jump: signed offset in the next word
+	if (offset < 0) { offset += -1 }  // adjust negative offset to account for extra word
+	return (list
+		(array jumpOp offset)
+		(array 'placeholder' 0))
 }
 
 // instruction generation utility methods
@@ -948,47 +933,15 @@ method primitive SmallCompiler op args isCommand {
 		if (notNil i) {
 			primSetName = (substring op 2 (i - 1))
 			primName = (substring op (i + 1) ((count op) - 1))
-			add result (array 'pushLiteral' primSetName)
-			add result (array 'pushLiteral' primName)
-			for arg args {
-				addAll result (instructionsForExpression this arg)
-			}
-			if isCommand {
-				add result (array 'callCommandPrimitive' ((count args) + 2))
-			} else {
-				add result (array 'callReporterPrimitive' ((count args) + 2))
-			}
-		}
-	} else {
-		print 'Skipping unknown op:' op
-		if (not isCommand) {
-			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
-		}
-	}
-	return result
-}
-
-method primitiveNEW SmallCompiler op args isCommand {
-	result = (list)
-	if ('print' == op) { op = 'printIt' }
-	if (contains opcodes op) {
-		for arg args {
-			addAll result (instructionsForExpression this arg)
-		}
-		add result (array op (count args))
-	} (and (beginsWith op '[') (endsWith op ']')) {
-		// named primitives of the form '[primSetName:primName]'
-		i = (findFirst op ':')
-		if (notNil i) {
-			primSetName = (substring op 2 (i - 1))
-			primName = (substring op (i + 1) ((count op) - 1))
 			for arg args {
 				addAll result (instructionsForExpression this arg)
 			}
 			if isCommand {
 				add result (array 'commandPrimitive' primName primSetName (count args))
+				add result (array 'placeholder' 0)
 			} else {
 				add result (array 'reporterPrimitive' primName primSetName (count args))
+				add result (array 'placeholder' 0)
 			}
 		}
 	} else {
@@ -1044,7 +997,7 @@ method getVar SmallCompiler varName {
 		return (array 'pushArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'pushVar' globalID) }
+	if (notNil globalID) { return (array 'pushGlobal' globalID) }
 }
 
 method setVar SmallCompiler varName {
@@ -1054,7 +1007,7 @@ method setVar SmallCompiler varName {
 		return (array 'storeArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'storeVar' globalID) }
+	if (notNil globalID) { return (array 'storeGlobal' globalID) }
 }
 
 method incrementVar SmallCompiler varName {
@@ -1064,7 +1017,7 @@ method incrementVar SmallCompiler varName {
 		return (array 'incrementArg' (at argNames varName))
 	}
 	globalID = (globalVarIndex this varName)
-	if (notNil globalID) { return (array 'incrementVar' globalID) }
+	if (notNil globalID) { return (array 'incrementGlobal' globalID) }
 }
 
 method globalVarIndex SmallCompiler varName {
@@ -1090,18 +1043,23 @@ method instructionsForFunctionCall SmallCompiler op args isCmd {
 		addAll result (instructionsForExpression this arg)
 	}
 	add result (array 'callFunction' (((callee & 255) << 8) | ((count args) & 255)))
+	add result (array 'placeholder' 0) // callFunction is followed by a word with function ID and arg count
 	if isCmd { add result (array 'pop' 1) } // discard the return value
 	return result
 }
 
-// literal values (strings and large integers )
+// literal values
 
 method appendLiterals SmallCompiler instructions {
-	// For now, strings and integers too large for pushImmediate are the only literals.
-	// Perhaps add support for constant literal arrays later.
+	// For now, strings are the only literals. Support for list literals could be added later.
 
 	literals = (list)
 	literalOffsets = (dictionary)
+	if (((count instructions) % 2) == 1) {
+		// ensure that there are an even number of instructions so that the first literal
+		// starts on a 32-bit word address when stored in Flash memory
+		add instructions (array 'halt' 0)
+	}
 	nextOffset = (count instructions)
 	for ip (count instructions) {
 		instr = (at instructions ip)
@@ -1112,14 +1070,14 @@ method appendLiterals SmallCompiler instructions {
 				litOffset = nextOffset
 				add literals literal
 				atPut literalOffsets literal litOffset
-				nextOffset += (wordsForLiteral this literal)
+				nextOffset += (2 * (wordsForLiteral this literal))
 			}
 			atPut instr 2 (litOffset - ip)
 			if (isOneOf (first instr) 'commandPrimitive' 'reporterPrimitive') {
-				primNameLiteralOffset = ((at instr 2) & 511)
-				primSetIndex = ((at primsets (at instr 3)) & 127)
+				primSetIndex = ((at primsets (at instr 3)) & 63) // 6 bits
+				primNameLiteralOffset = ((at instr 2) & 1023) // 10 bits
 				argCount = ((at instr 4) & 255)
-				instrArgs = (((primSetIndex << 17) | (primNameLiteralOffset << 8)) | argCount)
+				instrArgs = (((primSetIndex << 18) | (primNameLiteralOffset << 8)) | argCount)
 				atPut instr 2 instrArgs
 			}
 			atPut instructions ip (copyWith (at instructions ip) literal) // retain literal string for use by "show instructions"
@@ -1139,56 +1097,124 @@ method wordsForLiteral SmallCompiler literal {
 // metadata for the deompiler
 
 method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
-	// Append a tab-delimited list of local variables to instructionList.
-	// This string is part of the optional metadata used by the decompiler.
+	// Append metadata used by the decompiler.
+	// The function name is also used by the "call" blocks.
 
-	// the 'metadata' pseudo instruction marks the start of the decompiler meta data
-	add instructionList (array 'metadata' 0)
-
-	// add local variable names
-	varNames = (list)
+	// collect local variable names
+	localVarAndArgNames = (list)
 	for pair (sortedPairs localVars) {
 		if (isClass (last pair) 'String') { // skip if non-string (can happen due to syntax error)
-			add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+			add localVarAndArgNames (last pair)
 		}
 	}
-	add instructionList (joinStrings varNames (string 9)) // tab delimited string
 
-	// add function info
+	// defaults (empty for non-functions)
+	functionName = ''
+	functionLibrary = ''
+	functionMetadata = ''
+
+	// if aBlockOrFunction is a function, collect function info strings
 	if (isClass aBlockOrFunction 'Function') {
-		add instructionList (metaInfoForFunction (project (scripter (smallRuntime))) aBlockOrFunction)
-		argNames = (argNames aBlockOrFunction)
-		if (notEmpty argNames) {
-			add instructionList (joinStrings argNames (string 9)) // tab delimited string
+		project = (project (scripter (smallRuntime)))
+		functionName = (functionName aBlockOrFunction)
+		functionLibrary = (libForFunction project aBlockOrFunction)
+		if (isEmpty functionLibrary) {
+			functionMetadata = (metaInfoForFunction project aBlockOrFunction)
 		}
+		addAll localVarAndArgNames (argNames aBlockOrFunction) // add function arg names
 	}
+
+	// create varNames string
+	varNames = ''
+	if (not (isEmpty localVarAndArgNames)) {
+		 // replace any tabs in var names with spaces so we can safely use tab as a delimiter
+		for i (count localVarAndArgNames) {
+			s = (copyReplacing (at localVarAndArgNames i) (string 9) ' ')
+			atPut localVarAndArgNames i s
+		}
+		varNames = (joinStrings localVarAndArgNames (string 9)) // tab delimited string of var names
+	}
+
+	// add 'metadata' pseudo instruction
+	add instructionList (array 'metadata' functionName functionLibrary functionMetadata varNames)
 }
 
 // binary code generation
 
+method opcodeForInstr SmallCompiler op {
+	return (at opcodes op)
+}
+
 method addBytesForInstructionTo SmallCompiler instr bytes {
 	// Append the bytes for the given instruction to bytes (little endian).
 
-	opcode = (at opcodes (first instr))
-	if (isNil opcode) { error 'Unknown opcode:' (first instr) }
-	add bytes opcode
+	op = (first instr)
 	arg = (at instr 2)
-	if (not (and (-16777216 <= arg) (arg <= 16777215))) {
-		error 'Argument does not fit in 24 bits'
+
+	if ('placeholder' == op) { return } // placeholder; does not generate code
+
+	opcodeByte = (at opcodes op)
+	if (isNil opcodeByte) { error 'Unknown opcode:' op }
+	add bytes opcodeByte
+
+	if ('pushImmediate' == op) {
+		// immedate object (integer or boolean) fits into the 8 bit arg byte
+		add bytes (arg & 255)
+	} ('pushLargeInteger' == op) {
+		// append a 24-bit integer object (little endian)
+		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
+		add bytes ((arg >> 7) & 255)
+		add bytes ((arg >> 15) & 255)
+	} ('pushHugeInteger' == op) {
+		add bytes 0 // arg byte (unused)
+		// append a 32-bit integer object (little endian)
+		add bytes (((arg & 127) << 1) | 1) // low seven bits + integer object tag bit
+		add bytes ((arg >> 7) & 255)
+		add bytes ((arg >> 15) & 255)
+		add bytes ((arg >> 23) & 255)
+	} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
+		// arg is the signed offset from instruction pointer
+		if (and (arg != 0) (-128 <= arg) (arg <= 127)) { // non-zero offset that fits into 8 bits
+			add bytes (arg & 255)
+		} else {
+			add bytes 0 // zero arg byte indicates that the offset is the next 16-bit word
+			add bytes (arg & 255)
+			add bytes ((arg >> 8) & 255)
+		}
+	} (isOneOf op 'longJmp' 'pushLiteral') {
+		if ('longJmp' == op) {
+			// replace longJmp with jmp opcode but use two words regardless of offset
+			atPut bytes (count bytes) (at opcodes 'jmp')
+		}
+		add bytes 0 // zero arg byte
+		// append 16-bit signed offset from instruction pointer (little endian)
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+	} ('callFunction' == op) {
+		// callFunction: arg is chunk ID (high bytes) and arg count (low byte)
+		add bytes 0
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
+		add bytes (arg & 255)
+		add bytes ((arg >> 8) & 255)
+		add bytes ((arg >> 16) & 255)
+	} (and (-128 <= arg) (arg <= 127)) {
+		// 8-bit arg for all other instructions
+		add bytes (arg & 255)
+	} ('metadata' == op) {
+		// metadata should be the last instruction, following the literals
+ 		addAll bytes (toArray (toBinaryData (at instr 2))) // function name
+ 		add bytes 0 // null terminator
+		addAll bytes (toArray (toBinaryData (at instr 3))) // function library
+ 		add bytes 0 // null terminator
+		addAll bytes (toArray (toBinaryData (at instr 4))) // function metadata
+ 		add bytes 0 // null terminator
+ 		addAll bytes (toArray (toBinaryData (at instr 5))) // local var and arg names
+ 		add bytes 0 // null terminator
+	} else {
+		error 'Argument does not fit in 8 bits'
 	}
-	add bytes (arg & 255)
-	add bytes ((arg >> 8) & 255)
-	add bytes ((arg >> 16) & 255)
-}
-
-method addBytesForIntegerLiteralTo SmallCompiler n bytes {
-	// Append the bytes for the given integer to bytes (little endian).
-	// Note: n is converted to a integer object, the equivalent of ((n << 1) | 1)
-
-	add bytes (((n << 1) | 1) & 255)
-	add bytes ((n >> 7) & 255)
-	add bytes ((n >> 15) & 255)
-	add bytes ((n >> 23) & 255)
 }
 
 method addBytesForStringLiteral SmallCompiler s bytes {
@@ -1201,7 +1227,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 		add bytes (headerWord & 255)
 		headerWord = (headerWord >> 8)
 	}
-	for i byteCount {
+	for i byteCount { // add string bytes (UTF8 encoding)
 		add bytes (byteAt s i)
 	}
 	repeat (4 - (byteCount % 4)) { // pad with zeros to next word boundary

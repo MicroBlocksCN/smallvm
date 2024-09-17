@@ -211,7 +211,7 @@ void startTaskForChunk(uint8 chunkIndex) {
 	tasks[i].taskChunkIndex = chunkIndex;
 	tasks[i].currentChunkIndex = chunkIndex;
 	tasks[i].code = chunks[chunkIndex].code;
-	tasks[i].ip = PERSISTENT_HEADER_WORDS; // relative to start of code
+	tasks[i].ip = 4; // offset is 4 short words (8 bytes) relative to start of the code chunk
 	tasks[i].sp = 0; // relative to start of stack
 	tasks[i].fp = 0; // 0 means "not in a function call"
 	if (i >= taskCount) taskCount = i + 1;

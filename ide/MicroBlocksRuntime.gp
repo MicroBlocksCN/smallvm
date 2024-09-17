@@ -120,7 +120,8 @@ method showInstructions SmallRuntime aBlock {
 				add result '--------'
 			}
 		} ('pushLiteral' == (first item)) {
-			instr = (join (at item 1) ' ' (at item 2) ' ("' (at item 3) '")')
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			instr = (join instr (at item 2) ' ("' (at item 3) '")')
 			addWithLineNum this result instr
 		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
@@ -132,19 +133,32 @@ method showInstructions SmallRuntime aBlock {
 			} (4 == arg) {
 				arg = true
 			}
-			addWithLineNum this result (join 'pushImmediate ' arg)
-		} ('pushBigImmediate' == (first item)) {
-			addWithLineNum this result 'pushBigImmediate' // don't show arg count; could be confusing
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr arg)
+		} (isOneOf (first item) 'pushLargeInteger' 'pushHugeInteger') {
+			arg = (at item 2)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ' arg)
+			addWithLineNum this result instr
 		} ('callFunction' == (first item)) {
 			arg = (at item 2)
 			calledChunkID = ((arg >> 8) & 255)
 			argCount = (arg & 255)
-			addWithLineNum this result (join 'callFunction ' calledChunkID ' ' argCount)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr calledChunkID ' ' argCount)
 		} (not (isLetter (at (first item) 1))) { // operator; don't show arg count
 			addWithLineNum this result (toString (first item))
+		} ('placeholder' == (first item)) {
+			addWithLineNum this result '<data>'
 		} else {
+	        if (isOneOf (first item) 'commandPrimitive' 'reporterPrimitive') {
+	            // re-order item to display argCount last
+	            item = (copy item)
+	            argCount = (at item 4)
+	            atPut item 4 (at item 5)
+	            atPut item 5 argCount
+	        }
 			// instruction (an array of form <cmd> <args...>)
-			instr = ''
+			instr = (join '[' (opcodeForInstr compiler (at item 1)) '] ')
 			for s item { instr = (join instr s ' ') }
 			addWithLineNum this result instr item
 		}
@@ -152,7 +166,7 @@ method showInstructions SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	setExtent (morph ws) (400 * (global 'scale')) (400 * (global 'scale'))
 	fixLayout ws
 }
 
@@ -162,9 +176,13 @@ method addWithLineNum SmallRuntime aList instruction items {
 	if (and
 		(notNil items)
 		(isOneOf (first items)
-			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse'
-			'decrementAndJmp' 'callFunction' 'forLoop')) {
+			'pushLiteral' 'jmp' 'longJmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
 		offset = (toInteger (last items))
+		if ('pushLiteral' != (first items)) {
+		    if (or (0 == offset) (offset < -128) (offset > 127) ('longJmp' != (first items))) {
+		        offset += 1
+		    }
+		}
 		targetLine = (join ' (line ' (+ currentLine 1 offset) ')')
 	}
 	add aList (join '' currentLine ' ' instruction targetLine)
@@ -178,7 +196,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	add result (join '[' (count bytes) ' bytes]' (newline))
 	for i (count bytes) {
 		add result (toString (at bytes i))
-		if (0 == (i % 4)) {
+		if (0 == (i % 2)) {
 			add result (newline)
 		} else {
 			add result ' '
@@ -1420,6 +1438,13 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	chunkBytes = (chunkBytesFor this aBlockOrFunction)
+
+    while (((count chunkBytes) % 4) != 0) {
+        // pad with zeros to make chunk byte count be an even multiple of four
+        // this ensures 32-bit word chunk alignment in the code store
+        add chunkBytes 0
+    }
+
 	data = (list chunkType)
 	addAll data chunkBytes
 	if ((count data) > 1000) {

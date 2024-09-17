@@ -94,7 +94,7 @@ typedef struct {
 	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;
 	OBJ code;
-	int ip;
+	int ip; // ip offset in code
 	int sp;
 	int fp;
 	OBJ stack[STACK_LIMIT];
