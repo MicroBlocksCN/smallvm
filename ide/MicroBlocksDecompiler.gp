@@ -341,6 +341,27 @@ method cmdIs MicroBlocksDecompiler cmd op arg {
 	return (and (notNil cmd) (op == (at cmd 2)) (arg == (at cmd 3)))
 }
 
+method opcodeAfter MicroBlocksDecompiler i {
+	// Return the index of the opcode after the opcode at i.
+
+	i = (i + 1)
+	while ('placeholder' == (at (at opcodes i) 2)) {
+		i += 1
+	}
+	return i
+}
+
+method opcodeBefore MicroBlocksDecompiler i {
+	// Return the index of the opcode before the opcode at i.
+
+	i = (i - 1)
+	while ('placeholder' == (at (at opcodes i) 2)) {
+		i += -1
+	}
+	return i
+}
+
+
 // Debugging
 
 method printSequence2 MicroBlocksDecompiler {
@@ -593,35 +614,36 @@ method findLoops MicroBlocksDecompiler {
 				loopEnd = i
 			} ('whenCondition' == loopType) {
 				loopStart = 2
-				loopEnd = i
+				loopEnd = (count opcodes)
 				conditionStart = 4
-				conditionEnd = (i - 1)
-				bodyStart = (i + 1)
-				bodyEnd = ((count opcodes) - 1)
+				conditionEnd = (opcodeBefore this i)
+				bodyStart = (opcodeAfter this i)
+				bodyEnd = (opcodeBefore this loopEnd)
 				loopRec = (array 'whenCondition' (count opcodes) conditionStart conditionEnd bodyStart bodyEnd)
 			} ('repeatUntil' == loopType) {
 				bodyStart = (jumpTarget this cmd)
-				loopStart = (bodyStart - 1)
+				loopStart = (opcodeBefore this bodyStart)
 				conditionStart = (jumpTarget this (at opcodes loopStart))
-				conditionEnd = (i - 1)
-				bodyEnd = (conditionStart - 1)
+				conditionEnd = (opcodeBefore this i)
+				bodyEnd = (opcodeBefore this conditionStart)
 				loopEnd = i
 				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('waitUntil' == loopType) {
 				loopStart = (jumpTarget this cmd)
 				loopEnd = i
 				conditionStart = loopStart
-				conditionEnd = (i - 1)
+				conditionEnd = (opcodeBefore this i)
 				loopRec = (array 'waitUntil' loopEnd conditionStart conditionEnd)
 			} else {
 				bodyStart = (jumpTarget this cmd)
-				bodyEnd = (i - 1)
+				bodyEnd = (opcodeBefore this i)
 				loopStart = bodyStart
 				loopEnd = i
 				if ('for' == loopType) {
-					loopStart = (bodyStart - 3)
-					bodyEnd = (i - 2)
-					loopEnd = (i + 1)
+					loopStart = (bodyStart - 2)
+					bodyStart = (opcodeAfter this bodyStart)
+					bodyEnd = (opcodeBefore this (opcodeBefore this i))
+					loopEnd = (opcodeAfter this i)
 					if (notNil (at controlStructures (bodyStart - 1))) {
 						cmd2 = (at controlStructures (bodyStart - 1))
 						if ('repeatUntil' == (first cmd2)) {
@@ -632,7 +654,7 @@ method findLoops MicroBlocksDecompiler {
 						}
 					}
 				} ('repeat' == loopType) {
-					loopStart = (bodyStart - 1)
+					loopStart = (opcodeBefore this bodyStart)
 				}
 				loopRec = (array loopType loopEnd bodyStart bodyEnd)
 				if ('for' == loopType) {
@@ -658,10 +680,6 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
-		// xxx need a way to detect 'whenCondition' hat blocks
-// 		} (and (i == (count opcodes)) (2 == (jumpTarget this cmd))) {
-// print 'final jump of whenCondition'
-// 			return 'ignore' // ignore the final jump of a 'whenCondition'
 		} else {
 			return 'forever'
 		}
@@ -673,12 +691,13 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 				(2 == (jumpTarget this (last seq)))) {
 					return 'whenCondition'
 		}
-		if ('jmp' == (cmdOp this (at seq loopStart))) {
-			// xxx remove this test once compiler generates 'waitUntil' opcodes
-			return 'repeatUntil'
-		} else {
-			return 'waitUntil'
-		}
+// xxx
+// 		if ('jmp' == (cmdOp this (at seq loopStart))) {
+// 			// xxx remove this test once compiler generates 'waitUntil' opcodes
+// 			return 'repeatUntil'
+// 		} else {
+// 			return 'waitUntil'
+// 		}
 	}
 	return 'unknown loop type'
 }
@@ -691,7 +710,7 @@ method findIfs MicroBlocksDecompiler {
 	for i (count opcodes) {
 		cmd = (at opcodes i)
 		if (and ('jmpFalse' == (cmdOp this cmd)) ((cmdArg this cmd) >= 0) (not (isAnd this opcodes cmd))) {
-			trueStart = (i + 1)
+			trueStart = (opcodeAfter this i)
 			trueEnd = ((jumpTarget this cmd) - 1)
 			lastCmdOfTrue = (at opcodes trueEnd)
 			if ('jmp' == (cmdOp this lastCmdOfTrue)) {
@@ -739,7 +758,7 @@ method fixLocals MicroBlocksDecompiler {
 // Decoding
 
 method codeForSequence MicroBlocksDecompiler start end {
-	// Decode the given sequence of opecodes and return a GP Reporter (if it is an expression)
+	// Decode the given sequence of opcodes and return a GP Reporter (if it is an expression)
 	// or a GP Command (if it is a command or sequence of commands). The opcode sequence must
 	// be complete and well-formed (e.g. if it encodes a command sequence it should leave the
 	// stack empty) and does not contain any control structures (loops or if statements).
@@ -798,7 +817,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 					// fix waitUntil inside a repeat (xxx can remove eventually)
 					cmd2 = (removeLast ctrl)
 					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (i + 1) rec
+					recordControlStructure this (opcodeAfter this i) rec
 				}
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'repeat' (removeLast stack) body)
@@ -807,7 +826,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 					// fix waitUntil inside a repeat (xxx can remove eventually)
 					cmd2 = (removeLast ctrl)
 					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (i + 1) rec
+					recordControlStructure this (opcodeAfter this i) rec
 				}
 				condition = (codeForSequence this (at cmd 3) (at cmd 4))
 				body = (codeForSequence this (at cmd 5) (at cmd 6))
@@ -859,7 +878,7 @@ method decodeNewANDorORreporter MicroBlocksDecompiler op i {
 	// Decode an new AND or OR reporter (using jmpAnd/jmpOr).
 
 	if ('jmpAnd' == op) { gpOp = 'and' } else { gpOp = 'or' }
-	start = (i + 1)
+	start = (opcodeAfter this i)
 	end = (i + (cmdArg this (at opcodes i)))
 	arg1 = (removeLast stack)
 	arg2 = (codeForSequence this start end)
@@ -871,7 +890,7 @@ method decodeNewANDorORreporter MicroBlocksDecompiler op i {
 method decodeConditionalExpression MicroBlocksDecompiler op i {
 	 // Note: The false case comes first in the compiled code.
 
-	start = (i + 1)
+	start = (opcodeAfter this i)
 	endOfFalse = (i + (cmdArg this (at opcodes i))) // jump to end
 	end = (endOfFalse + (cmdArg this (at opcodes endOfFalse)))
 	arg1 = (removeLast stack)
