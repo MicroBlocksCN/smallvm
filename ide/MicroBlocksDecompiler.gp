@@ -191,7 +191,7 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 		print '----'
 	}
 
-	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes } // remove final halt
+	if (cmdIs this (last opcodes) 'codeEnd' 0) { removeLast opcodes } // remove final codeEnd
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
 	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
@@ -279,12 +279,10 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			arg = ((at chunkData i) | ((at chunkData (i + 1)) << 8))
 			extraWords += 1
 		}
-		if ('codeEnd' != op) {
-			add opcodes (array addr op arg primCall)
-			repeat extraWords { // add temporary placeholders so jump offsets are correct
-				add opcodes (array (addr + 1) 'placeholder' 0 nil)
-				i += 2
-			}
+		add opcodes (array addr op arg primCall)
+		repeat extraWords { // add temporary placeholders so jump offsets are correct
+			add opcodes (array (addr + 1) 'placeholder' 0 nil)
+			i += 2
 		}
 	}
 //	hasMetadata = (readDecompilerMetadata this lastInstruction) // xxx To Do
@@ -700,12 +698,12 @@ method findIfs MicroBlocksDecompiler {
 		cmd = (at opcodes i)
 		if (and ('jmpFalse' == (cmdOp this cmd)) ((cmdArg this cmd) >= 0) (not (isAnd this opcodes cmd))) {
 			trueStart = (opcodeAfter this i)
-			trueEnd = ((jumpTarget this cmd) - 1)
+			trueEnd = (opcodeBefore this (jumpTarget this cmd))
 			lastCmdOfTrue = (at opcodes trueEnd)
 			if ('jmp' == (cmdOp this lastCmdOfTrue)) {
-				falseStart = (trueEnd + 1)
-				falseEnd = ((jumpTarget this lastCmdOfTrue) - 1)
-				conditionalRec = (array 'if-else' falseEnd trueStart (trueEnd - 1) falseStart falseEnd)
+				falseStart = (opcodeAfter this trueEnd)
+				falseEnd = (opcodeBefore this (jumpTarget this lastCmdOfTrue))
+				conditionalRec = (array 'if-else' falseEnd trueStart (opcodeBefore this trueEnd) falseStart falseEnd)
 			} else {
 				conditionalRec = (array 'if' trueEnd trueStart trueEnd)
 			}
