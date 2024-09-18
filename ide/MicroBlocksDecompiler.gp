@@ -6,6 +6,7 @@
 
 // MicroBlocksDecompiler.gp - Decompiles bytecodes back to scripts and functions
 // John Maloney, March, 2020
+// Converted to 16-bit instructions, September, 2024
 
 defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
 
@@ -646,12 +647,6 @@ method findLoops MicroBlocksDecompiler {
 					loopEnd = (opcodeAfter this i)
 					if (notNil (at controlStructures (bodyStart - 1))) {
 						cmd2 = (at controlStructures (bodyStart - 1))
-						if ('repeatUntil' == (first cmd2)) {
-							// fix waitUntil (xxx can be removed eventually)
-							rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-							recordControlStructure this bodyStart rec
-							atPut controlStructures (bodyStart - 1) nil
-						}
 					}
 				} ('repeat' == loopType) {
 					loopStart = (opcodeBefore this bodyStart)
@@ -807,21 +802,9 @@ method codeForSequence MicroBlocksDecompiler start end {
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'forever' body)
 			} ('repeat' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (opcodeAfter this i) rec
-				}
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'repeat' (removeLast stack) body)
 			} ('repeatUntil' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (opcodeAfter this i) rec
-				}
 				condition = (codeForSequence this (at cmd 3) (at cmd 4))
 				body = (codeForSequence this (at cmd 5) (at cmd 6))
 				add code (newCommand 'repeatUntil' condition body)
