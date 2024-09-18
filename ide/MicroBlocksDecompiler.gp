@@ -253,7 +253,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			startByte = (i + (2 * offset))
 			arg = (readLiteral this chunkData startByte)
 			extraWords += 1
-		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
+		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp' 'waitUntil') {
 			if (arg == 0) { // extended jump; 16-bit signed offset in following two bytes
 				arg = (at chunkData i)
 				arg = (arg | ((at chunkData (i + 1)) << 8))
@@ -691,13 +691,7 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 				(2 == (jumpTarget this (last seq)))) {
 					return 'whenCondition'
 		}
-// xxx
-// 		if ('jmp' == (cmdOp this (at seq loopStart))) {
-// 			// xxx remove this test once compiler generates 'waitUntil' opcodes
-// 			return 'repeatUntil'
-// 		} else {
-// 			return 'waitUntil'
-// 		}
+		return 'repeatUntil'
 	}
 	return 'unknown loop type'
 }
