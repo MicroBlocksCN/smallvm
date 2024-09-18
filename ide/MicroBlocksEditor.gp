@@ -176,7 +176,7 @@ method addTopBarParts MicroBlocksEditor {
 method vSeparator MicroBlocksEditor {
   scale = (global 'scale')
   separator = (newBox (newMorph) (microBlocksColor 'blueGray' 700) 0 0 false false)
-  setExtent (morph separator) scale ((topBarHeight this) + (4 * scale))
+  setExtent (morph separator) scale (topBarHeight this)
   addPart morph (morph separator)
   return separator
 }
@@ -184,7 +184,7 @@ method vSeparator MicroBlocksEditor {
 method addLogo MicroBlocksEditor {
   logoM = (newMorph)
   setCostume logoM (readSVGIcon 'logo')
-  setPosition logoM 8 8
+  setPosition logoM 8 4
   addPart morph logoM
 }
 
