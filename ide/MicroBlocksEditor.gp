@@ -158,11 +158,11 @@ method addTopBarParts MicroBlocksEditor {
   add rightItems progressIndicator
   add rightItems (12 * scale)
 
-  add rightItems (addSVGIconButtonOldStyle this 'icon-graph' 'showGraph' 'Graph')
+  add rightItems (addTwoStateSVGIconButton this 'icon-graph' 'showGraph' 'Graph')
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
-  add rightItems (addSVGIconButtonOldStyle this 'icon-usb' 'connectToBoard' 'Connect')
+  add rightItems (addTwoStateSVGIconButton this 'icon-usb' 'connectToBoard' 'Connect')
   indicator = (last rightItems)
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
@@ -609,12 +609,15 @@ method updateIndicator MicroBlocksEditor forcefully {
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	isConnected = ('connected' == status)
 
-    iconColor = (microBlocksColor 'blueGray' 500)
-    if isConnected { iconColor = (color 0 200 0) }
+    offBM = (readSVGIcon 'icon-usb')
+	hlBM = (readSVGIcon 'icon-usb2')
+    onBM = (readSVGIcon 'icon-usb3')
 
-    offBM = (readSVGIcon 'icon-usb' iconColor (topBarBlue this))
-    onBM = (getField indicator 'onCostume')
-    setCostumes indicator offBM onBM
+    if isConnected {
+		setCostumes indicator onBM hlBM
+	} else {
+		setCostumes indicator offBM hlBM
+	}
 
 	costumeChanged (morph indicator)
 	lastStatus = status
@@ -1384,6 +1387,17 @@ method addSVGIconButton MicroBlocksEditor iconName selector hint {
   highlightColor = (microBlocksColor 'yellow')
   button = (newButton '' (action selector this))
   setCostumes button (readSVGIcon iconName normalColor) (readSVGIcon iconName highlightColor)
+  if (notNil hint) { setHint button (localized hint) }
+  addPart morph (morph button)
+  return button
+}
+
+method addTwoStateSVGIconButton MicroBlocksEditor iconName selector hint {
+  button = (newButton '' (action selector this))
+  iconScale = (global 'scale')
+  bm1 = (readSVGIcon iconName nil nil iconScale false)
+  bm2 = (readSVGIcon (join iconName '2') nil nil iconScale false)
+  setCostumes button bm1 bm2
   if (notNil hint) { setHint button (localized hint) }
   addPart morph (morph button)
   return button
