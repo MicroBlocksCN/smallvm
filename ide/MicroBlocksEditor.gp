@@ -1065,7 +1065,7 @@ method fixTopBarLayout MicroBlocksEditor {
   // Optimization: report one damage rectangle for the entire top bar
   reportDamage morph (rect (left morph) (top morph) (width morph) (topBarHeight this))
 
-  centerY = (20 * scale)
+  centerY = (24 * scale)
   x = 0
   for item leftItems {
 	if (isNumber item) {
