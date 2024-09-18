@@ -1,6 +1,6 @@
 // system window component - to be used in morphic handlers
 
-defineClass Window morph label closeBtn resizer border color clientArea clientColor scale shadow
+defineClass Window morph label closeBtn resizer border color clientArea clientColor scale shadow blurSize blur
 
 to window label {
   window = (new 'Window')
@@ -29,6 +29,10 @@ method initialize Window labelString {
   closeBtn = (pushButton 'X' (gray 0) (action 'destroy' (morph this)) buttonW buttonH)
   addPart morph (morph closeBtn)
   resizer = (resizeHandle this)
+
+  blur = (newMorph)
+  blurSize = 6
+  addPart morph blur
 }
 
 method updateScale Window {
@@ -49,35 +53,26 @@ method fixLayout Window {
   setRight (morph resizer) (right clientArea)
   setBottom (morph resizer) (bottom clientArea)
   addPart morph (morph resizer) // bring to front
+  setPosition blur ((left morph) - blurSize) ((top morph) - blurSize)
 }
 
 method redraw Window {
   w = (width morph)
   h = (height morph)
   bm = (newBitmap w h)
+
+  blurBM = (newBitmap (w + (blurSize * 2)) (h + (blurSize * 2)))
+  shapeMaker = (newShapeMaker blurBM)
+
+  for i (blurSize + 1) {
+	off = ((i - 1) * scale)
+	outlineRoundedRectangle shapeMaker (rect off off ((w + (blurSize * 2)) - (2 * off)) ((h + (blurSize * 2)) - (2 * off))) scale (color 0 0 0 ((80 / blurSize) * i)) (blurSize - off)
+  }
+
+  setCostume blur blurBM
+
   fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) (scale * 4) color 0 (lighter color 20)
   setCostume morph bm
-}
-
-method redrawShadow Window {
-  if (isNil shadow) {return}
-  w = (width morph)
-  h = (height morph)
-  radius = (4 * scale)
-  off = (0 - (scale * 5))
-  bm = (newBitmap w h)
-  fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) radius (gray 0)
-  fillRect bm (transparent) off off w h
-  setCostume shadow bm
-}
-
-method addShadow Window {
-  shadow = (newMorph)
-  setAlpha shadow 128
-  off = (scale * 5)
-  setPosition shadow (+ off (left morph)) (+ off (top morph))
-  redrawShadow this
-  addPart morph shadow
 }
 
 method setLabelString Window aString {

@@ -186,7 +186,6 @@ method createButtons Prompter okLabel cancelLabel singleButton {
 
 method redraw Prompter {
   redraw window
-  redrawShadow window
   drawInside this
   fixLayout this
 }
