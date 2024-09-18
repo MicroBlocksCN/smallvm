@@ -206,7 +206,7 @@ method newZoomButton MicroBlocksEditor iconName action {
   if (isNil action) { // use the selector name as the action
     action = (action iconName this)
   }
-  iconScale = (0.7 * (global 'scale'))
+  iconScale = (1.33 * (global 'scale'))
   normalColor = (microBlocksColor 'blueGray' 400)
   highlightColor = (microBlocksColor 'yellow')
   button = (newButton '' action)
