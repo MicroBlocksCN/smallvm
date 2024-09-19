@@ -24,14 +24,14 @@ method setAction ColorPicker anAction { action = anAction }
 method initialize ColorPicker anAction initialColor withTransparentButton {
   morph = (newMorph this)
   setGrabRule morph 'ignore'
-  setCostume morph (drawFrame this 297 158)
-  addGrayPalette this 10 10 200 10
-  addColorPalette this 10 25 200 128
-  addSlider this 220 25 10 128
-  addSwatch this 240 25 50 50
+  setCostume morph (drawFrame this 287 166)
+  addGrayPalette this 10 18 200 10
+  addColorPalette this 10 32 200 128
+  addSlider this 214 32 10 128
+  addSwatch this 230 32 50 50
   if (isNil withTransparentButton) { withTransparentButton = false }
   if withTransparentButton { addTransparentButton this 244 141 }
-  addCloseButton this 273 5
+  addCloseButton this 256 8
   addReadouts this 250 85
   action = anAction
   if (notNil initialColor) {
@@ -57,9 +57,9 @@ method drawFrame ColorPicker w h {
   w = (w * scale)
   h = (h * scale)
   cornerRadius = (4 * scale)
-  fillColor = (microBlocksColor 'blueGray' 100)
+  fillColor = (microBlocksColor 'blueGray' 850)
   border = (2 * scale)
-  frameColor = (gray 100)
+  frameColor = (transparent)
   bm = (newBitmap (w + (2 * border)) (h + (2 * border)))
   fillRoundedRect (newShapeMaker bm) (rect 0 0 (width bm) (height bm)) cornerRadius fillColor border frameColor frameColor
   return bm
@@ -154,12 +154,13 @@ method addCloseButton ColorPicker x y {
 
 method addReadouts ColorPicker x y {
   scale = (global 'scale')
-  x = ((left swatch) + (4 * scale))
+  x = (left swatch)
   y = ((bottom swatch) + (10 * scale))
   fontSize = (13 * scale)
-  rText = (newText 'R   0' 'Courier Bold' fontSize)
-  gText = (newText 'G   0' 'Courier Bold' fontSize)
-  bText = (newText 'B   0' 'Courier Bold' fontSize)
+  color = (microBlocksColor 'blueGray' 200)
+  rText = (newText 'R   0' 'Courier Bold' fontSize color)
+  gText = (newText 'G   0' 'Courier Bold' fontSize color)
+  bText = (newText 'B   0' 'Courier Bold' fontSize color)
   setPosition (morph rText) x y
   setPosition (morph gText) x (y + (13 * scale))
   setPosition (morph bText) x (y + (26 * scale))
