@@ -107,7 +107,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str.broadcastMenu' 'go!')
 		(array ' ' 'sendBroadcast'		'broadcast _' 'str.broadcastMenu' 'go!' '')
 		'-'
-		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
+		(array ' ' 'comment'			'comment _' 'cmt' 'How this works...')
 		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)

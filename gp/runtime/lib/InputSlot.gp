@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace pathCache cacheW cacheH
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace isComment pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -50,6 +50,7 @@ method setID InputSlot bool {isID = bool}
 method color InputSlot {return color}
 method isMonospace InputSlot {return isMonospace}
 method setMonospace InputSlot bool {isMonospace = bool}
+method setComment InputSlot {isComment = true}
 
 method contents InputSlot {
   if ((editRule text) == 'static') {
@@ -159,7 +160,11 @@ method drawShape InputSlot aShapeMaker {
     r = (bounds morph)
   }
 
-  corner = (15 * (blockScale)) // semi-circular for slot heights up to 30 * blockScale
+  if isComment {
+	corner = 0 // comment inputs have square borders
+  } else {
+	corner = (15 * (blockScale)) // semi-circular for slot heights up to 30 * blockScale
+  }
   if ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }
