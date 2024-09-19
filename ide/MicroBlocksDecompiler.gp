@@ -6,6 +6,7 @@
 
 // MicroBlocksDecompiler.gp - Decompiles bytecodes back to scripts and functions
 // John Maloney, March, 2020
+// Converted to 16-bit instructions, September, 2024
 
 defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
 
@@ -190,7 +191,7 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 		print '----'
 	}
 
-	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes } // remove final halt
+	if (cmdIs this (last opcodes) 'codeEnd' 0) { removeLast opcodes } // remove final codeEnd
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
 	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
@@ -253,7 +254,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			startByte = (i + (2 * offset))
 			arg = (readLiteral this chunkData startByte)
 			extraWords += 1
-		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp') {
+		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp' 'waitUntil') {
 			if (arg == 0) { // extended jump; 16-bit signed offset in following two bytes
 				arg = (at chunkData i)
 				arg = (arg | ((at chunkData (i + 1)) << 8))
@@ -278,12 +279,10 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			arg = ((at chunkData i) | ((at chunkData (i + 1)) << 8))
 			extraWords += 1
 		}
-		if ('codeEnd' != op) {
-			add opcodes (array addr op arg primCall)
-			repeat extraWords { // add temporary placeholders so jump offsets are correct
-				add opcodes (array (addr + 1) 'placeholder' 0 nil)
-				i += 2
-			}
+		add opcodes (array addr op arg primCall)
+		repeat extraWords { // add temporary placeholders so jump offsets are correct
+			add opcodes (array (addr + 1) 'placeholder' 0 nil)
+			i += 2
 		}
 	}
 //	hasMetadata = (readDecompilerMetadata this lastInstruction) // xxx To Do
@@ -646,12 +645,6 @@ method findLoops MicroBlocksDecompiler {
 					loopEnd = (opcodeAfter this i)
 					if (notNil (at controlStructures (bodyStart - 1))) {
 						cmd2 = (at controlStructures (bodyStart - 1))
-						if ('repeatUntil' == (first cmd2)) {
-							// fix waitUntil (xxx can be removed eventually)
-							rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-							recordControlStructure this bodyStart rec
-							atPut controlStructures (bodyStart - 1) nil
-						}
 					}
 				} ('repeat' == loopType) {
 					loopStart = (opcodeBefore this bodyStart)
@@ -691,13 +684,7 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 				(2 == (jumpTarget this (last seq)))) {
 					return 'whenCondition'
 		}
-// xxx
-// 		if ('jmp' == (cmdOp this (at seq loopStart))) {
-// 			// xxx remove this test once compiler generates 'waitUntil' opcodes
-// 			return 'repeatUntil'
-// 		} else {
-// 			return 'waitUntil'
-// 		}
+		return 'repeatUntil'
 	}
 	return 'unknown loop type'
 }
@@ -711,12 +698,12 @@ method findIfs MicroBlocksDecompiler {
 		cmd = (at opcodes i)
 		if (and ('jmpFalse' == (cmdOp this cmd)) ((cmdArg this cmd) >= 0) (not (isAnd this opcodes cmd))) {
 			trueStart = (opcodeAfter this i)
-			trueEnd = ((jumpTarget this cmd) - 1)
+			trueEnd = (opcodeBefore this (jumpTarget this cmd))
 			lastCmdOfTrue = (at opcodes trueEnd)
 			if ('jmp' == (cmdOp this lastCmdOfTrue)) {
-				falseStart = (trueEnd + 1)
-				falseEnd = ((jumpTarget this lastCmdOfTrue) - 1)
-				conditionalRec = (array 'if-else' falseEnd trueStart (trueEnd - 1) falseStart falseEnd)
+				falseStart = (opcodeAfter this trueEnd)
+				falseEnd = (opcodeBefore this (jumpTarget this lastCmdOfTrue))
+				conditionalRec = (array 'if-else' falseEnd trueStart (opcodeBefore this trueEnd) falseStart falseEnd)
 			} else {
 				conditionalRec = (array 'if' trueEnd trueStart trueEnd)
 			}
@@ -813,21 +800,9 @@ method codeForSequence MicroBlocksDecompiler start end {
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'forever' body)
 			} ('repeat' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (opcodeAfter this i) rec
-				}
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'repeat' (removeLast stack) body)
 			} ('repeatUntil' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (opcodeAfter this i) rec
-				}
 				condition = (codeForSequence this (at cmd 3) (at cmd 4))
 				body = (codeForSequence this (at cmd 5) (at cmd 6))
 				add code (newCommand 'repeatUntil' condition body)
