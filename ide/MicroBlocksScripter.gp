@@ -552,11 +552,12 @@ method addMyBlocks MicroBlocksScripter {
 }
 
 method addButton MicroBlocksScripter label action hint {
-  btn = (newButton label action)
+  scale = (global 'scale')
+  btn = (pushButton label action nil (26 * scale) false (darkModeEnabled projectEditor))
   if (notNil hint) { setHint btn hint }
   setPosition (morph btn) nextX nextY
   addPart (morph (contents blocksFrame)) (morph btn)
-  nextY += ((height (morph btn)) + (7 * (global 'scale')))
+  nextY += ((height (morph btn)) + (7 * scale))
 }
 
 method addBlock MicroBlocksScripter b spec isVarReporter {
