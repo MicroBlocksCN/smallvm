@@ -72,6 +72,13 @@ method outlineRectangle ShapeMaker rect border borderColor {
   stroke this borderColor border
 }
 
+method outlineRoundedRectangle ShapeMaker rect border borderColor radius {
+  if (border <= 0) { return }
+  beginPath pen (left rect) ((bottom rect) - radius)
+  roundedRectPath this rect radius
+  stroke this borderColor border
+}
+
 method fillRoundedRect ShapeMaker rect radius color border borderColorTop borderColorBottom {
   if (isNil border) {border = 0}
   if (border > 0) {
