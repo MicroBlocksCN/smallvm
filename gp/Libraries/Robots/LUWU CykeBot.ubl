@@ -1,0 +1,199 @@
+module 'LUWU CykeBot'
+author '邵悦'
+version 1 6 
+depends NeoPixel Servo 'LED Display' 
+description 'LUWU CykeBot 陆吾智能 赛克号
+TT 电机
+4路巡线
+超声波传感器
+3路舵机
+6轴加速计
+'
+variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data
+
+  spec ' ' '_motor' '_motor _ speed _' 'auto num' 1 50
+  spec ' ' 'cykebot wheel L' '赛克号设置左轮速度为 _ 右轮速度为 _ （-100~100)' 'auto auto' 50 50
+  spec ' ' 'cykebot stop' '赛克号 停止'
+  spec 'r' '_cykebot_linetracking' '_cykebot_linetracking _' 'auto' 1
+  spec 'r' 'cyke see center line' '赛克号巡线探头状态是(左 ... 右)  _ _ _ _' 'bool bool bool bool' true true true true
+  spec ' ' '_cykebot_init' '_cykebot_init'
+  spec ' ' 'cykebot set RGB all' '赛克号 设置所有 RGB 彩灯颜色 _' 'color'
+  spec ' ' 'cykebot clear RGB' '赛克号 关闭所有 RGB 彩灯'
+  spec ' ' 'servo' '赛克号 设置舵机 _ 的角度为 _ (-140 到 140)' 'auto auto' 1 '10'
+  spec 'r' 'distance' '赛克号 超声波传感器距离 cm'
+  spec 'r' '_bh_1745_color_data' '_bh_1745_color_data _ _' 'auto auto' '10' '10'
+  spec 'r' '_CykeBot_color_get_rawdata' '_CykeBot_color_get_rawdata'
+  spec ' ' '赛克号 清屏' '赛克号 OLED 清屏'
+  spec 'r' '_fix16bitsign' '_fix16bitsign _' 'auto' '10'
+  spec ' ' '_ICM4267_init' '_ICM4267_init'
+  spec 'r' 'ICM4267_Temperature' '赛克号 温度 C'
+  spec ' ' '_ICM4267_get_data' '_ICM4267_get_data'
+  spec 'r' 'ICM4267_tiltX' '赛克号 倾角X'
+  spec 'r' 'ICM4267_tiltY' '赛克号 倾角Y'
+  spec 'r' 'ICM4267_tiltZ' '赛克号 倾角Z' 
+
+to _CykeBot_color_get_rawdata {
+  if ((i2cGet (hexToInt '38') (hexToInt '40')) == 11) {
+    i2cSet (hexToInt '38') (hexToInt '41') 0
+    i2cSet (hexToInt '38') (hexToInt '42') (hexToInt '90')
+    i2cSet (hexToInt '38') (hexToInt '44') (hexToInt '02')
+    waitMillis 50
+  }
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '50'))
+  local 'var' (newList 8)
+  '[sensors:i2cRead]' (hexToInt '38') var
+  sayIt ('[data:joinStrings]' var '|')
+  local '_r' ('_bh_1745_color_data' (at 2 var) (at 1 var))
+  local '_g' ('_bh_1745_color_data' (at 4 var) (at 3 var))
+  local '_b' ('_bh_1745_color_data' (at 6 var) (at 5 var))
+  local '_clear' ('_bh_1745_color_data' (at 8 var) (at 7 var))
+  sayIt _r '-' _g '-' _b '-' _clear
+  return ('[data:makeList]' _r _g _b _clear)
+}
+
+to '_bh_1745_color_data' high low {
+  return (((high << 8) + low) & (hexToInt 'FFFF'))
+}
+
+to '_cykebot_init' {
+  if (_cyke_bot_init == 0) {neoPixelAttach 25 33}
+  _cyke_bot_init = 1
+  if ((i2cGet (hexToInt '38') (hexToInt '40')) == 11) {
+    i2cSet (hexToInt '38') (hexToInt '41') 0
+    i2cSet (hexToInt '38') (hexToInt '42') (hexToInt '90')
+    i2cSet (hexToInt '38') (hexToInt '44') (hexToInt '02')
+    waitMillis 300
+  }
+}
+
+to '_cykebot_linetracking' foo {
+  comment '左外，左中，右中，右外'
+  comment '5/23 |16/17'
+  return (digitalReadOp (at (minimum 4 (maximum 1 foo)) ('[data:makeList]' 5 23 16 17)))
+}
+
+to '_motor' num speed {
+  local 'speed_pin' 32
+  local 'control_pin' 25
+  if (num == 1) {
+    speed_pin = 32
+    control_pin = 25
+  } (num == 2) {
+    speed_pin = 13
+    control_pin = 26
+  } else {
+    return 0
+  }
+  if (speed == 0) {
+    analogWriteOp speed_pin 0
+  } else {
+    digitalWriteOp control_pin (speed > 0)
+    analogWriteOp speed_pin ('[misc:rescale]' (maximum 1 (minimum (absoluteValue speed) 100)) 1 100 200 1023)
+  }
+}
+
+to 'cyke see center line' foo bar baz quux {
+  return (and (and (('_cykebot_linetracking' 1) == foo) (('_cykebot_linetracking' 2) == bar)) (and (('_cykebot_linetracking' 3) == baz) (('_cykebot_linetracking' 4) == quux)))
+}
+
+to 'cykebot clear RGB' {
+  '_cykebot_init'
+  clearNeoPixels
+}
+
+to 'cykebot set RGB all' foo {
+  '_cykebot_init'
+  neoPixelSetAllToColor foo
+}
+
+to 'cykebot stop' {
+  'cykebot wheel L' 0 0
+}
+
+to 'cykebot wheel L' left right {
+  '_motor' 1 (0 - left)
+  '_motor' 2 right
+}
+
+to distance {
+  local 'trig' 2
+  local 'ech' 36
+  comment 'Contributed by Joan Guillén and Josep Ferràndiz'
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp ech) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
+to servo foo angle {
+  setServoAngle (at (minimum 3 (maximum 1 foo)) ('[data:makeList]' 27 14 12)) ('[misc:rescale]' angle -140 140 -50 50)
+}
+
+to '赛克号 清屏' {
+  callCustomCommand '[tft:clear]'
+}
+
+to ICM4267_Temperature {
+  '_ICM4267_init'
+  local 'var' (newList 2)
+  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '09'))
+  '[sensors:i2cRead]' (hexToInt '69') var
+  return (((((at 1 var) << 8) | (at 2 var)) / 128) + 25)
+}
+
+to ICM4267_tiltX {
+  '_ICM4267_get_data'
+  return (at 1 _ICM4267_accl_data)
+}
+
+to ICM4267_tiltY {
+  '_ICM4267_get_data'
+  return (at 2 _ICM4267_accl_data)
+}
+
+to ICM4267_tiltZ {
+  '_ICM4267_get_data'
+  return (at 3 _ICM4267_accl_data)
+}
+
+to '_ICM4267_get_data' {
+  '_ICM4267_init'
+  local 'var' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '0b'))
+  '[sensors:i2cRead]' (hexToInt '69') var
+  atPut 1 _ICM4267_accl_data ((('_fix16bitsign' (((at 1 var) << 8) | (at 2 var))) * 100) >> 14)
+  atPut 2 _ICM4267_accl_data ((('_fix16bitsign' (((at 3 var) << 8) | (at 4 var))) * 100) >> 14)
+  atPut 3 _ICM4267_accl_data ((('_fix16bitsign' (((at 5 var) << 8) | (at 6 var))) * 100) >> 14)
+}
+
+to '_ICM4267_init' {
+  if (_ICM4257_init_num == 0) {if ((i2cGet (hexToInt '69') (hexToInt '75')) == 103) {
+    i2cSet (hexToInt '69') (hexToInt '21') 105
+    i2cSet (hexToInt '69') (hexToInt '1F') 3
+    waitMillis 2
+    _ICM4257_init_num = 1
+    _ICM4267_accl_data = (newList 3)
+  }}
+}
+
+to '_fix16bitsign' foo {
+  return (ifExpression (foo > 32768) (foo - 65536) foo)
+}

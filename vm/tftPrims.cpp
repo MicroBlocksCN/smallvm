@@ -674,6 +674,73 @@ static int deferUpdates = false;
 			tftClear();
 		}
 
+	#elif defined(LUWU_CYKEBOT)
+		#undef BLACK // defined in SSD1306 header
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SSD1306.h"
+
+		#define TFT_ADDR 0x3C
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 64
+		#define IS_MONOCHROME true
+
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire1, -1, 400000, 400000);
+
+		void tftInit() {
+			delay(5);
+			// Wire1.
+			Wire1.begin(21, 22);
+			Wire1.beginTransmission(TFT_ADDR);
+			Wire1.write(0);
+			Wire1.endTransmission();
+			Wire1.requestFrom(TFT_ADDR, 1);
+			int response = Wire1.available() ? Wire1.read() : 0;
+			if (response < 0) return; // no OLED display detected
+
+			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
+			useTFT = true;
+			tftClear();
+		}
+
+		static void i2cWriteBytes(uint8 *bytes, int byteCount) {
+			Wire1.beginTransmission(TFT_ADDR);
+			for (int i = 0; i < byteCount; i++) Wire1.write(bytes[i]);
+			Wire1.endTransmission(true);
+		}
+
+		static void oledUpdate() {
+			// Send the entire OLED buffer to the display via i2c. Takes about 30 msecs.
+			// Periodically update the LED display to avoid flicker.
+			uint8 oneLine[33];
+			uint8 setupCmds[] = {
+				0x20, 0,		// Horizontal mode
+				0x22, 0, 7,		// Page start and end address
+				0x21, 0, 0x7F	// Column start and end address
+			};
+			i2cWriteBytes(setupCmds, sizeof(setupCmds));
+			oneLine[0] = 0x40;
+			uint8 *displayBuffer = tft.getBuffer();
+			uint8 *src = displayBuffer;
+			for (int i = 0; i <= 1024; i++) {
+				if ((i % 16) == 0) {
+					captureIncomingBytes();
+				}
+				if ((i % 64) == 0) {
+					// do time-sensitive background tasks
+					updateMicrobitDisplay();
+				}
+				int col = i % 32;
+				if ((col == 0) && (i != 0)) {
+					i2cWriteBytes(oneLine, sizeof(oneLine));
+					captureIncomingBytes();
+				}
+				oneLine[col + 1] = *src++;
+			}
+		}
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { oledUpdate(); taskSleep(-1); }}
+
 	#elif defined(OLED_128_64)
 		#undef BLACK // defined in SSD1306 header
 		#include "Adafruit_GFX.h"

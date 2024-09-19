@@ -44,7 +44,7 @@
 #elif defined(ARDUINO_M5Stick_C2)
 	#define PIN_WIRE_SCL 33
 	#define PIN_WIRE_SDA 32
-#elif defined(HALOCODE)
+#elif defined(HALOCODE) || defined(LUWU_CYKEBOT)
 	#define PIN_WIRE_SCL 18
 	#define PIN_WIRE_SDA 19
 #elif defined(ARDUINO_M5Stack_Core_PIANO)
