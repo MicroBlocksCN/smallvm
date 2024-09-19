@@ -166,16 +166,17 @@ method initializeForSlider Prompter title anAction minValue maxValue currentValu
 }
 
 method createButtons Prompter okLabel cancelLabel singleButton {
+  scale = (global 'scale')
   if (isNil singleButton) { singleButton = false }
   if (isNil okLabel) {okLabel = 'OK'}
 
   buttons = (newMorph)
-  okButton = (pushButton okLabel (microBlocksColor 'blueGray' 200) (action 'accept' this) nil nil true) // default
+  okButton = (pushButton okLabel (action 'accept' this) nil (26 * scale) true) // default
   addPart buttons (morph okButton)
 
   if (not singleButton) {
 	  if (isNil cancelLabel) {cancelLabel = 'Cancel'}
-	  cancelButton = (pushButton cancelLabel (microBlocksColor 'blueGray' 300) (action 'cancel' this))
+	  cancelButton = (pushButton cancelLabel (action 'cancel' this) nil (26 * scale))
 	  addPart buttons (morph cancelButton)
 	  setPosition (morph cancelButton) (+ (right (morph okButton)) (border window)) (top (morph okButton))
   }

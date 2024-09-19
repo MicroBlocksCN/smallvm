@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libAddButton lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -52,6 +52,8 @@ method initialize MicroBlocksScripter aProjectEditor {
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
   setFont libSelector fontName fontSize
   addPart morph (morph libSelector)
+
+  makeAddLibraryButton this
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
@@ -149,12 +151,14 @@ method makeLibraryHeader MicroBlocksScripter {
   if ('Linux' == (platform)) {
 	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (11 * scale) (microBlocksColor 'blueGray' 300))
   }
-  setPosition (morph label) (20 * scale) (8 * scale)
+  setPosition (morph label) (24 * scale) (32 * scale)
   addPart (morph libHeader) (morph label)
 
-  libAddButton = (addLibraryButton this (33 * scale) (33 * scale))
-  setPosition (morph libAddButton) (82 * scale) 0
-  addPart (morph libHeader) (morph libAddButton)
+  hLine = (newBox (newMorph) (microBlocksColor 'blueGray' 700) 0 0 false false)
+  setExtent (morph hLine) (96 * scale) scale 
+  setPosition (morph hLine) (24 * scale) ((bottom (morph label)) + (4 * scale))
+
+  addPart (morph libHeader) (morph hLine)
   addPart morph (morph libHeader)
   return libHeader
 }
@@ -162,41 +166,19 @@ method makeLibraryHeader MicroBlocksScripter {
 method updateLibraryHeader MicroBlocksScripter {
   labelM = (first (parts (morph libHeader)))
   setText (handler labelM) (localized 'LIBRARIES')
-
-  addButton = (handler (last (parts (morph libHeader))))
-  setHint addButton (localized 'Add Library')
 }
 
 method fixLibraryHeaderLayout MicroBlocksScripter {
-  buttonM = (last (parts (morph libHeader)))
-  setRight buttonM (right (owner buttonM))
+  hLine = (last (parts (morph libHeader)))
+  setExtent hLine ((width (morph categorySelector)) - 24) (global 'scale')
+  setRight hLine (right (owner hLine))
 }
 
-method addLibraryButton MicroBlocksScripter w h {
-  // xxx TODO This button will be replaced by an "Add Library" button in the content area
+method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
-  setFont 'Arial Bold' (24 * scale)
-  halfW = (2 * scale)
-  lineW = (2 * halfW)
-  halfLen = (8 * scale)
-  len = (2 * halfLen)
-  centerX = (toInteger (w / 2))
-  centerY = (toInteger (h / 2))
-
-  plusSignColor = (microBlocksColor 'blueGray' 300)
-  labelY = (6 * scale)
-  bm1 = (newBitmap w h (microBlocksColor 'blueGray' 850))
-  fillRect bm1 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm1 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
-
-  bm2 = (newBitmap w h (microBlocksColor 'yellow')) // was top bar blue highlight
-  fillRect bm2 plusSignColor (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm2 plusSignColor (centerX - halfW) (centerY - halfLen) lineW len
-
-  button = (newButton '' (action 'importLibrary' this))
-  setHint button (localized 'Add Library')
-  setCostumes button bm1 bm2
-  return button
+  libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
+  setPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
+  addPart morph (morph libAddButton)
 }
 
 // library item menu
@@ -306,6 +288,7 @@ method fixLayout MicroBlocksScripter {
 
   catWidth = (max (width (morph categorySelector)) (40 * scale))
   catHeight = (heightForItems categorySelector)
+  libSelectorHeight = (heightForItems libSelector)
   blocksWidth = (max (width (morph blocksFrame)) (40 * scale))
 
   // prevent pane dividers from going off right side
@@ -318,7 +301,7 @@ method fixLayout MicroBlocksScripter {
   libHeaderHeight = (30 * scale)
   setExtent (morph categorySelector) catWidth catHeight
   setExtent (morph libHeader) catWidth libHeaderHeight
-  setExtent (morph libSelector) catWidth (catHeight - (libHeaderHeight + (24 * scale)))
+  setExtent (morph libSelector) catWidth libSelectorHeight
   setExtent (morph blocksFrame) blocksWidth totalHeight
   setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
@@ -327,7 +310,9 @@ method fixLayout MicroBlocksScripter {
   topEdge = (top morph)
   fastSetPosition (morph categorySelector) leftEdge (topEdge + (24 * scale))
   fastSetPosition (morph libHeader) leftEdge (bottom (morph categorySelector))
-  fastSetPosition (morph libSelector) leftEdge (bottom (morph libHeader))
+  fastSetPosition (morph libSelector) leftEdge ((bottom (morph libHeader)) + (36 * scale))
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
+
   fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
   fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
 
@@ -1323,6 +1308,8 @@ method updateLibraryList MicroBlocksScripter {
   if (not (contains libNames oldSelection)) {
 	selectCategory this 'Control'
   }
+  scale = (global 'scale')
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
 }
 
 method justGrabbedPart MicroBlocksScripter part {

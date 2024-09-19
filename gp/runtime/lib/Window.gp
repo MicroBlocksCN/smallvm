@@ -1,6 +1,6 @@
 // system window component - to be used in morphic handlers
 
-defineClass Window morph label closeBtn resizer border color clientArea clientColor scale shadow blurSize blur
+defineClass Window morph label closeBtn resizer border color clientArea clientColor scale shadow blurSize
 
 to window label {
   window = (new 'Window')
@@ -26,13 +26,11 @@ method initialize Window labelString {
   addPart morph (morph label)
   buttonW = (20 * scale)
   buttonH  = (15 * scale)
-  closeBtn = (pushButton 'X' (gray 0) (action 'destroy' (morph this)) buttonW buttonH)
+  closeBtn = (pushButton 'X' (action 'destroy' (morph this)) buttonW buttonH)
   addPart morph (morph closeBtn)
   resizer = (resizeHandle this)
 
-  blur = (newMorph)
-  blurSize = 6
-  addPart morph blur
+  blurSize = (scale * 10)
 }
 
 method updateScale Window {
@@ -40,7 +38,7 @@ method updateScale Window {
   border = (scale * 5)
   setFont label nil (scale * 12)
   removePart morph (morph closeBtn)
-  closeBtn = (pushButton 'X' color (action 'destroy' (morph this)) 0 0)
+  closeBtn = (pushButton 'X' (action 'destroy' (morph this)) 0 0)
   addPart morph (morph closeBtn)
 }
 
@@ -53,7 +51,6 @@ method fixLayout Window {
   setRight (morph resizer) (right clientArea)
   setBottom (morph resizer) (bottom clientArea)
   addPart morph (morph resizer) // bring to front
-  setPosition blur ((left morph) - blurSize) ((top morph) - blurSize)
 }
 
 method redraw Window {
@@ -61,19 +58,32 @@ method redraw Window {
   h = (height morph)
   bm = (newBitmap w h)
 
-  blurBM = (newBitmap (w + (blurSize * 2)) (h + (blurSize * 2)))
-  shapeMaker = (newShapeMaker blurBM)
-
-  for i (blurSize + 1) {
-	off = ((i - 1) * scale)
-	outlineRoundedRectangle shapeMaker (rect off off ((w + (blurSize * 2)) - (2 * off)) ((h + (blurSize * 2)) - (2 * off))) scale (color 0 0 0 ((60 / blurSize) * (i / 2))) (blurSize - off)
-  }
-
-  setCostume blur blurBM
-
   fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) (scale * 4) color 0 (lighter color 20)
   setCostume morph bm
 }
+
+// Blurred shadow all around the window bounds. Commented out for now
+//method redrawShadow Window {
+//  if (isNil shadow) {return}
+//  w = (width morph)
+//  h = (height morph)
+//  blurBM = (newBitmap (w + (blurSize * 2)) (h + (blurSize * 2)))
+//  shapeMaker = (newShapeMaker blurBM)
+//
+//  for i (blurSize + 1) {
+//	off = ((i - 1) * scale)
+//	outlineRoundedRectangle shapeMaker (rect off off ((w + (blurSize * 2)) - (2 * off)) ((h + (blurSize * 2)) - (2 * off))) scale (color 0 0 0 ((60 / blurSize) * (i / 3))) (blurSize - off)
+//  }
+//
+//  setCostume shadow blurBM true
+//}
+//
+//method addShadow Window {
+//  shadow = (newMorph)
+//  setPosition shadow (- (left morph) blurSize) (- (top morph) blurSize)
+//  redrawShadow this
+//  addPart morph shadow
+//}
 
 method setLabelString Window aString {
   setText label (localized aString)

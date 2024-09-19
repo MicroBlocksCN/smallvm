@@ -144,7 +144,7 @@ method makeClassPane Scripter {
   addPart (morph classPane) (morph classMenuButton)
   if (notNil projectEditor) { hide (morph classMenuButton) }
 
-  newInstanceButton = (pushButton 'New instance' (color 130 130 130) (action 'addInstance' this))
+  newInstanceButton = (pushButton 'New instance' (action 'addInstance' this))
   setHint newInstanceButton 'Add a new instance of this class to the page'
   addPart (morph classPane) (morph newInstanceButton)
   if (notNil projectEditor) { hide (morph newInstanceButton) }
@@ -491,7 +491,7 @@ method addSharedBlocks Scripter {
 }
 
 method addButton Scripter label action hint {
-  btn = (pushButton label (gray 130) action)
+  btn = (pushButton label action)
   if (notNil hint) { setHint btn hint }
   setPosition (morph btn) nextX nextY
   addPart (morph (contents blocksFrame)) (morph btn)

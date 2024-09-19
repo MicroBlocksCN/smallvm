@@ -133,28 +133,40 @@ method clearCostumes Trigger {
   setCostume morph nil
 }
 
-to pushButton label color action minWidth minHeight makeDefault {
+to pushButton label action minWidth minHeight isActive onDark {
   btn = (new 'Trigger' (newMorph) action)
   setHandler (morph btn) btn
   setGrabRule (morph btn) 'ignore'
-  drawLabelCostumes btn label color minWidth minHeight makeDefault
+  drawLabelCostumes btn label minWidth minHeight isActive onDark
   return btn
 }
 
-method drawLabelCostumes Trigger label color minWidth minHeight makeDefault {
+method drawLabelCostumes Trigger label minWidth minHeight isActive onDark {
   scale = (global 'scale')
   if (isNil minWidth) { minWidth = (30 * scale) }
   if (isNil minHeight) { minHeight = (20 * scale) }
-  if makeDefault {
-	normalCostume = (buttonBitmap label (gray 0) minWidth minHeight)
+
+  // default colors on light bg
+  labelColor = (microBlocksColor 'blueGray' 900)
+  borderColor = (microBlocksColor 'blueGray' 200)
+  bgColor = (transparent)
+
+  if isActive {
+    labelColor = (microBlocksColor 'blueGray' 50)
+	bgColor = (microBlocksColor 'blueGray' 900)
+	borderColor = bgColor
   } ('X' == label) {
     // special case for Window close button
-	normalCostume = (buttonBitmap label (microBlocksColor 'blueGray' 400) minWidth minHeight)
-  } else {
-	normalCostume = (buttonBitmap label (transparent) minWidth minHeight)
+	labelColor = (microBlocksColor 'blueGray' 50)
+	bgColor = (transparent)
+  } onDark {
+    labelColor = (microBlocksColor 'blueGray' 200)
+	borderColor = (microBlocksColor 'blueGray' 700)
   }
-  highlightCostume = (buttonBitmap label (microBlocksColor 'yellow') minWidth minHeight)
-  pressedCostume = (buttonBitmap label (microBlocksColor 'yellow') minWidth minHeight true)
+
+  highlightCostume = (buttonBitmap label (array (microBlocksColor 'blueGray' 900) (transparent) (microBlocksColor 'yellow')) minWidth minHeight)
+  pressedCostume = (buttonBitmap label (array (microBlocksColor 'blueGray' 900) (transparent) (microBlocksColor 'yellow')) minWidth minHeight true)
+  normalCostume = (buttonBitmap label (array labelColor borderColor bgColor) minWidth minHeight true)
   setCostume morph normalCostume
 }
 
@@ -167,14 +179,22 @@ to buttonBitmap label color w h isInset corner border hasFrame flat {
     fontSize = (11 * scale)
     textColor = (gray 0)
     if (color == (gray 0)) { textColor = (gray 255) }
-    lbm = (stringImage (localized label) fontName fontSize textColor 'center' (darker color) (off * -1) nil nil nil nil nil nil flat)
+	if (isClass color 'Array') {
+	  textColor = (at color 1)
+	  borderColor = (at color 2)
+	  bgColor = (at color 3)
+	  shadowColor = (darker (at color 1))
+	} else {
+	  shadowColor = (darker color)
+	}
+    lbm = (stringImage (localized label) fontName fontSize textColor 'center' shadowColor (off * -1) nil nil nil nil nil nil flat)
   } else {
     lbm = nil
   }
-  return (buttonImage lbm color corner border isInset hasFrame w h flat)
+  return (buttonImage lbm bgColor corner border isInset hasFrame w h flat borderColor)
 }
 
-to buttonImage labelBitmap color corner border isInset hasFrame width height flat {
+to buttonImage labelBitmap color corner border isInset hasFrame width height flat borderColor {
   // answer a new bitmap depicting a push button rendered
   // with the specified box settings.
   // the bitmap's width and height are determined by the - optional -
@@ -184,6 +204,7 @@ to buttonImage labelBitmap color corner border isInset hasFrame width height fla
   scale = (global 'scale')
 
   if (isNil color) {color = (color 130 130 130)}
+  if (isNil borderColor) {borderColor = (gray 0)}
   if (isNil corner) {corner = (half (max width height))}
   if (isNil border) {border = (max 1 (scale / 2))}
   if (isNil isInset) {isInset = false}
@@ -203,7 +224,7 @@ to buttonImage labelBitmap color corner border isInset hasFrame width height fla
   h = (max (+ lblHeight border border) height)
 
   bm = (newBitmap w h)
-  fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) corner color 1 (gray 0)
+  fillRoundedRect (newShapeMaker bm) (rect 0 0 w h) corner color 1 borderColor
 
   if (isClass labelBitmap 'Bitmap') {
     off = 0

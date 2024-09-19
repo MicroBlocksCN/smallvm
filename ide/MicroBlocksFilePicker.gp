@@ -317,7 +317,7 @@ method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
+  result = (pushButton label selectorOrAction nil (26 * (global 'scale')) makeDefault)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -602,7 +602,7 @@ method fixLayout MicroBlocksFilePicker {
 
   // file list
   topInset = (60 * scale)
-  bottomInset = (40 * scale)
+  bottomInset = (48 * scale)
   leftInset = (113 * scale)
   if (notNil nameLabel) {
     leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
@@ -630,7 +630,7 @@ method fixLayout MicroBlocksFilePicker {
 
   // okay and cancel buttons
   space = (10 * scale)
-  y = ((bottom morph) - (32 * scale))
+  y = ((bottom morph) - (35 * scale))
   x = ((right morph) - ((width (morph okayButton)) + (20 * scale)))
   setPosition (morph okayButton) x y
   x = (x - ((width (morph cancelButton)) + space))

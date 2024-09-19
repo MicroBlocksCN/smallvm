@@ -131,7 +131,7 @@ method addSwatch ColorPicker x y w h {
 
 method addTransparentButton ColorPicker x y {
   scale = (global 'scale')
-  b = (pushButton 'Trans.' (gray 100) (action 'setTransparent' this))
+  b = (pushButton 'Trans.' (action 'setTransparent' this))
   setPosition (morph b) (x * scale) (y * scale)
   addPart morph (morph b)
 }
@@ -147,7 +147,7 @@ method addCloseButton ColorPicker x y {
 
   buttonW = (20 * scale)
   buttonH  = (15 * scale)
-  closeBtn = (pushButton 'X' (gray 0) (action 'destroy' (morph this)) buttonW buttonH)
+  closeBtn = (pushButton 'X' (action 'destroy' (morph this)) buttonW buttonH)
   setPosition (morph closeBtn) x y
   addPart morph (morph closeBtn)
 }
