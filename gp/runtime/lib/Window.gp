@@ -66,7 +66,7 @@ method redraw Window {
 
   for i (blurSize + 1) {
 	off = ((i - 1) * scale)
-	outlineRoundedRectangle shapeMaker (rect off off ((w + (blurSize * 2)) - (2 * off)) ((h + (blurSize * 2)) - (2 * off))) scale (color 0 0 0 ((60 / blurSize) * i)) (blurSize - off)
+	outlineRoundedRectangle shapeMaker (rect off off ((w + (blurSize * 2)) - (2 * off)) ((h + (blurSize * 2)) - (2 * off))) scale (color 0 0 0 ((60 / blurSize) * (i / 2))) (blurSize - off)
   }
 
   setCostume blur blurBM
