@@ -162,7 +162,7 @@ method addFolderReadoutAndParentButton MicroBlocksFilePicker {
 
   parentButton = (textButton this 0 0 '<' 'parentFolder')
   parentButtonM = (morph parentButton)
-  setTop parentButtonM (y - scale)
+  setTop parentButtonM (y - (4 * scale))
   setLeft parentButtonM (x - ((width parentButtonM) + (18 * scale)))
   addPart morph parentButtonM
 }
@@ -221,8 +221,8 @@ method addShortcutButtons MicroBlocksFilePicker {
   showComputer = (not (contains hidden 'Computer'))
 
   buttonX = ((left morph) + (17 * scale))
-  buttonY = ((top morph) + (59 * scale))
-  if showLibraries { buttonY = ((top morph) + (55 * scale)) }
+  buttonY = ((top morph) + (60 * scale))
+  //if showLibraries { buttonY = ((top morph) + (56 * scale)) }
 
   dy = (66 * scale)
   if showExamples {
@@ -602,6 +602,7 @@ method fixLayout MicroBlocksFilePicker {
 
   // file list
   topInset = (60 * scale)
+  if 
   bottomInset = (48 * scale)
   leftInset = (113 * scale)
   if (notNil nameLabel) {

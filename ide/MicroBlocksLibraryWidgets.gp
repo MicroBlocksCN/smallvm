@@ -90,7 +90,7 @@ method fixLayout MicroBlocksLibraryImportDialog {
 	margin = (10 * scale)
 
 	// file list panel should take roughly half the space
-	topInset = (55 * scale)
+	topInset = (60 * scale)
 	bottomInset = (40 * scale)
 	leftInset = (110 * scale)
 	rightInset = (((width morph) / 2) - (20 * scale))
