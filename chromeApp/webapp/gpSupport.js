@@ -864,7 +864,7 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x03eb},		// Atmel Corporation
 		{ usbVendorId: 0x1366},		// SEGGER Calliope mini
 		{ usbVendorId: 0x16c0},		// Teensy
-		{ usbVendorId: 0x2e8A},		// Raspberry Pi Pico RP2040
+		{ usbVendorId: 0x2e8a},		// Raspberry Pi Pico RP2040
 		{ usbVendorId: 0x303a},		// Espressif USB JTAG/serial debug unit
 		{ usbVendorId: 0x28e9},  	// GD32 USB CDC ACM
 	];
