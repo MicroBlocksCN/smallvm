@@ -100,7 +100,7 @@ method itemHeight CategorySelector {
 }
 
 method handEnter CategorySelector aHand { setCursor 'pointer' }
-method handLeave CategorySelector aHand { setCursor 'normal' }
+method handLeave CategorySelector aHand { setCursor 'default' }
 
 method handDownOn CategorySelector aHand {
 	i = (truncate (((y aHand) - (top morph)) / ((itemHeight this) + ((global 'scale') * 5))))

@@ -47,6 +47,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
   setExtent (morph categorySelector) (140 * scale) 100
+  setMinExtent (morph categorySelector) (65 * scale) (60 * scale)
   addPart morph (morph categorySelector)
 
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
@@ -61,6 +62,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (microBlocksColor 'blueGray' 50))
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
+  setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
   addRoundedCorner this

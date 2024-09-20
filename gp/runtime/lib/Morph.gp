@@ -1105,6 +1105,7 @@ method setExtentToRightBottom Morph another {
 method setWidthToRight Morph another {
   changed this
   setRight bounds (right another)
+  if ((width bounds) < minWidth) { setWidth bounds minWidth }
   raise this 'fixLayout' handler
   redraw handler
 }
@@ -1112,6 +1113,7 @@ method setWidthToRight Morph another {
 method setHeightToBottom Morph another {
   changed this
   setBottom bounds (bottom another)
+  if ((height bounds) < minHeight) { setHeight bounds minHeight }
   raise this 'fixLayout' handler
   redraw handler
 }
