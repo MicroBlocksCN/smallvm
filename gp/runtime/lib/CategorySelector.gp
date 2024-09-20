@@ -99,6 +99,9 @@ method itemHeight CategorySelector {
 	return (24 * (global 'scale'))
 }
 
+method handEnter CategorySelector aHand { setCursor 'pointer' }
+method handLeave CategorySelector aHand { setCursor 'normal' }
+
 method handDownOn CategorySelector aHand {
 	i = (truncate (((y aHand) - (top morph)) / ((itemHeight this) + ((global 'scale') * 5))))
 	if (and (i >= 0) (i < (count items))) {
