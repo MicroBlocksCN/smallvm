@@ -222,7 +222,6 @@ method addShortcutButtons MicroBlocksFilePicker {
 
   buttonX = ((left morph) + (17 * scale))
   buttonY = ((top morph) + (60 * scale))
-  //if showLibraries { buttonY = ((top morph) + (56 * scale)) }
 
   dy = (66 * scale)
   if showExamples {

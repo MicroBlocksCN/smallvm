@@ -155,13 +155,18 @@ method drawLabelCostumes Trigger label minWidth minHeight isActive onDark {
     labelColor = (microBlocksColor 'blueGray' 50)
 	bgColor = (microBlocksColor 'blueGray' 900)
 	borderColor = bgColor
-  } ('X' == label) {
-    // special case for Window close button
-	labelColor = (microBlocksColor 'blueGray' 50)
-	bgColor = (transparent)
   } onDark {
     labelColor = (microBlocksColor 'blueGray' 200)
 	borderColor = (microBlocksColor 'blueGray' 700)
+  } ('X' == label) {
+    // special case for Window close button
+	bitmap = (readSVGIcon 'icon-close' (microBlocksColor 'blueGray' 100))
+	hlBitmap = (readSVGIcon 'icon-close' (microBlocksColor 'yellow'))
+	normalCostume = (buttonImage bitmap (transparent) 0 0 false false 12 12 true (transparent))
+	highlightCostume = (buttonImage hlBitmap (transparent) 0 0 false false 12 12 true (transparent))
+	pressedCostume = (buttonImage hlBitmap (transparent) 0 0 true false 12 12 true (transparent))
+	setCostume morph normalCostume
+	return
   }
 
   highlightCostume = (buttonBitmap label (array (microBlocksColor 'blueGray' 900) (transparent) (microBlocksColor 'yellow')) minWidth minHeight)
