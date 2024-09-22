@@ -9,7 +9,7 @@ TT 电机
 3路舵机
 6轴加速计
 '
-variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data
+variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data 
 
   spec ' ' '_motor' '_motor _ speed _' 'auto num' 1 50
   spec ' ' 'cykebot wheel L' '赛克号设置左轮速度为 _ 右轮速度为 _ （-100~100)' 'auto auto' 50 50
@@ -30,25 +30,68 @@ variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data
   spec ' ' '_ICM4267_get_data' '_ICM4267_get_data'
   spec 'r' 'ICM4267_tiltX' '赛克号 倾角X'
   spec 'r' 'ICM4267_tiltY' '赛克号 倾角Y'
-  spec 'r' 'ICM4267_tiltZ' '赛克号 倾角Z' 
+  spec 'r' 'ICM4267_tiltZ' '赛克号 倾角Z'
+  spec 'r' '赛克号 检测颜色' '赛克号 检测颜色'
+  spec 'r' '赛克号 获取颜色' '赛克号 获取颜色 RGB'
 
-to _CykeBot_color_get_rawdata {
+to ICM4267_Temperature {
+  '_ICM4267_init'
+  local 'var' (newList 2)
+  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '09'))
+  '[sensors:i2cRead]' (hexToInt '69') var
+  return (((((at 1 var) << 8) | (at 2 var)) / 128) + 25)
+}
+
+to ICM4267_tiltX {
+  '_ICM4267_get_data'
+  return (at 1 _ICM4267_accl_data)
+}
+
+to ICM4267_tiltY {
+  '_ICM4267_get_data'
+  return (at 2 _ICM4267_accl_data)
+}
+
+to ICM4267_tiltZ {
+  '_ICM4267_get_data'
+  return (at 3 _ICM4267_accl_data)
+}
+
+to '_CykeBot_color_get_rawdata' {
   if ((i2cGet (hexToInt '38') (hexToInt '40')) == 11) {
     i2cSet (hexToInt '38') (hexToInt '41') 0
-    i2cSet (hexToInt '38') (hexToInt '42') (hexToInt '90')
+    i2cSet (hexToInt '38') (hexToInt '42') (hexToInt '12')
     i2cSet (hexToInt '38') (hexToInt '44') (hexToInt '02')
     waitMillis 50
   }
   '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt '50'))
   local 'var' (newList 8)
   '[sensors:i2cRead]' (hexToInt '38') var
-  sayIt ('[data:joinStrings]' var '|')
   local '_r' ('_bh_1745_color_data' (at 2 var) (at 1 var))
   local '_g' ('_bh_1745_color_data' (at 4 var) (at 3 var))
   local '_b' ('_bh_1745_color_data' (at 6 var) (at 5 var))
   local '_clear' ('_bh_1745_color_data' (at 8 var) (at 7 var))
-  sayIt _r '-' _g '-' _b '-' _clear
   return ('[data:makeList]' _r _g _b _clear)
+}
+
+to '_ICM4267_get_data' {
+  '_ICM4267_init'
+  local 'var' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '0b'))
+  '[sensors:i2cRead]' (hexToInt '69') var
+  atPut 1 _ICM4267_accl_data ((('_fix16bitsign' (((at 1 var) << 8) | (at 2 var))) * 100) >> 14)
+  atPut 2 _ICM4267_accl_data ((('_fix16bitsign' (((at 3 var) << 8) | (at 4 var))) * 100) >> 14)
+  atPut 3 _ICM4267_accl_data ((('_fix16bitsign' (((at 5 var) << 8) | (at 6 var))) * 100) >> 14)
+}
+
+to '_ICM4267_init' {
+  if (_ICM4257_init_num == 0) {if ((i2cGet (hexToInt '69') (hexToInt '75')) == 103) {
+    i2cSet (hexToInt '69') (hexToInt '21') 105
+    i2cSet (hexToInt '69') (hexToInt '1F') 3
+    waitMillis 2
+    _ICM4257_init_num = 1
+    _ICM4267_accl_data = (newList 3)
+  }}
 }
 
 to '_bh_1745_color_data' high low {
@@ -70,6 +113,10 @@ to '_cykebot_linetracking' foo {
   comment '左外，左中，右中，右外'
   comment '5/23 |16/17'
   return (digitalReadOp (at (minimum 4 (maximum 1 foo)) ('[data:makeList]' 5 23 16 17)))
+}
+
+to '_fix16bitsign' foo {
+  return (ifExpression (foo > 32768) (foo - 65536) foo)
 }
 
 to '_motor' num speed {
@@ -147,53 +194,34 @@ to servo foo angle {
   setServoAngle (at (minimum 3 (maximum 1 foo)) ('[data:makeList]' 27 14 12)) ('[misc:rescale]' angle -140 140 -50 50)
 }
 
+to '赛克号 检测颜色' {
+  local 'var' ('[misc:hue]' ('赛克号 获取颜色'))
+  if (var < 15) {
+    return 'RED'
+  } (var < 30) {
+    return 'ORANGE'
+  } (var < 75) {
+    return 'YELLOW'
+  } (var < 120) {
+    return 'GREEN'
+  } (var < 140) {
+    return 'BLUE'
+  } (var < 180) {
+    return 'BLUE'
+  } (var < 250) {
+    return 'PURPLE'
+  } else {
+    return 'PURPLE'
+  }
+}
+
 to '赛克号 清屏' {
   callCustomCommand '[tft:clear]'
 }
 
-to ICM4267_Temperature {
-  '_ICM4267_init'
-  local 'var' (newList 2)
-  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '09'))
-  '[sensors:i2cRead]' (hexToInt '69') var
-  return (((((at 1 var) << 8) | (at 2 var)) / 128) + 25)
+to '赛克号 获取颜色' {
+  local 'var' ('_CykeBot_color_get_rawdata')
+  local 'max' (maximum (at 1 var) (at 2 var) (at 3 var))
+  return ((((((at 1 var) * 255) / max) << 16) | ((((at 2 var) * 255) / max) << 8)) | (((at 3 var) * 255) / max))
 }
 
-to ICM4267_tiltX {
-  '_ICM4267_get_data'
-  return (at 1 _ICM4267_accl_data)
-}
-
-to ICM4267_tiltY {
-  '_ICM4267_get_data'
-  return (at 2 _ICM4267_accl_data)
-}
-
-to ICM4267_tiltZ {
-  '_ICM4267_get_data'
-  return (at 3 _ICM4267_accl_data)
-}
-
-to '_ICM4267_get_data' {
-  '_ICM4267_init'
-  local 'var' (newList 6)
-  '[sensors:i2cWrite]' (hexToInt '69') ('[data:makeList]' (hexToInt '0b'))
-  '[sensors:i2cRead]' (hexToInt '69') var
-  atPut 1 _ICM4267_accl_data ((('_fix16bitsign' (((at 1 var) << 8) | (at 2 var))) * 100) >> 14)
-  atPut 2 _ICM4267_accl_data ((('_fix16bitsign' (((at 3 var) << 8) | (at 4 var))) * 100) >> 14)
-  atPut 3 _ICM4267_accl_data ((('_fix16bitsign' (((at 5 var) << 8) | (at 6 var))) * 100) >> 14)
-}
-
-to '_ICM4267_init' {
-  if (_ICM4257_init_num == 0) {if ((i2cGet (hexToInt '69') (hexToInt '75')) == 103) {
-    i2cSet (hexToInt '69') (hexToInt '21') 105
-    i2cSet (hexToInt '69') (hexToInt '1F') 3
-    waitMillis 2
-    _ICM4257_init_num = 1
-    _ICM4267_accl_data = (newList 3)
-  }}
-}
-
-to '_fix16bitsign' foo {
-  return (ifExpression (foo > 32768) (foo - 65536) foo)
-}
