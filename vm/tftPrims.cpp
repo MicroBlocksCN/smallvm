@@ -29,7 +29,7 @@ static int deferUpdates = false;
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE) || defined(XESGAME)//学而思游戏机
+	defined(COCUBE) || defined(M5_ATOMS3) || defined(XESGAME)//学而思游戏机
 
 	#ifndef COCUBE
 	#define BLACK 0
@@ -1090,6 +1090,34 @@ static int deferUpdates = false;
 		tft.showMicroBitPixels(microBitDisplayBits, xPos, yPos);
 	}
 
+	#elif defined(M5_ATOMS3)
+		#include <Arduino_GFX_Library.h>
+		#define TFT_MOSI 21
+		#define TFT_SCLK 17
+		#define TFT_CS 15
+		#define TFT_DC 33
+		#define TFT_RST 33
+		#define TFT_BL 16
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		#define DEFAULT_BATTERY_PIN 34
+
+		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
+		// Arduino_GFX *tft = new Arduino_GC9107(bus, TFT_RST, 0 , true);
+		Arduino_GC9107 tft =  Arduino_GC9107(&bus, 34 /* RST */, 0 /* rotation */, true /* IPS */);
+
+    void tftInit() {
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, LOW);
+			tft.begin();
+			tft.invertDisplay(0);
+			delay(35);
+			digitalWrite(TFT_BL, HIGH);
+			useTFT = true;
+
+			delay(800);
+		}
+
 	#elif defined(COCUBE)
 		#include <Arduino_GFX_Library.h>
 		#define TFT_MOSI 19
@@ -1675,7 +1703,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				}
 			}
 		}
-		#ifdef COCUBE
+		#if defined(COCUBE) ||  defined(M5_ATOMS3)
 			tft.fillRect(
 			originX * scale,
 			(originY + y) * scale,
