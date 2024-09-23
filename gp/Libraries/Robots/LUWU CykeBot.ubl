@@ -1,7 +1,7 @@
 module 'LUWU CykeBot'
 author '邵悦'
 version 1 6 
-depends NeoPixel Servo 'LED Display' 
+depends NeoPixel Servo 'LED Display' 'Graphics and Displays/Color'
 description 'LUWU CykeBot 陆吾智能 赛克号
 TT 电机
 4路巡线
