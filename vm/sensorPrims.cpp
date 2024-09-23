@@ -50,7 +50,7 @@
 #elif defined(ARDUINO_M5Stack_Core_PIANO)
 	#define PIN_WIRE_SCL 5
 	#define PIN_WIRE_SDA 26
-#elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)|| defined(M5_DIN_METER) || defined(M5_ATOMS3LITE)
+#elif defined(FUTURE_LITE)|| defined(M5_CARDPUTER)|| defined(M5_DIN_METER) || defined(M5_ATOMS3LITE) || defined(M5_ATOMS3)
 	#define PIN_WIRE_SCL 1
 	#define PIN_WIRE_SDA 2
 #elif defined(TX_FT_BOX)
@@ -888,7 +888,7 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2)
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
  #define Wire1 Wire
@@ -931,7 +931,11 @@ static void startAccelerometer() {
 		#ifdef ARDUINO_M5Stick_C2
 		Wire1.begin(21, 22);
 		#else
-		Wire1.begin(); // use internal I2C bus with default pins
+			#ifdef M5_ATOMS3
+			Wire1.begin(38, 39);
+			#else
+			Wire1.begin(); // use internal I2C bus with default pins
+			#endif
 		#endif
 	#endif
 
