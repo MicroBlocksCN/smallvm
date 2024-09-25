@@ -168,9 +168,17 @@ method fixLayout Block {
           h = 0
         } else {
           isArgSlot = (and (not (isClass each 'Text')) (not (isClass each 'SVGImage')))
-          x = (+ left indentation w)
-          w += (width (fullBounds (morph each)))
-          w += (space * scale)
+		  // forced break indicated by special label #BR#
+		  isForcedBreak = (and (isClass each 'Text') (== (text each) '#BR#'))
+		  if isForcedBreak {
+			isArgSlot = true
+			setText each ''
+		    lineArgCount = 10
+		  } else {
+			x = (+ left indentation w)
+			w += (width (fullBounds (morph each)))
+			w += (space * scale)
+		  }
           if (and breakLineBeforeFirstArg isArgSlot) {
 			breakLineBeforeFirstArg = false // only do this once
  			lineArgCount = 10 // force a line break before first arg
@@ -189,8 +197,12 @@ method fixLayout Block {
 			  currentLine = (list)
 			}
             h = 0
-            x = (+ left indentation)
-            w = ((width (fullBounds (morph each))) + (space * scale))
+			x = (+ left indentation)
+			if isForcedBreak {
+			  w = 0
+			} else {
+			  w = ((width (fullBounds (morph each))) + (space * scale))
+			}
             lineArgCount = 0
           }
           add currentLine each
