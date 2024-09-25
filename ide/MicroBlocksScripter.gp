@@ -138,6 +138,7 @@ method darkModeChanged MicroBlocksScripter {
 
 method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
+  updateLibraryButton this
 
   // update the scripts
   saveScripts this
@@ -178,9 +179,14 @@ method fixLibraryHeaderLayout MicroBlocksScripter {
   setRight hLine (right (owner hLine))
 }
 
+method updateLibraryButton MicroBlocksScripter {
+  drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+}
+
 method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
   libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
+  print (localized 'Add Library')
   setPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
   addPart morph (morph libAddButton)
 }
