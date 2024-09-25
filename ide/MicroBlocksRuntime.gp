@@ -1138,7 +1138,10 @@ method installBoardSpecificBlocks SmallRuntime {
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
     if (isNil boardType) { return } // can happen if VM was updated by versionReceived
 
-	if ('Citilab ED1' == boardType) {
+	if ('Boardie' == boardType) {
+		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Tone'
+    } ('Citilab ED1' == boardType) {
 		importEmbeddedLibrary scripter 'ED1 Buttons'
 		importEmbeddedLibrary scripter 'Tone'
 		importEmbeddedLibrary scripter 'Basic Sensors'
