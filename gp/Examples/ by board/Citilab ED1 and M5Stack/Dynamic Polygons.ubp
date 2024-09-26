@@ -24,7 +24,7 @@ to polygon sides size xoffset {
   'pen up'
   setHeading 0
   local 'x' ((('[tft:getWidth]') / 2) + (xoffset - (d / 2)))
-  local 'y' ((('[tft:getHeight]') / 2) + (size / 2))
+  local 'y' ((('[tft:getHeight]') / 2) - (size / 2))
   'go to x' x y
   'pen down'
   repeat sides {
@@ -35,14 +35,14 @@ to polygon sides size xoffset {
   'pen up'
 }
 
-script 502 56 {
+script 492 40 {
 whenCondition (('[sensors:tiltZ]') < -140)
 deco += 1
 deco = (deco % 4)
 waitMillis 200
 }
 
-script 56 63 {
+script 46 47 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -54,12 +54,12 @@ node styles. Press the OK button to
 change the polygon color.'
 }
 
-script 503 207 {
+script 493 191 {
 whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 56 215 {
+script 46 199 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
@@ -73,7 +73,7 @@ forever {
 }
 }
 
-script 503 298 {
+script 493 282 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
