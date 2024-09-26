@@ -671,7 +671,11 @@ method processEvent Keyboard evt {
 				okay (handler filePicker)
 			}
 			if (notNil (selection (scripter pe))) {
-				startProcesses (selection (scripter pe))
+				if (shiftKeyDown this) {
+					toggleProcesses (selection (scripter pe))
+				} else {
+					startProcesses (selection (scripter pe))
+				}
 			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
