@@ -643,6 +643,7 @@ method processEvent Keyboard evt {
 	  atPut currentKeys key true
 
 	  if (isNil focus) {
+		pe = (findProjectEditor)
 		if (27 == key) { // escape key
 			if (notNil (flasher (smallRuntime))) {
 				confirmRemoveFlasher (smallRuntime)
@@ -654,6 +655,8 @@ method processEvent Keyboard evt {
 				destroy (handler (findMorph 'MicroBlocksSpinner'))
 			} (notNil (findMorph 'Prompter')) {
 				cancel (handler (findMorph 'Prompter'))
+			} (notNil (selection (scripter pe))) {
+				stopProcesses (selection (scripter pe))
 			} else {
 				stopAndSyncScripts (smallRuntime)
 			}
@@ -667,20 +670,22 @@ method processEvent Keyboard evt {
 			if (notNil filePicker) {
 				okay (handler filePicker)
 			}
+			if (notNil (selection (scripter pe))) {
+				startProcesses (selection (scripter pe))
+			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-O or ctrl-O - open file dialog
-			(openProjectMenu (findProjectEditor))
+			(openProjectMenu pe)
 		}
 		if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-S or ctrl-S - save file dialog
-			(saveProjectToFile (findProjectEditor))
+			(saveProjectToFile pe)
 		}
 		if (and (122 == (at evt 'char'))
 			(or (controlKeyDown this) (commandKeyDown this))
 			(isNil (grabbedObject (hand (global 'page'))))) {
 				// cmd-Z or ctrl-Z - undo last drop
-				pe = (findProjectEditor)
 				if (notNil pe) { undrop (scriptEditor (scripter pe)) }
 		}
 	  }
