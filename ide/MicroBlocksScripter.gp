@@ -186,7 +186,6 @@ method updateLibraryButton MicroBlocksScripter {
 method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
   libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
-  print (localized 'Add Library')
   setPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
   addPart morph (morph libAddButton)
 }
