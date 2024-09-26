@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libAddButton lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libFrame libAddButton lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer gradient
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -51,11 +51,15 @@ method initialize MicroBlocksScripter aProjectEditor {
   setMaxExtent (morph categorySelector) (300 * scale) 0 // y is ignored
   addPart morph (morph categorySelector)
 
+  makeAddLibraryButton this
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
   setFont libSelector fontName fontSize
-  addPart morph (morph libSelector)
-
-  makeAddLibraryButton this
+  libFrame = (scrollFrame libSelector (microBlocksColor 'blueGray' 850))
+  setAutoScroll libFrame false
+  addPart morph (morph libFrame)
+  gradient = (newGradient (microBlocksColor 'blueGray' 850) 30 3)
+  setExtent (morph gradient) (140 * scale) (30 * scale)
+  addPart morph (morph gradient)
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
@@ -65,7 +69,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
   setMaxExtent (morph blocksFrame) (600 * scale) 0 // y is ignored
-  setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
   addRoundedCorner this
   addTrashcan this
@@ -138,6 +141,7 @@ method darkModeChanged MicroBlocksScripter {
 
 method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
+  updateLibraryButton this
 
   // update the scripts
   saveScripts this
@@ -178,10 +182,14 @@ method fixLibraryHeaderLayout MicroBlocksScripter {
   setRight hLine (right (owner hLine))
 }
 
+method updateLibraryButton MicroBlocksScripter {
+  drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+}
+
 method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
   libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
-  setPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
+  setPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
   addPart morph (morph libAddButton)
 }
 
@@ -307,6 +315,7 @@ method fixLayout MicroBlocksScripter {
   setExtent (morph libHeader) catWidth libHeaderHeight
   setExtent (morph libSelector) catWidth libSelectorHeight
   setExtent (morph blocksFrame) blocksWidth totalHeight
+  setExtent (morph gradient) catWidth (30 * scale)
   setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
   // position parts
@@ -314,16 +323,21 @@ method fixLayout MicroBlocksScripter {
   topEdge = (top morph)
   fastSetPosition (morph categorySelector) leftEdge (topEdge + (24 * scale))
   fastSetPosition (morph libHeader) leftEdge (bottom (morph categorySelector))
-  fastSetPosition (morph libSelector) leftEdge ((bottom (morph libHeader)) + (36 * scale))
-  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
-
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
+  fastSetPosition (morph libSelector) leftEdge ((bottom (morph libAddButton)) + (6 * scale))
+  fastSetPosition (morph libFrame) leftEdge (top (morph libSelector))
+  fastSetPosition (morph gradient) leftEdge ((bottom (morph libFrame)) - (60 * scale))
   fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
   fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
+
+  // set libFrame extent
+  setExtent (morph libFrame) catWidth (- (bottom morph) (+ (top (morph libSelector)) (12 * scale)))
 
   changed morph // report damage
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
+  redraw gradient
   updateSliders blocksFrame
   updateSliders scriptsFrame
 
@@ -1314,7 +1328,7 @@ method updateLibraryList MicroBlocksScripter {
 	selectCategory this 'Control'
   }
   scale = (global 'scale')
-  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libSelector)) + (6 * scale))
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
 }
 
 method justGrabbedPart MicroBlocksScripter part {

@@ -223,7 +223,9 @@ method inputFor ScriptEditor block {
   // look for a slot
   for m others {
     if (isAnyClass (handler m) 'InputSlot' 'BooleanSlot' 'ColorSlot') {
-      if (and (isReplaceableByReporter (handler m)) (containsPoint (bounds m) x y)) {
+      // expand drop rectangle to make the target easier to hit
+      dropRect = (expandBy (bounds m) (5 * (global 'scale')))
+      if (and (isReplaceableByReporter (handler m)) (containsPoint dropRect x y)) {
         return (handler m)
       }
     }

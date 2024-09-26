@@ -250,8 +250,10 @@ method zoomOut MicroBlocksEditor {
 }
 
 method setBlockScalePercent MicroBlocksEditor newPercent {
+  setCursor 'wait'
   setBlockScalePercent (scriptEditor scripter) newPercent
   syncScripts (smallRuntime)
+  setCursor 'default'
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {
@@ -1364,8 +1366,10 @@ method readCustomTranslation MicroBlocksEditor fName {
 }
 
 method languageChanged MicroBlocksEditor {
+  setCursor 'wait'
   languageChanged scripter
   addZoomButtonHints this
+  setCursor 'default'
 }
 
 // Iconic menus

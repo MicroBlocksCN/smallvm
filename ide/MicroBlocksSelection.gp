@@ -145,6 +145,10 @@ method handMoveOver MicroBlocksSelection aHand {
 
 method contextMenu MicroBlocksSelection {
 	menu = (menu nil this)
+	addItem menu 'run selected' 'startProcesses'
+	addItem menu 'stop selected' 'stopProcesses'
+	addItem menu 'toggle selected' 'toggleProcesses'
+	addLine menu
 	addItem menu 'duplicate selection' 'duplicateBlocks'
 	addItem menu 'drag selection' 'dragBlocks'
 	addLine menu
@@ -156,6 +160,38 @@ method deleteBlocks MicroBlocksSelection {
 	for block blocks {
 		removeFromOwner (morph block)
 		destroy (morph block)
+	}
+	cancelSelection
+}
+
+method stopProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		}
+	}
+	cancelSelection
+}
+
+method startProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (not (isRunning runtime block)) {
+			evalOnBoard runtime block
+		}
+	}
+	cancelSelection
+}
+
+method toggleProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		} else {
+			evalOnBoard runtime block
+		}
 	}
 	cancelSelection
 }
