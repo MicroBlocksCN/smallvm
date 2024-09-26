@@ -350,7 +350,7 @@ to tft_drawVector x y angle length color {
 
 module Turtle Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends TFT 
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
 
@@ -358,7 +358,7 @@ Home is the center of the screen.
 
 Coordinates for the "go to" command are the same as the TFT library: origin at top-left, y increasing down.
 
-Default direction is to the right. Positive turn and direction angles are counter-clockwise.
+Default direction is to the right. Positive turn and direction angles are clockwise.
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
@@ -366,14 +366,20 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
   spec ' ' 'move' 'move _' 'auto' '10'
   spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
   spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  space
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'pen down' 'pen down'
   spec ' ' 'pen up' 'pen up'
   spec ' ' 'set pen color to' 'set pen color to _' 'color'
   spec ' ' 'setPenToRandomColor' 'set pen to random color'
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
-  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  spec 'r' 'turtle_x' 'turtle x'
+  spec 'r' 'turtle_y' 'turtle y'
+  space
   spec ' ' '_turtleNotes' '_turtleNotes'
 
 to '_turtleNotes' {
@@ -419,7 +425,7 @@ to move n {
   local 'startY' (_turtleY >> 14)
   comment 'The cosine is just the sine shifted by 90 degrees.'
   _turtleX += (n * ('[misc:sin]' (_turtleHeading + 9000)))
-  _turtleY += (n * ('[misc:sin]' (_turtleHeading + 18000)))
+  _turtleY += (n * ('[misc:sin]' _turtleHeading))
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
@@ -465,5 +471,13 @@ to turnBy a {
 to turnFraction num denom {
   _turtleHeading += ((num * 36000) / denom)
   _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turtle_x {
+  return (_turtleX >> 14)
+}
+
+to turtle_y {
+  return (_turtleY >> 14)
 }
 
