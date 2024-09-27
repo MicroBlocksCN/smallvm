@@ -1207,7 +1207,12 @@ static int deferUpdates = false;
 
 	#endif // end of board-specific sections
 
-uint16_t bufferPixels[TFT_WIDTH * 8]; // used by primPixelRow and primDrawBuffer
+static int hasTFT() {
+	#if defined(OLED_128_64)
+		if (!useTFT) tftInit();
+	#endif
+	return useTFT;
+}
 
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
