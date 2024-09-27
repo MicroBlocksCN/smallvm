@@ -738,7 +738,7 @@ method instructionsForIf SmallCompiler args {
 	}
 	instructionCount = (count result)
 	for jumpInstruction jumpsToFix {
-		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 1)) // fix jump offset
+		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 2)) // fix jump offset
 	}
 	return result
 }
