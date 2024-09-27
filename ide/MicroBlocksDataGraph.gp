@@ -15,7 +15,7 @@ method initialize MicroBlocksDataGraph {
 	window = (window 'Data Graph')
 	morph = (morph window)
 	setHandler morph this
-	setMinExtent morph (scale * 150) (scale * 100)
+	setMinExtent morph (scale * 280) (scale * 150)
 	setExtent morph (scale * 400) (scale * 200)
 	addZoomButtons this
 	lastDataIndex = 0

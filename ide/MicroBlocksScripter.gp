@@ -135,6 +135,7 @@ method darkModeChanged MicroBlocksScripter {
   setColor blocksFrame blocksFrameColor
   setSliderColors scriptsFrame sliderBGColor sliderFGColor
   setSliderColors blocksFrame sliderBGColor sliderFGColor
+  categorySelected this
 
   removePart morph trashcanIcon
   addTrashcan this
@@ -609,7 +610,11 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 
 method addSectionLabel MicroBlocksScripter label {
   scale = (global 'scale')
-  labelColor = (gray 80)
+  if (darkModeEnabled projectEditor) {
+	labelColor = (microBlocksColor 'blueGray' 300)
+  } else {
+	labelColor = (microBlocksColor 'blueGray' 600)
+  }
   fontSize = (14 * scale)
   label = (newText label 'Arial Bold' fontSize labelColor)
   nextY += (12 * scale)
