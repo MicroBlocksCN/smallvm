@@ -32,6 +32,9 @@ timer
 reset timer
 计时器归零
 
+seconds
+秒
+
 microseconds
 微秒
 
@@ -40,6 +43,12 @@ milliseconds
 
 board type
 主板类型
+
+version
+版本
+
+BLE connected
+BLE 已连接
 
 connected to IDE
 已连接到 IDE?
@@ -3191,20 +3200,35 @@ Octopus OLED fill circle x _ y _ radius _
 ####
 # OctoStudio
 
-Octo start
-Octo 启动
-
 Octo beam to phones _
 Octo 给手机发信号 _
 
 duration _ ms
 持续 _ 毫秒
 
+Octo beam received?
+Octo 信号已收到?
+
+Octo last beam
+Octo 最后信号
+
+Octo set group _ (0-99)
+Octo 设置分组 _ (0-99)
+
 Octo receive beam
 Octo 收到的信号
 
-Octo stop
-Octo 停止
+circle
+圆形
+
+star
+星形
+
+clover
+三叶草
+
+moon
+月亮
 
 ####
 # TM1650
@@ -3682,8 +3706,33 @@ four digit brightness _ (0 to 7)
 设置4位数码管亮度 _ (0 to 7)
 
 four digit show colon _
-4位数码管亮度冒号
+4位数码管亮度冒号 _
 
+#### BLE Radio
+
+BLE Radio
+BLE 蓝牙广播
+
+ble send number _
+ble 广播发送数字 _
+
+ble send string _
+ble 广播发送字符串 _
+
+ble send pair _ = _
+ble 广播发送配对信息 _ = _
+
+ble message received?
+ble 广播消息已收到?
+
+ble last number
+ble 最后广播的数字
+
+ble last string
+ble 最后广播的字符串
+
+ble set group _ (0-255)
+ble 设置广播分组 _ (0-255)
 
 ##################
 # MicroBlocks UI #
@@ -4294,6 +4343,15 @@ delete selection
 
 Libraries
 积木库
+
+LIBRARIES
+积木库
+
+light mode
+浅色模式
+
+dark mode
+深色模式
 
 AI
 人工智能
