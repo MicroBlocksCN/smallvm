@@ -2120,15 +2120,17 @@ Octopus OLED fill circle x _ y _ radius _
 ####
 # OctoStudio
 
-Octo start
-
 Octo beam to phones _
 
 duration _ ms
 
-Octo receive beam
+Octo beam received?
 
-Octo stop
+Octo last beam
+
+Octo set group _ (0-99)
+
+Octo receive beam
 
 ##################
 # MicroBlocks UI #
