@@ -462,134 +462,134 @@ static void runTask(Task *task) {
 
 	// initialize jump table
 	static void *jumpTable[] = {
-		&&halt_op,
-		&&noop_op,
-		&&pushImmediate_op,
-		&&pushLargeInteger_op,
-		&&pushLiteral_op,
+		&&halt_op,					// stop this task
+		&&stopAll_op,				// stop all tasks except this one
+		&&pushImmediate_op,			// true, false, and ints that fit in 8 bits [-64..63]
+		&&pushLargeInteger_op,		// ints that fit in 24 bits
+		&&pushHugeInteger_op,		// ints that need > 24 bits
+		&&pushLiteral_op,			// string constant from literals frame
 		&&pushGlobal_op,
 		&&storeGlobal_op,
 		&&incrementGlobal_op,
-		&&pushArgCount_op,
-		&&pushArg_op,
-		&&storeArg_op, // 10
-		&&incrementArg_op,
-		&&pushLocal_op,
+		&&initLocals_op,
+		&&pushLocal_op,				// 10
 		&&storeLocal_op,
 		&&incrementLocal_op,
-		&&pop_op,
-		&&jmp_op, // 16
-		&&jmpTrue_op,
-		&&jmpFalse_op,
-		&&decrementAndJmp_op,
-		&&callFunction_op, // 20
-		&&returnResult_op,
-		&&waitMicros_op,
-		&&waitMillis_op,
-		&&sendBroadcast_op,
-		&&recvBroadcast_op,
-		&&stopAllButThis_op,
-		&&forLoop_op,
-		&&initLocals_op,
+		&&pushArg_op,
+		&&storeArg_op,
+		&&incrementArg_op,			// 15
+		&&pushArgCount_op,
 		&&getArg_op,
-		&&getLastBroadcast_op, // 30
+		&&argOrDefault_op,
+		&&pop_op,
+		&&ignoreArgs_op,			// 20 (alias for pop_op)
+		&&noop_op,
+		&&jmp_op,
+		&&longJmp_op,				// (alias for jmp_op)
+		&&jmpTrue_op,
+		&&jmpFalse_op,				// 25
+		&&decrementAndJmp_op,
+		&&forLoop_op,
 		&&jmpOr_op,
 		&&jmpAnd_op,
-		&&minimum_op,
-		&&maximum_op,
-		&&lessThan_op,
-		&&lessOrEq_op,
-		&&equal_op,
-		&&notEqual_op,
-		&&greaterOrEq_op,
-		&&greaterThan_op, // 40
-		&&not_op,
-		&&add_op,
+		&&waitUntil_op,				// 30 (alias for jmpFalse_op)
+	&&RESERVED_op,
+		&&waitMicros_op,
+		&&waitMillis_op,
+		&&callFunction_op,
+		&&returnResult_op,			// 35
+		&&commandPrimitive_op,
+		&&reporterPrimitive_op,
+		&&callCustomCommand_op,
+		&&callCustomReporter_op,
+		&&sendBroadcast_op,			// 40
+		&&recvBroadcast_op,
+		&&getLastBroadcast_op,
+		&&millis_op,
+		&&micros_op,
+		&&secs_op,					// 45
+		&&millisSince_op,
+		&&microsSince_op,
+		&&timer_op,
+		&&resetTimer_op,
+		&&add_op,					// 50
 		&&subtract_op,
 		&&multiply_op,
 		&&divide_op,
 		&&modulo_op,
-		&&absoluteValue_op,
-		&&random_op,
-		&&hexToInt_op,
-		&&bitAnd_op, // 50
+		&&bitAnd_op,				// 55
 		&&bitOr_op,
 		&&bitXor_op,
 		&&bitInvert_op,
 		&&bitShiftLeft_op,
-		&&bitShiftRight_op,
-		&&longMultiply_op,
+		&&bitShiftRight_op,			// 60
+		&&lessThan_op,
+		&&lessOrEq_op,
+		&&equal_op,
+		&&notEqual_op,
+		&&greaterOrEq_op,			// 65
+		&&greaterThan_op,
+		&&not_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+		&&longMultiply_op,			// 70
+		&&absoluteValue_op,
+		&&minimum_op,
+		&&maximum_op,
+		&&random_op,
+		&&hexToInt_op,				// 75
 		&&isType_op,
-		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
-		&&pop_op, // this is the ignoreArgs opcode, an alias for pop_op
-		&&newList_op, // 60
-		&&RESERVED_op,
+		&&sayIt_op,
+		&&graphIt_op,
+		&&boardType_op,
+		&&newList_op,				// 80
 		&&fillList_op,
 		&&at_op,
 		&&atPut_op,
-		&&length_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&millis_op, // 70
-		&&micros_op,
-		&&timer_op,
-		&&resetTimer_op,
-		&&sayIt_op,
-		&&logData_op,
-		&&boardType_op,
-		&&comment_op,
-		&&argOrDefault_op,
-		&&RESERVED_op,
-		&&analogPins_op, // 80
+		&&size_op,
+		&&analogPins_op,			// 85
 		&&digitalPins_op,
 		&&analogRead_op,
 		&&analogWrite_op,
 		&&digitalRead_op,
-		&&digitalWrite_op,
+		&&digitalWrite_op,		// 90
 		&&digitalSet_op,
 		&&digitalClear_op,
 		&&buttonA_op,
 		&&buttonB_op,
-		&&setUserLED_op, // 90
+		&&setUserLED_op,			// 95
 		&&i2cSet_op,
 		&&i2cGet_op,
 		&&spiSend_op,
 		&&spiRecv_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&secs_op,
-		&&millisSince_op,
-		&&microsSince_op,
-		&&RESERVED_op, // 100
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op, // 110
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&pushHugeInteger_op, // 120
-		&&RESERVED_op,
-		&&primitiveCommand_op,
-		&&primitiveReporter_op,
-		&&callCustomCommand_op,
-		&&callCustomReporter_op,
-		&&RESERVED_op,
-		&&halt_op,  // this is the endCode opcode, an alias for halt_op
+	&&RESERVED_op,				// 100
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+		&&comment_op,				// (alias for noop_op)
+		&&codeEnd_op,				// 127 (alias for halt_op)
 	};
 
 	// Restore task state
@@ -624,11 +624,14 @@ static void runTask(Task *task) {
 		return;
 	RESERVED_op:
 	halt_op:
+	codeEnd_op:
 		sendTaskDone(task->taskChunkIndex);
 		task->status = unusedTask;
 		if (unusedTask == tasks[taskCount - 1].status) taskCount--;
 		goto suspend;
 	noop_op:
+	comment_op:
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	pushImmediate_op:
 		STACK_CHECK(1);
@@ -696,6 +699,7 @@ static void runTask(Task *task) {
 		*(fp + arg) = int2obj(obj2int(*(fp + arg)) + evalInt(*--sp));
 		DISPATCH();
 	pop_op:
+	ignoreArgs_op:
 		sp -= arg;
 		if (sp >= task->stack) {
 			DISPATCH();
@@ -704,6 +708,7 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
+	longJmp_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
@@ -718,6 +723,7 @@ static void runTask(Task *task) {
 #endif
 		DISPATCH();
 	jmpFalse_op:
+	waitUntil_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (trueObj != (*--sp)) ip += arg; // treat any value but true as false
 #if USE_TASKS
@@ -820,7 +826,7 @@ static void runTask(Task *task) {
 	recvBroadcast_op:
 		POP_ARGS_COMMAND(); // pop the broadcast name (a literal string)
 		DISPATCH();
-	stopAllButThis_op:
+	stopAll_op:
 		stopAllTasksButThis(task); // clears all tasks except the current one
 		DISPATCH();
 	forLoop_op:
@@ -1075,7 +1081,7 @@ static void runTask(Task *task) {
 		primAtPut(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	length_op:
+	size_op:
 		*(sp - arg) = primLength(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -1135,7 +1141,7 @@ static void runTask(Task *task) {
 		task->status = waiting_micros;
 		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
-	logData_op:
+	graphIt_op:
 		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
@@ -1158,9 +1164,6 @@ static void runTask(Task *task) {
 	boardType_op:
 		*(sp - arg) = primBoardType();
 		POP_ARGS_REPORTER();
-		DISPATCH();
-	comment_op:
-		POP_ARGS_COMMAND();
 		DISPATCH();
 	argOrDefault_op:
 		if (arg < 2) {
@@ -1258,7 +1261,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 
 	// new primitive call ops:
-	primitiveCommand_op:
+	commandPrimitive_op:
 		tmp = (*ip >> 10) & 0x3F; // primitive set index
 		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
 		ip++; // skip second instruction word
@@ -1266,7 +1269,7 @@ static void runTask(Task *task) {
 		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	primitiveReporter_op:
+	reporterPrimitive_op:
 		tmp = (*ip >> 10) & 0x3F; // primitive set index
 		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
 		ip++; // skip second instruction word
