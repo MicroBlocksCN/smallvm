@@ -273,24 +273,25 @@ void stopAllTasksButThis(Task *thisTask) {
 
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)
 
-#define pushLiteral 4
-#define recvBroadcast 25
-#define initLocals 28
+#define pushLiteral 5
+#define initLocals 9
+#define recvBroadcast 41
 
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
-	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	int16 *code = (int16 *) (chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS);
 	// First three instructions of a broadcast hat should be:
 	//	initLocals
 	//	pushLiteral
+	//	(data: literal offset)
 	//	recvBroadcast
 	// A function with zero arguments can be also launched via a broadcast.
+
 	if ((initLocals != CMD(code[0])) ||
 		(pushLiteral != CMD(code[1])) ||
-		(recvBroadcast != CMD(code[2])))
+		(recvBroadcast != CMD(code[3])))
 			return false;
-
 	code++; // skip initLocals
-	char *s = obj2str((OBJ) code + ARG(*code) + 1);
+	char *s = obj2str((OBJ) (code + *(code + 1) + 1));
 	if (strlen(s) == 0) return true; // empty parameter in the receiver means "any message"
 	if (strlen(s) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
