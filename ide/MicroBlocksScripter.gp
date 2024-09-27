@@ -66,6 +66,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (microBlocksColor 'blueGray' 50))
+  setAutoScroll blocksFrame false
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
   setMaxExtent (morph blocksFrame) (600 * scale) 0 // y is ignored
