@@ -1195,22 +1195,12 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 
 	#endif // end of board-specific sections
 
-	#else
-		// no built-in display but support external display prims
-		#define HAS_EXTERNAL_DISPLAY_PRIMS
-		void tftInit() { } // stub; no display is initialized at startup time
-
-#endif
-
-
-#if defined(HAS_TFT_PRIMS)
-
-#if !defined(BLACK)
-	#define BLACK 0
-#endif
-#if !defined(WHITE)
-	#define WHITE 65535
-#endif
+static int hasTFT() {
+	#if defined(OLED_128_64)
+		if (!useTFT) tftInit();
+	#endif
+	return useTFT;
+}
 
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
