@@ -784,12 +784,11 @@ method instructionsForForLoop SmallCompiler args {
 	addAll result (array
 		(array 'pushImmediate' falseObj) // this will be N, the total loop count
 		(array 'pushImmediate' falseObj)) // this will be a decrementing loop counter
-	jmpInstructions = (instructionsForJump this 'jmp' (count body))
-	addAll result jmpInstructions
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result (array
 		(array 'forLoop' loopVarIndex)
-		(array 'longJmp' (0 - (+ (count body) (count jmpInstructions) 2)))
+		(array 'longJmp' (0 - (+ (count body) 3)))
 		(array 'placeholder' 0) // two-word longJmp; forLoop skips two words at loop end
 		(array 'pop' 3))
 	return result
