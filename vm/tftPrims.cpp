@@ -1207,6 +1207,13 @@ static int deferUpdates = false;
 
 	#endif // end of board-specific sections
 
+static int hasTFT() {
+	#if defined(OLED_128_64)
+		if (!useTFT) tftInit();
+	#endif
+	return useTFT;
+}
+
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
 	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
