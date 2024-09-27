@@ -378,8 +378,11 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 					memcpy(&id, deviceName.c_str(), 8);
 					if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						octoShapeID = (hexDigit(deviceName[14]) << 8) + hexDigit(deviceName[15]);
-						hasOctoMessage = true;
+						int groupID = (hexDigit(deviceName[12]) << 4) + hexDigit(deviceName[13]);
+						if (groupID == octoGroup) {
+							octoShapeID = (hexDigit(deviceName[14]) << 4) + hexDigit(deviceName[15]);
+							hasOctoMessage = true;
+						}
 					}
 				}
 			}
@@ -393,8 +396,11 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 					memcpy(&id, serviceData.c_str(), 8);
 					if (octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						octoShapeID = (serviceData[6] << 8) + serviceData[7];
-						hasOctoMessage = true;
+						int groupID = serviceData[6];
+						if (groupID == octoGroup) {
+							octoShapeID = serviceData[7];
+							hasOctoMessage = true;
+						}
 					}
 				}
 			}

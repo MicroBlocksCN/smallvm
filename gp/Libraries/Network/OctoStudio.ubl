@@ -1,27 +1,34 @@
 module OctoStudio Comm
 author wwj718
-version 1 7 
-choices octo_shapes triangle circle square heart star 
+version 1 8 
+choices octo_shapes circle square star heart triangle clover diamond moon 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _octoShapes _octoLastBeam _octoIsBeaming 
+variables _octoGroup _octoShapes _octoLastBeam _octoIsBeaming 
 
   spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
   space
   spec 'r' 'octoBeamReceived' 'Octo beam received?'
   spec 'r' 'octoLastBeam' 'Octo last beam'
   space
+  spec ' ' 'octoSetGroup' 'Octo set group _ (0-99)' 'num' 0
+  space
   spec 'r' 'octoReceiveBeam' 'Octo receive beam'
   space
   spec ' ' '_octoInit' '_octoInit'
   spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
   spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
+  spec 'r' '_octoHexDigit' 'octoHexDigit _' 'num' 10
   space
   spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
   spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
   spec ' ' '_octoStopBeam' '_octoStopBeam'
 
+to '_octoHexDigit' n {
+  return (at ((n & 15) + 1) '0123456789ABCDEF')
+}
+
 to '_octoInit' {
-  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle' 'clover' 'diamond' 'moon')}
 }
 
 to '_octoMakeMessage' shape {
@@ -31,14 +38,23 @@ to '_octoMakeMessage' shape {
   repeat 8 {
     '[data:addLast]' (at 'random' '0123456789ABCDEF') result
   }
-  repeat 7 {
+  repeat 4 {
     '[data:addLast]' 0 result
   }
   local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
   if (shapeNum < 0) {
-    return 'Unknown shape'
+    if (isType shape 'number') {
+      shapeNum = shape
+    } else {
+      return 'Unknown shape'
+    }
   }
-  '[data:addLast]' shapeNum result
+  comment 'Add group as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((_octoGroup >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (_octoGroup & 15)) result
+  comment 'Allow for up to 256 shapes encoded as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((shapeNum >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (shapeNum & 15)) result
   return ('[data:joinStrings]' result)
 }
 
@@ -48,10 +64,11 @@ to '_octoReceiveBeam' {
 
 to '_octoShapeForID' id {
   '_octoInit'
-  if (or (id < 0) (id >= (size _octoShapes))) {
-    return 'Unknown shape'
+  if (and (0 <= id) (id < (size _octoShapes))) {
+    return (at (id + 1) _octoShapes)
   }
-  return (at (id + 1) _octoShapes)
+  comment 'If id is out of the shape range, return it as a number.'
+  return id
 }
 
 to '_octoStartBeam' msg {
@@ -105,3 +122,7 @@ to octoSendBeam shape optionalDuration {
   _octoIsBeaming = 0
 }
 
+to octoSetGroup groupNum {
+  _octoGroup = (('[data:convertType]' groupNum 'number') & 255)
+  '[ble:octoSetGroup]' _octoGroup
+}
