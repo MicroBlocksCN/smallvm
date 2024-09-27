@@ -1,4 +1,4 @@
-module 'Fantàstic'
+module 'ED1 Fantàstic'
 author 'José García'
 version 1 0 
 depends 'ED1 Stepper Motor' 
