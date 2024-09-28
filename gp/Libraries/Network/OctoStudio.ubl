@@ -1,107 +1,114 @@
 module OctoStudio Comm
 author wwj718
-version 1 7 
-choices octo_shapes triangle circle square heart star 
+version 1 9 
+choices octo_shapes circle square star heart triangle clover diamond moon 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _octoShapes _octoLastBeam _octoIsBeaming 
+variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBeaming 
 
-  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms' 'menu.octo_shapes num' 'heart' 200
+  spec ' ' 'octoSendBeam' 'Octo beam to phones _ : duration _ ms : group _' 'menu.octo_shapes num num' 'heart' 200 0
   space
   spec 'r' 'octoBeamReceived' 'Octo beam received?'
   spec 'r' 'octoLastBeam' 'Octo last beam'
+  spec 'r' 'octoLastGroup' 'Octo last beam group'
   space
-  spec 'r' 'octoReceiveBeam' 'Octo receive beam'
+  spec ' ' 'octoSetGroup' 'Octo set group _ (0-99)' 'auto' 0
   space
   spec ' ' '_octoInit' '_octoInit'
   spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
   spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
-  space
-  spec 'r' '_octoReceiveBeam' '_octoReceiveBeam'
-  spec ' ' '_octoStartBeam' '_octoStartBeam _' 'str' ''
-  spec ' ' '_octoStopBeam' '_octoStopBeam'
+  spec 'r' '_octoHexDigit' '_octoHexDigit _' 'num' 10
 
-to '_octoInit' {
-  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle')}
+to '_octoHexDigit' n {
+  return (at ((n & 15) + 1) '0123456789ABCDEF')
 }
 
-to '_octoMakeMessage' shape {
+to '_octoInit' {
+  if (_octoShapes == 0) {_octoShapes = ('[data:makeList]' 'circle' 'square' 'star' 'heart' 'triangle' 'clover' 'diamond' 'moon')}
+}
+
+to '_octoMakeMessage' shape group {
   comment 'Mimic iOS, eg: ECA7059C00000001'
   '_octoInit'
   local 'result' ('[data:makeList]')
   repeat 8 {
     '[data:addLast]' (at 'random' '0123456789ABCDEF') result
   }
-  repeat 7 {
+  repeat 4 {
     '[data:addLast]' 0 result
   }
   local 'shapeNum' (('[data:find]' shape _octoShapes) - 1)
   if (shapeNum < 0) {
-    return 'Unknown shape'
+    if (isType shape 'number') {
+      shapeNum = shape
+    } else {
+      return 'Unknown shape'
+    }
   }
-  '[data:addLast]' shapeNum result
+  comment 'Add group as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((group >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (group & 15)) result
+  comment 'Allow for up to 256 shapes encoded as two hexadecimal digits.'
+  '[data:addLast]' ('_octoHexDigit' ((shapeNum >> 4) & 15)) result
+  '[data:addLast]' ('_octoHexDigit' (shapeNum & 15)) result
   return ('[data:joinStrings]' result)
-}
-
-to '_octoReceiveBeam' {
-  return ('[ble:octoReceive]')
 }
 
 to '_octoShapeForID' id {
   '_octoInit'
-  if (or (id < 0) (id >= (size _octoShapes))) {
-    return 'Unknown shape'
+  if (and (0 <= id) (id < (size _octoShapes))) {
+    return (at (id + 1) _octoShapes)
   }
-  return (at (id + 1) _octoShapes)
-}
-
-to '_octoStartBeam' msg {
-  '[ble:octoStartBeam]' msg
-}
-
-to '_octoStopBeam' {
-  '[ble:octoStopBeam]'
+  comment 'If id is out of the shape range, return it as a number.'
+  return id
 }
 
 to octoBeamReceived {
   comment 'Return true if a new beam has been received. Use "Octo last beam" to get its value.'
-  local 'newBeam' ('_octoReceiveBeam')
+  local 'newBeam' ('[ble:octoReceive]')
   if (newBeam == (booleanConstant false)) {
     return (booleanConstant false)
   }
-  _octoLastBeam = ('_octoShapeForID' newBeam)
-  return (booleanConstant true)
+  local 'beamGroup' ((newBeam >> 8) & 255)
+  if (or ('' == _octoGroup) (beamGroup == _octoGroup)) {
+    _octoLastBeamShape = ('_octoShapeForID' (newBeam & 255))
+    _octoLastBeamGroup = beamGroup
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
 }
 
 to octoLastBeam {
   comment 'Return the name of the last shape received.'
-  if (_octoLastBeam == 0) {
+  if (_octoLastBeamShape == 0) {
     return 'None'
   }
-  return _octoLastBeam
+  return _octoLastBeamShape
 }
 
-to octoReceiveBeam {
-  local 'newBeam' ('_octoReceiveBeam')
-  if (newBeam == (booleanConstant false)) {
-    return (booleanConstant false)
+to octoLastGroup {
+  comment 'Return the group of the last beam received.'
+  if (_octoLastBeamShape == 0) {
+    return -1
   }
-  return ('_octoShapeForID' newBeam)
+  return _octoLastBeamGroup
 }
 
-to octoSendBeam shape optionalDuration {
-  local 'duration' 200
-  if ((pushArgCount) > 1) {
-    duration = optionalDuration
-  }
+to octoSendBeam shape optionalDuration optionalGroup {
+  local 'duration' (argOrDefault 2 200)
+  local 'group' (argOrDefault 3 ('[data:convertType]' _octoGroup 'number'))
   if (_octoIsBeaming == 1) {
     sayIt 'waiting...'
     waitUntil (_octoIsBeaming == 0)
     sayIt ''
   }
   _octoIsBeaming = 1
-  '_octoStartBeam' ('_octoMakeMessage' shape)
+  '[ble:octoStartBeam]' ('_octoMakeMessage' shape group)
   waitMillis duration
-  '_octoStopBeam'
+  '[ble:octoStopBeam]'
   _octoIsBeaming = 0
+}
+
+to octoSetGroup group {
+  _octoGroup = group
 }
 

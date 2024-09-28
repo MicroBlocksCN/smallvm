@@ -1,9 +1,14 @@
 module Turtle Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends TFT 
-tags tft graphics draw 
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
+
+Home is the center of the screen.
+
+Coordinates for the "go to" command are the same as the TFT library: origin at top-left, y increasing down.
+
+Default direction is to the right. Positive turn and direction angles are clockwise.
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
@@ -11,14 +16,20 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
   spec ' ' 'move' 'move _' 'auto' '10'
   spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
   spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  space
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'pen down' 'pen down'
   spec ' ' 'pen up' 'pen up'
   spec ' ' 'set pen color to' 'set pen color to _' 'color'
   spec ' ' 'setPenToRandomColor' 'set pen to random color'
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
-  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  spec 'r' 'turtle_x' 'turtle x'
+  spec 'r' 'turtle_y' 'turtle y'
+  space
   spec ' ' '_turtleNotes' '_turtleNotes'
 
 to '_turtleNotes' {
@@ -40,8 +51,8 @@ to clearDisplay color {
 to 'go to x' x y {
   local 'startX' (_turtleX >> 14)
   local 'startY' (_turtleY >> 14)
-  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
+  _turtleX = (x << 14)
+  _turtleY = (y << 14)
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
@@ -55,7 +66,7 @@ to home {
     '[display:mbDisplayOff]'
     'pen up'
   }
-  'go to x' 0 0
+  'go to x' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 2)
   setHeading 0
 }
 
@@ -110,5 +121,13 @@ to turnBy a {
 to turnFraction num denom {
   _turtleHeading += ((num * 36000) / denom)
   _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turtle_x {
+  return (_turtleX >> 14)
+}
+
+to turtle_y {
+  return (_turtleY >> 14)
 }
 

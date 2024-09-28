@@ -23,7 +23,9 @@ to polygon sides size xoffset {
   local 'd' ((('[misc:sin]' (360 / sides)) * size) / ('[misc:sin]' 120))
   'pen up'
   setHeading 0
-  'go to x' (xoffset - (d / 2)) (size / 2)
+  local 'x' ((('[tft:getWidth]') / 2) + (xoffset - (d / 2)))
+  local 'y' ((('[tft:getHeight]') / 2) - (size / 2))
+  'go to x' x y
   'pen down'
   repeat sides {
     move d
@@ -33,14 +35,14 @@ to polygon sides size xoffset {
   'pen up'
 }
 
-script 498 50 {
+script 492 40 {
 whenCondition (('[sensors:tiltZ]') < -140)
 deco += 1
 deco = (deco % 4)
 waitMillis 200
 }
 
-script 50 54 {
+script 46 47 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -52,12 +54,12 @@ node styles. Press the OK button to
 change the polygon color.'
 }
 
-script 503 209 {
+script 493 191 {
 whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 50 231 {
+script 46 199 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
@@ -65,14 +67,13 @@ forever {
   local 'sides' (maximum 3 ((('[sensors:tiltY]') / 5) + 6))
   local 'side length' (('[tft:getWidth]') / 2)
   local 'xOffset' ((('[sensors:tiltX]') * ('[tft:getWidth]')) / 50)
+  '[tft:clear]'
   polygon sides (v 'side length') xOffset
-  waitMillis 40
-  '[display:mbDisplayOff]'
-  waitMillis 1
+  waitMillis 25
 }
 }
 
-script 503 306 {
+script 493 282 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
@@ -256,7 +257,7 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -265,8 +266,13 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
   spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
   spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
   spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' 'tft_drawVector' 'draw vector x _ y _ angle _ length _ color _' 'num num num num color' 40 40 45 40
+  space
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
+  spec ' ' 'tft_drawText' 'draw text _ on TFT at x _ y _ color _ : scale _ : bg color _' 'str num num color num color' 'Line 1
+Line 2' 50 20 nil 2
+  space
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
   spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
   space
@@ -321,13 +327,38 @@ to tft_colorSwatch color {
   return color
 }
 
+to tft_drawText s x y color optionalScale optionalBGColor {
+  local 'scale' (argOrDefault 5 2)
+  local 'bgColor' (argOrDefault 6 '')
+  local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    if (isType bgColor 'number') {
+      '[tft:text]' line x y color scale false bgColor
+    } else {
+      '[tft:text]' line x y color scale false
+    }
+    y += (8 * scale)
+  }
+}
+
+to tft_drawVector x y angle length color {
+  local 'endX' (x + ((length * ('[misc:sin]' (100 * (angle + 90)))) >> 14))
+  local 'endY' (y + ((length * ('[misc:sin]' (100 * angle))) >> 14))
+  '[tft:line]' x y endX endY color
+}
+
 
 module Turtle Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends TFT 
-tags tft graphics draw 
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1, (discontinued) IoT-Bus, or Boardie.
+
+Home is the center of the screen.
+
+Coordinates for the "go to" command are the same as the TFT library: origin at top-left, y increasing down.
+
+Default direction is to the right. Positive turn and direction angles are clockwise.
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
@@ -335,14 +366,20 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
   spec ' ' 'move' 'move _' 'auto' '10'
   spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
   spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  space
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'pen down' 'pen down'
   spec ' ' 'pen up' 'pen up'
   spec ' ' 'set pen color to' 'set pen color to _' 'color'
   spec ' ' 'setPenToRandomColor' 'set pen to random color'
-  spec ' ' '[display:mbDisplayOff]' 'clear display'
-  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  space
   spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  spec 'r' 'turtle_x' 'turtle x'
+  spec 'r' 'turtle_y' 'turtle y'
+  space
   spec ' ' '_turtleNotes' '_turtleNotes'
 
 to '_turtleNotes' {
@@ -364,8 +401,8 @@ to clearDisplay color {
 to 'go to x' x y {
   local 'startX' (_turtleX >> 14)
   local 'startY' (_turtleY >> 14)
-  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
+  _turtleX = (x << 14)
+  _turtleY = (y << 14)
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
@@ -379,7 +416,7 @@ to home {
     '[display:mbDisplayOff]'
     'pen up'
   }
-  'go to x' 0 0
+  'go to x' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 2)
   setHeading 0
 }
 
@@ -434,5 +471,13 @@ to turnBy a {
 to turnFraction num denom {
   _turtleHeading += ((num * 36000) / denom)
   _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turtle_x {
+  return (_turtleX >> 14)
+}
+
+to turtle_y {
+  return (_turtleY >> 14)
 }
 

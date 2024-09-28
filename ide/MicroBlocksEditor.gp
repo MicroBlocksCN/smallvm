@@ -1408,15 +1408,7 @@ method readCustomTranslation MicroBlocksEditor fName {
 
 method languageChanged MicroBlocksEditor {
   languageChanged scripter
-
-  // update items in top-bar
-  for item (join leftItems rightItems) {
-	if (not (isNumber item)) { destroy (morph item) }
-  }
-  addTopBarParts this
   addZoomButtonHints this
-  updateIndicator this true
-  fixLayout this
 }
 
 // Iconic menus
