@@ -128,6 +128,7 @@ method showInstructions SmallRuntime aBlock {
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
 				if (arg >= 4194304) { arg = (arg - 8388608) }
+				if (and (arg < 128) (arg > 63)) { arg = (arg - 128) } // 8-bit integer
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
