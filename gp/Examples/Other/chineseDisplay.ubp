@@ -3,12 +3,15 @@ author Patch
 version 1 1
 description '在TFT、OLED和16点阵NeoPanel上利用汉字字库显示汉字，
 需要下载汉字库到主控板上，下载地址：
-https://www.go2crm.cn/go_static/font.bin'
+中文：https://www.go2crm.cn/go_static/cn.font (此文件上传到esp32主板上用时大约7分钟)
+英文：https://www.go2crm.cn/go_static/en.font'
 
 script 50 50 {
 whenStarted
 comment '使用这个示例之前，请确保已经下载字库文件font.bin到你所使用的主控板上。
-字库文件下载地址：https://www.go2crm.cn/go_static/font.bin
+字库文件下载地址：
+中文：https://www.go2crm.cn/go_static/cn.font (此文件上传到esp32主板上用时大约7分钟)
+英文：https://www.go2crm.cn/go_static/en.font
 本字库所包含汉字范围在unicode19968和40959之间'
 sendBroadcast 'OLED'
 sendBroadcast 'TFT'
