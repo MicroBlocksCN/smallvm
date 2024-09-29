@@ -9,9 +9,9 @@ description 'CoCube的控制库
 v1.0 基本功能
 v2.0 全面增加编码器控制电机的功能
 v2.1 修复一些广播造成的bug
+v2.2 提高定位精度为1/128
 '
-
-variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ 
+variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
 
   spec 'r' 'CoCube Battery Percentage' 'Battery Percentage'
   space
@@ -111,28 +111,21 @@ to 'CoCube move for millisecs' direction speed time {
 }
 
 to 'CoCube move to target' target_x target_y speed {
+  _cocube_target_x = target_x
+  _cocube_target_y = target_y
+  _cocube_target_speed = speed
   forever {
     comment 'calculate error'
-    '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y
+    '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
     _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
     '_cocube_calculate_angle_error_' _cocube_target_angle
-    comment 'angle_error_ > 10° : rotate to Target'
-    if (or _cocube_rotate_mode_ (and ((absoluteValue _cocube_error_angle) > 10) (_cocube_error_distance > 25))) {
-      _cocube_rotate_mode_ = 1
-      'CoCube rotate to target' target_x target_y speed
-    }
-    comment 'angle_error_ <= 10° : Move to Target'
-    if (not _cocube_rotate_mode_) {
-      if (_cocube_error_distance < 6) {
-        'CoCube set wheel' -99 -99
-        return 0
-      }
-    }
-    comment 'P control'
-    if (and (_cocube_error_distance > 6) (_cocube_error_distance < 50)) {
-      '_cocube_motors_speed' (((speed * 3) / 4) + ((speed * _cocube_error_angle) / 50)) (((speed * 3) / 4) - ((speed * _cocube_error_angle) / 50))
+    if (_cocube_error_distance < 7) {
+      comment 'Arrived'
+      'CoCube wheels stop'
+      return 0
     } else {
-      'CoCube set wheel' speed speed
+      'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
+      waitMillis 10
     }
   }
 }
@@ -142,11 +135,11 @@ to 'CoCube position_Direction' {
 }
 
 to 'CoCube position_X' {
-  return (callCustomReporter '[sensors:position_x]')
+  return ((callCustomReporter '[sensors:position_x]') / 128)
 }
 
 to 'CoCube position_Y' {
-  return (callCustomReporter '[sensors:position_y]')
+  return ((callCustomReporter '[sensors:position_y]') / 128)
 }
 
 to 'CoCube rotate' direction speed {
