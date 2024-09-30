@@ -283,12 +283,10 @@ method textButton FilePicker x y label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  buttonColor = (microBlocksColor 'blueGray' 200)
-  if ('Okay' == label) { buttonColor = (mixed buttonColor 50 (color 0 100 0)) } // add green tint
   if ('<' == label) {
-    result = (pushButton label buttonColor selectorOrAction 0 0)
+    result = (pushButton label selectorOrAction 0 0)
   } else {
-    result = (pushButton label buttonColor selectorOrAction)
+    result = (pushButton label selectorOrAction)
   }
   setPosition (morph result) x y
   addPart morph (morph result)

@@ -148,7 +148,7 @@ method textButton ProjectEditor label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (color 130 130 130) selectorOrAction)
+  result = (pushButton label selectorOrAction)
   addPart morph (morph result)
   return result
 }

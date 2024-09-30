@@ -110,7 +110,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str.broadcastMenu' 'go!')
 		(array ' ' 'sendBroadcast'		'broadcast _' 'str.broadcastMenu' 'go!' '')
 		'-'
-		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
+		(array ' ' 'comment'			'comment _' 'cmt' 'How this works...')
 		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
@@ -345,8 +345,18 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[1wire:crc8]'			'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8)
 		(array 'r' '[1wire:crc16]'			'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8)
 
-		(array ' ' '[ble:uartStart]' 'start BLE serial')
-		(array ' ' '[ble:uartStop]' 'stop BLE serial')
+		(array ' ' '[ble:octoStartBeam]'	'octo start beam _' 'str')
+		(array ' ' '[ble:octoStopBeam]'		'octo stop beam')
+		(array 'r' '[ble:octoReceive]'		'octo receive')
+
+		(array 'r' '[ble:scanReceive]'		'ble receive scan')
+		(array ' ' '[ble:stopScanning]'		'ble stop scanning')
+
+		(array ' ' '[ble:radioSetGroup]'	'ble radio set group _ (0-255)' 'num' 0)
+		(array ' ' '[ble:radioStartBeam]'	'ble radio start beam _' 'str')
+		(array ' ' '[ble:radioStopBeam]'	'ble radio stop beam')
+		(array 'r' '[ble:radioReceive]'		'ble radio receive')
+
 		(array 'r' '[ble:uartConnected]' 'BLE serial connected?')
 		(array 'r' '[ble:uartRead]' '_BLE serial read as bytes _' 'bool' false)
 		(array ' ' '[ble:uartWrite]' '_BLE serial write _ (max 240) starting at _' 'str num' 'aStringOrByteArray' 1)

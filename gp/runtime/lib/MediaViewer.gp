@@ -50,7 +50,7 @@ method addImportButton MediaViewer mediaType {
   if ('Browser' == (platform)) { return } // import on browser is via drag-n-drop
   scale = (global 'scale')
   label = (join 'Add ' mediaType ' from file')
-  btn = (pushButton label (gray 120) (action 'importMediaFile' this mediaType))
+  btn = (pushButton label (action 'importMediaFile' this mediaType))
   setPosition (morph btn) (12 * scale) (15 * scale)
   addPart morph (morph btn)
 }
@@ -58,7 +58,7 @@ method addImportButton MediaViewer mediaType {
 method addPaintButton MediaViewer {
   scale = (global 'scale')
   label = (join 'Paint new image')
-  btn = (pushButton label (gray 120) (action 'openPaintEditor' this))
+  btn = (pushButton label (action 'openPaintEditor' this))
   setPosition (morph btn) (140 * scale) (15 * scale)
   if ('Browser' == (platform)) { setPosition (morph btn) (12 * scale) (15 * scale) }
   addPart morph (morph btn)

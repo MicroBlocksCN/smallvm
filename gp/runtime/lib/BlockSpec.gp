@@ -102,7 +102,7 @@ method setSlotInfo BlockSpec typeString defaults {
 	  if ((count w) == 2) {
 		menuSelector = (at w 2)
 	  }
-	  if (not (contains (array 'num' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu' 'microbitDisplay') type)) {
+	  if (not (contains (array 'num' 'cmt' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu' 'microbitDisplay') type)) {
 		hint = type
 		type = 'any'
 	  }
@@ -152,7 +152,7 @@ method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
     editRule = 'numerical'
     slotContent = (at info 2)
   }
-  if ('str' == slotType) {
+  if (or ('str' == slotType) ('cmt' == slotType)) {
     editRule = 'editable'
     slotContent = (at info 2)
   }
@@ -194,6 +194,7 @@ method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
   }
   inp = (newInputSlot slotContent editRule blockColor menuSelector)
   setGrabRule (morph inp) 'ignore'
+  if ('cmt' == slotType) { setComment inp }
   return inp
 }
 
@@ -346,7 +347,7 @@ method specDefinitionString BlockSpec className {
 	defaultValues = (list)
 	for info slotInfo {
 	  slotType = (at info 1)
-	  if (isOneOf slotType 'auto' 'menu' 'str') {
+	  if (isOneOf slotType 'auto' 'menu' 'str' 'cmt') {
 		add defaultValues (printString (at info 2))
 	  } (isOneOf slotType 'bool' 'num' 'microbitDisplay') {
 		add defaultValues (toString (at info 2))

@@ -90,7 +90,7 @@ method fixLayout MicroBlocksLibraryImportDialog {
 	margin = (10 * scale)
 
 	// file list panel should take roughly half the space
-	topInset = (55 * scale)
+	topInset = (60 * scale)
 	bottomInset = (40 * scale)
 	leftInset = (110 * scale)
 	rightInset = (((width morph) / 2) - (20 * scale))
@@ -122,6 +122,8 @@ to showLibraryInfo lib forEditing {
 }
 
 method initialize MicroBlocksLibraryInfoDialog lib forEditing {
+	scale = (global 'scale')
+
 	library = lib
 	window = (window (moduleName library))
 	morph = (morph window)
@@ -135,14 +137,13 @@ method initialize MicroBlocksLibraryInfoDialog lib forEditing {
 	addPart morph (morph frame)
 
 	if editFlag {
-		saveButton = (pushButton 'Save' (gray 130) (action 'saveChanges' this))
+		saveButton = (pushButton 'Save' (action 'saveChanges' this) nil (26 * scale))
 		addPart morph (morph saveButton)
-		cancelButton = (pushButton 'Cancel' (gray 130) (action 'close' this))
+		cancelButton = (pushButton 'Cancel' (action 'close' this) nil (26 * scale))
 		addPart morph (morph cancelButton)
 		setLibsDraggable (scripter (smallRuntime)) true
 	}
 
-	scale = (global 'scale')
 	setMinExtent morph (320 * scale) (240 * scale)
 	setExtent morph (420 * scale) (315 * scale)
 

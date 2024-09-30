@@ -591,6 +591,9 @@ method addLabel BlockSectionDefinition {
 
 method addLabelText BlockSectionDefinition aString {
   // private
+  if (aString == (newline)) {
+    aString = '#BR#'
+  }
   txt = (labelText this aString)
   if (not (isClass txt 'SVGImage')) { 
   	setEditRule txt 'line'

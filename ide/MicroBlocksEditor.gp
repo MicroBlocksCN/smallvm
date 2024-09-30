@@ -250,8 +250,10 @@ method zoomOut MicroBlocksEditor {
 }
 
 method setBlockScalePercent MicroBlocksEditor newPercent {
+  setCursor 'wait'
   setBlockScalePercent (scriptEditor scripter) newPercent
   syncScripts (smallRuntime)
+  setCursor 'default'
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {
@@ -1364,16 +1366,10 @@ method readCustomTranslation MicroBlocksEditor fName {
 }
 
 method languageChanged MicroBlocksEditor {
+  setCursor 'wait'
   languageChanged scripter
-
-  // update items in top-bar
-  for item (join leftItems rightItems) {
-	if (not (isNumber item)) { destroy (morph item) }
-  }
-  addTopBarParts this
   addZoomButtonHints this
-  updateIndicator this true
-  fixLayout this
+  setCursor 'default'
 }
 
 // Iconic menus

@@ -162,7 +162,7 @@ method addFolderReadoutAndParentButton MicroBlocksFilePicker {
 
   parentButton = (textButton this 0 0 '<' 'parentFolder')
   parentButtonM = (morph parentButton)
-  setTop parentButtonM (y - scale)
+  setTop parentButtonM (y - (4 * scale))
   setLeft parentButtonM (x - ((width parentButtonM) + (18 * scale)))
   addPart morph parentButtonM
 }
@@ -221,8 +221,7 @@ method addShortcutButtons MicroBlocksFilePicker {
   showComputer = (not (contains hidden 'Computer'))
 
   buttonX = ((left morph) + (17 * scale))
-  buttonY = ((top morph) + (59 * scale))
-  if showLibraries { buttonY = ((top morph) + (55 * scale)) }
+  buttonY = ((top morph) + (60 * scale))
 
   dy = (66 * scale)
   if showExamples {
@@ -317,7 +316,7 @@ method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
+  result = (pushButton label selectorOrAction nil (26 * (global 'scale')) makeDefault)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -602,7 +601,8 @@ method fixLayout MicroBlocksFilePicker {
 
   // file list
   topInset = (60 * scale)
-  bottomInset = (40 * scale)
+  if 
+  bottomInset = (48 * scale)
   leftInset = (113 * scale)
   if (notNil nameLabel) {
     leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
@@ -630,7 +630,7 @@ method fixLayout MicroBlocksFilePicker {
 
   // okay and cancel buttons
   space = (10 * scale)
-  y = ((bottom morph) - (32 * scale))
+  y = ((bottom morph) - (35 * scale))
   x = ((right morph) - ((width (morph okayButton)) + (20 * scale)))
   setPosition (morph okayButton) x y
   x = (x - ((width (morph cancelButton)) + space))
