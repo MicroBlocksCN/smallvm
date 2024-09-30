@@ -1,6 +1,6 @@
 module MIDI Output
 author MicroBlocks
-version 1 11 
+version 1 12 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices _midiPin USB 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
@@ -26,7 +26,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_drums
   spec 'r' 'MIDI_note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   space
   spec ' ' 'MIDI_select MIDI instrument' 'select MIDI instrument _ number _ for channel _ : variation _' 'menu.instrument menu.range:1-8 num num' 'bass' 2 1 127
-  spec ' ' 'MIDI_raw select MIDI instrument' 'select MIDI instrument _ for channel _ ' 'num num' 23 2
+  spec ' ' 'MIDI_raw select MIDI instrument' 'select MIDI instrument _ for channel _ : variation _' 'num num num' 23 2 8
   spec 'r' 'MIDI_instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
   spec ' ' 'MIDI_select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
   space
@@ -113,9 +113,10 @@ to 'MIDI_select MIDI instrument' 'instrument type' 'instrument number' channel v
   '_MIDI command' programChangeCmd channel (MIDI_instrument (v 'instrument type') (v 'instrument number'))
 }
 
-to 'MIDI_raw select MIDI instrument' 'instrument number' channel {
+to 'MIDI_raw select MIDI instrument' 'instrument number' channel variation {
   local 'programChangeCmd' 12
-  '_MIDI command' programChangeCmd channel ((v 'instrument number') - 1)
+  'MIDI_change MIDI control' 'bank select 1' channel variation
+  '_MIDI command' programChangeCmd channel (v 'instrument number')
 }
 
 to 'MIDI_send MIDI continue playing' {
