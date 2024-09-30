@@ -41,7 +41,7 @@ method microBlocksSpecs SmallCompiler {
 	'Output'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
-		(array ' ' 'printIt'			'graph _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 100)
+		(array ' ' 'graphIt'			'graph _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 100)
 	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
@@ -375,106 +375,106 @@ method initOpcodes SmallCompiler {
 	// Initialize the opcode dictionary. Note: This must match the opcode table in interp.c!
 
 	opcodeDefinitions = '
-		halt 0
-		noop 1
-		pushImmediate 2		// true, false, and ints that fit in 8 bits
+		halt 0				// stop this task
+		stopAll 1			// stop all tasks but this one
+		pushImmediate 2		// true, false, and ints that fit in 8 bits [-64..63]
 		pushLargeInteger 3	// ints that fit in 24 bits
-		pushLiteral 4		// string or array constant from literals frame
-		pushGlobal 5
-		storeGlobal 6
-		incrementGlobal 7
-		pushArgCount 8
-		pushArg 9
-		storeArg 10
-		incrementArg 11
-		pushLocal 12
-		storeLocal 13
-		incrementLocal 14
-		pop 15
-		jmp 16
-		jmpTrue 17
-		jmpFalse 18
-		decrementAndJmp 19
-		callFunction 20
-		returnResult 21
-		waitMicros 22
-		waitMillis 23
-		sendBroadcast 24
-		recvBroadcast 25
-		stopAll 26
+		pushHugeInteger 4	// ints that need > 24 bits
+		pushLiteral 5		// string constant from literals frame
+		pushGlobal 6
+		storeGlobal 7
+		incrementGlobal 8
+		initLocals 9
+		pushLocal 10
+		storeLocal 11
+		incrementLocal 12
+		pushArg 13
+		storeArg 14
+		incrementArg 15
+		pushArgCount 16
+		getArg 17
+		argOrDefault 18
+		pop 19
+		ignoreArgs 20
+		noop 21
+		jmp 22
+		longJmp 23
+		jmpTrue 24
+		jmpFalse 25
+		decrementAndJmp 26
 		forLoop 27
-		initLocals 28
-		getArg 29
-		getLastBroadcast 30
-		jmpOr 31
-		jmpAnd 32
-		minimum 33
-		maximum 34
-		< 35
-		<= 36
-		== 37
-		!= 38
-		>= 39
-		> 40
-		not 41
-		+ 42
-		- 43
-		* 44
-		/ 45
-		% 46
-		absoluteValue 47
-		random 48
-		hexToInt 49
-		& 50
-		| 51
-		^ 52
-		~ 53
-		<< 54
-		>> 55
-		longMult 56
-		isType 57
-		waitUntil 58
-		ignoreArgs 59
-		newList 60
-	RESERVED 61
-		fillList 62
-		at 63
-		atPut 64
-		size 65
-	RESERVED 66
-	RESERVED 67
+		jmpOr 28
+		jmpAnd 29
+		waitUntil 30
+	RESERVED 31
+		waitMicros 32
+		waitMillis 33
+		callFunction 34
+		returnResult 35
+		commandPrimitive 36
+		reporterPrimitive 37
+		callCustomCommand 38
+		callCustomReporter 39
+		sendBroadcast 40
+		recvBroadcast 41
+		getLastBroadcast 42
+		millisOp 43
+		microsOp 44
+		secsOp 45
+		millisSince 46
+		microsSince 47
+		timer 48
+		resetTimer 49
+		+ 50
+		- 51
+		* 52
+		/ 53
+		% 54
+		& 55
+		| 56
+		^ 57
+		~ 58
+		<< 59
+		>> 60
+		< 61
+		<= 62
+		== 63
+		!= 64
+		>= 65
+		> 66
+		not 67
 	RESERVED 68
 	RESERVED 69
-		millisOp 70
-		microsOp 71
-		timer 72
-		resetTimer 73
-		sayIt 74
-		printIt 75
-		boardType 76
-		comment 77
-		argOrDefault 78
-	RESERVED 79
-		analogPins 80
-		digitalPins 81
-		analogReadOp 82
-		analogWriteOp 83
-		digitalReadOp 84
-		digitalWriteOp 85
-		digitalSet 86
-		digitalClear 87
-		buttonA 88
-		buttonB 89
-		setUserLED 90
-		i2cSet 91
-		i2cGet 92
-		spiSend 93
-		spiRecv 94
-	RESERVED 95
-	RESERVED 96
-		secsOp 97
-		millisSince 98
-		microsSince 99
+		longMult 70
+		absoluteValue 71
+		minimum 72
+		maximum 73
+		random 74
+		hexToInt 75
+		isType 76
+		sayIt 77
+		graphIt 78
+		boardType 79
+		newList 80
+		at 81
+		atPut 82
+		size 83
+		analogPins 84
+		digitalPins 85
+		analogReadOp 86
+		analogWriteOp 87
+		digitalReadOp 88
+		digitalWriteOp 89
+		digitalSet 90
+		digitalClear 91
+		buttonA 92
+		buttonB 93
+		setUserLED 94
+		i2cSet 95
+		i2cGet 96
+		spiSend 97
+		spiRecv 98
+	RESERVED 99
 	RESERVED 100
 	RESERVED 101
 	RESERVED 102
@@ -495,15 +495,16 @@ method initOpcodes SmallCompiler {
 	RESERVED 117
 	RESERVED 118
 	RESERVED 119
-		pushHugeInteger 120
-		longJmp 121
-		commandPrimitive 122
-		reporterPrimitive 123
-		callCustomCommand 124
-		callCustomReporter 125
-	RESERVED 126 // old callCommandPrimitive 126
-		codeEnd 127 // old callReporterPrimitive 127
+	RESERVED 120
+	RESERVED 121
+	RESERVED 122
+	RESERVED 123
+	RESERVED 124
+	RESERVED 125
+		comment 126
+		codeEnd 127
 		metadata 248'
+
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
 		words = (words line)
@@ -747,7 +748,7 @@ method instructionsForIf SmallCompiler args {
 	}
 	instructionCount = (count result)
 	for jumpInstruction jumpsToFix {
-		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 1)) // fix jump offset
+		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 2)) // fix jump offset
 	}
 	return result
 }
@@ -793,12 +794,11 @@ method instructionsForForLoop SmallCompiler args {
 	addAll result (array
 		(array 'pushImmediate' falseObj) // this will be N, the total loop count
 		(array 'pushImmediate' falseObj)) // this will be a decrementing loop counter
-	jmpInstructions = (instructionsForJump this 'jmp' (count body))
-	addAll result jmpInstructions
+	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result (array
 		(array 'forLoop' loopVarIndex)
-		(array 'longJmp' (0 - (+ (count body) (count jmpInstructions) 2)))
+		(array 'longJmp' (0 - (+ (count body) 3)))
 		(array 'placeholder' 0) // two-word longJmp; forLoop skips two words at loop end
 		(array 'pop' 3))
 	return result
@@ -932,7 +932,6 @@ method instructionsForJump SmallCompiler jumpOp offset {
 
 method primitive SmallCompiler op args isCommand {
 	result = (list)
-	if ('print' == op) { op = 'printIt' }
 	if (contains opcodes op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)

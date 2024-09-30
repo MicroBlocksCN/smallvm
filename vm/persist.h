@@ -23,8 +23,9 @@ extern "C" {
 #define PERSISTENT_HEADER_WORDS 2
 
 typedef enum {
-	chunkCode = 10,
+	chunkCode32bit = 10, // deprecated
 	chunkAttribute = 11, // deprecated
+	chunkCode = 12, // 16-bit code chunk
 	chunkDeleted = 19,
 	varName = 21,
 	varsClearAll = 29,

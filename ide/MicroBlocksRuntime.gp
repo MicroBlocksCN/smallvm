@@ -128,6 +128,7 @@ method showInstructions SmallRuntime aBlock {
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
 				if (arg >= 4194304) { arg = (arg - 8388608) }
+				if (and (arg < 128) (arg > 63)) { arg = (arg - 128) } // 8-bit integer
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
@@ -415,7 +416,7 @@ method readCodeFromBoard SmallRuntime {
 		waitMSecs 10
 	}
 
-	sendMsg this 'getAllCodeMsg'
+	sendMsg this 'getAllCodeMsg' 1
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < 2000) {
 		processMessages this
@@ -1493,10 +1494,10 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 // Old code to store chunk on board; does not check crc:
 // 	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
 // 	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
-// 		sendMsg this 'chunkCodeMsg' chunkID data
+// 		sendMsg this 'chunkCode16Msg' chunkID data
 // 		sendMsg this 'pingMsg'
 // 	} else {
-// 		ok = (sendMsgSync this 'chunkCodeMsg' chunkID data)
+// 		ok = (sendMsgSync this 'chunkCode16Msg' chunkID data)
 // 	}
 // 	processMessages this
 // 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
@@ -1525,7 +1526,7 @@ method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
 	// This can take several seconds if the board does a Flash compaction.
 
 	lastCRC = nil
-	sendMsg this 'chunkCodeMsg' chunkID data
+	sendMsg this 'chunkCode16Msg' chunkID data
 	sendMsg this 'getChunkCRCMsg' chunkID
 
 	// wait for CRC to be reported
@@ -1886,6 +1887,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
 		atPut msgDict 'enableBLEMsg' 31
+		atPut msgDict 'chunkCode16Msg' 32
 		atPut msgDict 'getAllCRCsMsg' 38
 		atPut msgDict 'allCRCsMsg' 39
 		atPut msgDict 'deleteFile' 200
@@ -2177,7 +2179,7 @@ method handleMessage SmallRuntime msg {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
-	} (op == (msgNameToID this 'chunkCodeMsg')) {
+	} (op == (msgNameToID this 'chunkCode16Msg')) {
 		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
