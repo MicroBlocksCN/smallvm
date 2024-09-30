@@ -456,25 +456,25 @@ method initOpcodes SmallCompiler {
 		graphIt 78
 		boardType 79
 		newList 80
-		fillList 81
-		at 82
-		atPut 83
-		size 84
-		analogPins 85
-		digitalPins 86
-		analogReadOp 87
-		analogWriteOp 88
-		digitalReadOp 89
-		digitalWriteOp 90
-		digitalSet 91
-		digitalClear 92
-		buttonA 93
-		buttonB 94
-		setUserLED 95
-		i2cSet 96
-		i2cGet 97
-		spiSend 98
-		spiRecv 99
+		at 81
+		atPut 82
+		size 83
+		analogPins 84
+		digitalPins 85
+		analogReadOp 86
+		analogWriteOp 87
+		digitalReadOp 88
+		digitalWriteOp 89
+		digitalSet 90
+		digitalClear 91
+		buttonA 92
+		buttonB 93
+		setUserLED 94
+		i2cSet 95
+		i2cGet 96
+		spiSend 97
+		spiRecv 98
+	RESERVED 99
 	RESERVED 100
 	RESERVED 101
 	RESERVED 102

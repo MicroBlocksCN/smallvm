@@ -543,26 +543,26 @@ static void runTask(Task *task) {
 		&&graphIt_op,
 		&&boardType_op,
 		&&newList_op,				// 80
-		&&fillList_op,
 		&&at_op,
 		&&atPut_op,
 		&&size_op,
-		&&analogPins_op,			// 85
-		&&digitalPins_op,
+		&&analogPins_op,
+		&&digitalPins_op,			// 85
 		&&analogRead_op,
 		&&analogWrite_op,
 		&&digitalRead_op,
-		&&digitalWrite_op,		// 90
-		&&digitalSet_op,
+		&&digitalWrite_op,
+		&&digitalSet_op,			// 90
 		&&digitalClear_op,
 		&&buttonA_op,
 		&&buttonB_op,
-		&&setUserLED_op,			// 95
-		&&i2cSet_op,
+		&&setUserLED_op,
+		&&i2cSet_op,				// 95
 		&&i2cGet_op,
 		&&spiSend_op,
 		&&spiRecv_op,
-	&&RESERVED_op,				// 100
+	&&RESERVED_op,
+	&&RESERVED_op,					// 100
 	&&RESERVED_op,
 	&&RESERVED_op,
 	&&RESERVED_op,
@@ -1068,10 +1068,6 @@ static void runTask(Task *task) {
 	newList_op:
 		*(sp - arg) = primNewList(arg, sp - arg);
 		POP_ARGS_REPORTER();
-		DISPATCH();
-	fillList_op:
-		primFillList(arg, sp - arg);
-		POP_ARGS_COMMAND();
 		DISPATCH();
 	at_op:
 		*(sp - arg) = primAt(arg, sp - arg);
