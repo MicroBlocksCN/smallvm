@@ -342,8 +342,18 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[1wire:crc8]'			'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8)
 		(array 'r' '[1wire:crc16]'			'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8)
 
-		(array ' ' '[ble:uartStart]' 'start BLE serial')
-		(array ' ' '[ble:uartStop]' 'stop BLE serial')
+		(array ' ' '[ble:octoStartBeam]'	'octo start beam _' 'str')
+		(array ' ' '[ble:octoStopBeam]'		'octo stop beam')
+		(array 'r' '[ble:octoReceive]'		'octo receive')
+
+		(array 'r' '[ble:scanReceive]'		'ble receive scan')
+		(array ' ' '[ble:stopScanning]'		'ble stop scanning')
+
+		(array ' ' '[ble:radioSetGroup]'	'ble radio set group _ (0-255)' 'num' 0)
+		(array ' ' '[ble:radioStartBeam]'	'ble radio start beam _' 'str')
+		(array ' ' '[ble:radioStopBeam]'	'ble radio stop beam')
+		(array 'r' '[ble:radioReceive]'		'ble radio receive')
+
 		(array 'r' '[ble:uartConnected]' 'BLE serial connected?')
 		(array 'r' '[ble:uartRead]' '_BLE serial read as bytes _' 'bool' false)
 		(array ' ' '[ble:uartWrite]' '_BLE serial write _ (max 240) starting at _' 'str num' 'aStringOrByteArray' 1)

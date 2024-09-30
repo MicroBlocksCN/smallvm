@@ -50,7 +50,7 @@ static OBJ primBLE_connected(int argCount, OBJ *args) {
 
 static bool bleScannerRunning = false;
 static bool hasOctoMessage = false;
-static int octoGroup = 0;
+static int octoGroupID = 0;
 static int octoShapeID = 0;
 
 // Empty byte array
@@ -270,7 +270,8 @@ static void BLEScannerCallback(BLEAdvertisement *advert) {
 		memcpy(&id, octoName, 8);
 		if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 			addIDToOctoHistory(id);
-			octoShapeID = (hexDigit(octoName[14]) << 8) + hexDigit(octoName[15]);
+			octoGroupID = (hexDigit(deviceName[12]) << 4) + hexDigit(deviceName[13]);
+			octoShapeID = (hexDigit(octoName[14]) << 4) + hexDigit(octoName[15]);
 			hasOctoMessage = true;
 		}
 	}
@@ -280,6 +281,7 @@ static void BLEScannerCallback(BLEAdvertisement *advert) {
 		memcpy(&id, &advData[19], 8);
 		if (octoIDNotYetSeen(id)) {
 			addIDToOctoHistory(id);
+			octoGroupID = serviceData[24];
 			octoShapeID = advData[25];
 			hasOctoMessage = true;
 		}
@@ -378,11 +380,9 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 					memcpy(&id, deviceName.c_str(), 8);
 					if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						int groupID = (hexDigit(deviceName[12]) << 4) + hexDigit(deviceName[13]);
-						if (groupID == octoGroup) {
-							octoShapeID = (hexDigit(deviceName[14]) << 4) + hexDigit(deviceName[15]);
-							hasOctoMessage = true;
-						}
+						octoGroupID = (hexDigit(deviceName[12]) << 4) + hexDigit(deviceName[13]);
+						octoShapeID = (hexDigit(deviceName[14]) << 4) + hexDigit(deviceName[15]);
+						hasOctoMessage = true;
 					}
 				}
 			}
@@ -396,11 +396,9 @@ class BLEScannerCallbacks : public BLEAdvertisedDeviceCallbacks {
 					memcpy(&id, serviceData.c_str(), 8);
 					if (octoIDNotYetSeen(id)) {
 						addIDToOctoHistory(id);
-						int groupID = serviceData[6];
-						if (groupID == octoGroup) {
-							octoShapeID = serviceData[7];
-							hasOctoMessage = true;
-						}
+						octoGroupID = serviceData[6];
+						octoShapeID = serviceData[7];
+						hasOctoMessage = true;
 					}
 				}
 			}
@@ -454,16 +452,6 @@ static void stopBLEScanner() {
 
 #endif
 
-static OBJ primOctoSetGroup(int argCount, OBJ *args) {
-	if ((argCount < 1) || !isInt(args[0])) return falseObj;
-
-	int newGroup = obj2int(args[0]);
-	if (newGroup < 0) newGroup = 0;
-	if (newGroup > 255) newGroup = 255;
-	octoGroup = newGroup;
-	return falseObj;
-}
-
 static OBJ primOctoStartBeam(int argCount, OBJ *args) {
 	if ((argCount < 1) || !IS_TYPE(args[0], StringType)) return falseObj;
 
@@ -477,11 +465,15 @@ static OBJ primOctoStopBeam(int argCount, OBJ *args) {
 }
 
 static OBJ primOctoReceive(int argCount, OBJ *args) {
+	// If a new OctoStudio message has been receved return a 16-bit integer with
+	// the groupID in the high 8 bits and the shapeID in the low 8 bits.
+	// Return false if no message has been received.
+
 	if (!bleScannerRunning) startBLEScanner();
 
 	if (hasOctoMessage) {
 		hasOctoMessage = false;
-		return int2obj(octoShapeID);
+		return int2obj((octoGroupID << 8) | octoShapeID);
 	} else {
 		return falseObj;
 	}
@@ -801,7 +793,6 @@ static PrimEntry entries[] = {
 	{"bleConnected", primBLE_connected},
 
 	#if defined(BLE_OCTO)
-		{"octoSetGroup", primOctoSetGroup},
 		{"octoStartBeam", primOctoStartBeam},
 		{"octoStopBeam", primOctoStopBeam},
 		{"octoReceive", primOctoReceive},
