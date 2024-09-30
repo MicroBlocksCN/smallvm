@@ -232,6 +232,13 @@ Sent from IDE to board to enable or disable the ability to connect to the board 
 If the third byte of this message is 0, BLE connections are disabled. If non-zero, they are enabled.
 Ignored by boards that do not support BLE.
 
+### Chunk Code 16-bit (OpCode: 0x20; long message; bidirectional)
+
+Body contains the 16-bit binary code for the given chunkID.
+This message is also used to return chunk code to the IDE
+in response to the Get All Code message.
+
+
 ### *Reserved* (OpCodes 0x20-0x25)
 
 Reserved for additional Bidirectional messages.

@@ -926,7 +926,7 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 	int msgSize = 1 + chunkBytes;
 	waitForOutbufBytes(5 + msgSize);
 	queueByte(251);
-	queueByte(chunkCodeMsg);
+	queueByte(chunkCode16Msg);
 	queueByte(chunkID);
 	queueByte(msgSize & 0xFF); // low byte of size
 	queueByte((msgSize >> 8) & 0xFF); // high byte of size
@@ -1135,7 +1135,9 @@ static void processShortMessage() {
 		break;
 	case getAllCodeMsg:
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
-		sendAllCode();
+		if (chunkIndex == 1) { // requested by 16-bit IDE
+			sendAllCode();
+		}
 		break;
 	case deleteAllCodeMsg:
 		deleteAllChunks();
@@ -1184,7 +1186,7 @@ static void processLongMessage() {
 	int chunkIndex = rcvBuf[2];
 	int bodyBytes = msgLength - 1; // subtract terminator byte
 	switch (cmd) {
-	case chunkCodeMsg:
+	case chunkCode16Msg: // code chunk from 16-bit IDE
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
 		sendChunkCRC(chunkIndex);
