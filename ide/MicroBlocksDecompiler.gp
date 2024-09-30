@@ -460,7 +460,8 @@ method readLiteral MicroBlocksDecompiler chunkData startByte {
 	i = (startByte + 4)
 	end = (i + (4 * wordCount))
 	while (i < end) {
-		add stringBytes (at chunkData i)
+		ch = (at chunkData i)
+		if (ch != 0) { add stringBytes (at chunkData i) } // skip zero terminator byte(s)
 		i += 1
 	}
 	return (callWith 'string' (toArray stringBytes))
