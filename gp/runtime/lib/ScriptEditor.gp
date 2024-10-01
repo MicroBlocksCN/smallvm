@@ -569,7 +569,7 @@ method undrop ScriptEditor {
 
 method grab ScriptEditor aBlock {
   h = (hand (handler (root morph)))
-  setCenter (morph aBlock) (x h) (y h)
+  setPosition (morph aBlock) (x h) (y h)
   grab h aBlock
   changed h
 }

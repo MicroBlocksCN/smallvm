@@ -577,6 +577,7 @@ method snap Block {
 }
 
 method aboutToBeGrabbed Block {
+  page = (global 'page')
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -587,14 +588,17 @@ method aboutToBeGrabbed Block {
   removeStackPart (morph tb)
   removeHighlight (morph tb)
 
+  hand = (hand page)
+  setPosition morph (x hand) (y hand)
+
   if (or
-		(commandKeyDown (keyboard (global 'page')))
-		(controlKeyDown (keyboard (global 'page')))
+		(commandKeyDown (keyboard page))
+		(controlKeyDown (keyboard page))
   ) {
 	// duplicate all with control + grab
 	dup = (duplicate this)
 	owner = (handler (owner morph))
-	if (shiftKeyDown (keyboard (global 'page'))) {
+	if (shiftKeyDown (keyboard page)) {
 		// duplicate block with control + shift + grab
 		if (notNil (next dup)) {setNext dup nil}
 	}
@@ -615,7 +619,7 @@ method aboutToBeGrabbed Block {
 
   // extract block with shift + grab
   if (and
-		(shiftKeyDown (keyboard (global 'page')))
+		(shiftKeyDown (keyboard page))
 		(notNil (next this))
   ) {
     extractBlock this true
