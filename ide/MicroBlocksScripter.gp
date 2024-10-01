@@ -57,9 +57,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   libFrame = (scrollFrame libSelector (microBlocksColor 'blueGray' 850))
   setAutoScroll libFrame false
   addPart morph (morph libFrame)
-  gradient = (newGradient (microBlocksColor 'blueGray' 850) 30 3)
-  setExtent (morph gradient) (140 * scale) (30 * scale)
-  addPart morph (morph gradient)
+  gradient = (newMorph)
+  setExtent gradient (140 * scale) (30 * scale)
+  setCostume gradient (scaleAndRotate (gradientBitmap this) (140 * scale) 1)
+  addPart morph gradient
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
@@ -317,7 +318,8 @@ method fixLayout MicroBlocksScripter {
   setExtent (morph libHeader) catWidth libHeaderHeight
   setExtent (morph libSelector) catWidth libSelectorHeight
   setExtent (morph blocksFrame) blocksWidth totalHeight
-  setExtent (morph gradient) catWidth (30 * scale)
+  setExtent gradient catWidth (30 * scale)
+  setCostume gradient (scaleAndRotate (gradientBitmap this) catWidth 1)
   setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
   // position parts
@@ -328,7 +330,7 @@ method fixLayout MicroBlocksScripter {
   fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
   fastSetPosition (morph libSelector) leftEdge ((bottom (morph libAddButton)) + (6 * scale))
   fastSetPosition (morph libFrame) leftEdge (top (morph libSelector))
-  fastSetPosition (morph gradient) leftEdge ((bottom (morph libFrame)) - (60 * scale))
+  fastSetPosition gradient leftEdge ((bottom (morph libFrame)) - (30 * scale))
   fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
   fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
 
@@ -339,7 +341,6 @@ method fixLayout MicroBlocksScripter {
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
-  redraw gradient
   updateSliders blocksFrame
   updateSliders scriptsFrame
 
@@ -1490,4 +1491,21 @@ method scriptsBottom MicroBlocksScripter {
     }
   }
   return result
+}
+
+method gradientBitmap MicroBlocksScripter {
+  data = ' iVBORw0KGgoAAAANSUhEUgAAAAEAAAAeCAYAAADtlXTHAAAACXBIWXMAAA7DAAAOwwHHb
+6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFh0RVh0Q29weXJpZ2h0AENDM
+CBQdWJsaWMgRG9tYWluIERlZGljYXRpb24gaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvcHVibGljZ
+G9tYWluL3plcm8vMS4wL8bjvfkAAABaSURBVAiZPcixDYNQEETBvWcs3RK4pt9/I/Rg4NaRyUajtdbGc
+Zxm3z/Nl9NsV5qLMS/ezdxjIM0ohqgZYUiaKRkqzQx/lUxFjVRGSaOSkdQoMapqpOf0XOQf/Voh10IMi
+/kAAAAASUVORK5CYII='
+  dataRetina = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAA8CAYAAACn8dD6AAAACXBIWXMAAA7DAAAO
+wwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFh0RVh0Q29weXJpZ2h0
+AENDMCBQdWJsaWMgRG9tYWluIERlZGljYXRpb24gaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvcHVi
+bGljZG9tYWluL3plcm8vMS4wL8bjvfkAAACASURBVBiVbY1LbgJRDATLNf1yGS7JJTkIC7IJ2CxGw0fK
+xmpVl9zAWU+nS9y263KtjrdtYn6J+lgq8U+i9ROhl96J95poEWGWVcR+EKu2L1YTCyI9a09dZG/BZTWx
+mRfjy+uJlAd7e82xAccGs6SMzEQ4/u2piMzLwwj/eJ9nZ0/INycVXhY1IwAAAABJRU5ErkJggg=='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
 }
