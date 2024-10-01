@@ -577,6 +577,7 @@ method snap Block {
 }
 
 method aboutToBeGrabbed Block {
+  page = (global 'page')
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -587,14 +588,17 @@ method aboutToBeGrabbed Block {
   removeStackPart (morph tb)
   removeHighlight (morph tb)
 
+  hand = (hand page)
+  setPosition morph (x hand) (y hand)
+
   if (or
-		(commandKeyDown (keyboard (global 'page')))
-		(controlKeyDown (keyboard (global 'page')))
+		(commandKeyDown (keyboard page))
+		(controlKeyDown (keyboard page))
   ) {
 	// duplicate all with control + grab
 	dup = (duplicate this)
 	owner = (handler (owner morph))
-	if (shiftKeyDown (keyboard (global 'page'))) {
+	if (shiftKeyDown (keyboard page)) {
 		// duplicate block with control + shift + grab
 		if (notNil (next dup)) {setNext dup nil}
 	}
@@ -615,7 +619,7 @@ method aboutToBeGrabbed Block {
 
   // extract block with shift + grab
   if (and
-		(shiftKeyDown (keyboard (global 'page')))
+		(shiftKeyDown (keyboard page))
 		(notNil (next this))
   ) {
     extractBlock this true
@@ -679,7 +683,16 @@ method expressionChanged Block changedBlock {
 method clicked Block hand {
   if (not (isMicroBlocks)) { return (gpClicked hand) }
 
-  cancelSelection
+  selection = (selection (scripter (findProjectEditor)))
+  kbd = (keyboard (page hand))
+
+  if (and (notNil selection) (shiftKeyDown kbd)) {
+	toggleAddBlock selection this
+	return
+  } else {
+	cancelSelection
+  }
+
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
     return
@@ -2269,6 +2282,19 @@ method unselect Block {
     originalColor = nil
     pathCache = nil
     changed morph
+    if (notNil (next this)) {
+      unselect (next this)
+    }
+    for i (inputs this) {
+      if (isClass i 'Block') {
+        unselect i
+      } (and
+          (isClass i 'CommandSlot')
+          (notNil (nested i))
+      ) {
+        unselect (nested i)
+      }
+    }
   }
 }
 

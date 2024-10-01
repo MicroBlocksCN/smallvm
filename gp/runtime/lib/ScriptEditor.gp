@@ -35,6 +35,7 @@ method handDownOn ScriptEditor aHand {
 	if (isNil scripter) { return }
 	selection = (selection scripter)
 	if (and (notNil selection) (notEmpty selection)) {
+		if (shiftKeyDown (keyboard (page aHand))) { return false }
 		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
 		if (and (notNil grabbed) (contains selection (handler grabbed))) {
 			dragBlocks selection
@@ -569,7 +570,7 @@ method undrop ScriptEditor {
 
 method grab ScriptEditor aBlock {
   h = (hand (handler (root morph)))
-  setCenter (morph aBlock) (x h) (y h)
+  setPosition (morph aBlock) (x h) (y h)
   grab h aBlock
   changed h
 }

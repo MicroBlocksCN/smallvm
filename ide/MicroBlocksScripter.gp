@@ -343,11 +343,24 @@ method fixLayout MicroBlocksScripter {
   fixLibraryHeaderLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
+  updateTrashcanPosition this
 
   // rounded corner at bottom left of palette
   setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
-  // trashcan at bottom right of palette
-  setPosition trashcanIcon ((right (morph blocksFrame)) - ((32 + 8) * scale)) ((height (morph blocksFrame)) + (8 * scale))
+}
+
+method updateTrashcanPosition MicroBlocksScripter {
+  // trashcan at bottom right of palette, offset by sliders if visible
+  scale = (global 'scale')
+  vOffset = (8 * scale)
+  hOffset = ((32 + 8) * scale)
+  if (isVisible (morph (getField blocksFrame 'hSlider'))) {
+	hOffset += 8
+  }
+  if (isVisible (morph (getField blocksFrame 'vSlider'))) {
+	vOffset += -8
+  }
+  setPosition trashcanIcon ((right (morph blocksFrame)) - hOffset) ((height (morph blocksFrame)) + vOffset)
 }
 
 method fixResizerLayout MicroBlocksScripter {
@@ -367,11 +380,13 @@ method fixResizerLayout MicroBlocksScripter {
 method hideScrollbars MicroBlocksScripter {
   hideSliders blocksFrame
   hideSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 method showScrollbars MicroBlocksScripter {
   showSliders blocksFrame
   showSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 // drawing
