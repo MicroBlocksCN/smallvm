@@ -683,7 +683,16 @@ method expressionChanged Block changedBlock {
 method clicked Block hand {
   if (not (isMicroBlocks)) { return (gpClicked hand) }
 
-  cancelSelection
+  selection = (selection (scripter (findProjectEditor)))
+  kbd = (keyboard (page hand))
+
+  if (and (notNil selection) (shiftKeyDown kbd)) {
+	toggleAddBlock selection this
+	return
+  } else {
+	cancelSelection
+  }
+
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
     return
@@ -2273,6 +2282,19 @@ method unselect Block {
     originalColor = nil
     pathCache = nil
     changed morph
+    if (notNil (next this)) {
+      unselect (next this)
+    }
+    for i (inputs this) {
+      if (isClass i 'Block') {
+        unselect i
+      } (and
+          (isClass i 'CommandSlot')
+          (notNil (nested i))
+      ) {
+        unselect (nested i)
+      }
+    }
   }
 }
 

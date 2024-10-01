@@ -35,6 +35,7 @@ method handDownOn ScriptEditor aHand {
 	if (isNil scripter) { return }
 	selection = (selection scripter)
 	if (and (notNil selection) (notEmpty selection)) {
+		if (shiftKeyDown (keyboard (page aHand))) { return false }
 		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
 		if (and (notNil grabbed) (contains selection (handler grabbed))) {
 			dragBlocks selection
