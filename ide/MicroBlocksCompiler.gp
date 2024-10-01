@@ -243,6 +243,17 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getArg'				'arg _' 'num' 0)
 		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
+		(array 'r' '[misc:atan2]' 		'arctan x _ y _' 'num num' 1 1)
+
+		(array ' ' '[misc:broadcastToIDE]' 'broadcast _ to IDE only' 'str' '')
+
+		(array 'r' '[misc:hsvColor]'		'color hue _ (0-360) saturation _ % brightness _ %' 'num num num' 0 90 100)
+		(array 'r' '[misc:hue]' 'hue _'	'color')
+		(array 'r' '[misc:saturation]'	'saturation _' 'color')
+		(array 'r' '[misc:brightness]'	'brightness _' 'color')
+
+		(array 'r' '[misc:pressureToAltitude]' 'altitude diff for pressure change from _ to _' 'num num' 30 29)
+		(array 'r' '[misc:bme680GasResistance]' 'bme680 gas resistance adc _ range _ calibration range error  _' 'num num num' 500 0 0)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 		(array 'r' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)
@@ -512,10 +523,6 @@ method initOpcodes SmallCompiler {
 			atPut opcodes (at words 1) (toInteger (at words 2))
 		}
 	}
-
-	// renamed opcodes:
-	atPut opcodes 'newArray' 60
-	atPut opcodes 'fillArray' 62
 }
 
 method initPrimsets SmallCompiler {
