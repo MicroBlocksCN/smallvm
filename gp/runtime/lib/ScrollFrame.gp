@@ -1,4 +1,4 @@
-defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll dragOriginX dragOriginY baseX baseY
+defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll verticalScrollOnly dragOriginX dragOriginY baseX baseY
 
 to area aHandler {return (fullBounds (morph aHandler))}
 
@@ -15,6 +15,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   contents = newContents
   noSliders = noSliderFlag
   enableAutoScroll = true
+  verticalScrollOnly = false
   addPart morph (morph contents)
   setTransparentTouch morph true
   setClipping morph true
@@ -32,6 +33,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
 
 method contents ScrollFrame {return contents}
 method setAutoScroll ScrollFrame bool {enableAutoScroll = bool}
+method setVerticalScrollOnly ScrollFrame bool {verticalScrollOnly = bool}
 
 method setColor ScrollFrame aColor {
   setCostume morph aColor
@@ -322,6 +324,8 @@ method changeScrollOffset ScrollFrame dx dy {
   xOffset = (round (clamp xOffset 0 maxXOffset))
   yOffset = (round (clamp yOffset 0 maxYOffset))
 
+  if verticalScrollOnly { xOffset = 0 }
+
   fastSetPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
   changed morph
   updateSliderPositions this
@@ -396,6 +400,7 @@ method autoScroll ScrollFrame hand obj {
     newX = (clamp ((left contentBounds) + dx) minX (left frameBounds))
     newY = (clamp ((top contentBounds) + dy) minY (top frameBounds))
 
+	if verticalScrollOnly { newX = (left contentBounds) }
     fastSetPosition (morph contents) newX newY
     changed morph
     updateSliders this true
