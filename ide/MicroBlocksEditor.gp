@@ -26,7 +26,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -158,12 +158,19 @@ method addTopBarParts MicroBlocksEditor {
   add rightItems progressIndicator
   add rightItems (12 * scale)
 
+  indicator = (addTwoStateSVGIconButton this 'icon-usb' 'connectToBoard' 'Connect')
+  if (isNil connectionName) {
+	  connectionName = (newText (localized 'Connect') 'Arial' (14 * scale) (microBlocksColor 'blueGray' 50))
+	  addPart morph (morph connectionName)
+  }
+
   add rightItems (addTwoStateSVGIconButton this 'icon-graph' 'showGraph' 'Graph')
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
-  add rightItems (addTwoStateSVGIconButton this 'icon-usb' 'connectToBoard' 'Connect')
-  indicator = (last rightItems)
+  add rightItems indicator
+  add rightItems (6 * scale)
+  add rightItems connectionName
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
@@ -617,9 +624,12 @@ method updateIndicator MicroBlocksEditor forcefully {
 
     if isConnected {
 		setCostumes indicator onBM hlBM
+		setText connectionName (checkBoardType (smallRuntime scripter))
 	} else {
 		setCostumes indicator offBM hlBM
+		setText connectionName (localized 'Connect')
 	}
+	fixTopBarLayout this
 
 	costumeChanged (morph indicator)
 	lastStatus = status
