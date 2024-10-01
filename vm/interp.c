@@ -435,13 +435,21 @@ static int findCallee(char *functionOrPrimitiveName) {
 // Macros to support function calls
 #define IN_CALL() (fp > task->stack)
 
+static void interpDebug(int ip, int cmd, int arg, int sp) {
+	// Show interpreter state for debugging.
+
+	char tmpStr[100];
+	sprintf(tmpStr, "ip: %d cmd: %d arg: %d sp: %d", ip - 4, cmd, arg, sp);
+	outputString(tmpStr); \
+}
+
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
-	/* printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - (int16 *) task->code), CMD(op), arg, (sp - task->stack)); */ \
+	/* interpDebug((ip - (int16 *) task->code), CMD(op), arg, task->sp); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
