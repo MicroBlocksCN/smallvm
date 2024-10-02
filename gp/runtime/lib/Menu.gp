@@ -77,7 +77,6 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
   if (notNil thumbPic) {
     thWidth = (width thumbPic)
     thHeight = (height thumbPic)
-    padding = (* 3 (global 'scale'))
   }
   result = (newBitmap
     (max itemWidth (+ padding (width labelPic) thWidth))
@@ -199,21 +198,23 @@ method buildMorph Menu page yPos {
   // create and position actual menu items
   for i (count items) {
     tuple = (at items i)
+    paddingH = itemPaddingH
     itemThm = nil
     disabled = false
-    if (> (count tuple) 3) {itemThm = (at tuple 4)}
+    if (> (count tuple) 3) { itemThm = (at tuple 4) }
+    if (notNil itemThm) { paddingH = 0 }
     if (> (count tuple) 4) {disabled = (at tuple 5)}
     ilbl = (at itemLbls i)
     if (isClass ilbl 'Bitmap') {
-      nbm = (itemLabel this ilbl nil color menuWidth itemPaddingH itemPaddingV)
+      nbm = (itemLabel this ilbl nil color menuWidth paddingH itemPaddingV)
       if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorHighlighted)}
       if disabled {
         hbm = nbm
       } else {
-        hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth itemPaddingH itemPaddingV)
+        hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth paddingH itemPaddingV)
       }
       if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorPressed)}
-      pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth itemPaddingH itemPaddingV)
+      pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth paddingH itemPaddingV)
       if reverseCall {
         itemAction = (action target (at tuple 2))
       } else {
