@@ -171,6 +171,8 @@ method addTopBarParts MicroBlocksEditor {
   add rightItems indicator
   add rightItems (6 * scale)
   add rightItems connectionName
+  add rightItems (6 * scale)
+  add rightItems (addSVGIconButton this 'dropdown-arrow' 'connectToBoard' 'Connect')
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
@@ -624,7 +626,9 @@ method updateIndicator MicroBlocksEditor forcefully {
 
     if isConnected {
 		setCostumes indicator onBM hlBM
-		setText connectionName (checkBoardType (smallRuntime scripter))
+		boardType = (checkBoardType (smallRuntime scripter))
+		if (isNil boardType) { boardType = '' }
+		setText connectionName boardType
 	} else {
 		setCostumes indicator offBM hlBM
 		setText connectionName (localized 'Connect')
@@ -988,8 +992,8 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	}
 }
 
-method toggleBoardLibAutoLoad MicroBlocksEditor flag {
-	boardLibAutoLoadDisabled = (not flag)
+method toggleBoardLibAutoLoad MicroBlocksEditor {
+	boardLibAutoLoadDisabled = (not (boardLibAutoLoadDisabled this))
 	saveToUserPreferences this 'boardLibAutoLoadDisabled' boardLibAutoLoadDisabled
 }
 
@@ -997,8 +1001,8 @@ method boardLibAutoLoadDisabled MicroBlocksEditor {
 	return (boardLibAutoLoadDisabled == true)
 }
 
-method toggleAutoDecompile MicroBlocksEditor flag {
-	autoDecompile = flag
+method toggleAutoDecompile MicroBlocksEditor {
+	autoDecompile = (not (autoDecompileEnabled this))
 	saveToUserPreferences this 'autoDecompile' autoDecompile
 }
 
@@ -1006,8 +1010,8 @@ method autoDecompileEnabled MicroBlocksEditor {
 	return (autoDecompile == true)
 }
 
-method toggleShowHiddenBlocks MicroBlocksEditor flag {
-	showHiddenBlocks = flag
+method toggleShowHiddenBlocks MicroBlocksEditor {
+	showHiddenBlocks = (not (showHiddenBlocksEnabled this))
 	saveToUserPreferences this 'showImplementationBlocks' showHiddenBlocks
 	developerModeChanged this // updates the palette
 }
@@ -1016,8 +1020,8 @@ method showHiddenBlocksEnabled MicroBlocksEditor {
 	return (and (devMode) (showHiddenBlocks == true))
 }
 
-method toggleDarkMode MicroBlocksEditor flag {
-	darkMode = flag
+method toggleDarkMode MicroBlocksEditor {
+	darkMode = (not (darkModeEnabled this))
 	saveToUserPreferences this 'darkMode' darkMode
 	darkModeChanged scripter
 }
@@ -1145,9 +1149,12 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
   }
 
   addLine menu
-  if (not (devMode)) {
-	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
-  } else {
+  addItem menu 'show advanced blocks' 'toggleAdvancedBlocks' nil (newCheckmark this (devMode))
+
+  if (devMode) {
+	addLine menu
+	addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)' (newCheckmark this (showHiddenBlocksEnabled this))
+	addLine menu
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
 	addLine menu
 // Commented out for now since all precompiled VM's are already included in IDE
@@ -1165,17 +1172,8 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	}
 	addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 	addLine menu
-	if (boardLibAutoLoadDisabled this) {
-		addItem menu 'enable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this true)
-	} else {
-		addItem menu 'disable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this false)
-	}
-
-	if (autoDecompileEnabled this) {
-		addItem menu 'disable PlugShare when project empty' (action 'toggleAutoDecompile' this false) 'when plugging a board, do not automatically read its contents into the IDE even if the current project is empty'
-	} else {
-		addItem menu 'enable PlugShare when project empty' (action 'toggleAutoDecompile' this true) 'when plugging a board, automatically read its contents into the IDE if the current project is empty'
-	}
+	addItem menu 'autoload board libraries' (action 'toggleBoardLibAutoLoad' this) nil (newCheckmark this (not (boardLibAutoLoadDisabled this)))
+	addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE even if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
 
 // xxx for testing blend in browser...
 // addItem menu 'time redraw' (action 'timeRedraw' this)
@@ -1184,19 +1182,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // addItem menu 'benchmark' (action 'runBenchmarks' (global 'page'))
 
 	addLine menu
-	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
-	if (showHiddenBlocksEnabled this) {
-		addItem menu 'hide implementation blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
-		addLine menu
-	} else {
-		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
-		addLine menu
-	}
-  	if (darkModeEnabled this) {
-		addItem menu 'light mode' (action 'toggleDarkMode' this false) 'make the IDE brighter'
-	} else {
-		addItem menu 'dark mode' (action 'toggleDarkMode' this true) 'make the IDE darker'
-	}
+	addItem menu 'dark mode' (action 'toggleDarkMode' this false) 'make the IDE darker' (newCheckmark this (darkModeEnabled this))
   }
   return menu
 }
@@ -1297,6 +1283,14 @@ method showGraph MicroBlocksEditor {
     setPosition graphM (half ((width (morph page)) - (width graphM))) (50 * (global 'scale'))
     restoreSettings graph
 	addPart page graph
+}
+
+method toggleAdvancedBlocks MicroBlocksEditor {
+  if (devMode) {
+	hideAdvancedBlocks this
+  } else {
+	showAdvancedBlocks this
+  }
 }
 
 method showAdvancedBlocks MicroBlocksEditor {
@@ -1422,6 +1416,15 @@ method addSVGIconButtonOldStyle MicroBlocksEditor iconName selector hint {
   return button
 }
 
+method newCheckmark MicroBlocksEditor isOn {
+  if isOn {
+	color = (microBlocksColor 'blueGray' 50)
+  } else {
+	color = (microBlocksColor 'blueGray' 500)
+  }
+  return (readSVGIcon 'checkmark' color)
+}
+
 method projectMenu MicroBlocksEditor {
   menu = (menu 'File' this)
   setIsTopMenu menu true
@@ -1441,11 +1444,9 @@ method projectMenu MicroBlocksEditor {
 		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
 	}
-	if (boardHasFileSystem (smallRuntime)) {
-		addLine menu
-		addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime))
-		addItem menu 'get file from board' (action 'getFileFromBoard' (smallRuntime))
-	}
+	addLine menu
+	addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime)) nil nil true (not (boardHasFileSystem (smallRuntime)))
+	addItem menu 'get file from board' (action 'getFileFromBoard' (smallRuntime)) nil nil true (not (boardHasFileSystem (smallRuntime)))
   }
   popUpAtHand menu (global 'page')
 }
