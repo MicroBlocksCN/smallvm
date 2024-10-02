@@ -62,6 +62,11 @@ method handUpOn MicroBlocksSelection aHand {
 	return true
 }
 
+method handMoveOver MicroBlocksSelection aHand {
+	updateSelection this aHand
+	return true
+}
+
 // selecting
 
 method updateSelection MicroBlocksSelection aHand {
@@ -93,6 +98,24 @@ method endSelection MicroBlocksSelection {
 	destroy this
 }
 
+method toggleAddBlock MicroBlocksSelection aBlock {
+	tb = (topBlock aBlock)
+	if (contains blocks tb) {
+		removeBlock this tb
+	} else {
+		addBlock this tb
+	}
+}
+
+method addBlock MicroBlocksSelection aBlock {
+	add blocks aBlock
+	select aBlock
+}
+
+method removeBlock MicroBlocksSelection aBlock {
+	remove blocks aBlock
+	unselect aBlock
+}
 
 // debugging
 
@@ -127,18 +150,6 @@ method containsDefinitions MicroBlocksSelection {
 method containsBlocks MicroBlocksSelection {
 	for block blocks { if (not (isPrototypeHat block)) { return true } }
 	return false
-}
-
-// events
-
-method handUpOn MicroBlocksSelection aHand {
-	endSelection this
-	return true
-}
-
-method handMoveOver MicroBlocksSelection aHand {
-	updateSelection this aHand
-	return true
 }
 
 // actions

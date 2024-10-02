@@ -55,6 +55,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
   setFont libSelector fontName fontSize
   libFrame = (scrollFrame libSelector (microBlocksColor 'blueGray' 850))
+  setVerticalScrollOnly libFrame true
   setAutoScroll libFrame false
   addPart morph (morph libFrame)
   gradient = (newMorph)
@@ -67,6 +68,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (microBlocksColor 'blueGray' 50))
+  setVerticalScrollOnly blocksFrame true
   setAutoScroll blocksFrame false
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
@@ -166,7 +168,7 @@ method makeLibraryHeader MicroBlocksScripter {
   addPart (morph libHeader) (morph label)
 
   hLine = (newBox (newMorph) (microBlocksColor 'blueGray' 700) 0 0 false false)
-  setExtent (morph hLine) (96 * scale) scale 
+  setExtent (morph hLine) (96 * scale) scale
   setPosition (morph hLine) (24 * scale) ((bottom (morph label)) + (4 * scale))
 
   addPart (morph libHeader) (morph hLine)
@@ -343,11 +345,24 @@ method fixLayout MicroBlocksScripter {
   fixLibraryHeaderLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
+  updateTrashcanPosition this
 
   // rounded corner at bottom left of palette
   setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
-  // trashcan at bottom right of palette
-  setPosition trashcanIcon ((right (morph blocksFrame)) - ((32 + 8) * scale)) ((height (morph blocksFrame)) + (8 * scale))
+}
+
+method updateTrashcanPosition MicroBlocksScripter {
+  // trashcan at bottom right of palette, offset by sliders if visible
+  scale = (global 'scale')
+  vOffset = (8 * scale)
+  hOffset = ((32 + 8) * scale)
+  if (isVisible (morph (getField blocksFrame 'hSlider'))) {
+	hOffset += 8
+  }
+  if (isVisible (morph (getField blocksFrame 'vSlider'))) {
+	vOffset += -8
+  }
+  setPosition trashcanIcon ((right (morph blocksFrame)) - hOffset) ((height (morph blocksFrame)) + vOffset)
 }
 
 method fixResizerLayout MicroBlocksScripter {
@@ -367,11 +382,13 @@ method fixResizerLayout MicroBlocksScripter {
 method hideScrollbars MicroBlocksScripter {
   hideSliders blocksFrame
   hideSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 method showScrollbars MicroBlocksScripter {
   showSliders blocksFrame
   showSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 // drawing
