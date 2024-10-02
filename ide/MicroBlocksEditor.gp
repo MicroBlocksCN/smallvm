@@ -626,7 +626,9 @@ method updateIndicator MicroBlocksEditor forcefully {
 
     if isConnected {
 		setCostumes indicator onBM hlBM
-		setText connectionName (checkBoardType (smallRuntime scripter))
+		boardType = (checkBoardType (smallRuntime scripter))
+		if (isNil boardType) { boardType = '' }
+		setText connectionName boardType
 	} else {
 		setCostumes indicator offBM hlBM
 		setText connectionName (localized 'Connect')
