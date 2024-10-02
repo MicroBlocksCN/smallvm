@@ -1249,14 +1249,10 @@ method extractBoardType SmallRuntime versionString {
 
 method versionReceived SmallRuntime versionString {
 	if (isNil versionString) { return } // bad version message
-
-	// update vmVersion and boardType
-	justConnected = (isNil vmVersion)
-	vmVersion = (extractVersionNumber this versionString)
-	boardType = (extractBoardType this versionString)
-
-	if justConnected { // check the version number and load board libraries
-		checkVmVersion this
+	if (isNil vmVersion) { // first time: record and check the version number
+		vmVersion = (extractVersionNumber this versionString)
+		boardType = (extractBoardType this versionString)
+		// checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
 		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
