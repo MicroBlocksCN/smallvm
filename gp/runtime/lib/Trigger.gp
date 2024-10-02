@@ -13,8 +13,10 @@ method hint Trigger {return hint}
 method trigger Trigger anAction {
   if (isNil anAction) {anAction = action}
   if (isClass anAction 'Array') {
-    for each anAction {call each}
-  } else {
+    for each anAction {
+      if (notNil each) {call each}
+	}
+  } (notNil anAction) {
     call anAction
   }
 }

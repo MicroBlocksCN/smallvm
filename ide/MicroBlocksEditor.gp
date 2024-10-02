@@ -1443,11 +1443,9 @@ method projectMenu MicroBlocksEditor {
 		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
 	}
-	if (boardHasFileSystem (smallRuntime)) {
-		addLine menu
-		addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime))
-		addItem menu 'get file from board' (action 'getFileFromBoard' (smallRuntime))
-	}
+	addLine menu
+	addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime)) nil nil true (not (boardHasFileSystem (smallRuntime)))
+	addItem menu 'get file from board' (action 'getFileFromBoard' (smallRuntime)) nil nil true (not (boardHasFileSystem (smallRuntime)))
   }
   popUpAtHand menu (global 'page')
 }

@@ -11,7 +11,7 @@ method addItemNonlocalized Menu itemLabel itemAction itemHint itemThumb {
   addItem this itemLabel itemAction itemHint itemThumb false
 }
 
-method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
+method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag disabledFlag {
   if (isNil itemAction) { itemAction = itemLabel }
   if (isNil localizeFlag) { localizeFlag = true }
   if (not (isAnyClass itemLabel 'Bitmap' 'String')) {
@@ -20,7 +20,8 @@ method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
   if (and (isClass itemLabel 'String') localizeFlag) {
         itemLabel = (localized itemLabel)
   }
-  add items (array itemLabel itemAction itemHint itemThumb)
+  if disabledFlag { itemAction = nil }
+  add items (array itemLabel itemAction itemHint itemThumb disabledFlag)
 }
 
 method addLine Menu lineWidth {
@@ -108,12 +109,14 @@ method buildMorph Menu page yPos {
 	color = (microBlocksColor 'blueGray' 900)
 	borderColor = (microBlocksColor 'blueGray' 700)
 	itemTextColorNormal = (microBlocksColor 'blueGray' 50)
+	itemTextColorDisabled = (microBlocksColor 'blueGray' 600)
 	itemTextColorHighlighted = color
 	itemTextColorPressed = color
   } else {
 	color = (microBlocksColor 'blueGray' 50)
 	borderColor = (microBlocksColor 'blueGray' 100)
 	itemTextColorNormal = (microBlocksColor 'blueGray' 900)
+	itemTextColorDisabled = (microBlocksColor 'blueGray' 200)
 	itemTextColorHighlighted = itemTextColorNormal
 	itemTextColorPressed = itemTextColorNormal
   }
@@ -135,9 +138,15 @@ method buildMorph Menu page yPos {
     tuple = (at items i)
     itemLbl = (at tuple 1)
     itemThm = nil
+    disabled = false
     if (> (count tuple) 3) {itemThm = (at tuple 4)}
+    if (> (count tuple) 4) {disabled = (at tuple 5)}
     if (isClass itemLbl 'String') {
-      itemLbl = (stringImage itemLbl fontName fontSize itemTextColorNormal)
+      if disabled {
+        itemLbl = (stringImage itemLbl fontName fontSize itemTextColorDisabled)
+      } else {
+        itemLbl = (stringImage itemLbl fontName fontSize itemTextColorNormal)
+      }
       itemLbl = (itemLabel this itemLbl itemThm)
       menuWidth = (max menuWidth (+ (width itemLbl) (* itemPaddingH 2)))
       menuHeight += (+ (height itemLbl) (* itemPaddingV 2))
@@ -191,12 +200,18 @@ method buildMorph Menu page yPos {
   for i (count items) {
     tuple = (at items i)
     itemThm = nil
+    disabled = false
     if (> (count tuple) 3) {itemThm = (at tuple 4)}
+    if (> (count tuple) 4) {disabled = (at tuple 5)}
     ilbl = (at itemLbls i)
     if (isClass ilbl 'Bitmap') {
       nbm = (itemLabel this ilbl nil color menuWidth itemPaddingH itemPaddingV)
       if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorHighlighted)}
-      hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth itemPaddingH itemPaddingV)
+      if disabled {
+        hbm = nbm
+      } else {
+        hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth itemPaddingH itemPaddingV)
+      }
       if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorPressed)}
       pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth itemPaddingH itemPaddingV)
       if reverseCall {
@@ -204,10 +219,14 @@ method buildMorph Menu page yPos {
       } else {
         itemAction = (action (at tuple 2) target)
       }
-      action = (array
-        (action 'unfocus' this)
-        (action 'destroy' morph)
-        itemAction)
+	  if disabled {
+	    action = nil
+	  } else {
+        action = (array
+          (action 'unfocus' this)
+          (action 'destroy' morph)
+          itemAction)
+	  }
       item = (new 'Trigger' nil action nbm hbm pbm)
       setHint item (localized (at tuple 3))
       m = (newMorph item)
