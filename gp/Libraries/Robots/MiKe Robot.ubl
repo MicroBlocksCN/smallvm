@@ -1,46 +1,47 @@
 module 'MiKe Robot'
 author 'Robolot team'
-version 1 0 
+version 1 1 
 tags keyestudio robot car 
-description 'Provides sensor, light and motion blocks for the Keyestudio micro:bit Mini Smart Robot Car v2.'
+choices robotDirections Forward Backward Right Left 
+choices directions clockwise 'counter-clockwise' 
+choices sideMenu Right Left 
+description 'Provides sensor, light and motion blocks for the Keyestudio micro:bit Mini Smart Robot Car v2.
+'
 variables _MiKe_circlePixels _MiKe_i2c_on 
-choices directions clockwise 'counter-clockwise'
-choices sideMenu Right Left
-choices robotDirections Forward Backward Right Left
 
-	spec 'r' 'MiKe front obstacle (cm)' 'MiKe front obstacle (cm)'
-	spec 'r' 'MiKe obstacle ?' 'MiKe _ obstacle ?' 'menu.sideMenu' 'Right'
-	spec 'r' 'MiKe black line on ?' 'MiKe black line on _ ?' 'menu.sideMenu' 'Right'
-	spec 'r' 'MiKe back light' 'MiKe back light'
-	spec 'r' 'MiKe IR' 'MiKe IR'
-	spec 'r' 'MiKe digital D8 sensor' 'MiKe digital D8 sensor'
-	space
-	spec ' ' 'MiKe stop motors' 'MiKe stop motors'
-	spec ' ' 'MiKe Robot go' 'MiKe Robot go _ at _ %' 'menu.robotDirections num' 'Forward' 25
-	spec ' ' 'MiKe Robot speed' 'MiKe Robot speed _ %' 'num' 25
-	spec ' ' 'MiKe Robot direction' 'MiKe Robot direction _' 'menu.robotDirections' 'Forward'
-	spec ' ' 'MiKe turn motor' 'MiKe turn _ motor _' 'menu.sideMenu menu.directions' 'Right' 'clockwise'
-	spec ' ' 'MiKe speed motor' 'MiKe speed _ motor at _ %' 'menu.sideMenu num' 'Right' 25
-	space
-	spec ' ' 'MiKe front lights off' 'MiKe front lights off'
-	spec ' ' 'MiKe front lights' 'MiKe front lights to _' 'color'
-	spec ' ' 'MiKe circle lights off' 'MiKe circle lights off'
-	spec ' ' 'MiKe circle ligths to' 'MiKe circle ligths to _' 'color'
-	spec ' ' 'MiKe circle light to' 'MiKe circle light _ (1-18) to _' 'num color' 1
-	spec ' ' 'MiKe rotate lights by' 'MiKe rotate lights by _' 'num' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	space
-	spec ' ' 'MiKe digital D8 to' 'MiKe digital D8 to _' 'bool' false
-	spec ' ' '_MiKe_i2c_ensureInitialized' '_MiKe_i2c_ensureInitialized'
-	spec ' ' '_MiKe_circlePixels_ensureInitialized' '_MiKe_circlePixels_ensureInitialized'
-	spec ' ' '_MiKe_circlePixels_update' '_MiKe_circlePixels_update'
+  spec 'r' 'MiKe front obstacle (cm)' 'MiKe front obstacle (cm)'
+  spec 'r' 'MiKe obstacle ?' 'MiKe _ obstacle ?' 'menu.sideMenu' 'Right'
+  spec 'r' 'MiKe black line on ?' 'MiKe black line on _ ?' 'menu.sideMenu' 'Right'
+  spec 'r' 'MiKe back light' 'MiKe back light'
+  spec 'r' 'MiKe IR' 'MiKe IR'
+  spec 'r' 'MiKe digital D8 sensor' 'MiKe digital D8 sensor'
+  space
+  spec ' ' 'MiKe stop motors' 'MiKe stop motors'
+  spec ' ' 'MiKe Robot go' 'MiKe Robot go _ at _ %' 'menu.robotDirections num' 'Forward' 25
+  spec ' ' 'MiKe Robot speed' 'MiKe Robot speed _ %' 'num' 25
+  spec ' ' 'MiKe Robot direction' 'MiKe Robot direction _' 'menu.robotDirections' 'Forward'
+  spec ' ' 'MiKe turn motor' 'MiKe turn _ motor _' 'menu.sideMenu menu.directions' 'Right' 'clockwise'
+  spec ' ' 'MiKe speed motor' 'MiKe speed _ motor at _ %' 'menu.sideMenu num' 'Right' 25
+  space
+  spec ' ' 'MiKe front lights off' 'MiKe front lights off'
+  spec ' ' 'MiKe front lights' 'MiKe front lights to _' 'color'
+  spec ' ' 'MiKe circle lights off' 'MiKe circle lights off'
+  spec ' ' 'MiKe circle ligths to' 'MiKe circle ligths to _' 'color'
+  spec ' ' 'MiKe circle light to' 'MiKe circle light _ (1-18) to _' 'num color' 1
+  spec ' ' 'MiKe rotate lights by' 'MiKe rotate lights by _' 'num' 1
+  spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec ' ' 'MiKe digital D8 to' 'MiKe digital D8 to _' 'bool' false
+  spec ' ' '_MiKe_i2c_ensureInitialized' '_MiKe_i2c_ensureInitialized'
+  spec ' ' '_MiKe_circlePixels_ensureInitialized' '_MiKe_circlePixels_ensureInitialized'
+  spec ' ' '_MiKe_circlePixels_update' '_MiKe_circlePixels_update'
 
 to 'MiKe IR' {
   local 'ir_pin' 16
   forever {
     local 'ir_pulse_times' (newList 200)
-    fillList ir_pulse_times 0
+    atPut 'all' ir_pulse_times 0
     local 'i' 1
     waitUntil (not (digitalReadOp ir_pin))
     local 'start' (microsOp)
@@ -128,13 +129,13 @@ to 'MiKe circle light to' i color {
 
 to 'MiKe circle lights off' {
   '_MiKe_circlePixels_ensureInitialized'
-  fillList _MiKe_circlePixels 0
+  atPut 'all' _MiKe_circlePixels 0
   '_MiKe_circlePixels_update'
 }
 
 to 'MiKe circle ligths to' color {
   '_MiKe_circlePixels_ensureInitialized'
-  fillList _MiKe_circlePixels color
+  atPut 'all' _MiKe_circlePixels color
   '_MiKe_circlePixels_update'
 }
 
@@ -242,7 +243,7 @@ to 'MiKe turn motor' motor direction {
 to '_MiKe_circlePixels_ensureInitialized' {
   if (_MiKe_circlePixels == 0) {
     _MiKe_circlePixels = (newList 18)
-    fillList _MiKe_circlePixels 0
+    atPut 'all' _MiKe_circlePixels 0
     '[display:neoPixelSetPin]' 5 false
   }
 }
