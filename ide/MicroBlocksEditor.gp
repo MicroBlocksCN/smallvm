@@ -171,6 +171,8 @@ method addTopBarParts MicroBlocksEditor {
   add rightItems indicator
   add rightItems (6 * scale)
   add rightItems connectionName
+  add rightItems (6 * scale)
+  add rightItems (addSVGIconButton this 'dropdown-arrow' 'connectToBoard' 'Connect')
   add rightItems (12 * scale)
   add rightItems (vSeparator this)
   add rightItems (12 * scale)
