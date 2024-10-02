@@ -1,6 +1,6 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 6 
+version 1 7 
 tags ir infrared remote 
 description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
@@ -92,7 +92,7 @@ to '_captureIRMessage' {
       }
     }
   }
-  fillList _ir_pulse_times 0
+  atPut 'all' _ir_pulse_times 0
   local 'i' 1
   comment 'Wait for IR signal -- this is the start of a new message.
 Note: THe pin goes low when an IR signal is detected.'

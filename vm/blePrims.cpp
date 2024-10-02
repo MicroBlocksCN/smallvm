@@ -270,7 +270,7 @@ static void BLEScannerCallback(BLEAdvertisement *advert) {
 		memcpy(&id, octoName, 8);
 		if ((id != allZeroMessageID) && octoIDNotYetSeen(id)) {
 			addIDToOctoHistory(id);
-			octoGroupID = (hexDigit(deviceName[12]) << 4) + hexDigit(deviceName[13]);
+			octoGroupID = (hexDigit(octoName[12]) << 4) + hexDigit(octoName[13]);
 			octoShapeID = (hexDigit(octoName[14]) << 4) + hexDigit(octoName[15]);
 			hasOctoMessage = true;
 		}
@@ -281,7 +281,7 @@ static void BLEScannerCallback(BLEAdvertisement *advert) {
 		memcpy(&id, &advData[19], 8);
 		if (octoIDNotYetSeen(id)) {
 			addIDToOctoHistory(id);
-			octoGroupID = serviceData[24];
+			octoGroupID = advData[24];
 			octoShapeID = advData[25];
 			hasOctoMessage = true;
 		}

@@ -240,7 +240,7 @@ wait for it to settle down.'
 
 module NeoPixel Output
 author MicroBlocks
-version 1 7 
+version 1 9 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -255,13 +255,17 @@ variables _np_pixels
   spec 'r' 'randomColor' 'random color'
   space
   spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  space
   spec ' ' 'NeoPixel_brighten' 'brighten NeoPixel _ by _' 'num num' 1 10
   spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
+  spec ' ' 'NeoPixel_shift_color' 'shift NeoPixel _ color by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_shift_all_colors' 'shift all NeoPixel colors by _' 'num' 10
   space
   spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
   spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
   spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
   spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' '_NeoPixel_shift_hue' '_NeoPixel_shift_hue of _ by _' 'auto auto' '10' '10'
 
 to NeoPixel_brighten i delta {
   '_NeoPixel_increaseRGB' i delta
@@ -272,6 +276,18 @@ to NeoPixel_brighten_all delta {
   for i (size _np_pixels) {
     '_NeoPixel_increaseRGB' i delta
   }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_all_colors delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_shift_hue' i delta
+  }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_color i delta {
+  '_NeoPixel_shift_hue' i delta
   '_NeoPixel_update'
 }
 
@@ -292,19 +308,11 @@ to '_NeoPixel_increaseRGB' i delta {
   if (or (i < 1) (i > (size _np_pixels))) {return}
   local 'rgb' (at i _np_pixels)
   if (rgb != 0) {
-    local 'r' ((rgb >> 16) & 255)
-    local 'g' ((rgb >> 8) & 255)
-    local 'b' (rgb & 255)
-    local 'brightness' (maximum r g b)
-    if (delta > 0) {
-      delta = (minimum delta (255 - brightness))
-    } else {
-      delta = (maximum delta (42 - brightness))
-    }
-    r = (maximum 0 (minimum (r + delta) 255))
-    g = (maximum 0 (minimum (g + delta) 255))
-    b = (maximum 0 (minimum (b + delta) 255))
-    atPut i _np_pixels (colorFromRGB r g b)
+    local 'h' ('[misc:hue]' rgb)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' (('[misc:brightness]' rgb) + delta)
+    v = (maximum 20 (minimum v 100))
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
   }
 }
 
@@ -326,6 +334,17 @@ to '_NeoPixel_rotate' left {
   }
 }
 
+to '_NeoPixel_shift_hue' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'h' ((('[misc:hue]' rgb) + delta) % 360)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' ('[misc:brightness]' rgb)
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
+  }
+}
+
 to '_NeoPixel_update' {
   '[display:neoPixelSend]' _np_pixels
   waitMicros 300
@@ -333,7 +352,7 @@ to '_NeoPixel_update' {
 
 to clearNeoPixels {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '_NeoPixel_update'
 }
 
@@ -352,13 +371,13 @@ to neoPixelAttach number pinNumber optionalHasWhite {
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {
     _np_pixels = (newList number)
   }
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
 to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels color
+  atPut 'all' _np_pixels color
   '_NeoPixel_update'
 }
 
