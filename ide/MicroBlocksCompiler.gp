@@ -523,10 +523,6 @@ method initOpcodes SmallCompiler {
 			atPut opcodes (at words 1) (toInteger (at words 2))
 		}
 	}
-
-	// renamed opcodes:
-	atPut opcodes 'newArray' 60
-	atPut opcodes 'fillArray' 62
 }
 
 method initPrimsets SmallCompiler {

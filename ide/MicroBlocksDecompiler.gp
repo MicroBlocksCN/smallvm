@@ -227,7 +227,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		i += 2
 		if ('pushImmediate' == op) { // arg is a boolean or an integer object that fits in 8 bits
 			if (1 == (arg & 1)) {
-				arg = ((arg << 24) >> 25) // small integer (7 bits, signed)
+				arg = ((arg << 23) >> 24) // small integer (7 bits, signed); shifts do sign extension
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
@@ -331,7 +331,12 @@ method cmdArg MicroBlocksDecompiler cmd { return (at cmd 3) }
 method jumpTarget MicroBlocksDecompiler jmpCmd {
 	// Return the target index of the given jump command.
 
-	return (+ (at jmpCmd 1) (cmdArg this jmpCmd) 1)
+	extra = 0
+	i = (at jmpCmd 1)
+	if (and (i < (count opcodes)) ('placeholder' == (cmdOp this (at opcodes (i + 1))))) {
+		extra = 1
+	}
+	return (+ i extra (cmdArg this jmpCmd) 1)
 }
 
 method cmdIs MicroBlocksDecompiler cmd op arg {
@@ -460,7 +465,8 @@ method readLiteral MicroBlocksDecompiler chunkData startByte {
 	i = (startByte + 4)
 	end = (i + (4 * wordCount))
 	while (i < end) {
-		add stringBytes (at chunkData i)
+		ch = (at chunkData i)
+		if (ch != 0) { add stringBytes (at chunkData i) } // skip zero terminator byte(s)
 		i += 1
 	}
 	return (callWith 'string' (toArray stringBytes))
@@ -639,13 +645,12 @@ method findLoops MicroBlocksDecompiler {
 				loopStart = bodyStart
 				loopEnd = i
 				if ('for' == loopType) {
-					loopStart = (bodyStart - 2)
-					bodyStart = (opcodeAfter this bodyStart)
+					loopStart = (bodyStart - 3)
+					if ('placeholder' == (cmdOp this (at opcodes (bodyStart - 1)))) {
+						loopStart += -1 // empty body results in a jmp 0, using an extra word
+					}
 					bodyEnd = (opcodeBefore this (opcodeBefore this i))
 					loopEnd = (opcodeAfter this i)
-					if (notNil (at controlStructures (bodyStart - 1))) {
-						cmd2 = (at controlStructures (bodyStart - 1))
-					}
 				} ('repeat' == loopType) {
 					loopStart = (opcodeBefore this bodyStart)
 				}
@@ -918,7 +923,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('initLocals' == op) {
 		// skip
 	} ('pop' == op) {
-		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
+		add code (buildCmdOrReporter this 'pop' cmdArg false)
 	} ('returnResult' == op) {
 		add code (buildCmdOrReporter this 'return' 1 false)
 	} ('digitalSet' == op) {
