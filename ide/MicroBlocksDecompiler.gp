@@ -227,7 +227,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		i += 2
 		if ('pushImmediate' == op) { // arg is a boolean or an integer object that fits in 8 bits
 			if (1 == (arg & 1)) {
-				arg = ((arg << 24) >> 25) // small integer (7 bits, signed)
+				arg = ((arg << 23) >> 24) // small integer (7 bits, signed); shifts do sign extension
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
@@ -923,7 +923,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('initLocals' == op) {
 		// skip
 	} ('pop' == op) {
-		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
+		add code (buildCmdOrReporter this 'pop' cmdArg false)
 	} ('returnResult' == op) {
 		add code (buildCmdOrReporter this 'return' 1 false)
 	} ('digitalSet' == op) {
