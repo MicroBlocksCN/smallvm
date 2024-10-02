@@ -1217,7 +1217,7 @@ method versionReceived SmallRuntime versionString {
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
 		boardType = (extractBoardType this versionString)
-		checkVmVersion this
+		// checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
 		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
