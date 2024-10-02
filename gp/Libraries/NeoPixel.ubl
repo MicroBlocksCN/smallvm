@@ -1,6 +1,6 @@
 module NeoPixel Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -112,7 +112,7 @@ to '_NeoPixel_update' {
 
 to clearNeoPixels {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '_NeoPixel_update'
 }
 
@@ -131,13 +131,13 @@ to neoPixelAttach number pinNumber optionalHasWhite {
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {
     _np_pixels = (newList number)
   }
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
 to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels color
+  atPut 'all' _np_pixels color
   '_NeoPixel_update'
 }
 

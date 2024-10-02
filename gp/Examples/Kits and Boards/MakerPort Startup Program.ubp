@@ -534,13 +534,14 @@ to sr04_distanceOnePin pin {
 
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 5 
+version 1 7 
 tags ir infrared remote 
 description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
 Note: Transmitting IR does not work on ESP8266 boards.
 
-Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.'
+Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.
+'
 variables _ir_pin _ir_pulse_times _ir_last_code _ir_last_device _ir_transmit_pin 
 
   spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
@@ -620,10 +621,12 @@ to '_captureIRMessage' {
         _ir_pin = 2
       } ((boardType) == 'MakerPort') {
         _ir_pin = 18
+      } ((boardType) == 'MakerPort V3') {
+        _ir_pin = 22
       }
     }
   }
-  fillList _ir_pulse_times 0
+  atPut 'all' _ir_pulse_times 0
   local 'i' 1
   comment 'Wait for IR signal -- this is the start of a new message.
 Note: THe pin goes low when an IR signal is detected.'
@@ -1062,38 +1065,26 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 11 
+version 2 0 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
+choices makerport_loudnessPin 'mp3 player' 'analog pin (13)' 'extra pin (17)' 
 description 'Support for MakerPort (https://makerport.fun)'
-variables _makerport_microSDInserted _makerport_time_averages 
+variables _makerport_microSDInserted 
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
+  space
+  spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' true
   space
   spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs : volume _ (0-10)' 'num num num' 440 100 10
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
-  spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
-  space
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
+  spec 'r' 'makerport_loudness' 'loudness pin _' 'auto.makerport_loudnessPin' 'mp3 player'
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
-  space
-  spec 'r' 'makerport_loudness' 'loudness'
-  space
-  spec 'r' 'makerport_timeAveragedLevel' 'input level from _ with time sample _ ms' 'num num' 13 64
-  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'num num num' 13 64 0
-
-to '_makerport_compute_time_average' pin timeSample timeAverage {
-  local 'samples' 0
-  local 'average' 0
-  local 'endTime' ((millisOp) + timeSample)
-  repeatUntil ((millisOp) >= endTime) {
-    samples += 1
-    average += (absoluteValue ((analogReadOp pin) - timeAverage))
-  }
-  return (average / (maximum samples 1))
-}
+  spec 'r' '_makerport_compute_time_average' 'obsolete _compute time average _ _ _' 'num num num' 13 64 0
+  spec 'r' 'makerport_timeAveragedLevel' 'obsolete input level from _ with time sample _ ms' 'num num' 13 64
 
 to makerport_beep freq msecs optionalVolume {
   if (freq < 1) {return 0}
@@ -1112,24 +1103,31 @@ to makerport_beep freq msecs optionalVolume {
 
 to makerport_initialize {
   makerport_setAllLEDs false
-  attachIR 18
   mp3_initialize 'MakerPort' 20 21
-  if (makerport_mp3_hasCard) {
-    makerport_setAudioSource 'MP3'
+  if ((boardType) == 'MakerPort V3') {
+    attachIR 22
   } else {
-    makerport_setAudioSource 'Tone'
+    attachIR 18
+    if (makerport_mp3_hasCard) {
+      makerport_setAudioSource 'MP3'
+    } else {
+      makerport_setAudioSource 'Tone'
+    }
   }
 }
 
-to makerport_loudness {
+to makerport_loudness soundPin {
+  if ('mp3 player' == soundPin) {soundPin = 0}
+  if ('analog pin (13)' == soundPin) {soundPin = 13}
+  if ('extra pin (17)' == soundPin) {soundPin = 17}
   local 'low' 10000
   local 'high' -10000
-  for i 40 {
-    comment 'Sample microphone connected to analog port for ~20 msecs at ~2000 samples/sec.'
-    local 'sample' (analogReadOp 13)
+  for i 100 {
+    comment 'Sample sound for ~20 msecs at ~10000 samples/sec.'
+    local 'sample' (analogReadOp soundPin)
     low = (minimum low sample)
     high = (maximum high sample)
-    waitMicros 500
+    waitMicros 200
   }
   return (high - low)
 }
@@ -1145,8 +1143,12 @@ connected to the hardware serial pins.'
     comment 'return previously determined value'
     return _makerport_microSDInserted
   }
+  if ((boardType) == 'MakerPort V3') {
+    comment 'To Do: Figure out how to detect card on V3. Just return true for now.'
+    return (booleanConstant true)
+  }
   '[serial:open]' 9600
-  comment 'Send MP3 player initialization command'
+  comment 'Send MP3 player initialization command. Works only only V1 and V2 prototypes.'
   '[serial:write]' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt '0C') 0 0 0 254 239 (hexToInt 'EF'))
   local 'bytesRead' ('[data:newByteArray]' 0)
   repeat 60 {
@@ -1176,17 +1178,6 @@ to makerport_setAudioSource src {
   digitalWriteOp 19 (src != 'MP3')
 }
 
-to makerport_timeAveragedLevel pin timeSample {
-  if (_makerport_time_averages == 0) {_makerport_time_averages = (newList 32 0)}
-  pin = (maximum 1 (minimum pin 32))
-  local 'average' ('_makerport_compute_time_average' pin timeSample (at pin _makerport_time_averages))
-  if ((at pin _makerport_time_averages) == 0) {
-    atPut pin _makerport_time_averages average
-    average = 0
-  }
-  return average
-}
-
 to makerport_typeString s {
   for ch s {
     '[hid:pressKey]' ch -1
@@ -1196,7 +1187,7 @@ to makerport_typeString s {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 7 
+version 1 9 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -1211,13 +1202,17 @@ variables _np_pixels
   spec 'r' 'randomColor' 'random color'
   space
   spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  space
   spec ' ' 'NeoPixel_brighten' 'brighten NeoPixel _ by _' 'num num' 1 10
   spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
+  spec ' ' 'NeoPixel_shift_color' 'shift NeoPixel _ color by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_shift_all_colors' 'shift all NeoPixel colors by _' 'num' 10
   space
   spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
   spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
   spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
   spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' '_NeoPixel_shift_hue' '_NeoPixel_shift_hue of _ by _' 'auto auto' '10' '10'
 
 to NeoPixel_brighten i delta {
   '_NeoPixel_increaseRGB' i delta
@@ -1228,6 +1223,18 @@ to NeoPixel_brighten_all delta {
   for i (size _np_pixels) {
     '_NeoPixel_increaseRGB' i delta
   }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_all_colors delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_shift_hue' i delta
+  }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_color i delta {
+  '_NeoPixel_shift_hue' i delta
   '_NeoPixel_update'
 }
 
@@ -1248,19 +1255,11 @@ to '_NeoPixel_increaseRGB' i delta {
   if (or (i < 1) (i > (size _np_pixels))) {return}
   local 'rgb' (at i _np_pixels)
   if (rgb != 0) {
-    local 'r' ((rgb >> 16) & 255)
-    local 'g' ((rgb >> 8) & 255)
-    local 'b' (rgb & 255)
-    local 'brightness' (maximum r g b)
-    if (delta > 0) {
-      delta = (minimum delta (255 - brightness))
-    } else {
-      delta = (maximum delta (42 - brightness))
-    }
-    r = (maximum 0 (minimum (r + delta) 255))
-    g = (maximum 0 (minimum (g + delta) 255))
-    b = (maximum 0 (minimum (b + delta) 255))
-    atPut i _np_pixels (colorFromRGB r g b)
+    local 'h' ('[misc:hue]' rgb)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' (('[misc:brightness]' rgb) + delta)
+    v = (maximum 20 (minimum v 100))
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
   }
 }
 
@@ -1282,6 +1281,17 @@ to '_NeoPixel_rotate' left {
   }
 }
 
+to '_NeoPixel_shift_hue' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'h' ((('[misc:hue]' rgb) + delta) % 360)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' ('[misc:brightness]' rgb)
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
+  }
+}
+
 to '_NeoPixel_update' {
   '[display:neoPixelSend]' _np_pixels
   waitMicros 300
@@ -1289,7 +1299,7 @@ to '_NeoPixel_update' {
 
 to clearNeoPixels {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '_NeoPixel_update'
 }
 
@@ -1308,13 +1318,13 @@ to neoPixelAttach number pinNumber optionalHasWhite {
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {
     _np_pixels = (newList number)
   }
-  fillList _np_pixels 0
+  atPut 'all' _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
 to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
-  fillList _np_pixels color
+  atPut 'all' _np_pixels color
   '_NeoPixel_update'
 }
 
@@ -1384,9 +1394,10 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Servo Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags servo motor angle rotation position 
-description 'Control both positional (angle) and rotational servo motors.'
+description 'Control both positional (angle) and rotational servo motors.
+'
 variables _servoPin _servoPulseWidth 
 
   spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
@@ -1466,7 +1477,7 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (5 * speed))
+  local 'pulseWidth' (1500 - (10 * speed))
   if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }
@@ -1488,11 +1499,12 @@ to stopServo which {
 
 module Touch Input
 author MicroBlocks
-version 1 10 
-description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_reg _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
+version 1 11 
+description 'Support for one or two MPR121 12-channel i2c touch sensors.
+Detects MPR121 chips at I2C addresses 90 and, optionally, 92 to handle up to 24 touch pins.'
+variables _touch_pinCount _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
-  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
+  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-24' 1
   space
   spec 'r' 'touch_touch_event' 'pin touch event'
   spec 'r' 'touch_last_touched_pin' 'last touched pin'
@@ -1505,17 +1517,25 @@ variables _touch_reg _touch_state _touch_isTouched _touch_eventPending _touch_la
   spec ' ' '_touch_init' '_touch_init'
   spec ' ' '_touch_update' '_touch_update'
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
+  spec 'r' '_touch_readState' '_touch_readState _' 'num' 90
 
 to '_touch_init' {
-  if (_touch_reg == 0) {_touch_reg = 90}
   if (isType _touch_isTouched 'list') {
     comment 'Already initialized.'
     return 0
   }
-  _touch_isTouched = (newList 12 (booleanConstant false))
-  _touch_eventPending = (newList 12 (booleanConstant false))
+  _touch_pinCount = 0
+  if ((i2cGet 90 0) >= 0) {
+    _touch_pinCount = 12
+  }
+  if ((i2cGet 92 0) >= 0) {
+    _touch_pinCount = 24
+  }
+  _touch_isTouched = (newList _touch_pinCount (booleanConstant false))
+  _touch_eventPending = (newList _touch_pinCount (booleanConstant false))
   _touch_last_touched_pin = -1
   _touch_last_released_pin = -1
+  waitMillis 30
   comment 'Soft reset -- sets all registers to defaults'
   '_touch_setRegister' '0x80' '0x63'
   comment 'Set filter parameters'
@@ -1542,27 +1562,41 @@ to '_touch_init' {
     '_touch_setRegister' (reg - 1) touchThreshold
     '_touch_setRegister' reg releaseThreshold
   }
-  comment 'Start tracking all 12 inputs (proximity detection disabled)'
+  comment 'Start tracking all inputs (proximity detection disabled)'
   '_touch_setRegister' '0x5E' '0xCC'
 }
 
+to '_touch_readState' addr {
+  local 'lowByte' (i2cGet addr 0)
+  local 'highBits' ((i2cGet addr 1) & 15)
+  return ((highBits << 8) | lowByte)
+}
+
 to '_touch_setRegister' reg value {
-  if (isType reg 'string') {reg = (hexToInt reg)}
-  if (isType value 'string') {value = (hexToInt value)}
-  i2cSet _touch_reg reg value
+  local 'addr1' 90
+  local 'addr2' 92
+  if (isType reg 'string') {
+    reg = (hexToInt reg)
+  }
+  if (isType value 'string') {
+    value = (hexToInt value)
+  }
+  i2cSet addr1 reg value
+  if (_touch_pinCount > 12) {
+    i2cSet addr2 reg value
+  }
 }
 
 to '_touch_update' {
   '_touch_init'
-  '[sensors:i2cWrite]' _touch_reg ('[data:makeList]' 0)
-  local 'bytes' (newList 2)
-  '[sensors:i2cRead]' _touch_reg bytes
-  _touch_state = (((at 2 bytes) << 8) | (at 1 bytes))
-  if (_touch_state < 0) {
-    comment 'i2c read operation failed'
-    _touch_state = 0
+  _touch_state = 0
+  if (_touch_pinCount > 0) {
+    _touch_state = ('_touch_readState' 90)
   }
-  for i 12 {
+  if (_touch_pinCount > 12) {
+    _touch_state = ((('_touch_readState' 92) << 12) | _touch_state)
+  }
+  for i _touch_pinCount {
     local 'isTouchedNow' ((_touch_state & (1 << (i - 1))) != 0)
     if ((at i _touch_isTouched) != isTouchedNow) {
       atPut i _touch_isTouched isTouchedNow
@@ -1574,7 +1608,7 @@ to '_touch_update' {
 }
 
 to touch_isTouched pin {
-  if (or (pin < 1) (pin > 12)) {return (booleanConstant false)}
+  if (or (pin < 1) (pin > _touch_pinCount)) {return (booleanConstant false)}
   '_touch_update'
   return ((_touch_state & (1 << (pin - 1))) != 0)
 }
@@ -1593,7 +1627,7 @@ to touch_last_touched_pin {
 
 to touch_release_event {
   '_touch_update'
-  for i 12 {
+  for i _touch_pinCount {
     if (and (at i _touch_eventPending) ((_touch_state & (1 << (i - 1))) == 0)) {
       atPut i _touch_eventPending (booleanConstant false)
       _touch_last_released_pin = i
@@ -1607,7 +1641,7 @@ to touch_release_event {
 to touch_state_string {
   '_touch_update'
   local 'pin states' ('[data:makeList]')
-  for i 12 {
+  for i _touch_pinCount {
     if ((_touch_state & (1 << (i - 1))) != 0) {
       '[data:addLast]' '1' (v 'pin states')
     } else {
@@ -1619,7 +1653,7 @@ to touch_state_string {
 
 to touch_touch_event {
   '_touch_update'
-  for i 12 {
+  for i _touch_pinCount {
     if (and (at i _touch_eventPending) ((_touch_state & (1 << (i - 1))) != 0)) {
       atPut i _touch_eventPending (booleanConstant false)
       _touch_last_touched_pin = i
