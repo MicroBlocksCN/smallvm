@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: March 14 2023
+# Last updated: October 03 2024
 
 #########################
 # Blocks and categories #
@@ -602,7 +602,7 @@ Alt / ⌥
 
 Logo / ⌘
 
-AltGr 
+AltGr
 
 enter
 
@@ -768,7 +768,7 @@ display character _
 
 # Image names for the "display image" block
 
-heart 
+heart
 
 small heart
 
@@ -838,11 +838,11 @@ left triangle
 
 chess board
 
-diamond 
+diamond
 
 small diamond
 
-square 
+square
 
 small square
 
@@ -1098,15 +1098,15 @@ Chinese Cymbal
 
 Ride Bell
 
-Tambourine 
+Tambourine
 
 Splash Cymbal
 
-Cowbell 
+Cowbell
 
 Crash Cymbal 2
 
-Vibraslap 
+Vibraslap
 
 Ride Cymbal 2
 
@@ -1130,7 +1130,7 @@ Low Agogo
 
 Cabasa
 
-Maracas 
+Maracas
 
 Short Whistle
 
@@ -1140,7 +1140,7 @@ Short Guiro
 
 Long Guiro
 
-Claves 
+Claves
 
 Hi Wood Block
 
@@ -1156,7 +1156,7 @@ Open Triangle
 
 # General MIDI instrument categories
 
-piano 
+piano
 
 chromatic percussion
 
@@ -1174,7 +1174,7 @@ brass
 
 reed
 
-pipe 
+pipe
 
 synth lead
 
@@ -1186,7 +1186,7 @@ ethnic
 
 percussive
 
-SFX 
+SFX
 
 # General MIDI drum sets
 
@@ -1196,7 +1196,7 @@ room
 
 power
 
-electronic 
+electronic
 
 TR-808
 
@@ -1206,7 +1206,7 @@ brush
 
 orchestra
 
-SFX 
+SFX
 
 CM-64/CM-32L
 
@@ -1216,7 +1216,7 @@ bank select 1
 
 bank select 2
 
-modulation 
+modulation
 
 portamento time
 
@@ -1234,13 +1234,13 @@ sostenuto
 
 soft
 
-resonance 
+resonance
 
 release time
 
 attack time
 
-cutoff 
+cutoff
 
 decay time
 
@@ -1314,7 +1314,7 @@ locrian
 
 major
 
-minor 
+minor
 
 # chord types
 
@@ -1328,13 +1328,13 @@ major 7th
 
 minor 7th
 
-Maj7 
+Maj7
 
 # sound destinations for arpeggiate block
 
 MIDI channel
 
-tone pin 
+tone pin
 
 # library blocks
 
@@ -1641,7 +1641,7 @@ TFT touch pressure
 
 HTTP client
 
-_ data _ to http܃// _
+_ data _ to http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 
@@ -1775,6 +1775,86 @@ MiKe rotate lights by _
 MiKe digital D8 to _
 
 ####
+# Shield:bit
+
+s꞉b LEDs off
+
+s꞉b LEDs to _
+
+s꞉b LED _ (1-4) to _
+
+s꞉b audio output to shield _
+
+s꞉b stop _ motors
+
+s꞉b turn 180 servo S- _ (1-8) to angle _
+
+s꞉b turn 360 servo S- _ (1-8) _ at _ %
+
+s꞉b turn DC M- _ (1-4) motor _ at _ %
+
+s꞉b turn Stepper- _ (1-2) motor _ for _ _
+
+s꞉b set pin S- _ (1-8) to _ %
+
+DC/Steppers
+
+turns
+
+degrees
+
+####
+# micro:STEAMakers
+
+m꞉s display _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+m꞉s display _ _ colored
+
+m꞉s display image _ with color _
+
+m꞉s clear display
+
+m꞉s scale brightness to _ %
+
+m꞉s plot x _ y _ with _
+
+m꞉s unplot x _ y _
+
+m꞉s display character _ with _
+
+m꞉s scroll text _ with color _ : pausing _ ms
+
+m꞉s stop scrolling
+
+start micro꞉STEAMakers audio
+
+m꞉s button _ ?
+
+m꞉s touching ?
+
+m꞉s light %
+
+m꞉s sound %
+
+m꞉s temperature ºC
+
+m꞉s humidity %
+
+m꞉s inclination towards _ º
+
+m꞉s energy _
+
+m꞉s _ energy meter
+
+m꞉s energy consumption (µWh)
+
+start
+
+reset
+
+down
+
+####
 # DrawBot Library
 # A CoreXY plotter library that supports turtle geometry
 
@@ -1888,6 +1968,92 @@ at _ % speed
 3dBot obstacle < _ cm?
 
 3dBot line on _ ?
+
+####
+# ESP32 Smart Farm
+
+voltage (V)
+
+current (mA)
+
+power (mW)
+
+open
+
+close
+
+on
+
+off
+
+Farm fan _
+
+start
+
+Farm display _ in line _
+
+Farm _ the trapdoor
+
+Farm play _ octave _ for _ ms
+
+Farm set light _
+
+Farm water pump _
+
+Farm temperature ºC
+
+Farm humidity
+
+Farm movement detected?
+
+Farm button pressed?
+
+Farm distance (cm)
+
+Farm light level
+
+Farm water level
+
+Farm soil moisture
+
+Farm steam level
+
+Farm electric consumption _
+
+####
+# ESP32 Smart Home
+
+Home fan _
+
+Home display _ in line _
+
+Home _ the window
+
+Home activate the door
+
+Home play _ octave _ for _ ms
+
+Home set light _
+
+Home temperature ºC
+
+Home humidity
+
+Home steam level
+
+Home read RFID card
+
+Home movement detected?
+
+Home _ button pressed?
+
+Home gas detected?
+
+Home set NeoPixels _ _ _ _
+
+Home clear leds
+
+Home electric consumption _
 
 ####
 # MQTT
@@ -2131,6 +2297,8 @@ Octo last beam
 Octo set group _ (0-99)
 
 Octo receive beam
+
+Octo stop
 
 ##################
 # MicroBlocks UI #
