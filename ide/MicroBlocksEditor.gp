@@ -1338,7 +1338,11 @@ method languageMenu MicroBlocksEditor {
 	  fn = (withoutExtension fn)
 	  if (beginsWith fn 'translations/') {
 		language = (withoutExtension (substring fn 14))
-		addItem menu language (action 'setLanguage' this language)
+		if (language == (language (authoringSpecs))) {
+		  addItem menu language (action 'setLanguage' this language) nil (newCheckmark this true)
+		} else {
+		  addItem menu language (action 'setLanguage' this language)
+		}
 	  }
 	}
   }

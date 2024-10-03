@@ -145,6 +145,7 @@ method darkModeChanged MicroBlocksScripter {
 }
 
 method languageChanged MicroBlocksScripter {
+  changed categorySelector
   updateLibraryHeader this
   updateLibraryButton this
 
