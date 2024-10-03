@@ -1787,7 +1787,7 @@ s꞉b LED _ (1-4) to _
 
 s꞉b audio output to shield _
 
-s꞉b stop _ motors
+s꞉b stop _
 
 s꞉b turn 180 servo S- _ (1-8) to angle _
 
@@ -1799,7 +1799,11 @@ s꞉b turn Stepper- _ (1-2) motor _ for _ _
 
 s꞉b set pin S- _ (1-8) to _ %
 
-DC/Steppers
+sb_DC/Stepper_motors
+
+sb_servomotors
+
+sb_all_motors
 
 turns
 

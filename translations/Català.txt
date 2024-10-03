@@ -2574,8 +2574,8 @@ s꞉b LED _ (1-4) a _
 s꞉b audio output to shield _
 s꞉b sortida d'audio per la shield:bit _
 
-s꞉b stop _ motors
-s꞉b atura els _ motors
+s꞉b stop _
+s꞉b atura _
 
 s꞉b turn 180 servo S- _ (1-8) to angle _
 s꞉b gira el servo 180 S- _ (1-8) a l'angle _
@@ -2592,8 +2592,14 @@ s꞉b gira el motor PaP- _ (1-2) _ per _ _
 s꞉b set pin S- _ (1-8) to _ %
 s꞉b posa el pin S- _ (1-8) a _ %
 
-DC/Steppers
-CC/PasP
+sb_DC/Stepper_motors
+motors pas a pas/CC
+
+sb_servomotors
+servomotors
+
+sb_all_motors
+tots els motors
 
 turns
 voltes
