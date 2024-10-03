@@ -139,6 +139,8 @@ _ is a _
 
 convert _ to _
 
+if _ then _ else _
+
 boolean
 
 number

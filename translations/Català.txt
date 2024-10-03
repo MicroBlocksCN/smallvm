@@ -206,6 +206,9 @@ _ és un _
 convert _ to _
 _ convertit en _
 
+if _ then _ else _
+si _ llavors _ si no _
+
 boolean
 booleà
 
