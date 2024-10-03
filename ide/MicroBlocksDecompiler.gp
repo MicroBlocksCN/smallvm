@@ -31,7 +31,7 @@ to decompileBytecodes chunkID chunkType chunkData {
 }
 
 method addNamesFromRuntime MicroBlocksDecompiler {
-	// For testing. Add var and fuction names from current project.
+	// For testing. Add var and function names from current project.
 
 	initialize this
 
@@ -238,7 +238,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		} ('pushLargeInteger' == op) { // arg is 24 bit integer object
 			arg = (arg | ((at chunkData i) << 8))
 			arg = (arg | ((at chunkData (i + 1)) << 16))
-			arg = ((arg << 8) >> 9) // convert integer object to integer with sign extenion
+			arg = ((arg << 7) >> 8) // convert integer object to integer with sign extension
 			extraWords += 1
 		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
 			arg = (at chunkData i)
@@ -683,10 +683,11 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 		}
 	}
 	if ('jmpFalse' == op) {
-		loopStart = (i + (cmdArg this cmd))
-		if (and (1 == loopStart)
-				('jmp' == (cmdOp this (last seq)))
-				(2 == (jumpTarget this (last seq)))) {
+		loopStart = (jumpTarget this cmd)
+		lastOp = (at opcodes (opcodeBefore this (count seq)))
+		if (and (2 == loopStart)
+				('jmp' == (cmdOp this lastOp))
+				(2 == (jumpTarget this lastOp))) {
 					return 'whenCondition'
 		}
 		return 'repeatUntil'
