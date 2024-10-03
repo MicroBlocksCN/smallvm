@@ -2604,11 +2604,11 @@ grados
 ####
 # micro:STEAMakers
 
-m꞉s display _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-m꞉s pantalla _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+m꞉s display #BR# _ #BR# with color _
+m꞉s pantalla #BR# _ #BR# amb el color _
 
-m꞉s display _ _ colored
-m꞉s pantalla _ _ coloreado
+m꞉s display image _ with color _
+m꞉s pantalla _ con el color _
 
 m꞉s display image _ with color _
 m꞉s muestra la imagen _ con el color _

@@ -1808,9 +1808,9 @@ degrees
 ####
 # micro:STEAMakers
 
-m꞉s display _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
 
-m꞉s display _ _ colored
+m꞉s display #BR# _ #BR# with color _
 
 m꞉s display image _ with color _
 

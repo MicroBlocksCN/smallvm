@@ -2604,11 +2604,11 @@ graus
 ####
 # micro:STEAMakers
 
-m꞉s display _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-m꞉s mostra _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+m꞉s mostra #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
 
-m꞉s display _ _ colored
-m꞉s mostra _ _ acolorit
+m꞉s display #BR# _ #BR# with color _
+m꞉s mostra #BR# _ #BR# amb el color _
 
 m꞉s display image _ with color _
 m꞉s mostra la imatge _ amb el color _
