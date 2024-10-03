@@ -279,9 +279,14 @@ method appendCallsForFunction SmallRuntime funcName result indent globalVars all
 // Decompiler tests
 
 method testDecompiler SmallRuntime aBlock {
-	topBlock = (topBlock aBlock)
-	gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
-	showCodeInHand this gpCode
+    if (isClass aBlock 'BlockDefinition') {
+        funcName = (functionNamed (project scripter) (op aBlock))
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this funcName) (chunkBytesFor this funcName))
+    } else {
+        topBlock = (topBlock aBlock)
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
+    }
+     showCodeInHand this gpCode
 }
 
 method showCodeInHand SmallRuntime gpCode {
@@ -298,9 +303,9 @@ method showCodeInHand SmallRuntime gpCode {
 }
 
 method compileAndDecompile SmallRuntime aBlockOrFunction {
-	if (isClass aBlockOrFunction 'Function') {
-		chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
-	}
+    if (isClass aBlockOrFunction 'Function') {
+        chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
+    }
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
 	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
