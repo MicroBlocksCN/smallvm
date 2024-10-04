@@ -599,14 +599,16 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 		} (isClass aBlockOrFunction 'Function') {
-			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
-				if (isEmpty (argNames func)) {
-					// Mark functions without arguments so they can be invoked
-					// by broadcasting the function name.
-					add result (array 'pushLiteral' (functionName func))
-					add result (array 'placeholder' 0)
-					add result (array 'recvBroadcast' 1)
+			if (isEmpty (argNames func)) {
+				// Mark functions without arguments so they can be invoked
+				// by broadcasting the function name.
+				add result (array 'pushLiteral' (functionName func))
+				add result (array 'placeholder' 0)
+				add result (array 'recvBroadcast' 1)
+				if ('noop' != (primName cmdOrReporter)) {
+					addAll result (instructionsForCmdList this cmdOrReporter)
 				}
+			} else {
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
 			if ('returnResult' != (first (last result))) {
