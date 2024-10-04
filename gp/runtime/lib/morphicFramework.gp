@@ -677,6 +677,10 @@ method processEvent Keyboard evt {
 					startProcesses (selection (scripter pe))
 				}
 			}
+		} (or (46 == key) (8 == key)) { // delete and backspace
+			if (notNil (selection (scripter pe))) {
+				deleteBlocks (selection (scripter pe))
+			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-O or ctrl-O - open file dialog

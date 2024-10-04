@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: March 14 2023
+# Last updated: October 03 2024
 
 #########################
 # Blocks and categories #
@@ -205,6 +205,9 @@ _ és un _
 
 convert _ to _
 _ convertit en _
+
+if _ then _ else _
+si _ llavors _ si no _
 
 boolean
 booleà
@@ -853,8 +856,11 @@ envia al dispositiu IR _ la comanda _
 Keyboard and Mouse
 Teclat i Ratolí
 
-press key _ : while holding _
-prem la tecla _ : mantenint _ premut
+press key _
+prem tecla _
+
+while holding _
+mantenint _ premut
 
 hold key _
 mantingues la tecla _ premuda
@@ -929,7 +935,7 @@ _ mouse click
 clic _ del ratolí
 
 left
-esquerre
+esquerra
 
 right
 dret
@@ -1230,6 +1236,7 @@ quadrat petit
 
 scissors
 tisores
+
 
 ####
 # OLED Graphics library
@@ -1821,6 +1828,9 @@ efecte 2
 
 play MIDI note _ for _ ms on channel _ volume _
 toca nota MIDI _ durant _ ms al canal _ volum _
+
+stop all notes on channel _
+atura totes les notes al canal _
 
 set MIDI note _ to _ on channel _ volume _
 posa la nota MIDI _ a _ al canal _ volum _
@@ -2511,7 +2521,7 @@ MiKe digital D8 sensor
 MiKe sensor digital D8
 
 MiKe stop motors
-Mike para els motors
+Mike atura els motors
 
 MiKe Robot go _ at _ %
 MiKe Robot vés a _ a _ %
@@ -2548,6 +2558,129 @@ MiKe gira les llums en _
 
 MiKe digital D8 to _
 Mike fixa l'actuador D8 a _
+
+####
+# Shield:bit
+
+s꞉b LEDs off
+s꞉b apaga els LED
+
+s꞉b LEDs to _
+s꞉b LEDs a _
+
+s꞉b LED _ (1-4) to _
+s꞉b LED _ (1-4) a _
+
+s꞉b audio output to shield _
+s꞉b sortida d'audio per la shield:bit _
+
+s꞉b stop _
+s꞉b atura _
+
+s꞉b turn 180 servo S- _ (1-8) to angle _
+s꞉b gira el servo 180 S- _ (1-8) a l'angle _
+
+s꞉b turn 360 servo S- _ (1-8) _ at _ %
+s꞉b gira el servo 360 S- _ (1-8) _ a _ %
+
+s꞉b turn DC M- _ (1-4) motor _ at _ %
+s꞉b gira el motor CC M- _ (1-4) _ a _ %
+
+s꞉b turn Stepper- _ (1-2) motor _ for _ _
+s꞉b gira el motor PaP- _ (1-2) _ per _ _
+
+s꞉b set pin S- _ (1-8) to _ %
+s꞉b posa el pin S- _ (1-8) a _ %
+
+sb_DC/Stepper_motors
+motors pas a pas/CC
+
+sb_servomotors
+servomotors
+
+sb_all_motors
+tots els motors
+
+turns
+voltes
+
+degrees
+graus
+
+####
+# micro:STEAMakers
+
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+m꞉s mostra #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+
+m꞉s display #BR# _ #BR# with color _
+m꞉s mostra #BR# _ #BR# amb el color _
+
+m꞉s display image _ with color _
+m꞉s mostra la imatge _ amb el color _
+
+m꞉s clear display
+m꞉s esborra la pantalla
+
+m꞉s scale brightness to _ %
+m꞉s escala la brillantor al _ %
+
+m꞉s plot x _ y _ with _
+m꞉s encén x _ y _ amb _
+
+m꞉s unplot x _ y _
+m꞉s apaga x _ y _
+
+m꞉s display character _ with _
+m꞉s mostra el caràcter _ amb _
+
+m꞉s scroll text _ with color _ : pausing _ ms
+m꞉s anima el text _ amb el color _ : amb pauses de _ ms
+
+m꞉s stop scrolling
+m꞉s atura l'animació
+
+start micro꞉STEAMakers audio
+inicia l'audio amb m꞉STEAMakers
+
+m꞉s button _ ?
+m꞉s botó _ ?
+
+m꞉s touching ?
+m꞉s tàctil ?
+
+m꞉s light %
+m꞉s llum %
+
+m꞉s sound %
+m꞉s so %
+
+m꞉s temperature ºC
+m꞉s temperatura ºC
+
+m꞉s humidity %
+m꞉s humitat %
+
+m꞉s inclination towards _ º
+m꞉s inclinació cap a _ º
+
+m꞉s energy _
+m꞉s energia _
+
+m꞉s _ energy meter
+m꞉s _ la mesura d'energia
+
+m꞉s energy consumption (µWh)
+m꞉s consum energètic (µWh)
+
+start
+encén
+
+reset
+reseteja
+
+down
+baix
 
 ####
 # DrawBot Library
@@ -3170,17 +3303,24 @@ Octopus OLED dibbuixa un cercle x _ y _ radi _
 Octopus OLED fill circle x _ y _ radius _
 Octopus OLED dibbuixa un cercle sòlid x _ y _ radi _
 
+
 ####
 # OctoStudio
-
-Octo start
-inicia Octo
 
 Octo beam to phones _
 envia _ a telèfons via Octo
 
 duration _ ms
 durada _ ms
+
+Octo beam received?
+--MISSING--
+
+Octo last beam
+--MISSING--
+
+Octo set group _ (0-99)
+--MISSING--
 
 Octo receive beam
 rep de telèfons via Octo
@@ -4284,7 +4424,5 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
-
-
 
 
