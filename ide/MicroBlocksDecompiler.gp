@@ -610,32 +610,31 @@ method findLoops MicroBlocksDecompiler {
 	i = 1
 	while (i <= (count opcodes)) {
 		cmd = (at opcodes i)
+// print 'cmd:' cmd
 		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp' 'waitUntil')
 				((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
+			loopEnd = i
 			if ('ignore' == loopType) {
 				loopRec = nil
-				loopEnd = i
 			} ('whenCondition' == loopType) {
 				loopStart = 2
-				loopEnd = (count opcodes)
 				conditionStart = 4
 				conditionEnd = (opcodeBefore this i)
 				bodyStart = (opcodeAfter this i)
+				loopEnd = (opcodeBefore this (count opcodes))
 				bodyEnd = (opcodeBefore this loopEnd)
-				loopRec = (array 'whenCondition' (count opcodes) conditionStart conditionEnd bodyStart bodyEnd)
+				loopRec = (array 'whenCondition' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('repeatUntil' == loopType) {
 				bodyStart = (jumpTarget this cmd)
 				loopStart = (opcodeBefore this bodyStart)
 				conditionStart = (jumpTarget this (at opcodes loopStart))
 				conditionEnd = (opcodeBefore this i)
 				bodyEnd = (opcodeBefore this conditionStart)
-				loopEnd = i
 				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('waitUntil' == loopType) {
 				loopStart = (jumpTarget this cmd)
-				loopEnd = i
 				conditionStart = loopStart
 				conditionEnd = (opcodeBefore this i)
 				loopRec = (array 'waitUntil' loopEnd conditionStart conditionEnd)
@@ -643,7 +642,6 @@ method findLoops MicroBlocksDecompiler {
 				bodyStart = (jumpTarget this cmd)
 				bodyEnd = (opcodeBefore this i)
 				loopStart = bodyStart
-				loopEnd = i
 				if ('for' == loopType) {
 					loopStart = (bodyStart - 3)
 					if ('placeholder' == (cmdOp this (at opcodes (bodyStart - 1)))) {
@@ -659,13 +657,34 @@ method findLoops MicroBlocksDecompiler {
 					forIndexVar = (cmdArg this (at opcodes (i - 1)))
 					loopRec = (copyWith loopRec forIndexVar)
 				}
+				if ('forever' == loopType) {
+					if (and
+						(bodyStart == 2)
+						(i == (opcodeBefore this (count opcodes)))
+						(isInwhenCondition this)) {
+							print 'forever inside when condition; ignoring'
+							loopRec = nil
+					}
+				}
 			}
 			if (notNil loopRec) { recordControlStructure this loopStart loopRec }
-			i = (loopEnd + 1)
-		} else {
-			i += 1
 		}
+		i += 1
 	}
+}
+
+method isInwhenCondition MicroBlocksDecompiler {
+	// Return true if the current script is in a 'whenCondition' hat.
+
+	rec = (at controlStructures 2)
+	if (isNil rec) {
+		return false
+	} ('whenCondition' == (first rec)) {
+		return true
+	} ('multiple' == (first rec)) {
+		if ('whenCondition' == (first (at rec 3))) { return true }
+	}
+	return false
 }
 
 method loopTypeAt MicroBlocksDecompiler i seq {
