@@ -804,13 +804,13 @@ method codeForSequence MicroBlocksDecompiler start end {
 			argCount = (cmdArg & 255)
 			chunkID = ((cmdArg >> 8) & 255)
 			fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			if isReporter {
 				add stack (buildCmdOrReporter this fName argCount true)
-				i += 1
+				i += 2
 			} else {
 				add code (buildCmdOrReporter this fName argCount false)
-				i += 2
+				i += 3
 			}
 		} ('multiple' == op) {
 			// Remove and process the outer-most control structure (the last one in the list).
@@ -837,7 +837,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 			}
 			i = next
 		} (isOneOf op 'callCustomCommand' 'callCustomReporter') {
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			decodeCmd this i
 			if isReporter {
 				i += 1
