@@ -662,7 +662,7 @@ method findLoops MicroBlocksDecompiler {
 						(bodyStart == 2)
 						(i == (opcodeBefore this (count opcodes)))
 						(isInwhenCondition this)) {
-							print 'forever inside when condition; ignoring'
+							// final jmp of a when hat, not a forever loop; ignore it
 							loopRec = nil
 					}
 				}
@@ -958,7 +958,10 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('if-else' == op) {
 		ifPart = (codeForSequence this (at cmd 3) (at cmd 4))
 		elsePart = (codeForSequence this (at cmd 5) (at cmd 6))
-		if (and (notNil elsePart) ('if' == (primName elsePart))) {
+		if (and
+			(notNil elsePart)
+			('if' == (primName elsePart))
+			(isNil (nextBlock elsePart))) {
 			// combine nested if's
 			argList = (list 'if' (removeLast stack) ifPart)
 			addAll argList (argList elsePart)
