@@ -330,6 +330,8 @@ method decompileAll SmallRuntime {
 }
 
 method decompileAllExamples SmallRuntime {
+    // decompileAllExamples (smallRuntime)
+
 	for fn (listEmbeddedFiles) {
 		if (beginsWith fn 'Examples') {
 			print fn
@@ -339,7 +341,22 @@ method decompileAllExamples SmallRuntime {
 	}
 }
 
+method decompileAllLibraries SmallRuntime {
+    // decompileAllLibraries (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Libraries') {
+			print fn
+			clearProject (findMicroBlocksEditor)
+			importLibraryFromFile (scripter (findMicroBlocksEditor)) (join '//' fn)
+			decompileAllInProject this
+		}
+	}
+}
+
 method decompileAllInProject SmallRuntime {
+    // decompileAllInProject (smallRuntime)
+
 	assignFunctionIDs this
 	for aFunction (allFunctions (project scripter)) {
 		compileAndDecompile this aFunction
