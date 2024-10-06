@@ -1254,7 +1254,7 @@ method clearBoardIfConnected SmallRuntime doReset {
 	if (notNil port) {
 		sendStopAll this
 		if doReset { softReset this }
-		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
+		sendMsgSync this 'deleteAllCodeMsg' 1 // delete all code from board
 	}
 	clearVariableNames this
 	clearRunningHighlights this
@@ -1268,7 +1268,7 @@ method sendStopAll SmallRuntime {
 
 method sendStartAll SmallRuntime {
 	step scripter // save script changes if needed
-	sendMsg this 'startAllMsg'
+	sendMsg this 'startAllMsg' 1
 }
 
 // Saving and verifying
@@ -1729,7 +1729,7 @@ method collectCRCsBulk SmallRuntime {
 	crcDict = nil
 
 	// request CRCs for all chunks on board
-	sendMsgSync this 'getAllCRCsMsg'
+	sendMsgSync this 'getAllCRCsMsg' 1
 
 	// wait until crcDict is filled in or timeout
 	startT = (msecsSinceStart)
@@ -1844,7 +1844,7 @@ method variablesChanged SmallRuntime {
 }
 
 method clearVariableNames SmallRuntime {
-	if (notNil port) { sendMsgSync this 'clearVarsMsg' }
+	if (notNil port) { sendMsgSync this 'clearVarsMsg' 1 }
 	oldVarNames = nil
 }
 
