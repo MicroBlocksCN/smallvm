@@ -315,8 +315,8 @@ method compileAndDecompile SmallRuntime aBlockOrFunction {
 	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
 	bytecodes2 = (chunkBytesFor this gpCode)
 	if (bytecodes1 == bytecodes2) {
-		if ((count bytecodes1) > 750) {
-			print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+		if ((count bytecodes1) > 900) {
+			print 'large chunkType:' chunkType 'bytes:' (count bytecodes1)
 		}
 	} else {
 		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
