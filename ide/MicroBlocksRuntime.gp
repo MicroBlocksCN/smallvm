@@ -29,6 +29,8 @@ method initialize SmallRuntime aScripter {
 }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
+	step scripter // save script changes if needed
+
 	if (isNil showBytes) { showBytes = false }
 	if showBytes {
 		bytes = (chunkBytesFor this aBlock)
@@ -40,13 +42,11 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
-	step scripter // save script changes if needed
+    if (or (isNil vmVersion) (vmVersion < 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
-
-        if (or (isNil vmVersion) (vmVersion < 300)) {
-            return (vmIncomptabibleWithIDE this)
-        }
 		saveChunk this aBlock
 	}
 	runChunk this (lookupChunkID this aBlock)
@@ -1268,6 +1268,13 @@ method sendStopAll SmallRuntime {
 	clearRunningHighlights this
 }
 
+method startAll SmallRuntime {
+    if (or (isNil vmVersion) (vmVersion < 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
+    sendStartAll this
+}
+
 method sendStartAll SmallRuntime {
 	step scripter // save script changes if needed
 	sendMsg this 'startAllMsg' 1
@@ -1331,9 +1338,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 
 	if (isNil checkCRCs) { checkCRCs = true }
 	if (not (connectedToBoard this)) { return }
-    if (or (isNil vmVersion) (vmVersion < 300)) {
-        return (vmIncomptabibleWithIDE this)
-    }
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 
 	setCursor 'wait'
 
@@ -1791,9 +1796,7 @@ method saveVariableNames SmallRuntime {
 }
 
 method runChunk SmallRuntime chunkID {
-    if (or (isNil vmVersion) (vmVersion < 300)) {
-        return (vmIncomptabibleWithIDE this)
-    }
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 	sendMsg this 'startChunkMsg' chunkID
 }
 
