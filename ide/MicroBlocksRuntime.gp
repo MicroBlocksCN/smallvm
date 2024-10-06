@@ -1141,6 +1141,13 @@ method checkVmVersion SmallRuntime {
 	}
 }
 
+method vmIncomptabibleWithIDE SmallRuntime {
+    msg = (join
+        (localized 'The MicroBlocks firmware on your board is not compatible with this IDE.')
+        (localized 'Please update the firmware on the board.'))
+     inform (global 'page') msg
+}
+
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
@@ -1298,6 +1305,9 @@ method saveAllChunks SmallRuntime checkCRCs {
 
 	if (isNil checkCRCs) { checkCRCs = true }
 	if (not (connectedToBoard this)) { return }
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
 
 	setCursor 'wait'
 
@@ -1748,6 +1758,9 @@ method saveVariableNames SmallRuntime {
 }
 
 method runChunk SmallRuntime chunkID {
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
 	sendMsg this 'startChunkMsg' chunkID
 }
 
