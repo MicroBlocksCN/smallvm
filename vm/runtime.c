@@ -1106,6 +1106,7 @@ static void processShortMessage() {
 		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case startAllMsg:
+		if (0 != chunkIndex) break; // ignore msg from later VM
 		startAll();
 		break;
 	case stopAllMsg:
@@ -1120,6 +1121,7 @@ static void processShortMessage() {
 		sendVarNames();
 		break;
 	case clearVarsMsg:
+		if (0 != chunkIndex) break; // ignore msg from later VM
 		clearAllVariables();
 		memClear();
 		break;
@@ -1127,6 +1129,7 @@ static void processShortMessage() {
 		sendChunkCRC(chunkIndex);
 		break;
 	case getAllCRCsMsg:
+		if (0 != chunkIndex) break; // ignore msg from later VM
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCRCs();
 		break;
@@ -1134,12 +1137,14 @@ static void processShortMessage() {
 		sendVersionString();
 		break;
 	case getAllCodeMsg:
+		if (0 != chunkIndex) break; // ignore msg from later VM
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		if (chunkIndex == 1) { // requested by 16-bit IDE
 			sendAllCode();
 		}
 		break;
 	case deleteAllCodeMsg:
+		if (0 != chunkIndex) break; // ignore msg from later VM
 		deleteAllChunks();
 		memClear();
 		primMBDisplayOff(0, NULL);
