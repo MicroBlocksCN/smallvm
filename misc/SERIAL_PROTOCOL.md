@@ -209,6 +209,8 @@ The body of the message is the broadcast string.
 
 ### Chunk Attribute (OpCode: 0x1C, long message)
 
+[Deprecated; support has been removed.]
+
 The body of the message is an attribute for chunk with the given ID.
 The first byte of the body is the attribute type, current:
 
