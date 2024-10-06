@@ -43,6 +43,10 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 	step scripter // save script changes if needed
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
+
+        if (or (isNil vmVersion) (vmVersion < 300)) {
+            return (vmIncomptabibleWithIDE this)
+        }
 		saveChunk this aBlock
 	}
 	runChunk this (lookupChunkID this aBlock)
@@ -1166,9 +1170,7 @@ method checkVmVersion SmallRuntime {
 }
 
 method vmIncomptabibleWithIDE SmallRuntime {
-    msg = (join
-        (localized 'The MicroBlocks firmware on your board is not compatible with this IDE.')
-        (localized 'Please update the firmware on the board.'))
+    msg = (localized 'The firmware on the board is not compatible with this version of MicroBlocks.')
      inform (global 'page') msg
 }
 
