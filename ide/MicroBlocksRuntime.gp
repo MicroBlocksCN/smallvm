@@ -42,7 +42,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
-    if (or (isNil vmVersion) (vmVersion >= 300)) {
+    if (or (isNil vmVersion) (vmVersion < 300)) {
         return (vmIncomptabibleWithIDE this)
     }
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
@@ -283,9 +283,14 @@ method appendCallsForFunction SmallRuntime funcName result indent globalVars all
 // Decompiler tests
 
 method testDecompiler SmallRuntime aBlock {
-	topBlock = (topBlock aBlock)
-	gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
-	showCodeInHand this gpCode
+    if (isClass aBlock 'BlockDefinition') {
+        funcName = (functionNamed (project scripter) (op aBlock))
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this funcName) (chunkBytesFor this funcName))
+    } else {
+        topBlock = (topBlock aBlock)
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
+    }
+     showCodeInHand this gpCode
 }
 
 method showCodeInHand SmallRuntime gpCode {
@@ -302,16 +307,16 @@ method showCodeInHand SmallRuntime gpCode {
 }
 
 method compileAndDecompile SmallRuntime aBlockOrFunction {
-	if (isClass aBlockOrFunction 'Function') {
-		chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
-	}
+    if (isClass aBlockOrFunction 'Function') {
+        chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
+    }
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
 	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
 	bytecodes2 = (chunkBytesFor this gpCode)
 	if (bytecodes1 == bytecodes2) {
-		if ((count bytecodes1) > 750) {
-			print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+		if ((count bytecodes1) > 900) {
+			print 'large chunkType:' chunkType 'bytes:' (count bytecodes1)
 		}
 	} else {
 		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
@@ -325,6 +330,8 @@ method decompileAll SmallRuntime {
 }
 
 method decompileAllExamples SmallRuntime {
+    // decompileAllExamples (smallRuntime)
+
 	for fn (listEmbeddedFiles) {
 		if (beginsWith fn 'Examples') {
 			print fn
@@ -334,7 +341,22 @@ method decompileAllExamples SmallRuntime {
 	}
 }
 
+method decompileAllLibraries SmallRuntime {
+    // decompileAllLibraries (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Libraries') {
+			print fn
+			clearProject (findMicroBlocksEditor)
+			importLibraryFromFile (scripter (findMicroBlocksEditor)) (join '//' fn)
+			decompileAllInProject this
+		}
+	}
+}
+
 method decompileAllInProject SmallRuntime {
+    // decompileAllInProject (smallRuntime)
+
 	assignFunctionIDs this
 	for aFunction (allFunctions (project scripter)) {
 		compileAndDecompile this aFunction
@@ -1252,7 +1274,7 @@ method clearBoardIfConnected SmallRuntime doReset {
 	if (notNil port) {
 		sendStopAll this
 		if doReset { softReset this }
-		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
+		sendMsgSync this 'deleteAllCodeMsg' 1 // delete all code from board
 	}
 	clearVariableNames this
 	clearRunningHighlights this
@@ -1265,7 +1287,7 @@ method sendStopAll SmallRuntime {
 }
 
 method startAll SmallRuntime {
-    if (or (isNil vmVersion) (vmVersion >= 300)) {
+    if (or (isNil vmVersion) (vmVersion < 300)) {
         return (vmIncomptabibleWithIDE this)
     }
     sendStartAll this
@@ -1273,7 +1295,7 @@ method startAll SmallRuntime {
 
 method sendStartAll SmallRuntime {
 	step scripter // save script changes if needed
-	sendMsg this 'startAllMsg'
+	sendMsg this 'startAllMsg' 1
 }
 
 // Saving and verifying
@@ -1334,7 +1356,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 
 	if (isNil checkCRCs) { checkCRCs = true }
 	if (not (connectedToBoard this)) { return }
-    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 
 	setCursor 'wait'
 
@@ -1732,7 +1754,7 @@ method collectCRCsBulk SmallRuntime {
 	crcDict = nil
 
 	// request CRCs for all chunks on board
-	sendMsgSync this 'getAllCRCsMsg'
+	sendMsgSync this 'getAllCRCsMsg' 1
 
 	// wait until crcDict is filled in or timeout
 	startT = (msecsSinceStart)
@@ -1792,7 +1814,7 @@ method saveVariableNames SmallRuntime {
 }
 
 method runChunk SmallRuntime chunkID {
-    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 	sendMsg this 'startChunkMsg' chunkID
 }
 
@@ -1845,7 +1867,7 @@ method variablesChanged SmallRuntime {
 }
 
 method clearVariableNames SmallRuntime {
-	if (notNil port) { sendMsgSync this 'clearVarsMsg' }
+	if (notNil port) { sendMsgSync this 'clearVarsMsg' 1 }
 	oldVarNames = nil
 }
 

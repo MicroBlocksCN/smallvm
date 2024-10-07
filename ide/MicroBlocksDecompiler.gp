@@ -31,7 +31,7 @@ to decompileBytecodes chunkID chunkType chunkData {
 }
 
 method addNamesFromRuntime MicroBlocksDecompiler {
-	// For testing. Add var and fuction names from current project.
+	// For testing. Add var and function names from current project.
 
 	initialize this
 
@@ -238,7 +238,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		} ('pushLargeInteger' == op) { // arg is 24 bit integer object
 			arg = (arg | ((at chunkData i) << 8))
 			arg = (arg | ((at chunkData (i + 1)) << 16))
-			arg = ((arg << 8) >> 9) // convert integer object to integer with sign extenion
+			arg = ((arg << 7) >> 8) // convert integer object to integer with sign extension
 			extraWords += 1
 		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
 			arg = (at chunkData i)
@@ -610,32 +610,31 @@ method findLoops MicroBlocksDecompiler {
 	i = 1
 	while (i <= (count opcodes)) {
 		cmd = (at opcodes i)
+// print 'cmd:' cmd
 		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp' 'waitUntil')
 				((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
+			loopEnd = i
 			if ('ignore' == loopType) {
 				loopRec = nil
-				loopEnd = i
 			} ('whenCondition' == loopType) {
 				loopStart = 2
-				loopEnd = (count opcodes)
 				conditionStart = 4
 				conditionEnd = (opcodeBefore this i)
 				bodyStart = (opcodeAfter this i)
+				loopEnd = (opcodeBefore this (count opcodes))
 				bodyEnd = (opcodeBefore this loopEnd)
-				loopRec = (array 'whenCondition' (count opcodes) conditionStart conditionEnd bodyStart bodyEnd)
+				loopRec = (array 'whenCondition' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('repeatUntil' == loopType) {
 				bodyStart = (jumpTarget this cmd)
 				loopStart = (opcodeBefore this bodyStart)
 				conditionStart = (jumpTarget this (at opcodes loopStart))
 				conditionEnd = (opcodeBefore this i)
 				bodyEnd = (opcodeBefore this conditionStart)
-				loopEnd = i
 				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('waitUntil' == loopType) {
 				loopStart = (jumpTarget this cmd)
-				loopEnd = i
 				conditionStart = loopStart
 				conditionEnd = (opcodeBefore this i)
 				loopRec = (array 'waitUntil' loopEnd conditionStart conditionEnd)
@@ -643,7 +642,6 @@ method findLoops MicroBlocksDecompiler {
 				bodyStart = (jumpTarget this cmd)
 				bodyEnd = (opcodeBefore this i)
 				loopStart = bodyStart
-				loopEnd = i
 				if ('for' == loopType) {
 					loopStart = (bodyStart - 3)
 					if ('placeholder' == (cmdOp this (at opcodes (bodyStart - 1)))) {
@@ -659,13 +657,34 @@ method findLoops MicroBlocksDecompiler {
 					forIndexVar = (cmdArg this (at opcodes (i - 1)))
 					loopRec = (copyWith loopRec forIndexVar)
 				}
+				if ('forever' == loopType) {
+					if (and
+						(bodyStart == 2)
+						(i == (opcodeBefore this (count opcodes)))
+						(isInwhenCondition this)) {
+							// final jmp of a when hat, not a forever loop; ignore it
+							loopRec = nil
+					}
+				}
 			}
 			if (notNil loopRec) { recordControlStructure this loopStart loopRec }
-			i = (loopEnd + 1)
-		} else {
-			i += 1
 		}
+		i += 1
 	}
+}
+
+method isInwhenCondition MicroBlocksDecompiler {
+	// Return true if the current script is in a 'whenCondition' hat.
+
+	rec = (at controlStructures 2)
+	if (isNil rec) {
+		return false
+	} ('whenCondition' == (first rec)) {
+		return true
+	} ('multiple' == (first rec)) {
+		if ('whenCondition' == (first (at rec 3))) { return true }
+	}
+	return false
 }
 
 method loopTypeAt MicroBlocksDecompiler i seq {
@@ -683,10 +702,11 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 		}
 	}
 	if ('jmpFalse' == op) {
-		loopStart = (i + (cmdArg this cmd))
-		if (and (1 == loopStart)
-				('jmp' == (cmdOp this (last seq)))
-				(2 == (jumpTarget this (last seq)))) {
+		loopStart = (jumpTarget this cmd)
+		lastOp = (at opcodes (opcodeBefore this (count seq)))
+		if (and (2 == loopStart)
+				('jmp' == (cmdOp this lastOp))
+				(2 == (jumpTarget this lastOp))) {
 					return 'whenCondition'
 		}
 		return 'repeatUntil'
@@ -784,13 +804,13 @@ method codeForSequence MicroBlocksDecompiler start end {
 			argCount = (cmdArg & 255)
 			chunkID = ((cmdArg >> 8) & 255)
 			fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			if isReporter {
 				add stack (buildCmdOrReporter this fName argCount true)
-				i += 1
+				i += 2
 			} else {
 				add code (buildCmdOrReporter this fName argCount false)
-				i += 2
+				i += 3
 			}
 		} ('multiple' == op) {
 			// Remove and process the outer-most control structure (the last one in the list).
@@ -817,7 +837,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 			}
 			i = next
 		} (isOneOf op 'callCustomCommand' 'callCustomReporter') {
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			decodeCmd this i
 			if isReporter {
 				i += 1
@@ -938,7 +958,10 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('if-else' == op) {
 		ifPart = (codeForSequence this (at cmd 3) (at cmd 4))
 		elsePart = (codeForSequence this (at cmd 5) (at cmd 6))
-		if (and (notNil elsePart) ('if' == (primName elsePart))) {
+		if (and
+			(notNil elsePart)
+			('if' == (primName elsePart))
+			(isNil (nextBlock elsePart))) {
 			// combine nested if's
 			argList = (list 'if' (removeLast stack) ifPart)
 			addAll argList (argList elsePart)

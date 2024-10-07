@@ -599,14 +599,16 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 		} (isClass aBlockOrFunction 'Function') {
-			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
-				if (isEmpty (argNames func)) {
-					// Mark functions without arguments so they can be invoked
-					// by broadcasting the function name.
-					add result (array 'pushLiteral' (functionName func))
-					add result (array 'placeholder' 0)
-					add result (array 'recvBroadcast' 1)
+			if (isEmpty (argNames func)) {
+				// Mark functions without arguments so they can be invoked
+				// by broadcasting the function name.
+				add result (array 'pushLiteral' (functionName func))
+				add result (array 'placeholder' 0)
+				add result (array 'recvBroadcast' 1)
+				if ('noop' != (primName cmdOrReporter)) {
+					addAll result (instructionsForCmdList this cmdOrReporter)
 				}
+			} else {
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
 			if ('returnResult' != (first (last result))) {
@@ -823,7 +825,7 @@ method instructionsForExpression SmallCompiler expr {
 		return (list (array 'pushImmediate' zeroObj))
 	} (isClass expr 'Integer') {
 		if (and (-64 <= expr) (expr <= 63)) { // 7-bit encoded as 8 bit int object
-			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FF')) ))
+			return (list (array 'pushImmediate' (((expr & 127) << 1) | 1) ))
 		} (and (-4194304 <= expr) (expr <= 4194303)) { // int object fits in 3 bytes
 			return (list
 				(array 'pushLargeInteger' expr) // not yet encoded as an integer
