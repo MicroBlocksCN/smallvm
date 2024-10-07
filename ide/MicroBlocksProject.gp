@@ -1100,7 +1100,7 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('fillArray' == oldPrim) { return 'fillList'
 	} ('sendBroadcastSimple' == oldPrim) { return 'sendBroadcast'
 	} ('split' == oldPrim) { return '[data:split]'
-	} ('printIt' == oldPrim) { return 'graphIt'
+	} ('graphIt' == oldPrim) { return 'printIt' // forward compatability with MicroBlocks 2.0
 	}
 	return nil
 }

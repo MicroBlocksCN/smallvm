@@ -738,6 +738,214 @@ to 'request method' request {
 }
 
 
+module 'Light & Gesture (APDS9960)' Input
+author MicroBlocks
+version 1 1 
+choices apds9960_lightGain '1x' '4x' '16x' '64x' 
+description 'Support for the APDS9960 light, color, and gesture sensor.
+
+The sensor handles a wide range of light values thanks to the ability to change the gain. Its color response is similar to the human eye and it incorporates IR and UV blocking filters. In additional to the light level, it can report the light color as a list of red, green, and blue levels.
+
+The gesture sensor uses reflected infrared light to detect object proximity with a range of a few centimeters. It can also detect the direction of a passing object (e.g. a hand), detecting left, right, up, or down gestures. Gestures can be used to trigger actions in MicroBlocks such as turning some device on and off in response to up and down gestures.'
+variables _apds9960_addr _apds9960_gestureState _apds9960_startLR _apds9960_startUD _apds9960_gesture _apds9960_lastGesture 
+
+  spec 'r' 'apds9960_light' 'apds9960 light'
+  spec 'r' 'apds9960_color' 'apds9960 color'
+  space
+  spec ' ' 'apds9960_setLightGain' 'apds9960 set light gain _' 'menu.apds9960_lightGain' '4x'
+  spec 'r' 'apds9960_lightGain' 'apds9960 light gain'
+  space
+  spec 'r' 'apds9960_proximity' 'apds9960 proximity'
+  space
+  spec 'r' 'apds9960_gestureAvailable' 'apds9960 gesture available'
+  spec 'r' 'apds9960_lastGesture' 'apds9960 last gesture'
+  space
+  spec ' ' '_apds9960_initialize' '_apds9960_initialize'
+  spec ' ' '_apds9960_turnOff' '_apds9960_turnOff'
+  spec ' ' '_apds9960_turnOnWithoutGestures' '_apds9960_turnOnWithoutGestures'
+  spec ' ' '_apds9960_turnOnAll' '_apds9960_turnOnAll'
+  space
+  spec ' ' '_apds9960_enableGestures' '_apds9960 enable gestures'
+  spec ' ' '_apds9960_processGesture' '_apds9960_processGesture'
+  spec ' ' '_apds9960_recognizeGesture' '_apds9960_recognizeGesture _ _' 'num num' 0 0
+  space
+  spec ' ' '_apds9960_unblockStateMachine' '_apds9960_unblockStateMachine'
+  spec 'r' '_apds9960_read16bits' '_apds9960_read16bits reg _' 'num' 0
+
+to '_apds9960_enableGestures' {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  '_apds9960_turnOff'
+  local 'ggain' 3
+  local 'val' (ggain << 5)
+  local 'gdrive' 0
+  local 'val' (val | (gdrive << 3))
+  local 'gwait' 3
+  local 'val' (val | gwait)
+  i2cSet _apds9960_addr (hexToInt 'A3') val
+  i2cSet _apds9960_addr (hexToInt 'A6') (hexToInt '84')
+  comment 'A non-zero value for _apds9960_gesture indicates that gestures are enabled'
+  _apds9960_gesture = 'none'
+  '_apds9960_turnOnAll'
+}
+
+to '_apds9960_initialize' {
+  _apds9960_addr = (hexToInt '39')
+  '_apds9960_turnOff'
+  comment 'Reg 0x81: Integration time. 224 gives a range of 0 to ~32768 (2^15) in about 90 msecs.'
+  i2cSet _apds9960_addr (hexToInt '81') 224
+  comment 'Reg 0x8E: PPULSE. 0x87 sends 8 16-usec pulses.'
+  i2cSet _apds9960_addr (hexToInt '8E') (hexToInt '87')
+  apds9960_setLightGain '4x'
+  '_apds9960_turnOnWithoutGestures'
+  waitMillis 100
+}
+
+to '_apds9960_processGesture' {
+  if (_apds9960_addr == 0) {'_apds9960_enableGestures'}
+  local 'thresh' 80
+  local 'data' (newList 4)
+  repeatUntil ((i2cGet _apds9960_addr (hexToInt 'AE')) <= 0) {
+    '[sensors:i2cWrite]' _apds9960_addr (hexToInt 'FC')
+    '[sensors:i2cRead]' _apds9960_addr data
+    comment 'These variables reflect the standard orientation of the Databot (USB cable is down).'
+    local 'left' (at 1 data)
+    local 'right' (at 2 data)
+    local 'up' (at 3 data)
+    local 'down' (at 4 data)
+    if (0 == _apds9960_gestureState) {
+      comment 'State 0: idle; all channels below threshold'
+      if (or (or (left > thresh) (right > thresh)) (or (up > thresh) (down > thresh))) {
+        _apds9960_startLR = (right - left)
+        _apds9960_startUD = (down - up)
+        _apds9960_gestureState = 1
+      }
+    } (1 == _apds9960_gestureState) {
+      comment 'State 1: rising; one channel has risen above threshold'
+      if (and (and (left > thresh) (right > thresh)) (and (up > thresh) (down > thresh))) {
+        _apds9960_gestureState = 2
+      }
+    } (2 == _apds9960_gestureState) {
+      comment 'State 2: all channels above threshold'
+      if (or (or (left < thresh) (right < thresh)) (or (up < thresh) (down < thresh))) {
+        '_apds9960_recognizeGesture' (right - left) (down - up)
+        _apds9960_gestureState = 3
+      }
+    } else {
+      comment 'State 3: falling; one channel had fallen below threshold'
+      if (and (and (left < thresh) (right < thresh)) (and (up < thresh) (down < thresh))) {
+        _apds9960_gestureState = 0
+      }
+    }
+  }
+}
+
+to '_apds9960_read16bits' reg {
+  local 'lowByte' (i2cGet _apds9960_addr reg)
+  local 'highByte' (i2cGet _apds9960_addr (reg + 1))
+  return ((highByte << 8) | lowByte)
+}
+
+to '_apds9960_recognizeGesture' endLR endUD {
+  local 'minChange' 10
+  local 'totalLR' (absoluteValue (_apds9960_startLR - endLR))
+  local 'totalUP' (absoluteValue (_apds9960_startUD - endUD))
+  if (totalLR > totalUP) {
+    if (totalLR < minChange) {return}
+    if ((_apds9960_startLR - endLR) < 0) {
+      _apds9960_gesture = 'left'
+    } else {
+      _apds9960_gesture = 'right'
+    }
+  } else {
+    if (totalUP < minChange) {return}
+    if ((_apds9960_startUD - endUD) < 0) {
+      _apds9960_gesture = 'down'
+    } else {
+      _apds9960_gesture = 'up'
+    }
+  }
+}
+
+to '_apds9960_turnOff' {
+  i2cSet _apds9960_addr (hexToInt '80') 0
+}
+
+to '_apds9960_turnOnAll' {
+  i2cSet _apds9960_addr (hexToInt '80') (64 | 7)
+}
+
+to '_apds9960_turnOnWithoutGestures' {
+  i2cSet _apds9960_addr (hexToInt '80') 7
+}
+
+to '_apds9960_unblockStateMachine' {
+  comment 'If an object is close to the sensor, the state machine
+remains in gesture mode. This will unblock it, freeing
+the sensor to update the light and color readings.'
+  i2cSet _apds9960_addr (hexToInt 'AB') 0
+}
+
+to apds9960_color {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  '_apds9960_unblockStateMachine'
+  local 'r' ('_apds9960_read16bits' (hexToInt '96'))
+  local 'g' ('_apds9960_read16bits' (hexToInt '98'))
+  local 'b' ('_apds9960_read16bits' (hexToInt '9A'))
+  return ('[data:makeList]' r g b)
+}
+
+to apds9960_gestureAvailable {
+  if (0 == _apds9960_gesture) {'_apds9960_enableGestures'}
+  '_apds9960_processGesture'
+  _apds9960_lastGesture = _apds9960_gesture
+  _apds9960_gesture = 'none'
+  if ('none' == _apds9960_lastGesture) {
+    return false
+  }
+  return true
+}
+
+to apds9960_lastGesture {
+  if (0 == _apds9960_lastGesture) {return 'none'}
+  return _apds9960_lastGesture
+}
+
+to apds9960_light {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  '_apds9960_unblockStateMachine'
+  return ('_apds9960_read16bits' (hexToInt '94'))
+}
+
+to apds9960_lightGain {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  local 'gainSetting' ((i2cGet _apds9960_addr (hexToInt '8F')) & 3)
+  return (1 << (2 * gainSetting))
+}
+
+to apds9960_proximity {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  '_apds9960_unblockStateMachine'
+  return (i2cGet _apds9960_addr (hexToInt '9C'))
+}
+
+to apds9960_setLightGain gain {
+  if (_apds9960_addr == 0) {'_apds9960_initialize'}
+  local 'drive' 0
+  if ('1x' == gain) {
+    drive = 0
+  } ('4x' == gain) {
+    drive = 1
+  } ('16x' == gain) {
+    drive = 2
+  } ('64x' == gain) {
+    drive = 3
+  }
+  local 'val' (i2cGet _apds9960_addr (hexToInt '8F'))
+  val = ((val & 252) | (drive & 3))
+  i2cSet _apds9960_addr (hexToInt '8F') val
+}
+
+
 module 'Temperature Humidity (SHTC3)' Input
 author MicroBlocks
 version 1 4 

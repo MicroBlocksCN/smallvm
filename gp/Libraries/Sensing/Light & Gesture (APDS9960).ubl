@@ -1,6 +1,6 @@
 module 'Light & Gesture (APDS9960)' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 choices apds9960_lightGain '1x' '4x' '16x' '64x' 
 description 'Support for the APDS9960 light, color, and gesture sensor.
 
@@ -176,7 +176,7 @@ to apds9960_light {
   return ('_apds9960_read16bits' (hexToInt '94'))
 }
 
-to apds9960_lightGain gain {
+to apds9960_lightGain {
   if (_apds9960_addr == 0) {'_apds9960_initialize'}
   local 'gainSetting' ((i2cGet _apds9960_addr (hexToInt '8F')) & 3)
   return (1 << (2 * gainSetting))

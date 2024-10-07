@@ -1630,7 +1630,8 @@ method labelText Block aString {
   isSVG = (beginsWith aString '#SVG#')
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
-  if ('comment' == aString) { labelColor = (gray 80) }
+  
+  if (and (notNil blockSpec) ('comment' == (blockOp blockSpec))) { labelColor = (gray 80) }
   if isSVG {
     return (newSVGImage (substring aString 6) labelColor color scale)
   }
