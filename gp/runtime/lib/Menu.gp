@@ -83,7 +83,10 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
     (+ (max (height labelPic) thHeight) (* 2 itemPaddingV))
   )
   if (notNil bgColor) {fill result bgColor}
-  if (notNil thumbPic) {drawBitmap result thumbPic itemPaddingH (((height result) - thHeight) / 2)}
+  if (notNil thumbPic) {
+    bgColor = (microBlocksColor 'blueGray' 900)
+    drawBitmap result thumbPic itemPaddingH (((height result) - thHeight) / 2)
+  }
   drawBitmap result labelPic (+ padding thWidth itemPaddingH) (((height result) - (height labelPic)) / 2)
   return result
 }
@@ -142,9 +145,9 @@ method buildMorph Menu page yPos {
     if (> (count tuple) 4) {disabled = (at tuple 5)}
     if (isClass itemLbl 'String') {
       if disabled {
-        itemLbl = (stringImage itemLbl fontName fontSize itemTextColorDisabled)
+        itemLbl = (menuStringImage itemLbl fontName fontSize itemTextColorDisabled color)
       } else {
-        itemLbl = (stringImage itemLbl fontName fontSize itemTextColorNormal)
+        itemLbl = (menuStringImage itemLbl fontName fontSize itemTextColorNormal color)
       }
       itemLbl = (itemLabel this itemLbl itemThm)
       menuWidth = (max menuWidth (+ (width itemLbl) (* itemPaddingH 2)))
@@ -207,13 +210,13 @@ method buildMorph Menu page yPos {
     ilbl = (at itemLbls i)
     if (isClass ilbl 'Bitmap') {
       nbm = (itemLabel this ilbl nil color menuWidth paddingH itemPaddingV)
-      if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorHighlighted)}
+      if (isClass (at tuple 1) 'String') {ilbl = (menuStringImage (at tuple 1) fontName fontSize itemTextColorHighlighted itemBackgroundColorHighlighted)}
       if disabled {
         hbm = nbm
       } else {
         hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth paddingH itemPaddingV)
       }
-      if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorPressed)}
+      if (isClass (at tuple 1) 'String') {ilbl = (menuStringImage (at tuple 1) fontName fontSize itemTextColorPressed itemBackgroundColorPressed)}
       pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth paddingH itemPaddingV)
       if reverseCall {
         itemAction = (action target (at tuple 2))

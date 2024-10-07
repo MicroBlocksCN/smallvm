@@ -489,7 +489,7 @@ method isAbsolutePath MicroBlocksEditor fName {
 
 method connectToBoard MicroBlocksEditor { selectPort (smallRuntime) }
 method stopAndSyncScripts MicroBlocksEditor { stopAndSyncScripts (smallRuntime) }
-method startAll MicroBlocksEditor { sendStartAll (smallRuntime) }
+method startAll MicroBlocksEditor { startAll (smallRuntime) }
 
 // project title
 
@@ -626,17 +626,20 @@ method updateIndicator MicroBlocksEditor forcefully {
 
     if isConnected {
 		setCostumes indicator onBM hlBM
-		boardType = (checkBoardType (smallRuntime scripter))
-		if (isNil boardType) { boardType = '' }
-		setText connectionName boardType
+		updateConnectionName this (checkBoardType (smallRuntime scripter))
 	} else {
 		setCostumes indicator offBM hlBM
-		setText connectionName (localized 'Connect')
+		updateConnectionName this (localized 'Connect')
 	}
-	fixTopBarLayout this
 
 	costumeChanged (morph indicator)
 	lastStatus = status
+}
+
+method updateConnectionName MicroBlocksEditor aString {
+	if (isNil aString) { aString = '' }
+	setText connectionName aString
+	fixTopBarLayout this
 }
 
 // browser support

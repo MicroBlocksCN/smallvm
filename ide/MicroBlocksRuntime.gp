@@ -29,6 +29,8 @@ method initialize SmallRuntime aScripter {
 }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
+	step scripter // save script changes if needed
+
 	if (isNil showBytes) { showBytes = false }
 	if showBytes {
 		bytes = (chunkBytesFor this aBlock)
@@ -40,7 +42,9 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
-	step scripter // save script changes if needed
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
@@ -1135,6 +1139,7 @@ method versionReceived SmallRuntime versionString {
 	} else { // not first time: show the version number
 		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
 	}
+	updateConnectionName (findProjectEditor) boardType
 }
 
 method checkVmVersion SmallRuntime {
@@ -1158,6 +1163,11 @@ method checkVmVersion SmallRuntime {
 			(localized 'Try to update MicroBlocks on the board?')))
 		if ok { installVM this }
 	}
+}
+
+method vmIncomptabibleWithIDE SmallRuntime {
+    msg = (localized 'The firmware on the board is not compatible with this version of MicroBlocks.')
+     inform (global 'page') msg
 }
 
 method installBoardSpecificBlocks SmallRuntime {
@@ -1254,6 +1264,13 @@ method sendStopAll SmallRuntime {
 	clearRunningHighlights this
 }
 
+method startAll SmallRuntime {
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
+        return (vmIncomptabibleWithIDE this)
+    }
+    sendStartAll this
+}
+
 method sendStartAll SmallRuntime {
 	step scripter // save script changes if needed
 	sendMsg this 'startAllMsg'
@@ -1317,6 +1334,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 
 	if (isNil checkCRCs) { checkCRCs = true }
 	if (not (connectedToBoard this)) { return }
+    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
 
 	setCursor 'wait'
 
@@ -1774,6 +1792,7 @@ method saveVariableNames SmallRuntime {
 }
 
 method runChunk SmallRuntime chunkID {
+    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
 	sendMsg this 'startChunkMsg' chunkID
 }
 
