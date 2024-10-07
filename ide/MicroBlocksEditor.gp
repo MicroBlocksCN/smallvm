@@ -489,7 +489,7 @@ method isAbsolutePath MicroBlocksEditor fName {
 
 method connectToBoard MicroBlocksEditor { selectPort (smallRuntime) }
 method stopAndSyncScripts MicroBlocksEditor { stopAndSyncScripts (smallRuntime) }
-method startAll MicroBlocksEditor { sendStartAll (smallRuntime) }
+method startAll MicroBlocksEditor { startAll (smallRuntime) }
 
 // project title
 
