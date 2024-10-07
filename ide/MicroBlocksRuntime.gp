@@ -42,7 +42,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
-    if (or (isNil vmVersion) (vmVersion < 300)) {
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
         return (vmIncomptabibleWithIDE this)
     }
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
@@ -1245,7 +1245,7 @@ method sendStopAll SmallRuntime {
 }
 
 method startAll SmallRuntime {
-    if (or (isNil vmVersion) (vmVersion < 300)) {
+    if (or (isNil vmVersion) (vmVersion >= 300)) {
         return (vmIncomptabibleWithIDE this)
     }
     sendStartAll this
