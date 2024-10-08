@@ -1,6 +1,7 @@
 module 'WebSocket server' Comm
 author MicroBlocks
 version 1 1 
+depends WiFi 
 tags websockets network 
 description 'Blocks to build your own (very) simple websockets server. The websockets server runs on port 81.'
 
