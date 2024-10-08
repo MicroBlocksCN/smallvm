@@ -10,15 +10,15 @@ Based on https://github.com/pololu/vl53l1x-arduino
 '
 variables '_VL53L1x initialized' 
 
-	spec 'r' 'VL53L1x connected' 'VL53L1x connected'
-	spec 'r' 'VL53L1x distance (mm)' 'VL53L1x distance (mm)'
-	spec ' ' 'VL53L1x set distance mode long' 'VL53L1x set distance mode long'
-	spec ' ' 'VL53L1x set distance mode medium' 'VL53L1x set distance mode medium'
-	spec ' ' 'VL53L1x set distance mode short' 'VL53L1x set distance mode short'
-	spec ' ' '_VL53L1x setup' '_VL53L1x setup'
-	spec ' ' '_VL53L1x write reg' '_VL53L1x write reg _ byte _' 'auto auto' 0 0
-	spec ' ' '_VL53L1x write reg 32' '_VL53L1x write reg _ int32 _' 'auto auto' 0 0
-	spec 'r' '_VL53L1x read reg' '_VL53L1x read 16bit reg _' 'auto' 0
+  spec 'r' 'VL53L1x connected' 'VL53L1x connected'
+  spec 'r' 'VL53L1x distance (mm)' 'VL53L1x distance (mm)'
+  spec ' ' 'VL53L1x set distance mode long' 'VL53L1x set distance mode long'
+  spec ' ' 'VL53L1x set distance mode medium' 'VL53L1x set distance mode medium'
+  spec ' ' 'VL53L1x set distance mode short' 'VL53L1x set distance mode short'
+  spec ' ' '_VL53L1x setup' '_VL53L1x setup'
+  spec ' ' '_VL53L1x write reg' '_VL53L1x write reg _ byte _' 'auto auto' 0 0
+  spec ' ' '_VL53L1x write reg 32' '_VL53L1x write reg _ int32 _' 'auto auto' 0 0
+  spec 'r' '_VL53L1x read reg' '_VL53L1x read 16bit reg _' 'auto' 0
 
 to 'VL53L1x connected' {
   return (('_VL53L1x read reg' (hexToInt '010F')) == (hexToInt 'EACC'))
@@ -70,7 +70,6 @@ to 'VL53L1x set distance mode short' {
 }
 
 to '_VL53L1x read reg' reg {
-  local 'reg' reg
   i2cSet 41 (reg >> 8) (reg & 255)
   local 'data' (newList 2)
   '[sensors:i2cRead]' 41 data

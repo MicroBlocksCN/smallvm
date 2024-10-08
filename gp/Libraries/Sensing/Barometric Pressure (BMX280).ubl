@@ -19,6 +19,7 @@ variables _bmxAddr _bme280coefficients _bmx280_baseAltitude _bmx280_basePressure
   spec ' ' '_bmx280 setup' '_bmx280 setup'
   spec ' ' '_bme280 read humidity coefficients' '_bme280 read humidity coefficients'
   spec 'r' '_bmx280 temperature' '_bmx280 temperature'
+  spec 'r' '_bmx280_altitudeMillimeters' '_bmx280_altitudeMillimeters'
 
 to '_bme280 read humidity coefficients' {
   if ('bme280 connected') {
@@ -72,7 +73,7 @@ to '_bmx280 temperature' {
 
 to '_bmx280_altitudeMillimeters' {
   if (_bmx280_basePressure == 0) {
-    comment 'if base altitude not set, use zero (useful for relative measurments)' ,
+    comment 'if base altitude not set, use zero (useful for relative measurments)'
     bmx280_setBaseAltitude 0
   }
   mmChange = ('[misc:pressureToAltitude]' _bmx280_basePressure ('bmx280 pressure'))

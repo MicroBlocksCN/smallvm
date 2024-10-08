@@ -35,8 +35,8 @@ to '_MLED init' {
   digitalWriteOp (v '_MLED data pin') true
 }
 
-to '_MLED send' data {
-  local 'data' data
+to '_MLED send' aByte {
+  local 'data' aByte
   for bit 8 {
     digitalWriteOp (v '_MLED clock pin') false
     digitalWriteOp (v '_MLED data pin') ((data & 1) == 1)
