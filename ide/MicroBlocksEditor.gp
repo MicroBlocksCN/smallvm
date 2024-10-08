@@ -202,7 +202,8 @@ method addLogo MicroBlocksEditor {
 
 method addZoomButtons MicroBlocksEditor {
   scale = (global 'scale')
-  scriptingActionsContainer = (newBox (newMorph) (microBlocksColor 'white') (4 * scale) scale false false true (microBlocksColor 'blueGray' 75))
+  scriptingActionsContainer = (newBox (newMorph) (copy (microBlocksColor 'white')) (4 * scale) scale false false true (microBlocksColor 'blueGray' 75))
+  setAlpha (color scriptingActionsContainer) 220
   setExtent (morph scriptingActionsContainer) (120 * scale) (30 * scale)
 
   zoomButtons = (array
