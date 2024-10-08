@@ -31,20 +31,24 @@ to '_zio4motor_setDigital' pin on {
 }
 
 to '_zio4motor_setPWM' pin value {
-  if (or (pin < 0) (pin > 15)) {return 0}
+  local 'on' 0
+  local 'off' 0
+  if (or (pin < 0) (pin > 15)) {
+    return 0
+  }
   value = (maximum 0 (minimum value 4095))
   if (value == 0) {
     comment 'Full off'
-    local 'on' 0
-    local 'off' 4096
+    on = 0
+    off = 4096
   } (value == 4095) {
     comment 'Full on'
-    local 'on' 4096
-    local 'off' 0
+    on = 4096
+    off = 0
   } else {
     comment 'Intermediate - use PWM'
-    local 'on' 0
-    local 'off' value
+    on = 0
+    off = value
   }
   local 'reg' ((4 * pin) + 6)
   '[sensors:i2cWrite]' _zio4motor_addr ('[data:makeList]' reg (on & 255) (on >> 8) (off & 255) (off >> 8))
