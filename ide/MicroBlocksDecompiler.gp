@@ -194,7 +194,6 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 	if (cmdIs this (last opcodes) 'codeEnd' 0) { removeLast opcodes } // remove final codeEnd
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
-	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
 	gpCode = (addHatBlock this chunkID chunkType gpCode)
 	if (isNil gpCode) {
 		return (newCommand 'comment' 'Stand-alone comment')
@@ -299,26 +298,6 @@ method removePrefix MicroBlocksDecompiler gpCode {
 		// remove 'recvBroadcast' from a parameterless function
 		msgName = (first (argList gpCode)) // record the message name
 		gpCode = (nextBlock gpCode)
-	}
-	return gpCode
-}
-
-method removeFinalReturn MicroBlocksDecompiler gpCode {
-	// Return possible final 'return false' from the code for a function.
-
-	if (isNil gpCode) { return nil }
-
-	// find the last two commands:
-	lastCmd = gpCode
-	while (notNil (nextBlock lastCmd)) {
-		nextToLastCmd = lastCmd
-		lastCmd = (nextBlock lastCmd)
-	}
-
-	// if the last command is a 'return false', remove it
-	if (and ('return' == (primName lastCmd)) (false == (first (argList lastCmd)))) {
-		if (gpCode == lastCmd) { return nil } // the return was the only command
-		setField nextToLastCmd 'nextBlock' nil
 	}
 	return gpCode
 }
