@@ -1,14 +1,14 @@
 module 'shield:bit' Output
 author 'Joan Guillén'
-version 1 0 
-tags keyestudio micro:bit 
+version 1 1
+tags keyestudio micro:bit
 description 'Provides custom blocks for the shield:bit. It has control for 4 DC motors, 2 Steppers, 1 Buzzer/Audio_out, 1 potenciometer and 4 neopixel LEDs'
 variables _sb_neoPixels _sb_neoPixels_on _ms_neoPixels_on _MiKe_circlePixels _tonePin _toneInitalized _pca9685_on _pca9685_prescale _pca9685_st_steps
 choices motorDirections clockwise 'counter-clockwise'
 choices motorTypes 'sb_all_motors' 'sb_servomotors' 'sb_DC/Stepper_motors'
 choices stepperSteps turns degrees
 depends Color
-	
+
 	spec ' ' 'sb LEDs off' 's꞉b LEDs off'
 	spec ' ' 'sb LEDs to color' 's꞉b LEDs to _' 'color'
 	spec ' ' 'sb LED to color' 's꞉b LED _ (1-4) to _' 'num color' 1
@@ -36,13 +36,13 @@ depends Color
 
 to 'sb LEDs off' {
   if (not _sb_neoPixels_on) {'_sb_neoPixels_setup'}
-  fillList _sb_neoPixels 0
+  atPut 'all' _sb_neoPixels 0
   '_sb_neoPixels_update'
 }
 
 to 'sb LEDs to color' color {
   if (not _sb_neoPixels_on) {'_sb_neoPixels_setup'}
-  fillList _sb_neoPixels color
+  atPut 'all' _sb_neoPixels color
   '_sb_neoPixels_update'
 }
 
@@ -134,7 +134,7 @@ to 'sb turn M motor' m direction speed {
     local 'pin1' (pin2 + 1)
     if (or (and (or (m == 1) (m == 2)) (direction == 'counter-clockwise')) (and (or (m == 3) (m == 4)) (not (direction == 'counter-clockwise')))) {
       pin2 = pin1
-      pin1 = (pin2 - 1)  
+      pin1 = (pin2 - 1)
     }
     '_pca9685_pwm' pin1 0 0
     '_pca9685_pwm' pin2 0 speed
@@ -203,8 +203,7 @@ to 'sb set pin' pin value {
 //////
 
 to '_sb_neoPixels_setup' {
-  _sb_neoPixels = (newList 4)
-  fillList _sb_neoPixels 0
+  _sb_neoPixels = (newList 4 0)
   if ((boardType) == 'ESP32') {
     '[display:neoPixelSetPin]' 5 false
   } else {

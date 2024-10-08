@@ -1,6 +1,6 @@
 module 'micro:STEAMakers'
 author 'Joan Guillén'
-version 1 0 
+version 1 1 
 depends Tone Color 
 tags keyestudio steam 
 choices inclination down x y 
@@ -104,8 +104,7 @@ to '_ms_imageNames' {
 }
 
 to '_ms_neoPixels_setup' {
-  _ms_neoPixels = (newList 25)
-  fillList _ms_neoPixels 0
+  _ms_neoPixels = (newList 25 0)
   '[display:neoPixelSetPin]' 13 (booleanConstant false)
   _ms_noePixels_scale = 100
   _ms_neoPixels_on = (booleanConstant true)
@@ -165,7 +164,7 @@ to ms_buttons but {
 
 to ms_clear_display {
   if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
-  fillList _ms_neoPixels 0
+  atPut 'all' _ms_neoPixels 0
   '_ms_neoPixels_update'
 }
 

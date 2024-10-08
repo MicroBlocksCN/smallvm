@@ -1,6 +1,6 @@
 module 'MiKe Robot' Output
 author 'Joan Guillén'
-version 1 1 
+version 1 2 
 tags keyestudio robot car 
 description 'Provides sensor, light and motion blocks for the Keyestudio micro:bit/micro:STEAMakers Mini Smart Robot Car v2.'
 variables _MiKe_circlePixels _sb_neoPixels_on _ms_neoPixels_on _MiKe_i2c_on 
@@ -39,8 +39,7 @@ to 'MiKe IR' {
   local 'ir_pin' 16
   if ((boardType) == 'ESP32') { ir_pin = 5 }
   forever {
-    local 'ir_pulse_times' (newList 200)
-    fillList ir_pulse_times 0
+    local 'ir_pulse_times' (newList 200 0)
     local 'i' 1
     waitUntil (not (digitalReadOp ir_pin))
     local 'start' (microsOp)
@@ -135,13 +134,13 @@ to 'MiKe circle light to' i color {
 
 to 'MiKe circle lights off' {
   '_MiKe_circlePixels_ensureInitialized'
-  fillList _MiKe_circlePixels 0
+  atPut 'all' _MiKe_circlePixels 0
   '_MiKe_circlePixels_update'
 }
 
 to 'MiKe circle ligths to' color {
   '_MiKe_circlePixels_ensureInitialized'
-  fillList _MiKe_circlePixels color
+  atPut 'all' _MiKe_circlePixels color
   '_MiKe_circlePixels_update'
 }
 
@@ -267,7 +266,7 @@ to '_MiKe_circlePixels_ensureInitialized' {
     if _sb_neoPixels_on {_sb_neoPixels_on = false}
     if _ms_neoPixels_on {_ms_neoPixels_on = false}
     _MiKe_circlePixels = (newList 18)
-    fillList _MiKe_circlePixels 0
+    atPut 'all' _MiKe_circlePixels 0
     local 'neoPixelPin' 5
     if ((boardType) == 'ESP32') { neoPixelPin = 0 }
     '[display:neoPixelSetPin]' neoPixelPin false
