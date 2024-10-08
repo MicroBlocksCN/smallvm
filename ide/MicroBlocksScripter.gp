@@ -127,17 +127,24 @@ method darkModeChanged MicroBlocksScripter {
     blocksFrameColor = (microBlocksColor 'blueGray' 800)
     sliderBGColor = (microBlocksColor 'blueGray' 600)
     sliderFGColor = (microBlocksColor 'blueGray' 800)
+	scriptingActionsContainerColor = (microBlocksColor 'blueGray' 850)
+	scriptingActionsContainerBorderColor = (microBlocksColor 'blueGray' 700)
   } else {
     scriptsFrameColor = (microBlocksColor 'white')
     blocksFrameColor = (microBlocksColor 'blueGray' 50)
     sliderBGColor = (microBlocksColor 'blueGray' 100)
     sliderFGColor = (microBlocksColor 'blueGray' 200)
+	scriptingActionsContainerColor = (microBlocksColor 'white')
+	scriptingActionsContainerBorderColor = (microBlocksColor 'blueGray' 75)
   }
 
   setColor scriptsFrame scriptsFrameColor
   setColor blocksFrame blocksFrameColor
   setSliderColors scriptsFrame sliderBGColor sliderFGColor
   setSliderColors blocksFrame sliderBGColor sliderFGColor
+  scriptingActionsContainer = (scriptingActionsContainer projectEditor)
+  setColor scriptingActionsContainer scriptingActionsContainerColor
+  setBorderColor scriptingActionsContainer scriptingActionsContainerBorderColor
   categorySelected this
 
   removePart morph trashcanIcon

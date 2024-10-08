@@ -26,8 +26,9 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
 
+method scriptingActionsContainer MicroBlocksEditor { return scriptingActionsContainer }
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
@@ -200,13 +201,18 @@ method addLogo MicroBlocksEditor {
 // zoom buttons
 
 method addZoomButtons MicroBlocksEditor {
+  scale = (global 'scale')
+  scriptingActionsContainer = (newBox (newMorph) (microBlocksColor 'white') (4 * scale) scale false false true (microBlocksColor 'blueGray' 75))
+  setExtent (morph scriptingActionsContainer) (120 * scale) (30 * scale)
+
   zoomButtons = (array
 	(newZoomButton this 'zoomIn')
 	(newZoomButton this 'restoreZoom')
 	(newZoomButton this 'zoomOut'))
   for button zoomButtons {
-	addPart morph (morph button)
+	addPart (morph scriptingActionsContainer) (morph button)
   }
+  addPart morph (morph scriptingActionsContainer)
   addZoomButtonHints this
   fixZoomButtonsLayout this
 }
@@ -267,12 +273,17 @@ method setBlockScalePercent MicroBlocksEditor newPercent {
 
 method fixZoomButtonsLayout MicroBlocksEditor {
   scale = (global 'scale')
-  right = ((right morph) - (15 * scale))
-  bottom = (((bottom morph) - (height (morph tipBar))) - (20 * scale))
+  right = ((right morph) - (24 * scale))
+  bottom = (((bottom morph) - (height (morph tipBar))) - (24 * scale))
+  firstButtonMorph = (morph (at zoomButtons 1))
+  containerMorph = (morph scriptingActionsContainer)
+  setExtent containerMorph ((((width firstButtonMorph) + (8 * scale)) * (count (parts containerMorph))) + (8 * scale)) ((height firstButtonMorph) + (16 * scale))
+  setRight containerMorph right
+  setBottom containerMorph bottom
   for button zoomButtons {
-    right = (right - ((width (morph button)) + (10 * scale)))
+    right = (right - ((width (morph button)) + (8 * scale)))
     setLeft (morph button) right
-    setTop (morph button) (bottom - (height (morph button)))
+    setTop (morph button) ((bottom - (height (morph button))) - (8 * scale))
   }
 }
 

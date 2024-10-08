@@ -244,7 +244,7 @@ method initMicroBlocksUIColors Color {
   atPut palette 'green' (colorHex '61D14E')
   atPut palette 'yellow' (colorHex 'FED722')
   atPut palette 'yellowBorder' (colorHex 'B79701')
-  atPut palette 'white' (gray 255 1)
+  atPut palette 'white' (gray 255)
   atPut palette 'black' (colorHex '2A2A2A')
 
   // gray900 in the style sheet, but it's the only gray we're using
