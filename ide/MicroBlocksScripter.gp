@@ -127,8 +127,8 @@ method darkModeChanged MicroBlocksScripter {
     blocksFrameColor = (microBlocksColor 'blueGray' 800)
     sliderBGColor = (microBlocksColor 'blueGray' 600)
     sliderFGColor = (microBlocksColor 'blueGray' 800)
-	scriptingActionsContainerColor = (microBlocksColor 'blueGray' 850)
-	scriptingActionsContainerBorderColor = (microBlocksColor 'blueGray' 700)
+	scriptingActionsContainerColor = (copy (microBlocksColor 'blueGray' 850))
+	scriptingActionsContainerBorderColor = (copy (microBlocksColor 'blueGray' 700))
   } else {
     scriptsFrameColor = (microBlocksColor 'white')
     blocksFrameColor = (microBlocksColor 'blueGray' 50)
@@ -144,6 +144,7 @@ method darkModeChanged MicroBlocksScripter {
   setSliderColors blocksFrame sliderBGColor sliderFGColor
   scriptingActionsContainer = (scriptingActionsContainer projectEditor)
   setColor scriptingActionsContainer scriptingActionsContainerColor
+  setAlpha (color scriptingActionsContainer) 220
   setBorderColor scriptingActionsContainer scriptingActionsContainerBorderColor
   categorySelected this
 
