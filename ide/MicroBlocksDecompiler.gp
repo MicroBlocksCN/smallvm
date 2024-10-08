@@ -240,11 +240,10 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			arg = ((arg << 7) >> 8) // convert integer object to integer with sign extension
 			extraWords += 1
 		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
-			arg = (at chunkData i)
-			arg = (arg | ((at chunkData (i + 1)) << 8))
-			arg = (arg | ((at chunkData (i + 2)) << 16))
-			arg = (arg | ((at chunkData (i + 3)) << 24))
-			arg = (arg >> 1) // convert integer object to integer
+			arg = ((at chunkData i) >> 1)
+			arg = (arg | ((at chunkData (i + 1)) << 7))
+			arg = (arg | ((at chunkData (i + 2)) << 15))
+			arg = (arg | ((at chunkData (i + 3)) << 23))
 			extraWords += 2
 		} ('pushLiteral' == op) { // literal string
 			offset = (at chunkData i)
