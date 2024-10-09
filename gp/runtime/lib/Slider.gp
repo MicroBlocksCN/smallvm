@@ -65,7 +65,6 @@ method update Slider floorNum ceilNum valNum sizeNum {
 
 method drawOn Slider ctx {
 	scale = (global 'scale')
-	sliderSize = (20 * scale)
 
 	fillRect ctx backgroundColor (left morph) (top morph) (width morph) (height morph)
 	if ((ceiling - floor) == 0) {
@@ -74,10 +73,12 @@ method drawOn Slider ctx {
 		frac = ((value - floor) / (ceiling - floor))
 	}
 	if (orientation == 'horizontal') {
+		sliderSize = (* ((width (bounds morph)) / ceiling) scale 150)
 		sliderRange = ((width morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
 		sliderRect = (rect ((left morph) + offset) ((top morph) + padding) sliderSize thickness)
 	} (orientation == 'vertical') {
+		sliderSize = (* ((height (bounds morph)) / ceiling) scale 150)
 		sliderRange = ((height morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
 		sliderRect = (rect ((left morph) + padding) ((top morph) + offset) thickness sliderSize)
