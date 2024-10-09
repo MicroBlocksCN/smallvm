@@ -514,7 +514,7 @@ method initOpcodes SmallCompiler {
 	RESERVED 125
 		comment 126
 		codeEnd 127
-		metadata 248'
+		metadata 240'
 
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
