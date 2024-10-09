@@ -1,6 +1,6 @@
-defineClass Slider morph orientation action floor ceiling value size thickness backgroundColor sliderColor
+defineClass Slider morph orientation action floor ceiling value size thickness backgroundColor sliderColor padding
 
-to slider orientation span action thickness floor ceiling value size {
+to slider orientation span action thickness floor ceiling value size padding {
 	if (isNil span) { span = 100 }
 	if (isNil action) { action = 'nop' }
 	if (isNil thickness) { thickness = (10 * (global 'scale')) }
@@ -8,16 +8,17 @@ to slider orientation span action thickness floor ceiling value size {
 	if (isNil ceiling) { ceiling = 100 }
 	if (isNil value) { value = 50 }
 	if (isNil size) { size = 10 }
-	result = (new 'Slider' nil orientation action floor ceiling value size thickness)
+	if (isNil padding) { padding = 0 }
+	result = (new 'Slider' nil orientation action floor ceiling value size thickness nil nil padding)
 	return (initialize result span)
 }
 
 method initialize Slider span {
 	if (orientation == 'horizontal') {
 		w = span
-		h = thickness
+		h = (thickness + (2 * padding))
 	} else {
-		w = thickness
+		w = (thickness + (2 * padding))
 		h = span
 	}
 	morph = (newMorph this)
@@ -75,11 +76,11 @@ method drawOn Slider ctx {
 	if (orientation == 'horizontal') {
 		sliderRange = ((width morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
-		sliderRect = (rect ((left morph) + offset) (top morph) sliderSize (height morph))
+		sliderRect = (rect ((left morph) + offset) ((top morph) + padding) sliderSize thickness)
 	} (orientation == 'vertical') {
 		sliderRange = ((height morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
-		sliderRect = (rect (left morph) ((top morph) + offset) (width morph) sliderSize)
+		sliderRect = (rect ((left morph) + padding) ((top morph) + offset) thickness sliderSize)
 	}
 
 	sliderCorner = (4 * scale)

@@ -54,7 +54,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   makeAddLibraryButton this
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
   setFont libSelector fontName fontSize
-  libFrame = (scrollFrame libSelector (microBlocksColor 'blueGray' 850))
+  libFrame = (scrollFrame libSelector (transparent) false (4 * scale) (4 * scale))
   setVerticalScrollOnly libFrame true
   setAutoScroll libFrame false
   addPart morph (morph libFrame)
@@ -67,7 +67,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
-  blocksFrame = (scrollFrame blocksPane (microBlocksColor 'blueGray' 50))
+  blocksFrame = (scrollFrame blocksPane (transparent) false (4 * scale) (4 * scale))
   setVerticalScrollOnly blocksFrame true
   setAutoScroll blocksFrame false
   setExtent (morph blocksFrame) (260 * scale) (100 * scale)
@@ -78,7 +78,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   addTrashcan this
 
   scriptsPane = (newScriptEditor 10 10 nil)
-  scriptsFrame = (scrollFrame scriptsPane (microBlocksColor 'white'))
+  scriptsFrame = (scrollFrame scriptsPane (transparent) false (4 * scale) (4 * scale))
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
@@ -122,17 +122,16 @@ method addTrashcan MicroBlocksScripter {
 
 method darkModeChanged MicroBlocksScripter {
   changed morph // report damage
+  sliderBGColor = (transparent)
   if (darkModeEnabled projectEditor) {
     scriptsFrameColor = (microBlocksColor 'blueGray' 900)
     blocksFrameColor = (microBlocksColor 'blueGray' 800)
-    sliderBGColor = (microBlocksColor 'blueGray' 600)
-    sliderFGColor = (microBlocksColor 'blueGray' 800)
+    sliderFGColor = (microBlocksColor 'blueGray' 300)
 	scriptingActionsContainerColor = (copy (microBlocksColor 'blueGray' 850))
 	scriptingActionsContainerBorderColor = (copy (microBlocksColor 'blueGray' 700))
   } else {
     scriptsFrameColor = (microBlocksColor 'white')
     blocksFrameColor = (microBlocksColor 'blueGray' 50)
-    sliderBGColor = (microBlocksColor 'blueGray' 100)
     sliderFGColor = (microBlocksColor 'blueGray' 200)
 	scriptingActionsContainerColor = (microBlocksColor 'white')
 	scriptingActionsContainerBorderColor = (microBlocksColor 'blueGray' 75)

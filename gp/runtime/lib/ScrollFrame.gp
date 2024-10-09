@@ -2,11 +2,11 @@ defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScrol
 
 to area aHandler {return (fullBounds (morph aHandler))}
 
-to scrollFrame contents aColor noSliderFlag {
-  return (initialize (new 'ScrollFrame') contents aColor noSliderFlag)
+to scrollFrame contents aColor noSliderFlag thickness padding {
+  return (initialize (new 'ScrollFrame') contents aColor noSliderFlag thickness padding)
 }
 
-method initialize ScrollFrame newContents aColor noSliderFlag {
+method initialize ScrollFrame newContents aColor noSliderFlag thickness padding {
   sliderTransparency = 180
   if (isNil aColor) { aColor = (gray 200) }
   if (isNil noSliderFlag) { noSliderFlag = false }
@@ -19,10 +19,10 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   addPart morph (morph contents)
   setTransparentTouch morph true
   setClipping morph true
-  hSlider = (slider 'horizontal')
+  hSlider = (slider 'horizontal' nil nil thickness nil nil nil nil padding)
   setAlpha (morph hSlider) sliderTransparency
   addPart morph (morph hSlider)
-  vSlider = (slider 'vertical')
+  vSlider = (slider 'vertical' nil nil thickness nil nil nil nil padding)
   setAlpha (morph vSlider) sliderTransparency
   addPart morph (morph vSlider)
   setAction hSlider (action 'scrollToX' this)
@@ -109,7 +109,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
     fastSetTop (morph contents) (top b)
   }
 
-  if (or (and (isVisible (morph vSlider)) ((+ wc vw) > w)) (and (not (isVisible (morph vSlider))) (wc > w))) {
+  if (and (not verticalScrollOnly) (or (and (isVisible (morph vSlider)) ((+ wc vw) > w)) (and (not (isVisible (morph vSlider))) (wc > w)))) {
     show (morph hSlider)
     fastSetPosition (morph hSlider) (left b) ((bottom b) - hw)
     setWidth (bounds (morph hSlider)) (- w vw)
@@ -198,6 +198,7 @@ method adjustContents ScrollFrame {
 }
 
 method scrollToX ScrollFrame x {
+  if verticalScrollOnly { return }
   if (0 == (ceiling hSlider)) {
     // special case when empty
     fastSetLeft (morph contents) (left morph)
@@ -342,6 +343,7 @@ method setScrollOffset ScrollFrame newX newY {
 
   xOffset = (round (clamp newX 0 maxXOffset))
   yOffset = (round (clamp newY 0 maxYOffset))
+
 
   fastSetPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
   changed morph
