@@ -90,16 +90,30 @@ method drawOn Slider ctx {
 
 // events
 
-method clicked Slider { return true }
+method clicked Slider {
+	return true
+	setCursor 'move'
+}
+
 method rightClicked Slider { return true }
 
 method handDownOn Slider aHand {
+	setCursor 'move'
 	focusOn aHand this
 	handMoveFocus this aHand
 	return true
 }
 
+method handEnter Slider aHand {
+	setCursor 'move'
+}
+
+method handLeave Slider aHand {
+	setCursor 'default'
+}
+
 method handMoveFocus Slider aHand {
+	setCursor 'move'
 	if (orientation == 'horizontal') {
 		frac = (((x aHand) - (left morph)) / (width morph))
 	} (orientation == 'vertical') {
