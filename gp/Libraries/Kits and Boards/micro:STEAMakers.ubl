@@ -14,13 +14,13 @@ variables _ms_neoPixels _ms_neoPixels_on _sb_neoPixels_on _MiKe_circlePixels _ms
 
   spec ' ' 'ms_display' 'm꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _' 'color color color color color color color color color color color color color color color color color color color color color color color color color'
   spec ' ' 'ms_displayShape' 'm꞉s display #BR# _ #BR# with color _' 'microbitDisplay color' 15237440
-  spec ' ' 'ms_displayImage' 'm꞉s display #BR# image _ with color _' 'menu.led_imageMenu color num num' 'happy'
+  spec ' ' 'ms_displayImage' 'm꞉s display image _ with color _' 'menu.led_imageMenu color num num' 'happy'
   spec ' ' 'ms_clear_display' 'm꞉s clear display'
   spec ' ' 'ms_setGlobalBrightnessScale' 'm꞉s scale brightness to _ %' 'num' 100
   spec ' ' 'ms_plot' 'm꞉s plot x _ y _ with _' 'num num color' 3 3
   spec ' ' 'ms_unplot' 'm꞉s unplot x _ y _' 'num num' 3 3
   spec ' ' 'ms_displayCharacter' 'm꞉s display character _ with _' 'str color' 'A'
-  spec ' ' 'ms_scroll_text' 'm꞉s scroll text _ with color _  : pausing _ ms' 'str color num' 'micro:STEAMakers' nil 100
+  spec ' ' 'ms_scroll_text' 'm꞉s scroll text _ with color _ : pausing _ ms' 'str color num' 'micro:STEAMakers' nil 100
   spec ' ' 'ms_stopScrollingText' 'm꞉s stop scrolling'
   space
   spec ' ' 'ms_setup_audio' 'start micro꞉STEAMakers audio'
