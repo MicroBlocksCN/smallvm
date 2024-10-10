@@ -194,7 +194,6 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 	if (cmdIs this (last opcodes) 'codeEnd' 0) { removeLast opcodes } // remove final codeEnd
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
-	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
 	gpCode = (addHatBlock this chunkID chunkType gpCode)
 	if (isNil gpCode) {
 		return (newCommand 'comment' 'Stand-alone comment')
@@ -241,11 +240,10 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			arg = ((arg << 7) >> 8) // convert integer object to integer with sign extension
 			extraWords += 1
 		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
-			arg = (at chunkData i)
-			arg = (arg | ((at chunkData (i + 1)) << 8))
-			arg = (arg | ((at chunkData (i + 2)) << 16))
-			arg = (arg | ((at chunkData (i + 3)) << 24))
-			arg = (arg >> 1) // convert integer object to integer
+			arg = ((at chunkData i) >> 1)
+			arg = (arg | ((at chunkData (i + 1)) << 7))
+			arg = (arg | ((at chunkData (i + 2)) << 15))
+			arg = (arg | ((at chunkData (i + 3)) << 23))
 			extraWords += 2
 		} ('pushLiteral' == op) { // literal string
 			offset = (at chunkData i)
@@ -299,26 +297,6 @@ method removePrefix MicroBlocksDecompiler gpCode {
 		// remove 'recvBroadcast' from a parameterless function
 		msgName = (first (argList gpCode)) // record the message name
 		gpCode = (nextBlock gpCode)
-	}
-	return gpCode
-}
-
-method removeFinalReturn MicroBlocksDecompiler gpCode {
-	// Return possible final 'return false' from the code for a function.
-
-	if (isNil gpCode) { return nil }
-
-	// find the last two commands:
-	lastCmd = gpCode
-	while (notNil (nextBlock lastCmd)) {
-		nextToLastCmd = lastCmd
-		lastCmd = (nextBlock lastCmd)
-	}
-
-	// if the last command is a 'return false', remove it
-	if (and ('return' == (primName lastCmd)) (false == (first (argList lastCmd)))) {
-		if (gpCode == lastCmd) { return nil } // the return was the only command
-		setField nextToLastCmd 'nextBlock' nil
 	}
 	return gpCode
 }
