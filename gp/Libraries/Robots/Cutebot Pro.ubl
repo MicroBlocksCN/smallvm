@@ -103,7 +103,7 @@ to '_cbpro_clearEncodersAndOrientation' {
   _cppro_orientation = 0
 }
 
-to '_cbpro_getOrientation' wheel {
+to '_cbpro_getOrientation' {
   comment 'Get the approximate robot orientation based on the turns it has made.'
   return _cppro_orientation
 }
