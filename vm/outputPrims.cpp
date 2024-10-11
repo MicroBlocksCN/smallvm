@@ -526,6 +526,8 @@ static inline __attribute__((always_inline)) void DELAY_CYCLES(uint32_t cnt) {
 
 #endif
 
+#if !defined(ARDUINO_ARCH_RP2040)
+
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -548,6 +550,8 @@ inline void restoreIRQState(uint32 pmask) {
 		__set_PRIMASK(pmask);
 	#endif
 }
+
+#endif
 
 static int neoPixelBits = 24;
 static int neoPixelPinMask = 0;
@@ -843,7 +847,7 @@ static inline __attribute__((always_inline)) void PICO_DELAY_CYCLES(uint32_t cnt
 static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 	if (neoPixelPin < 0) return;
 
-	uint32_t oldInterruptStatus = save_and_disable_interrupts();
+	noInterrupts();
  	gpio_put(neoPixelPin, LOW);
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 500 nsecs
@@ -858,7 +862,7 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 			PICO_DELAY_CYCLES(50);
 		}
 	}
-	restore_interrupts(oldInterruptStatus);
+	interrupts();
 }
 
 #elif defined(ARDUINO_ARCH_RP2040) && defined(__MBED__) // Arduino framework (mbed)
@@ -889,7 +893,7 @@ static void initNeoPixelPin(int pinNum) {
 static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 mbed
 	if (!gpioNeopixelGPIO) return;
 
-	uint32_t oldInterruptStatus = save_and_disable_interrupts();
+	noInterrupts();
 	gpioNeopixelGPIO->write(LOW);
 	picoDelay(5); // 5 works, 2 works, 1 works, 0 fails
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
@@ -905,7 +909,7 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 mbed
 			picoDelay(9);
 		}
 	}
-	restore_interrupts(oldInterruptStatus);
+	interrupts();
 }
 
 #else // stub for boards without NeoPixels
