@@ -172,7 +172,7 @@ method fixLayout Block {
 		  isForcedBreak = (and (isClass each 'Text') (== (text each) '#BR#'))
 		  if isForcedBreak {
 			isArgSlot = true
-			setText each ''
+			setColor each (transparent)
 		    lineArgCount = 10
 		  } else {
 			x = (+ left indentation w)
