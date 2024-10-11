@@ -988,8 +988,8 @@ method applyUserPreferences MicroBlocksEditor {
 	}
 	if (notNil (at prefs 'darkMode')) {
 		darkMode = (at prefs 'darkMode')
-		darkModeChanged scripter
 	}
+	darkModeChanged scripter // applies proper colors to it all
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {

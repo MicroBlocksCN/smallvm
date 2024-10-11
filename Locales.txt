@@ -1828,7 +1828,7 @@ m꞉s unplot x _ y _
 
 m꞉s display character _ with _
 
-m꞉s scroll text _ with color _ : pausing _ ms
+m꞉s scroll text _ with color _ 
 
 m꞉s stop scrolling
 
