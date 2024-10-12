@@ -1,7 +1,7 @@
 module 'Scales & Chords' Data
 author MicroBlocks
 version 2 3 
-depends Rhythm 
+depends MIDI Rhythm Tone 
 choices sound_dst 'MIDI channel' 'tone pin' 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
 choices pentatonics major minor 
