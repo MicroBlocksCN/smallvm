@@ -450,35 +450,68 @@ method readLiteral MicroBlocksDecompiler chunkData startByte {
 	return (callWith 'string' (toArray stringBytes))
 }
 
-method readDecompilerMetadata MicroBlocksDecompiler lastInstruction {
+method bytesForLiteralAt MicroBlocksDecompiler chunkData startByte {
+	// Return the total number of bytes for the literal starting at the given index,
+	// include the header and padding bytes. Used to skip to the next literal.
+
+	chunkByteCount = (count chunkData)
+	byte0 = (at chunkData startByte)
+	objType = (byte0 & 15)
+	if (or (objType != 4) ((startByte + 3) > chunkByteCount)) {
+		print 'bad string literal type' // should not happen...
+		return (chunkByteCount - startByte) // skip to end
+	}
+	wordCount = (byte0 >> 4)
+	wordCount += ((at chunkData (startByte + 1)) << 4)
+	wordCount += ((at chunkData (startByte + 2)) << 12)
+	wordCount += ((at chunkData (startByte + 3)) << 20)
+	if ((+ startByte 4 (4 * wordCount)) > chunkByteCount) {
+		print 'bad string literal size' // should not happen...
+		return (chunkByteCount - startByte) // skip to end
+	}
+	return (4 * (wordCount + 1))
+}
+
+method readMetadata MicroBlocksDecompiler chunkData {
 	// Read decompiler metadata, if any, and return true if found.
+
+	if (isEmpty opcodes) { return false }
 
 	localNames = (array)
 	argNames = (array)
 	functionInfo = (array)
 
-	end = (count opcodes)
-	i = lastInstruction
-	while (240 != (cmdOp this (at opcodes i))) {
-		i += 1
-		if (i > end) { return false } // no meta information
+	codeEndOp = 127
+	metadataOp = 240
+	stringType = 4
+
+print chunkData
+print (count chunkData) 'bytes; lastOpcode:' (last opcodes)
+
+	i = ((2 * (first (last opcodes))) + 1)
+	if (codeEndOp == (at chunkData i)) { i += 2 } // skip extra codeEnd instruction
+	end = (count chunkData)
+	while (and (i < end) ((at chunkData i) != metadataOp)) {
+print '  i' i 'bytes for literal' (bytesForLiteralAt this chunkData i)
+		i += (bytesForLiteralAt this chunkData i)
 	}
-	i += 1 // skip the meta info marker (opcode 240)
-	if (i < end) {
-		s = (readLiteral this i)
-		localNames = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
+	if (or (i > end) (metadataOp != (at chunkData i))) {
+		return false // metadata tag not found
 	}
-	if (i < end) {
-		s = (readLiteral this i)
-		functionInfo = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
+	metadataStrings = (list)
+	while (i < end) {
+		start = (i + 1)
+		i = (indexOf chunkData 0 i) // find zero terminator
+		if (notNil i) {
+			stringBytes = (copyFromTo chunkData start (i - 1))
+			add metadataStrings (toString (toBinaryData (toArray stringBytes)))
+		} else {
+			i = end // terminate while loop
+		}
 	}
-	if (i < end) {
-		s = (readLiteral this i)
-		argNames = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
-	}
+print (count metadataStrings) metadataStrings
+return false
+
 	return true
 }
 
