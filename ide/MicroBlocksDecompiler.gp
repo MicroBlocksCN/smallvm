@@ -8,7 +8,7 @@
 // John Maloney, March, 2020
 // Converted to 16-bit instructions, September, 2024
 
-defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
+defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionName functionLibrary functionSpecInfo
 
 to newDecompiler {
 	return (initialize (new 'MicroBlocksDecompiler'))
@@ -103,14 +103,15 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 	funcName = (functionName aFunc)
 	targetLib = module
 
-	if ((count functionInfo) >= 6) { // use function info if available
+	if ((count functionSpecInfo) >= 3) { // use function info if available
 		// set the target library for this function
-		libName = (at functionInfo 1)
-		libCat = (at functionInfo 2)
+		libName = functionLibrary
 		if (libName != '') {
 			if (isNil (libraryNamed project libName)) { // create library module
 				targetLib = (newMicroBlocksModule libName)
-				setField targetLib 'moduleCategory' libCat
+				if (notNil functionLibrary) {
+					setField targetLib 'moduleCategory' (categoryForLibrary this libName)
+				}
 				setVersion targetLib (array 0 0) // unknown version
 				addLibrary project targetLib
 			}
@@ -118,9 +119,9 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 		}
 
 		 // create blockspec from function info
-		blockType = (at functionInfo 3)
-		specString = (at functionInfo 5)
-		typeString = (at functionInfo 6)
+		blockType = (at functionSpecInfo 1)
+		specString = (at functionSpecInfo 2)
+		typeString = (at functionSpecInfo 3)
 		defaults = (list)
 		spec = (blockSpecFromStrings funcName blockType specString typeString defaults)
 	} else { // no function info, so generate a blockspec
@@ -140,24 +141,24 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 	recordBlockSpec project funcName spec
 }
 
+method categoryForLibrary MicroBlocksDecompiler libName {
+	// xxx to do - return library category of built-in library if possible
+	return ''
+}
+
 method nameForFunction MicroBlocksDecompiler chunkID chunkData {
 	// If the function has a recvBroadcast opcode (i.e. it has no arguments)
 	// then use that as the function name. Otherwise, generate a name based on chunkID.
 
-	fName = (extractFunctionName this chunkData)
-	if (isNil fName) { fName = (join 'func' chunkID) }
-	return fName
-}
-
-method extractFunctionName MicroBlocksDecompiler chunkData {
-	extractOpcodes this chunkData
+	functionName = nil
+	extractOpcodes this chunkData // reads metadata
+	if (notNil functionName) { return functionName } // function name from metadata
 	if (and ((count opcodes) >= 3)
 			('recvBroadcast' == (cmdOp this (at opcodes 3)))
 			('pushLiteral' == (cmdOp this (at opcodes 2)))) {
-				return (cmdArg this (at opcodes 2))
+				return (cmdArg this (at opcodes 2)) // function name from recvBroadcast
 	}
-	if ((count functionInfo) > 3) { return (at functionInfo 4) }
-	return nil
+	return (join 'func' chunkID) // create a unique function name from chunkID
 }
 
 // Decompiling
@@ -283,8 +284,7 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 			i += 2
 		}
 	}
-//	hasMetadata = (readDecompilerMetadata this lastInstruction) // xxx To Do
-hasMetadata = false
+	hasMetadata = (readMetadata this chunkData)
 	if (not hasMetadata) { findArgs this } // no metadata; generate argument names if needed
 }
 
@@ -477,22 +477,20 @@ method readMetadata MicroBlocksDecompiler chunkData {
 
 	if (isEmpty opcodes) { return false }
 
+	functionName = nil
+	functionLibrary = nil
+	functionSpecInfo = (array)
 	localNames = (array)
 	argNames = (array)
-	functionInfo = (array)
 
 	codeEndOp = 127
 	metadataOp = 240
 	stringType = 4
 
-print chunkData
-print (count chunkData) 'bytes; lastOpcode:' (last opcodes)
-
 	i = ((2 * (first (last opcodes))) + 1)
 	if (codeEndOp == (at chunkData i)) { i += 2 } // skip extra codeEnd instruction
 	end = (count chunkData)
 	while (and (i < end) ((at chunkData i) != metadataOp)) {
-print '  i' i 'bytes for literal' (bytesForLiteralAt this chunkData i)
 		i += (bytesForLiteralAt this chunkData i)
 	}
 	if (or (i > end) (metadataOp != (at chunkData i))) {
@@ -509,8 +507,16 @@ print '  i' i 'bytes for literal' (bytesForLiteralAt this chunkData i)
 			i = end // terminate while loop
 		}
 	}
-print (count metadataStrings) metadataStrings
-return false
+	if ((count metadataStrings) < 4) { return false }
+
+	functionName = (at metadataStrings 1)
+	functionLibrary = (at metadataStrings 2)
+	functionSpecInfo = (splitWith (at metadataStrings 3) (string 9))
+
+	localCount = (cmdArg this (first opcodes))
+	localAndArgNames = (splitWith (at metadataStrings 4) (string 9))
+	localNames = (copyFromTo localAndArgNames 1 localCount)
+	argNames = (copyFromTo localAndArgNames (localCount + 1))
 
 	return true
 }
@@ -564,9 +570,10 @@ method addHatBlock MicroBlocksDecompiler chunkID chunkType gpCode {
 		// Note: result is Function object
 		if (not (contains funcs chunkID)) {
 			// this happens during testing when decompiling a single function
-			if ((count functionInfo) > 3) {
-				atPut funcs chunkID (at functionInfo 4)
+			if (isNil functionName) {
+				functionName = (join 'func' chunkID)
 			}
+			atPut funcs chunkID functionName
 		}
 		fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
 		result = (newFunction fName argNames gpCode module)
