@@ -1,7 +1,7 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 9
-depends TFT Strings Files NeoPixel NeoPanel
+version 1 9 
+depends TFT Strings Files NeoPixel NeoPanel 
 description '使用汉字取模数据在TFT屏幕上显示汉字
 v1.9 增加指定字体功能，可以切换字体显示
 v1.8 增加了英文字库，使英文可以和中文混排
@@ -28,10 +28,10 @@ https://www.bilibili.com/video/BV1R14y1172r/
 
 可以在示例的other分类找到此库的使用示例-chineseDisplay
 '
-variables _scrollStop _scrollPause _fontWidth _fontHeight _xx _yy _charFont _chars
+variables _scrollStop _scrollPause _fontWidth _fontHeight _xx _yy _charFont _chars 
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' '10100042440008E416151454541414F4040000402011011F111115155151311F1101' 0 0 1 nil ''
-  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _ width _ file _' 'str auto auto auto color auto str' '汉字' 10 '10' '2' nil 100 'cn.font'
+  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _ fileName _ width _' 'str num num num color str num' '汉字' 10 10 2 nil 'st.font' 100
   spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _' 'auto color auto num' '汉字' nil '10' 12
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
@@ -146,7 +146,7 @@ to draw data x y size color neo {
   }
 }
 
-to drawChar foo x y size color width fileName {
+to drawChar foo x y size color filename width {
   comment '最后一个参数可以输入字体文件名以改变字体'
   foo = ('[data:convertType]' foo 'string')
   local 'var' ''
@@ -154,7 +154,7 @@ to drawChar foo x y size color width fileName {
   _yy = y
   for i (size foo) {
     if (and (('[data:unicodeAt]' 1 (at i foo)) >= 19968) (('[data:unicodeAt]' 1 (at i foo)) <= 40959)) {
-      var = ('_fromFontFile' (at i foo) true fileName)
+      var = ('_fromFontFile' (at i foo) true filename)
     } else {
       '_loadEnFont'
       local 'var2' ('[data:find]' (at i foo) _chars)
