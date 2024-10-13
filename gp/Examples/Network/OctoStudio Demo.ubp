@@ -54,10 +54,6 @@ variables _octoGroup _octoLastBeamShape _octoLastBeamGroup _octoShapes _octoIsBe
   spec 'r' '_octoShapeForID' '_octoShapeForID _' 'num' 1
   spec 'r' '_octoMakeMessage' '_octoMakeMessage _' 'menu.octo_shapes' 'heart'
   spec 'r' '_octoHexDigit' '_octoHexDigit _' 'num' 10
-  spec ' ' '_octoStopBeam' 'obsolete _octoStopBeam'
-  spec 'r' 'octoReceiveBeam' 'obsolete Octo receive beam'
-  spec ' ' '_octoStartBeam' 'obsolete _octoStartBeam _' 'str' ''
-  spec 'r' '_octoReceiveBeam' 'obsolete _octoReceiveBeam'
 
 to '_octoHexDigit' n {
   return (at ((n & 15) + 1) '0123456789ABCDEF')
