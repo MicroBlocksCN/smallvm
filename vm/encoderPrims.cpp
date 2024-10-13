@@ -27,7 +27,8 @@
 #define NUM_ENCODERS 4
 
 typedef void (*interruptHandler)(void);
-static interruptHandler interruptHandlerFor(int encoderIndex); // forward reference
+static interruptHandler encoderInterruptHandlerFor(int encoderIndex); // forward reference
+static interruptHandler pulseInterruptHandlerFor(int encoderIndex);  // forward reference
 
 class Encoder {
 public:
@@ -60,7 +61,7 @@ public:
 			return -2; // a pin does not support interrupts
 		}
 
-		interruptHandler handler = interruptHandlerFor(encoderIndex);
+		interruptHandler handler = encoderInterruptHandlerFor(encoderIndex);
 		attachInterrupt(interruptA, handler, CHANGE);
 		if (fullRes) attachInterrupt(interruptB, handler, CHANGE);
 
@@ -70,6 +71,33 @@ public:
 		this->prevStateA = false;
 		this->prevStateB = false;
 		this->fullRes = fullRes;
+		return 0;
+	}
+
+	/*
+	 * Start a simple pulse counter (rising edges).
+	 *
+	 * This is safe to call if already counting; it stops counting
+	 * with the previously configured pin(s), then starts counting with the new one.
+	 *
+	 * Return:
+	 * • 0 on success
+	 * • 1 if no interrupt handler
+	 * • 2 if the pins are invalid (they must be different and must both must support interrupts)
+	 */
+	int startPulseCounter(int encoderIndex, uint8_t pinA) {
+		stopCounting();
+
+		int interruptA = digitalPinToInterrupt(pinA);
+		if (interruptA == -1) return -2; // a pin does not support interrupts
+
+		interruptHandler handler = pulseInterruptHandlerFor(encoderIndex);
+		attachInterrupt(interruptA, handler, RISING);
+
+		this->count = 0;
+		this->pinA = pinA;
+		this->pinB = -1;
+		this->fullRes = false;
 		return 0;
 	}
 
@@ -114,14 +142,30 @@ static void interruptHandler_1() { encoders[1].updateCount(); }
 static void interruptHandler_2() { encoders[2].updateCount(); }
 static void interruptHandler_3() { encoders[3].updateCount(); }
 
-static interruptHandler interruptHandlerFor(int encoderIndex) {
+static interruptHandler encoderInterruptHandlerFor(int encoderIndex) {
 	switch(encoderIndex) {
 		case 0: return interruptHandler_0; break;
 		case 1: return interruptHandler_1; break;
 		case 2: return interruptHandler_2; break;
 		case 3: return interruptHandler_3; break;
 	}
-	return interruptHandler_0; // will not get here encoderIndex is in range
+	return interruptHandler_0; // will not get here if encoderIndex is in range
+}
+
+// Each pulse counter has an interrupt handler function that increments the count.
+static void pulseInterruptHandler_0() { encoders[0].count++; }
+static void pulseInterruptHandler_1() { encoders[1].count++; }
+static void pulseInterruptHandler_2() { encoders[2].count++; }
+static void pulseInterruptHandler_3() { encoders[3].count++; }
+
+static interruptHandler pulseInterruptHandlerFor(int encoderIndex) {
+	switch(encoderIndex) {
+		case 0: return pulseInterruptHandler_0; break;
+		case 1: return pulseInterruptHandler_1; break;
+		case 2: return pulseInterruptHandler_2; break;
+		case 3: return pulseInterruptHandler_3; break;
+	}
+	return pulseInterruptHandler_0;
 }
 
 // Primitive Functions
@@ -176,6 +220,24 @@ static OBJ primEncoderCount(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+static OBJ primStartPulseCounter(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0]) || !isInt(args[1])) {
+		return fail(needsIntegerIndexError);
+	}
+	int encoderIndex = obj2int(args[0]) - 1;
+	int pin = obj2int(args[1]);
+
+	int err = 1;
+	if ((encoderIndex >= 0) && (encoderIndex < NUM_ENCODERS)) {
+		err = encoders[encoderIndex].startPulseCounter(encoderIndex, pin);
+	}
+	if (err != 0) return fail(encoderNotStarted);
+
+	return falseObj;
+}
+
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -183,6 +245,7 @@ static PrimEntry entries[] = {
 	{"stop", primEncoderStop},
 	{"reset", primEncoderReset},
 	{"count", primEncoderCount},
+	{"startPulseCounter", primStartPulseCounter},
 };
 
 void addEncoderPrims() {
