@@ -9,3 +9,4 @@ There are a fixed number of encoder channels. Each channel maintains a count of 
 	spec ' ' '[encoder:stop]'	'stop encoder _' 'num' 1
 	spec ' ' '[encoder:reset]'	'reset encoder _' 'num' 1
 	spec 'r' '[encoder:count]'	'encoder count _' 'num' 1
+	spec ' ' '[encoder:startPulseCounter]' 	'start pulse counter _ pin _' 'num num' 1 1
