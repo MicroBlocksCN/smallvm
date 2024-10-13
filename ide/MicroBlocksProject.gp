@@ -215,6 +215,7 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 		parts = (copyFromTo parts 1 4) // remove any default arg values
 	}
 
+	removeAt parts 2 // remove the function name
 	return (joinStrings parts (string 9)) // join fields with tab delimiter
 }
 

@@ -1223,14 +1223,14 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 		add bytes (arg & 255)
 	} ('metadata' == op) {
 		// metadata should be the last instruction, following the literals
- 		addAll bytes (toArray (toBinaryData (at instr 2))) // function name
- 		add bytes 0 // null terminator
+		addAll bytes (toArray (toBinaryData (at instr 2))) // function name
+		add bytes 0 // null terminator
 		addAll bytes (toArray (toBinaryData (at instr 3))) // function library
- 		add bytes 0 // null terminator
+		add bytes 0 // null terminator
 		addAll bytes (toArray (toBinaryData (at instr 4))) // function metadata
- 		add bytes 0 // null terminator
- 		addAll bytes (toArray (toBinaryData (at instr 5))) // local var and arg names
- 		add bytes 0 // null terminator
+		add bytes 0 // null terminator
+		addAll bytes (toArray (toBinaryData (at instr 5))) // local var and arg names
+		add bytes 0 // null terminator
 	} else {
 		error 'Argument does not fit in 8 bits'
 	}

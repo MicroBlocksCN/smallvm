@@ -402,6 +402,67 @@ method analyzeProject SmallRuntime {
 	return totalBytes
 }
 
+method metadataBytesInAllLibraries SmallRuntime {
+   // metadataBytesInAllProjects (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInAllProjects SmallRuntime {
+   // metadataBytesInAllProjects (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInAllLibraries SmallRuntime {
+   // metadataBytesInAllLibraries (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Libraries') {
+			clearProject (findMicroBlocksEditor)
+			importLibraryFromFile (scripter (findMicroBlocksEditor)) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInProject SmallRuntime {
+    // metadataBytesInProject (smallRuntime)
+
+    byteCount = 0
+	assignFunctionIDs this
+	for aFunction (allFunctions (project scripter)) {
+		byteCount += (metadataBytesFor this aFunction)
+	}
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // functions are handled above
+		    byteCount += (metadataBytesFor this aBlock)
+		}
+	}
+	return byteCount
+}
+
+method metadataBytesFor SmallRuntime aBlockOrFunction {
+	if (isClass aBlockOrFunction 'String') { // look up function by name
+		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
+		if (isNil aBlockOrFunction) { return (list) } // unknown function
+	}
+	opcodes = (list)
+	appendDecompilerMetadata (initialize (new 'SmallCompiler')) aBlockOrFunction opcodes
+	metadata = (joinStrings (copyFromTo (last opcodes) 2) (string 9))
+    return (byteCount metadata)
+}
+
 // Decompiling
 
 method readCodeFromNextBoardConnected SmallRuntime {
