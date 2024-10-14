@@ -12,7 +12,7 @@ method initialize ColorSlot {
   setGrabRule morph 'defer'
   setTransparentTouch morph true
   contents = (color 35 190 30)
-  size = (24 * (blockScale))
+  size = (20 * (blockScale))
   setExtent morph size size
   return this
 }
