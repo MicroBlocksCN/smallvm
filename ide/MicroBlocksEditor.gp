@@ -1391,6 +1391,7 @@ method readCustomTranslation MicroBlocksEditor fName {
 method languageChanged MicroBlocksEditor {
   setCursor 'wait'
   languageChanged scripter
+  updateIndicator this true
   addZoomButtonHints this
   setCursor 'default'
 }
