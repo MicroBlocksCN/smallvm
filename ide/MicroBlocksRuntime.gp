@@ -2967,28 +2967,7 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 				(newline) (newline))
 		}
 	}
-	msg = (join
-		prefix
-		(localized 'You will be asked to save the firmware file.')
-		(newline)
-		(newline)
-		(localized 'Select')
-		' ' driveName ' '
-		(localized 'as the destination drive, then click Save.'))
-	if (beginsWith boardName 'micro:bit') {
-	    msg = (join
-	        msg
-	        (newline)
-	        (newline)
-	        (localized 'If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.'))
-	}
-	if (beginsWith boardName 'Calliope') {
-	    msg = (join
-	        msg
-	        (newline)
-	        (newline)
-	        (localized 'If your Calliope mini shows a sad face, save the firmware.hex file to your disk then drop it onto the MINI drive.'))
-	}
+	msg = (join prefix (localized 'Save the firmware file when prompted.'))
 	response = (inform msg (localized 'Firmware Install'))
 	if (isNil response) { return }
 
@@ -3001,20 +2980,25 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	updateIndicator (findMicroBlocksEditor)
 
 	if (endsWith vmFileName '.hex') {
-		// for micro:bit, filename must be less than 9 letter before the extension
-		vmFileName = 'firmware.hex'
-		waitForFirmwareInstall this
+		// for micro:bit & calliope, filename must be less than 9 letter before the extension
+		filePart = (filePart vmFileName)
+		vmFileName = (join (substring filePart 1 (min 9 (count filePart))) '.hex')
 	}
 
 	browserWriteFile vmData vmFileName 'vmInstall'
+    waitMSecs 5000 // leave time for file to download before showing next prompt
+
+    inform (join (localized 'Drag the firmware file you just saved to the ') driveName ' drive.')
+    waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 
 	if (endsWith vmFileName '.uf2') {
-		waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 		if (or ('MAKERBOOT' == driveName) ('RPI-RP2' == driveName)) {
 			otherReconnectMessage this
 		} else {
 			adaFruitReconnectMessage this
 		}
+	} else {
+	    otherReconnectMessage this
 	}
 }
 
@@ -3042,6 +3026,8 @@ method otherReconnectMessage SmallRuntime {
 	msg = (localized 'Reconnect to the board by clicking the "Connect" button (USB icon).')
 	inform (global 'page') msg title nil true
 }
+
+// Countdown for firmware install on nRF5x boards; not currently used
 
 method waitForFirmwareInstall SmallRuntime {
 	firmwareInstallTimer = nil
