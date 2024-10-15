@@ -1,6 +1,6 @@
 module MakerPort Output
 author MicroBlocks
-version 2 0 
+version 2 1 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 choices makerport_loudnessPin 'mp3 player' 'analog pin (13)' 'extra pin (17)' 
@@ -12,7 +12,6 @@ variables _makerport_microSDInserted
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' true
   space
   spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs : volume _ (0-10)' 'num num num' 440 100 10
-  spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
@@ -25,7 +24,6 @@ to makerport_beep freq msecs optionalVolume {
   local 'cycles' ((500 * msecs) / halfCycleTime)
   local 'amplitude' (50 * (argOrDefault 3 10))
   amplitude = (maximum 0 (minimum amplitude 1023))
-  digitalWriteOp 19 true
   repeat cycles {
     analogWriteOp 0 amplitude
     waitMicros halfCycleTime
@@ -41,11 +39,6 @@ to makerport_initialize {
     attachIR 22
   } else {
     attachIR 18
-    if (makerport_mp3_hasCard) {
-      makerport_setAudioSource 'MP3'
-    } else {
-      makerport_setAudioSource 'Tone'
-    }
   }
 }
 
@@ -105,10 +98,6 @@ to makerport_setAllLEDs bool {
   for pin 12 {
     digitalWriteOp pin bool
   }
-}
-
-to makerport_setAudioSource src {
-  digitalWriteOp 19 (src != 'MP3')
 }
 
 to makerport_typeString s {
