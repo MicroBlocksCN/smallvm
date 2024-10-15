@@ -282,7 +282,7 @@ to 'paj7620 read' {
   } ((g & 8) != 0) {
     msg = 'down'
   } ((g & 16) != 0) {
-    msg = 'fordward'
+    msg = 'forward'
   } ((g & 32) != 0) {
     msg = 'backward'
   } ((g & 64) != 0) {
