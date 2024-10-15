@@ -1,6 +1,6 @@
 module XRP Output
 author 'Russell Owen'
-version 0 11 
+version 0 12 
 depends 'Encoded DC Motors' Servo 'Distance (HC-SR04)' 
 description 'Drive the WPI XRP robot'
 variables _xrp__imuAddress 
@@ -49,17 +49,17 @@ Assume that _init_edcmotors_variables has been called, so that all lists exist.'
   comment 'If you are controlling more than the standard 2 wheel motors,
 you may want to tweak the following lines to specify different tuning parameters for the extra motors,
 especially if the extra motors are not the same as the wheel motors.'
-  atPut 'all' _edcmotors__pCoeff 2000
+  atPut 'all' _edcmotors__pCoeff 5000
   atPut 'all' _edcmotors__iCoeff 0
   atPut 'all' _edcmotors__dCoeff 0
-  atPut 'all' _edcmotors__deadband 10
+  atPut 'all' _edcmotors__deadband 5
   atPut 'all' _edcmotors__minEffort 300
   atPut 'all' _edcmotors__maxEffort 1023
   atPut 'all' _edcmotors__maxIntegral 10
   comment 'Approximate maximum motor speed (encoder counts/second) with no load.'
   atPut 'all' _edcmotors__maxSpeed 1800
   comment 'Acceleration for point to point moves (encoder counts/second^2)'
-  atPut 'all' _edcmotors__accel 2500
+  atPut 'all' _edcmotors__accel 1250
   atPut 1 _edcmotors__pinEncoderA 4
   atPut 1 _edcmotors__pinEncoderB 5
   atPut 1 _edcmotors__pinDirection 6
@@ -95,7 +95,7 @@ See section 9.16 of https://www.st.com/resource/en/datasheet/lsm6dsox.pdf for de
 to '_xrp_mmToCounts' mm {
   comment 'Convert mm to encoder counts.
 Use a hard-coded constant to avoid having to check initialization.'
-  return ((mm * 1000) / 322)
+  return ((mm * 1000) / 644)
 }
 
 to '_xrp_scaleRollPitchOrYaw' speed {
@@ -188,7 +188,7 @@ to xrp_turnAngle angle speed {
 moving the wheel at the specified speed (mm/second).
 Rotate about a point halfway between the wheels.'
   local 'speedCounts' (pid_applySign angle ('_xrp_mmToCounts' speed))
-  local 'distanceCounts' ((41978 * angle) / 10000)
+  local 'distanceCounts' ((20989 * angle) / 10000)
   edcmotors_moveMotorDistance 1 distanceCounts speedCounts
   edcmotors_moveMotorDistance 2 distanceCounts speedCounts
 }
