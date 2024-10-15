@@ -1838,8 +1838,14 @@ posa la nota MIDI _ a _ al canal _ volum _
 note _ octave _ to MIDI key
 nota _ octava _ a tecla MIDI
 
+select MIDI instrument _ number _ for channel _
+selecciona instrument MIDI _ número _ pel canal _
+
 select MIDI instrument _ for channel _
-selecciona instrument MIDI _ per al canal _
+selecciona instrument MIDI _ pel canal _
+
+variation _
+variació _
 
 instrument _ number _
 instrument _ número _

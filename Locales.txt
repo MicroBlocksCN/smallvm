@@ -1268,7 +1268,11 @@ set MIDI note _ to _ on channel _ volume _
 
 note _ octave _ to MIDI key
 
+select MIDI instrument _ number _ for channel _
+
 select MIDI instrument _ for channel _
+
+variation _
 
 instrument _ number _
 
