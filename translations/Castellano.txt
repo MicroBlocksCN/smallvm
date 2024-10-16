@@ -1827,7 +1827,7 @@ efecto 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
-toca nota MIDI _ durante _ ms en el canal _ volumen _
+toca nota MIDI _ durante _ ms en el canal _ #BR# volumen _
 
 stop all notes on channel _
 detén todas las notas en el canal _
