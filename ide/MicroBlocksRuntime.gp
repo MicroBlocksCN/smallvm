@@ -2988,7 +2988,7 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	browserWriteFile vmData vmFileName 'vmInstall'
     waitMSecs 5000 // leave time for file to download before showing next prompt
 
-    inform (join (localized 'Drag the firmware file you just saved to the ') driveName ' drive.')
+    inform (join (localized 'Drag the firmware file you just saved to the') ' ' driveName ' ' (localized 'drive') '.')
     waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 
 	if (endsWith vmFileName '.uf2') {
