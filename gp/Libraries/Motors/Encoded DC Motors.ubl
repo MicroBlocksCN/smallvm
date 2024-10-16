@@ -1,9 +1,9 @@
 module 'Encoded DC Motors' Output
 author 'Russell Owen'
-version 0 11 
+version 0 12 
 depends PID 
 description 'Drive DC motors with encoders'
-variables edcmotors__encoderPosition _edcmotors__initialized _edcmotors__running _edcmotors__numMotors _edcmotors__maxSpeed _edcmotors__accel _edcmotors__pinDutyCycle _edcmotors__pinEncoderA _edcmotors__pinEncoderB _edcmotors__pinDirection _edcmotors__prevEncoderAState _edcmotors__prevEncoderBState _edcmotors__targetStartMillis _edcmotors__targetList _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort _edcmotors__maxIntegral 
+variables _edcmotors__initialized _edcmotors__running _edcmotors__numMotors _edcmotors__maxSpeed _edcmotors__accel _edcmotors__pinDutyCycle _edcmotors__pinEncoderA _edcmotors__pinEncoderB _edcmotors__pinDirection _edcmotors__targetStartMillis _edcmotors__targetList _edcmotors__pCoeff _edcmotors__iCoeff _edcmotors__dCoeff _edcmotors__deadband _edcmotors__minEffort _edcmotors__maxEffort _edcmotors__maxIntegral 
 
   spec ' ' 'edcmotors_moveMotorAtSpeed' 'move motor _ at speed _ (encoder counts/sec)' 'num num' 1 500
   spec ' ' 'edcmotors_moveMotorDistance' 'move motor _ distance _ (encoder counts) at max speed _ (counts/sec)' 'num num num' 1 100 500
@@ -24,7 +24,6 @@ variables edcmotors__encoderPosition _edcmotors__initialized _edcmotors__running
   spec 'r' '_edcmotors_constrainSpeed' '_constrain speed for index _ desired speed _ (encoder counts/sec)' 'num num' 1 500
   spec ' ' '_edcmotors_initLibrary' '_edcmotors init library'
   spec ' ' '_edcmotors_initVariables' '_edcmotors init variables'
-  spec ' ' '_edcmotors_monitorEncoders' '_monitor motor encoders'
   spec ' ' '_edcmotors_moveMotorAlongPathList' '_move motor _ along path list _' 'num auto' 1 'list of [millis, pos, vel, accel] path segments'
   spec ' ' '_edcmotors_setRunning' '_set running state of motor _ to _' 'num bool' 1 false
   spec ' ' '_edcmotors_stopOneMotor' '_stop one motor _' 'num' 1
@@ -123,7 +122,7 @@ in order for edcmotors_moveMotorAtSpeed and edcmotors_moveMotorDistance to work.
         if (and ((at 3 targetPositionSpeedState) > 0) (edcmotors_isRunning index)) {
           comment 'Either we are still in the path (state=1) or the path has ended (state=2) and we have not yet arrived'
           comment 'Note: simple subtraction handles encoder wraparound automatically'
-          positionError = ((at 1 targetPositionSpeedState) - (at index edcmotors__encoderPosition))
+          positionError = ((at 1 targetPositionSpeedState) - ('[encoder:count]' index))
           correction = (pid_computePID index positionError (at index _edcmotors__pCoeff) (at index _edcmotors__iCoeff) (at index _edcmotors__dCoeff) (at index _edcmotors__maxIntegral))
           comment 'Compute predicted ("feed forward") effort.'
           effort = (((at 2 targetPositionSpeedState) * (at index _edcmotors__maxEffort)) / (at index _edcmotors__maxSpeed))
@@ -205,10 +204,12 @@ Defaults to an XRP robot kit with 2 motors; change this code for other systems'
     }
     '_edcmotors_initVariables'
     '_edcmotors_initSystemVariables'
+    for motor (edcmotors_getNumMotors) {
+      '[encoder:start]' motor (at motor _edcmotors__pinEncoderA) (at motor _edcmotors__pinEncoderB)
+    }
     _edcmotors__initialized = (booleanConstant true)
   }
   '_edcmotors_checkSystem'
-  sendBroadcast '_edcmotors_monitorEncoders'
   sendBroadcast '_edcmotors_driveMotorsToFollowTarget'
 }
 
@@ -216,9 +217,6 @@ to '_edcmotors_initVariables' {
   comment 'Initialize variables whose values do not depend on the type of system,
 and create all lists (but do not set values) of variables that are system-specific.'
   _edcmotors__running = 0
-  edcmotors__encoderPosition = (newList _edcmotors__numMotors 0)
-  _edcmotors__prevEncoderAState = (newList _edcmotors__numMotors (booleanConstant false))
-  _edcmotors__prevEncoderBState = (newList _edcmotors__numMotors (booleanConstant false))
   _edcmotors__targetStartMillis = (newList _edcmotors__numMotors -1)
   comment 'A list of target segments of constant acceleration,
 each of the form: [durationMillis startPosition startSpeed acceleration].
@@ -240,33 +238,6 @@ and to specify the speed for constant-speed moves.'
   _edcmotors__pinEncoderB = (newList _edcmotors__numMotors 0)
   _edcmotors__pinDirection = (newList _edcmotors__numMotors 0)
   _edcmotors__pinDutyCycle = (newList _edcmotors__numMotors 0)
-}
-
-to '_edcmotors_monitorEncoders' {
-  comment 'Monitor the motor encoders.
-This is a background tasks (and an infinite loop) which must be running
-in order for the remaining code to know where the wheels are.
-The encoders are assumed to be quadrature incremental encoders.'
-  '_edcmotors_initLibrary'
-  local 'encoderAState' (booleanConstant false)
-  local 'encoderBState' (booleanConstant false)
-  local 'prevEncoderAState' (booleanConstant false)
-  local 'prevEncoderBState' (booleanConstant false)
-  forever {
-    for index _edcmotors__numMotors {
-      encoderAState = (digitalReadOp (at index _edcmotors__pinEncoderA))
-      encoderBState = (digitalReadOp (at index _edcmotors__pinEncoderB))
-      prevEncoderAState = (at index _edcmotors__prevEncoderAState)
-      prevEncoderBState = (at index _edcmotors__prevEncoderBState)
-      if (encoderAState != prevEncoderAState) {
-        atPut index _edcmotors__prevEncoderAState encoderAState
-        atPut index edcmotors__encoderPosition ((at index edcmotors__encoderPosition) + (ifExpression (encoderAState == encoderBState) -1 1))
-      } (encoderBState != prevEncoderBState) {
-        atPut index _edcmotors__prevEncoderBState encoderBState
-        atPut index edcmotors__encoderPosition ((at index edcmotors__encoderPosition) + (ifExpression (encoderAState == encoderBState) 1 -1))
-      }
-    }
-  }
 }
 
 to '_edcmotors_moveMotorAlongPathList' index pathList {
@@ -350,7 +321,7 @@ Thus the usable range of effort is usually rather small.'
 to edcmotors_resetMotorEncoders {
   '_edcmotors_initLibrary'
   for index (pushArgCount) {
-    atPut (getArg index) edcmotors__encoderPosition 0
+    '[encoder:reset]' (getArg index)
   }
 }
 
