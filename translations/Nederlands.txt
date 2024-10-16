@@ -3926,6 +3926,9 @@ Bevestig
 
 # Library folders
 
+LIBRARIES
+BIBLIOTHEKEN
+
 Libraries
 Bibliotheken
 

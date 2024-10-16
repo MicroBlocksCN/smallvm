@@ -2708,6 +2708,8 @@ Confirm
 
 # Library folders
 
+LIBRARIES
+
 Libraries
 
 AI

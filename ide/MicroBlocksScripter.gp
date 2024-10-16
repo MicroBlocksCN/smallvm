@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libFrame libAddButton lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer gradient
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libFrame libAddButton libAddIcons lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer gradient
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -186,17 +186,31 @@ method makeLibraryHeader MicroBlocksScripter {
 
 method updateLibraryHeader MicroBlocksScripter {
   labelM = (first (parts (morph libHeader)))
-  setText (handler labelM) (localized 'LIBRARIES')
+  if ((width (morph categorySelector)) > 75) {
+	setText (handler labelM) (localized 'LIBRARIES')
+  } else {
+	setText (handler labelM) (localized 'LIBS')
+  }
 }
 
 method fixLibraryHeaderLayout MicroBlocksScripter {
   hLine = (last (parts (morph libHeader)))
   setExtent hLine ((width (morph categorySelector)) - 24) (global 'scale')
+  updateLibraryHeader this
   setRight hLine (right (owner hLine))
 }
 
 method updateLibraryButton MicroBlocksScripter {
-  drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+  if (isNil libAddIcons) {
+	bm1 = (readSVGIcon 'plus1')
+	bm2 = (readSVGIcon 'plus2')
+	libAddIcons = (array bm1 bm2)
+  }
+  if ((width (morph categorySelector)) > 75) {
+	drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+  } else {
+	replaceCostumes libAddButton (at libAddIcons 1) (at libAddIcons 2) (at libAddIcons 2)
+  }
 }
 
 method makeAddLibraryButton MicroBlocksScripter {
@@ -351,6 +365,7 @@ method fixLayout MicroBlocksScripter {
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
+  updateLibraryButton this
   updateSliders blocksFrame
   updateSliders scriptsFrame
   updateTrashcanPosition this
