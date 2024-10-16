@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: March 14 2023
+# Last updated: October 03 2024
 
 #########################
 # Blocks and categories #
@@ -150,10 +150,10 @@ last message
 último mensaje
 
 arg _ default _
---MISSING--
+parámetro _ con valor por defecto _
 
 default
---MISSING--
+defecto
 
 call _
 llama _
@@ -205,6 +205,9 @@ _ es un _
 
 convert _ to _
 convertir _ a _
+
+if _ then _ else _
+si _ entonces _ si no _
 
 boolean
 booleano
@@ -416,13 +419,13 @@ serial write _
 escribe _ al puerto serie
 
 anIntegerStringListOrByteArray
---MISSING--
+unEnteroTextoListaOlistaDeBytes
 
 serial write _ starting at _
 escribe _ al puerto serie empezando por _
 
 aStringListOrByteArray
---MISSING--
+unTextoListaOlistaDeBytes
 
 soft serial write byte _ pin _ baud _
 escribe byte _ al puerto serie virtual en pin _ a _ baudios
@@ -853,8 +856,11 @@ envía al dispositivo IR _ el comando _
 Keyboard and Mouse
 Teclado y Ratón
 
-press key _ : while holding _
-pulsa la tecla _ : manteniendo _
+press key _
+pulsa tecla _
+
+while holding _
+manteniendo _ pulsado
 
 hold key _
 mantén la tecla _ pulsada
@@ -1030,10 +1036,10 @@ _ números pseudoaleatorios entre _ y _ con semilla _
 # BLE Keyboard library
 
 BLE Keyboard
---MISSING--
+Teclado BLE
 
 start BLE Keyboard
---MISSING--
+inicia teclado BLE
 
 ####
 # Radio comm library
@@ -1230,6 +1236,7 @@ cuadrado pequeño
 
 scissors
 tijeras
+
 
 ####
 # OLED Graphics library
@@ -1820,7 +1827,10 @@ efecto 2
 # library blocks
 
 play MIDI note _ for _ ms on channel _ volume _
-toca nota MIDI _ durante _ ms en el canal _ volumen _
+toca nota MIDI _ durante _ ms en el canal _ #BR# volumen _
+
+stop all notes on channel _
+detén todas las notas en el canal _
 
 set MIDI note _ to _ on channel _ volume _
 pon la nota MIDI _ a _ en el canal _ volumen _
@@ -1828,8 +1838,14 @@ pon la nota MIDI _ a _ en el canal _ volumen _
 note _ octave _ to MIDI key
 nota _ octava _ a tecla MIDI
 
+select MIDI instrument _ number _ for channel _
+selecciona instrumento MIDI _ número _ para el canal _
+
 select MIDI instrument _ for channel _
 selecciona instrumento MIDI _ para el canal _
+
+variation _
+variación _
 
 instrument _ number _
 instrumento _ número _
@@ -2357,8 +2373,8 @@ pressión del toque a la TFT
 HTTP client
 Cliente HTTP
 
-_ data _ to http܃// _
-petición _ con contenido _ a http܃// _
+_ data _ to http #SVG#colon-double-slash _
+petición _ con contenido _ a http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 MicroBlocks es divertido
@@ -2548,6 +2564,129 @@ MiKe gira luces en _
 
 MiKe digital D8 to _
 Mike fija actuador D8 a _
+
+####
+# Shield:bit
+
+s꞉b LEDs off
+s꞉b apaga los LED
+
+s꞉b LEDs to _
+s꞉b LEDs a _
+
+s꞉b LED _ (1-4) to _
+s꞉b LED _ (1-4) a _
+
+s꞉b audio output to shield _
+s꞉b salida de audio por la shield:bit _
+
+s꞉b stop _
+s꞉b para _
+
+s꞉b turn 180 servo S- _ (1-8) to angle _
+s꞉b gira el servo 180 S- _ (1-8) al ángulo _
+
+s꞉b turn 360 servo S- _ (1-8) _ at _ %
+s꞉b gira el servo 360 S- _ (1-8) _ a _ %
+
+s꞉b turn DC M- _ (1-4) motor _ at _ %
+s꞉b gira el motor CC M- _ (1-4) _ a _ %
+
+s꞉b turn Stepper- _ (1-2) motor _ for _ _
+s꞉b gira el motor PaP- _ (1-2) _ per _ _
+
+s꞉b set pin S- _ (1-8) to _ %
+s꞉b pon el pin S- _ (1-8) a _ %
+
+sb_DC/Stepper_motors
+motores paso a paso/CC
+
+sb_servomotors
+servomotores
+
+sb_all_motors
+todos los motores
+
+turns
+vueltas
+
+degrees
+grados
+
+####
+# micro:STEAMakers
+
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+m꞉s pantalla #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+
+m꞉s display #BR# _ #BR# with color _
+m꞉s pantalla #BR# _ #BR# con el color _
+
+m꞉s display image _ with color _
+m꞉s muestra la imagen _ con el color _
+
+m꞉s clear display
+m꞉s limpia la pantalla
+
+m꞉s scale brightness to _ %
+m꞉s escala el brillo al _ %
+
+m꞉s plot x _ y _ with _
+m꞉s enciende x _ y _ con _
+
+m꞉s unplot x _ y _
+m꞉s apaga x _ y _
+
+m꞉s display character _ with _
+m꞉s muestra el carácter _ con _
+
+m꞉s scroll text _ with color _ 
+m꞉s anima el texto _ con el color _ 
+
+m꞉s stop scrolling
+m꞉s detén la animación
+
+start micro꞉STEAMakers audio
+inicia el audio de micro꞉STEAMakers
+
+m꞉s button _ ?
+m꞉s botón _ ?
+
+m꞉s touching ?
+m꞉s táctil ?
+
+m꞉s light %
+m꞉s luz %
+
+m꞉s sound %
+m꞉s sonido %
+
+m꞉s temperature ºC
+m꞉s temperatura ºC
+
+m꞉s humidity %
+m꞉s humedad %
+
+m꞉s inclination towards _ º
+m꞉s inclinación hacia _ º
+
+m꞉s energy _
+m꞉s energía _
+
+m꞉s _ energy meter
+m꞉s _ la medida de energia
+
+m꞉s energy consumption (µWh)
+m꞉s consumo energético (µWh)
+
+start
+arranca
+
+reset
+resetea
+
+down
+abajo
 
 ####
 # DrawBot Library
@@ -2866,7 +3005,7 @@ MQTT sub _
 suscríbete al tema de MQTT _
 
 testTopic
---MISSING--
+temaDePrueba
 
 MQTT unsub _
 abandona el tema de MQTT _
@@ -3170,17 +3309,24 @@ Octopus OLED dibuja un círculo x _ y _ radio _
 Octopus OLED fill circle x _ y _ radius _
 Octopus OLED dibuja un círculo sólido x _ y _ radio _
 
+
 ####
 # OctoStudio
-
-Octo start
-inicia Octo
 
 Octo beam to phones _
 envía _ a teléfonos vía Octo
 
 duration _ ms
 duración _ ms
+
+Octo beam received?
+--MISSING--
+
+Octo last beam
+--MISSING--
+
+Octo set group _ (0-99)
+--MISSING--
 
 Octo receive beam
 recibe de teléfonos vía Octo
@@ -3237,7 +3383,7 @@ connect
 conecta
 
 connect (BLE)
---MISSING--
+conecta (BLE)
 
 open Boardie
 conéctate a Boardie
@@ -3380,13 +3526,13 @@ printable (200%)
 para impresión (200%)
 
 duplicate selection
---MISSING--
+duplica selección
 
 drag selection
---MISSING--
+arrastra selección
 
 delete selection
---MISSING--
+elimina selección
 
 about...
 sobre...
@@ -3401,10 +3547,10 @@ update firmware on board
 actualiza firmware de la placa
 
 enable or disable BLE
---MISSING--
+activa o desactiva BLE
 
 Allow the attached board to be connected via BLE?
---MISSING--
+¿Permitir que la placa conectada se pueda programar por BLE?
 
 show data graph
 muestra el gráfico de datos
@@ -3431,7 +3577,7 @@ disable autoloading board libraries
 desactivar autocarga de librerías de placa
 
 compact code store
---MISSING--
+compacta el código almacenado
 
 enable autoloading board libraries
 activar autocarga de librerías de placa
@@ -3470,7 +3616,7 @@ Use board type
 ¿La placa conectada es de tipo
 
 Firmware Install
---MISSING--
+Instalación del firmware
 
 Firmware Installed
 Firmware instalado
@@ -3491,7 +3637,16 @@ as the destination drive, then click Save.
 como unidad de desinación y haz clic en Guarda.
 
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
---MISSING--
+Si tu micro:bit muestra una cara triste, guarda el fichero firmware.hex en tu ordenador, y después arrástralo a la unidad MICROBIT que encontrarás en el explorador de ficheros.
+
+Save the firmware file when prompted.
+Guarda el archivo de firmware cuando se te pida.
+
+Drag the firmware file you just saved to the
+Arrastra el archivo de firmware qua acabas de guardar hacia la unidad
+
+drive
+
 
 Installing firmware...
 Instalando firmware...
@@ -4284,6 +4439,5 @@ Reporta una lista de bytes que contenga los bytes UTF-8 de la cadena de texto es
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de palabras (grupos de 32 bits, o 4 bytes) de memoria disponibles.
-
 
 
