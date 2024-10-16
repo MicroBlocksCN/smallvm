@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: March 14 2023
+# Last updated: October 03 2024
 
 #########################
 # Blocks and categories #
@@ -204,6 +204,9 @@ _ is a _
 _ is een _
 
 convert _ to _
+--MISSING--
+
+if _ then _ else _
 --MISSING--
 
 boolean
@@ -853,7 +856,10 @@ IR zend device _ command _
 Keyboard and Mouse
 --MISSING--
 
-press key _ : while holding _
+press key _
+--MISSING--
+
+while holding _
 --MISSING--
 
 hold key _
@@ -877,7 +883,7 @@ Alt / ⌥
 Logo / ⌘
 --MISSING--
 
-AltGr 
+AltGr
 --MISSING--
 
 enter
@@ -998,6 +1004,9 @@ shuffle _
 sort _
 --MISSING--
 
+unique _
+--MISSING--
+
 shuffled _
 --MISSING--
 
@@ -1005,6 +1014,22 @@ reversed _
 --MISSING--
 
 sorted _
+--MISSING--
+
+uniqued _
+--MISSING--
+
+####
+# Pseudorandomness
+# Creates pseudorandom numbers and lists of numbers given a particular seed
+
+Pseudorandomness
+--MISSING--
+
+pseudorandom _ to _ with seed _
+--MISSING--
+
+_ pseudorandom numbers _ to _ with seed _
 --MISSING--
 
 ####
@@ -1072,6 +1097,9 @@ LED scherm
 display _
 scherm _
 
+display image _
+--MISSING--
+
 clear display
 wis scherm
 
@@ -1086,6 +1114,129 @@ wis x _ y _
 
 display character _
 toon teken _
+
+# Image names for the "display image" block
+
+heart
+--MISSING--
+
+small heart
+--MISSING--
+
+yes
+--MISSING--
+
+no
+--MISSING--
+
+happy
+--MISSING--
+
+sad
+--MISSING--
+
+confused
+--MISSING--
+
+angry
+--MISSING--
+
+asleep
+--MISSING--
+
+surprised
+--MISSING--
+
+silly
+--MISSING--
+
+fabulous
+--MISSING--
+
+meh
+--MISSING--
+
+t-shirt
+--MISSING--
+
+roller skate
+--MISSING--
+
+duck
+--MISSING--
+
+house
+--MISSING--
+
+tortoise
+--MISSING--
+
+butterfly
+--MISSING--
+
+stick figure
+--MISSING--
+
+ghost
+--MISSING--
+
+sword
+--MISSING--
+
+giraffe
+--MISSING--
+
+skull
+--MISSING--
+
+umbrella
+--MISSING--
+
+snake
+--MISSING--
+
+rabbit
+--MISSING--
+
+cow
+--MISSING--
+
+quarter note
+--MISSING--
+
+eight note
+--MISSING--
+
+pitchfork
+--MISSING--
+
+target
+--MISSING--
+
+triangle
+--MISSING--
+
+left triangle
+--MISSING--
+
+chess board
+--MISSING--
+
+diamond
+--MISSING--
+
+small diamond
+--MISSING--
+
+square
+--MISSING--
+
+small square
+--MISSING--
+
+scissors
+--MISSING--
+
 
 ####
 # OLED Graphics library
@@ -1358,19 +1509,22 @@ Rhythm
 set tempo to _ bpm at _ / _ signature
 --MISSING--
 
-start counting _ bars
---MISSING--
-
-stop counting
---MISSING--
-
-wait until next _
+set pattern to _ bars
 --MISSING--
 
 current beat
 --MISSING--
 
 current bar
+--MISSING--
+
+wait until next _ duration
+--MISSING--
+
+wait until beat _
+--MISSING--
+
+wait until bar _
 --MISSING--
 
 ####
@@ -1436,19 +1590,19 @@ Chinese Cymbal
 Ride Bell
 --MISSING--
 
-Tambourine 
+Tambourine
 --MISSING--
 
 Splash Cymbal
 --MISSING--
 
-Cowbell 
+Cowbell
 --MISSING--
 
 Crash Cymbal 2
 --MISSING--
 
-Vibraslap 
+Vibraslap
 --MISSING--
 
 Ride Cymbal 2
@@ -1484,7 +1638,7 @@ Low Agogo
 Cabasa
 --MISSING--
 
-Maracas 
+Maracas
 --MISSING--
 
 Short Whistle
@@ -1499,7 +1653,7 @@ Short Guiro
 Long Guiro
 --MISSING--
 
-Claves 
+Claves
 --MISSING--
 
 Hi Wood Block
@@ -1522,7 +1676,7 @@ Open Triangle
 
 # General MIDI instrument categories
 
-piano 
+piano
 --MISSING--
 
 chromatic percussion
@@ -1549,7 +1703,7 @@ brass
 reed
 --MISSING--
 
-pipe 
+pipe
 --MISSING--
 
 synth lead
@@ -1567,7 +1721,7 @@ ethnic
 percussive
 --MISSING--
 
-SFX 
+SFX
 --MISSING--
 
 # General MIDI drum sets
@@ -1581,7 +1735,7 @@ room
 power
 --MISSING--
 
-electronic 
+electronic
 --MISSING--
 
 TR-808
@@ -1596,7 +1750,7 @@ brush
 orchestra
 --MISSING--
 
-SFX 
+SFX
 --MISSING--
 
 CM-64/CM-32L
@@ -1610,7 +1764,7 @@ bank select 1
 bank select 2
 --MISSING--
 
-modulation 
+modulation
 --MISSING--
 
 portamento time
@@ -1637,7 +1791,7 @@ sostenuto
 soft
 --MISSING--
 
-resonance 
+resonance
 --MISSING--
 
 release time
@@ -1646,7 +1800,7 @@ release time
 attack time
 --MISSING--
 
-cutoff 
+cutoff
 --MISSING--
 
 decay time
@@ -1675,13 +1829,22 @@ effect 2
 play MIDI note _ for _ ms on channel _ volume _
 --MISSING--
 
+stop all notes on channel _
+--MISSING--
+
 set MIDI note _ to _ on channel _ volume _
 --MISSING--
 
 note _ octave _ to MIDI key
 --MISSING--
 
+select MIDI instrument _ number _ for channel _
+--MISSING--
+
 select MIDI instrument _ for channel _
+--MISSING--
+
+variation _
 --MISSING--
 
 instrument _ number _
@@ -1750,7 +1913,7 @@ locrian
 major
 --MISSING--
 
-minor 
+minor
 --MISSING--
 
 # chord types
@@ -1770,7 +1933,7 @@ major 7th
 minor 7th
 --MISSING--
 
-Maj7 
+Maj7
 --MISSING--
 
 # sound destinations for arpeggiate block
@@ -1778,7 +1941,7 @@ Maj7
 MIDI channel
 --MISSING--
 
-tone pin 
+tone pin
 --MISSING--
 
 # library blocks
@@ -1799,6 +1962,9 @@ _ chord for root _
 --MISSING--
 
 arpeggiate _ in order _ duration _ and volume _ on _ _
+--MISSING--
+
+improvised arpeggio over _ for _ bars with durations _
 --MISSING--
 
 improvise over _ for _ bars with durations _ on _ _ volume _
@@ -2400,6 +2566,129 @@ MiKe digital D8 to _
 MiKe digitale D8 naar _
 
 ####
+# Shield:bit
+
+s꞉b LEDs off
+--MISSING--
+
+s꞉b LEDs to _
+--MISSING--
+
+s꞉b LED _ (1-4) to _
+--MISSING--
+
+s꞉b audio output to shield _
+--MISSING--
+
+s꞉b stop _
+--MISSING--
+
+s꞉b turn 180 servo S- _ (1-8) to angle _
+--MISSING--
+
+s꞉b turn 360 servo S- _ (1-8) _ at _ %
+--MISSING--
+
+s꞉b turn DC M- _ (1-4) motor _ at _ %
+--MISSING--
+
+s꞉b turn Stepper- _ (1-2) motor _ for _ _
+--MISSING--
+
+s꞉b set pin S- _ (1-8) to _ %
+--MISSING--
+
+sb_DC/Stepper_motors
+--MISSING--
+
+sb_servomotors
+--MISSING--
+
+sb_all_motors
+--MISSING--
+
+turns
+--MISSING--
+
+degrees
+--MISSING--
+
+####
+# micro:STEAMakers
+
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+--MISSING--
+
+m꞉s display #BR# _ #BR# with color _
+--MISSING--
+
+m꞉s display image _ with color _
+--MISSING--
+
+m꞉s clear display
+--MISSING--
+
+m꞉s scale brightness to _ %
+--MISSING--
+
+m꞉s plot x _ y _ with _
+--MISSING--
+
+m꞉s unplot x _ y _
+--MISSING--
+
+m꞉s display character _ with _
+--MISSING--
+
+m꞉s scroll text _ with color _ 
+--MISSING--
+
+m꞉s stop scrolling
+--MISSING--
+
+start micro꞉STEAMakers audio
+--MISSING--
+
+m꞉s button _ ?
+--MISSING--
+
+m꞉s touching ?
+--MISSING--
+
+m꞉s light %
+--MISSING--
+
+m꞉s sound %
+--MISSING--
+
+m꞉s temperature ºC
+--MISSING--
+
+m꞉s humidity %
+--MISSING--
+
+m꞉s inclination towards _ º
+--MISSING--
+
+m꞉s energy _
+--MISSING--
+
+m꞉s _ energy meter
+--MISSING--
+
+m꞉s energy consumption (µWh)
+--MISSING--
+
+start
+--MISSING--
+
+reset
+--MISSING--
+
+down
+--MISSING--
+
+####
 # DrawBot Library
 # A CoreXY plotter library that supports turtle geometry
 
@@ -2566,6 +2855,132 @@ at _ % speed
 --MISSING--
 
 3dBot line on _ ?
+--MISSING--
+
+####
+# ESP32 Smart Farm
+
+voltage (V)
+--MISSING--
+
+current (mA)
+--MISSING--
+
+power (mW)
+--MISSING--
+
+open
+--MISSING--
+
+close
+--MISSING--
+
+on
+--MISSING--
+
+off
+--MISSING--
+
+Farm fan _
+--MISSING--
+
+start
+--MISSING--
+
+Farm display _ in line _
+--MISSING--
+
+Farm _ the trapdoor
+--MISSING--
+
+Farm play _ octave _ for _ ms
+--MISSING--
+
+Farm set light _
+--MISSING--
+
+Farm water pump _
+--MISSING--
+
+Farm temperature ºC
+--MISSING--
+
+Farm humidity
+--MISSING--
+
+Farm movement detected?
+--MISSING--
+
+Farm button pressed?
+--MISSING--
+
+Farm distance (cm)
+--MISSING--
+
+Farm light level
+--MISSING--
+
+Farm water level
+--MISSING--
+
+Farm soil moisture
+--MISSING--
+
+Farm steam level
+--MISSING--
+
+Farm electric consumption _
+--MISSING--
+
+####
+# ESP32 Smart Home
+
+Home fan _
+--MISSING--
+
+Home display _ in line _
+--MISSING--
+
+Home _ the window
+--MISSING--
+
+Home activate the door
+--MISSING--
+
+Home play _ octave _ for _ ms
+--MISSING--
+
+Home set light _
+--MISSING--
+
+Home temperature ºC
+--MISSING--
+
+Home humidity
+--MISSING--
+
+Home steam level
+--MISSING--
+
+Home read RFID card
+--MISSING--
+
+Home movement detected?
+--MISSING--
+
+Home _ button pressed?
+--MISSING--
+
+Home gas detected?
+--MISSING--
+
+Home set NeoPixels _ _ _ _
+--MISSING--
+
+Home clear leds
+--MISSING--
+
+Home electric consumption _
 --MISSING--
 
 ####
@@ -2898,13 +3313,19 @@ Octopus OLED fill circle x _ y _ radius _
 ####
 # OctoStudio
 
-Octo start
---MISSING--
-
 Octo beam to phones _
 --MISSING--
 
 duration _ ms
+--MISSING--
+
+Octo beam received?
+--MISSING--
+
+Octo last beam
+--MISSING--
+
+Octo set group _ (0-99)
 --MISSING--
 
 Octo receive beam
@@ -3217,6 +3638,15 @@ als de bestemmings schijf, klik daarna op Bewaar.
 
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
 --MISSING--
+
+Save the firmware file when prompted.
+Sla het firmwarebestand op wanneer daarom wordt gevraagd.
+
+Drag the firmware file you just saved to the
+Sleep het firmwarebestand dat u zojuist hebt opgeslagen naar de
+
+drive
+schijf
 
 Installing firmware...
 Installeer firmware...

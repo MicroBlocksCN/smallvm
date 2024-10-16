@@ -3639,6 +3639,15 @@ com a unitat de destinació i clica Desa.
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
 Si la teva micro:bit mostra una cara trista, desa l'arxiu firmware.hex al teu ordinador, i després arrossega'l a la unitat MICROBIT que trobaràs a l'explorador d'arxius.
 
+Save the firmware file when prompted.
+Desa l'arxiu de firmware quan se't demani.
+
+Drag the firmware file you just saved to the
+Arrossega l'arxiu de firmware que acabes de desar a la unitat
+
+drive
+
+
 Installing firmware...
 Instal·lant firmware...
 
