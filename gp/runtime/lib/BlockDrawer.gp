@@ -22,14 +22,14 @@ method fixLayout BlockDrawer {
     hasMore = true
     hasLess = true
   }
-  size = (13 * (blockScale))
+  size = (18 * (blockScale))
   unit = (half size)
-  extra = 0
+  extra = unit
   if (orientation == 'horizontal') {
-	if (and hasMore hasLess) { extra = (unit + (floor (size / 3))) }
+	if (and hasMore hasLess) { extra += (unit + (floor (size / 3))) }
 	setExtent morph (+ unit extra) size
   } else {
-	if (and hasMore hasLess) { extra = (unit + (floor (size / 5))) }
+	if (and hasMore hasLess) { extra += (unit + (floor (size / 5))) }
 	setExtent morph size (+ unit extra)
   }
 }
@@ -42,30 +42,37 @@ method drawOn BlockDrawer ctx {
     hasMore = true
     hasLess = true
   }
-  size = (13 * (blockScale))
+
+  scale = (blockScale)
+  size = (height morph)
+  if (orientation == 'vertical') { size = (width morph) }
   unit = (half size)
-  clr = (gray 0 220)
+  padding = (half unit)
+  clr = (gray 255 220)
 
   pen = (getShapeMaker ctx)
   x = (left morph)
-  y = (top morph)
+  y = ((top morph) + (1 * scale))
+  h = (size - (2 * scale))
   offset = 0
-  if hasLess { // draw left arrow
+  if hasLess { // draw left or up arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect x y unit size) 'left' clr
+	  fillArrow pen (rect (+ x padding) y unit h) 'left' clr
 	  offset = (unit + (floor (size / 3)))
 	} else {
-	  fillArrow pen (rect x y size unit) 'up' clr
+	  fillArrow pen (rect x (+ y padding) size unit) 'up' clr
 	  offset = (unit + (floor (size / 5)))
 	}
   }
-  if hasMore { // draw right arrow
+  if hasMore { // draw right or down arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect (x + offset) y unit size) 'right' clr
+	  fillArrow pen (rect (+ x padding offset) y unit h) 'right' clr
 	} else {
-	  fillArrow pen (rect x (y + offset) size unit) 'down' clr
+	  fillArrow pen (rect x (+ y padding offset) size unit) 'down' clr
 	}
   }
+  // uncomment following line to see bounds rectangle
+  // outlineRectangle pen (bounds morph) 1 (gray 180)
 }
 
 method handEnter BlockDrawer aHand {

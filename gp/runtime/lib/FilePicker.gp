@@ -7,6 +7,9 @@ to pickFileToOpen anAction defaultPath extensionList {
   // nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
   // until a file is chosen and return its full path, or the empty string if no file is chosen.
 
+  if (isMicroBlocks) {
+    return (microBlocksPickFile anAction defaultPath extensionList false)
+  }
   return (pickFile anAction defaultPath extensionList false)
 }
 
@@ -15,11 +18,15 @@ to fileToWrite defaultPath extensionList {
   // offered as a starting point. Wait synchronously until a file is specified and return its
   // full path, or the empty string if the user cancels the operation.
 
+  if (isMicroBlocks) {
+    return (microBlocksFileToWrite defaultPath extensionList)
+  }
+
   if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
 	// there is a single extension and the default path is not nil or empty
 	extension = extensionList
 	if (not (endsWith defaultPath extension)) {
-	  // addpend the extension to the default path
+	  // append the extension to the default path
 	  defaultPath = (join defaultPath extension)
 	}
   }
@@ -46,6 +53,38 @@ to pickFile anAction defaultPath extensionList saveFlag {
 // function to return the user's GP folder
 
 to gpFolder {
+  if (not (isMicroBlocks)) { return (classicGPFolder) }
+
+  if ('iOS' == (platform)) { return '.' }
+  path = (userHomePath)
+
+  hidden = (global 'hideFolderShortcuts')
+  if (and (notNil hidden) (contains hidden 'Projects')) { return '/' } // if GP hidden, use computer
+
+  // Look for <home>/Documents
+  if (contains (listDirectories path) 'Documents') {
+	path = (join path '/Documents')
+  }
+  if (not (contains (listDirectories path) 'MicroBlocks')) {
+	if (contains (listDirectories path) 'MicroBlocks Projects') {
+		// if it exists, rename old 'MicroBlocks Projects' folder to 'MicroBlocks'
+		renameFile (join path '/MicroBlocks Projects') (join path '/MicroBlocks')
+	} else {
+		// create the MicroBlocks folder if it does not already exist
+		makeDirectory (join path '/MicroBlocks')
+	}
+  }
+  if (contains (listDirectories path) 'MicroBlocks') {
+    // create the Libraries subfolder, if it does not already exist
+	if (not (contains (listDirectories (join path '/MicroBlocks') 'Libraries'))) {
+		makeDirectory (join path '/MicroBlocks/Libraries')
+	}
+	path = (join path '/MicroBlocks')
+  }
+  return path
+}
+
+to classicGPFolder {
   if ('iOS' == (platform)) { return '.' }
   path = (userHomePath)
 
@@ -93,7 +132,6 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   morph = (morph window)
   setHandler morph this
   setClipping morph true
-  clr = (gray 250)
 
   action = anAction
   extensions = extensionList
@@ -101,10 +139,11 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   isDone = false
   answer = ''
 
-  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
+  listBoxColor = (gray 250) // very light gray
+  lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) listBoxColor)
   onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
   setFont lbox 'Arial' 16
-  listPane = (scrollFrame lbox clr)
+  listPane = (scrollFrame lbox listBoxColor)
   addPart morph (morph listPane)
   setGrabRule (morph listPane) 'ignore'
 
@@ -114,8 +153,8 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   okayButton = (textButton this 0 0 'Okay' 'okay')
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (460 * scale) (366 * scale)
-  setExtent morph (460 * scale) (366 * scale)
+  setMinExtent morph (460 * scale) (415 * scale)
+  setExtent morph (460 * scale) (415 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
@@ -234,7 +273,7 @@ method addIconButton FilePicker x y iconName anAction label {
   drawString bm label (gray 0) labelX labelY
 
   button = (newButton '' anAction)
-  setLabel button bm (gray 225) (gray 245)
+  setLabel button bm (microBlocksColor 'blueGray' 100) (microBlocksColor 'yellow')
   setPosition (morph button) x y
   addPart morph (morph button)
   return button
@@ -244,7 +283,11 @@ method textButton FilePicker x y label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction)
+  if ('<' == label) {
+    result = (pushButton label selectorOrAction 0 0)
+  } else {
+    result = (pushButton label selectorOrAction)
+  }
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -386,7 +429,7 @@ method redraw FilePicker {
   topInset = (24 * scale)
   inset = (6 * scale)
   bm = (costumeData morph)
-  fillRect bm (gray 230) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
+  fillRect bm (microBlocksColor 'blueGray' 50) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
   costumeChanged morph
   fixLayout this
 }
@@ -396,7 +439,7 @@ method fixLayout FilePicker {
 
   // file list
   topInset = (55 * scale)
-  bottomInset = (40 * scale)
+  bottomInset = (55 * scale)
   leftInset = (110 * scale)
   rightInset = (20 * scale)
   setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
@@ -415,7 +458,7 @@ method fixLayout FilePicker {
 
   // okay and cancel buttons
   space = (10 * scale)
-  y = ((bottom morph) - (28 * scale))
+  y = ((bottom morph) - (40 * scale))
   x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
   setPosition (morph okayButton) x y
   x = (x - ((width (morph cancelButton)) + space))

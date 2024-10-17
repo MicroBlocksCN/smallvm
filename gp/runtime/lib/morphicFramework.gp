@@ -96,10 +96,10 @@ to postSerialize aHandler {}
 
 // Hand
 
-defineClass Hand morph page isDown x y currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus morphicMenuDisabled
+defineClass Hand morph page x y isDown downX downY currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus morphicMenuDisabled
 
 to newHand {
-  hand = (new 'Hand' nil nil false 0 0 (list) nil nil (newTimer) nil nil nil)
+  hand = (new 'Hand' nil nil 0 0 false 0 0 (list) nil nil (newTimer) nil nil nil)
   morph = (newMorph hand)
   setMorph hand morph
   return hand
@@ -147,6 +147,7 @@ method grabbedObject Hand {
 }
 
 method grab Hand handler {
+  cancelTouchHold this
   if (notNil (owner (morph handler))) {parent = (handler (owner (morph handler)))}
   aboutToBeGrabbed handler
   oldOwner = parent
@@ -158,16 +159,32 @@ method grab Hand handler {
     setPosition (morph handler) (x - 5) (y - 5)
   }
   removeAllParts morph
-  if ('Browser' == (platform)) {
-	addPart morph (morph (newCachedTexture handler))
-  } else {
-	addPart morph (shadow (morph handler) 50 (7 * (global 'scale')))
-	addPart morph (cachedCostumeFor this handler)
-  }
-  hide (morph handler)
   addPart morph (morph handler)
   justGrabbedPart parent handler
+  draggedObjectChanged this
+}
+
+method draggedObjectChanged Hand {
+  obj = (grabbedObject this)
+  if (isNil obj) { return }
+  removeAllParts morph
+  show (morph obj)
+  if ('Browser' == (platform)) {
+	addPart morph (morph (newCachedTexture obj))
+  } else {
+	addPart morph (shadow (morph obj) 50 (7 * (global 'scale')))
+	addPart morph (cachedCostumeFor this obj)
+  }
+  hide (morph obj)
+  addPart morph (morph obj)
   changed morph
+}
+
+method oldX Hand { return oldX }
+method oldY Hand { return oldY }
+method savePosition Hand {
+	oldX = x
+	oldY = y
 }
 
 method cachedCostumeFor Hand handler {
@@ -291,8 +308,21 @@ method animateBackToOldOwner Hand aMorph finalAction {
 method step Hand {
   // generate touch-hold events
   if (notNil lastTouchTime) {
-    if ((msecs lastTouchTime) > 300) {processTouchHold this (currentObject this)}
+    if ((msecs lastTouchTime) > 500) { processTouchHold this (currentObject this) }
   }
+}
+
+method cancelTouchHold Hand {
+  lastTouchTime = nil
+}
+
+method handHasMoved Hand {
+  // Answer true if the hand has moved significantly since it went down.
+
+  moveThreshold = (5 * (global 'scale'))
+  dx = (abs (x - downX))
+  dy = (abs (y - downY))
+  return (or (dx > moveThreshold) (dy > moveThreshold))
 }
 
 method processEvent Hand evt {
@@ -329,10 +359,12 @@ method currentObject Hand {
 }
 
 method processMove Hand {
-  if (notNil focus) {
+  if (notNil focus) { // a morph (e.g. a slider) is tracking the hand
 	handMoveFocus focus this
 	return
   }
+
+  hasMoved = (handHasMoved this)
   oldMorphs = currentMorphs
   currentMorphs = (list)
   m = (morph (currentObject this))
@@ -345,7 +377,7 @@ method processMove Hand {
         dragged = (grabbedObject this)
         if (isNil dragged) {
           handMoveOver h this
-          if (notNil lastTouched) {
+          if (and hasMoved (notNil lastTouched)) { // try to grab object under hand
             toBeGrabbed = (rootForGrab this lastTouched)
             if (notNil toBeGrabbed) {
               closeUnclickedMenu page toBeGrabbed
@@ -364,6 +396,16 @@ method processMove Hand {
     m = (owner m)
   }
   for oldM oldMorphs {if (and (acceptsEvents oldM) (not (contains currentMorphs oldM))) {handLeave (handler oldM) this}}
+
+  if (and (isMobile this) isDown hasMoved (isNil (grabbedObject this)) (notNil lastTouchTime)) {
+    // on mobile devices drag-scroll the enclosing ScrollFrame, if any
+    scrollFrameM = (ownerThatIsA (morph (currentObject this)) 'ScrollFrame')
+    if (notNil scrollFrameM) { // drag-scroll the enclosing ScrollFrame
+      startDragScroll (handler scrollFrameM) this
+      lastTouched = nil
+      lastTouchTime = nil
+    }
+  }
 }
 
 method processSwipe Hand xDelta yDelta {
@@ -372,25 +414,30 @@ method processSwipe Hand xDelta yDelta {
 }
 
 method processDown Hand button {
+  downX = x
+  downY = y
   currentObj = (objectAt this true)
   if (isNil (ownerThatIsA (morph currentObj) 'Menu')) {
 	// stop editing unless this is a menu selection (it could a text edit menu command)
 	stopEditingUnfocusedText this currentObj
   }
+  closeUnclickedMenu page currentObj
+  lastTouched = nil
+  lastTouchTime = nil
   if (or (button == 3) (commandKeyDown (keyboard page))) {
-    closeUnclickedMenu page currentObj
     processRightClicked this currentObj
     return
   }
-  closeUnclickedMenu page currentObj
-  lastTouched = currentObj
-  lastTouchTime = (newTimer)
   if (and (optionKeyDown (keyboard page)) (notNil currentObj)) {
 	showInScripter currentObj
-	lastTouched = nil
-	lastTouchTime = nil
 	return
   }
+
+  // record the last touched object and time
+  lastTouched = currentObj
+  lastTouchTime = (newTimer)
+
+  // process handDownOn event
   trg = currentObj
   while (notNil trg) {
 	if (and (acceptsEvents trg) (handDownOn trg this)) { return }
@@ -415,14 +462,14 @@ method processUp Hand {
   if (current === lastTouched) {
     trg = current
     while (or (not (acceptsEvents trg)) (false == (clicked trg this))) {trg = (parentHandler (morph trg))}
-    if (current === lastClicked) {
+    if (and (notNil lastClicked) (current === lastClicked)) {
       if ((msecs lastClickTime) < 500) {
         trg = current
         while (not (and (acceptsEvents trg) (doubleClicked trg this))) {trg = (parentHandler (morph trg))}
       }
     }
     lastClicked = current
-    reset lastClickTime
+    lastClickTime = (newTimer)
   }
   lastTouched = nil
   lastTouchTime = nil
@@ -437,9 +484,7 @@ to isMobile {
 method processTouchHold Hand currentObj {
   lastTouchTime = nil
   if (isMobile) {
-	// on mobile devices, make map touchHold gestures to rightClicked
-	processRightClicked this currentObj
-	lastTouched = nil
+    processRightClicked this currentObj
   }
 }
 
@@ -598,6 +643,7 @@ method processEvent Keyboard evt {
 	  atPut currentKeys key true
 
 	  if (isNil focus) {
+		pe = (findProjectEditor)
 		if (27 == key) { // escape key
 			if (notNil (flasher (smallRuntime))) {
 				confirmRemoveFlasher (smallRuntime)
@@ -609,6 +655,8 @@ method processEvent Keyboard evt {
 				destroy (handler (findMorph 'MicroBlocksSpinner'))
 			} (notNil (findMorph 'Prompter')) {
 				cancel (handler (findMorph 'Prompter'))
+			} (notNil (selection (scripter pe))) {
+				stopProcesses (selection (scripter pe))
 			} else {
 				stopAndSyncScripts (smallRuntime)
 			}
@@ -622,20 +670,30 @@ method processEvent Keyboard evt {
 			if (notNil filePicker) {
 				okay (handler filePicker)
 			}
+			if (notNil (selection (scripter pe))) {
+				if (shiftKeyDown this) {
+					toggleProcesses (selection (scripter pe))
+				} else {
+					startProcesses (selection (scripter pe))
+				}
+			}
+		} (or (46 == key) (8 == key)) { // delete and backspace
+			if (notNil (selection (scripter pe))) {
+				deleteBlocks (selection (scripter pe))
+			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-O or ctrl-O - open file dialog
-			(openProjectMenu (findProjectEditor))
+			(openProjectMenu pe)
 		}
 		if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-S or ctrl-S - save file dialog
-			(saveProjectToFile (findProjectEditor))
+			(saveProjectToFile pe)
 		}
 		if (and (122 == (at evt 'char'))
 			(or (controlKeyDown this) (commandKeyDown this))
 			(isNil (grabbedObject (hand (global 'page'))))) {
 				// cmd-Z or ctrl-Z - undo last drop
-				pe = (findProjectEditor)
 				if (notNil pe) { undrop (scriptEditor (scripter pe)) }
 		}
 	  }
@@ -1315,7 +1373,7 @@ method prompt Page question default editRule callback details {
   edit (textBox p) hand
   selectAll (textBox p)
   if (isNil callback) {
-    setField hand 'lastTouchTime' nil
+    cancelTouchHold hand
     while (not (isDone p)) {doOneCycle this}
     destroy (morph p)
     return (answer p)
@@ -1329,7 +1387,7 @@ method confirm Page title question yesLabel noLabel callback {
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
   if (isNil callback) {
-    setField hand 'lastTouchTime' nil
+    cancelTouchHold hand
     while (not (isDone p)) {doOneCycle this}
     destroy (morph p)
     return (answer p)
@@ -1341,7 +1399,7 @@ method inform Page details title yesLabel nonBlocking {
   initializeForInform p title details yesLabel
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
-  setField hand 'lastTouchTime' nil
+  cancelTouchHold hand
   if (nonBlocking == true) { return true }
   while (not (isDone p)) {doOneCycle this}
   destroy (morph p)
@@ -1430,7 +1488,9 @@ method addTurtle Page {
   addPart this t
 }
 
-method confirmToQuit Page {confirm this nil (join 'Are you sure' (newline) 'you want to quit GP?') nil nil 'exit'}
+method confirmToQuit Page {
+	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
+}
 
 // foreground layer
 

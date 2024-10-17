@@ -2382,8 +2382,8 @@ TFT Berührungsdruck
 HTTP client
 HTTP-Client
 
-_ data _ to http܃// _
-_ Daten _ URL http:// _
+_ data _ to http #SVG#colon-double-slash _
+_ Daten _ URL http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 MicroBlocks macht Spaß

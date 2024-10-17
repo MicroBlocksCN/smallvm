@@ -12,7 +12,7 @@ method initialize BooleanSlot defaultValue isElse {
 	contents = (true == defaultValue)
 	displayAsElse = (true == isElse)
 	morph = (newMorph this)
-	setExtent morph (23 * (blockScale)) (13 * (blockScale))
+	setExtent morph (29 * (blockScale)) (18 * (blockScale))
 	return this
 }
 
@@ -42,23 +42,23 @@ method drawOn BooleanSlot ctx {
 		drawOn elseLabel ctx
 		return
 	}
-	borderWidth = (max 1 (half scale))
-	sliderSize = (height morph)
-	corner = (8 * scale)
+	borderWidth = (max 1 (global 'scale'))
+	sliderSize = ((height morph) - (4 * scale))
+	corner = (14 * scale)
 	r = (bounds morph)
 	sm = (getShapeMaker ctx)
 	if contents {
 		c = (color 100 200 100) // green
-		offset = ((width morph) - sliderSize)
+		offset = (((width morph) - sliderSize) - (2 * scale))
 	} else {
 		c = (color 200 100 100) // red
-		offset = 0
+		offset = (2 * scale)
 	}
 	if contents { c = (color 0 200 0) }
 	r = (bounds morph)
-	fillRoundedRect sm r corner c borderWidth (gray 80) (gray 80)
-	sliderRect = (rect ((left r) + offset) (top r) sliderSize sliderSize)
-	fillRoundedRect sm sliderRect corner (gray 130) borderWidth (gray 80) (gray 80)
+	fillRoundedRect sm r corner c borderWidth (gray 60) (gray 60)
+	sliderRect = (rect ((left r) + offset) ((top r) + (2 * scale)) sliderSize sliderSize)
+	fillRoundedRect sm sliderRect corner (gray 60) borderWidth (gray 60) (gray 60)
 }
 
 // replacement rule

@@ -1,6 +1,6 @@
 // Morph
 
-defineClass Morph owner parts handler bounds costume costumeData transformedCostume costumeChanged isVisible alpha grabRule noticesTransparentTouch isClipping minWidth minHeight fps lastStepTime acceptsEvents penTrails penTrailsData tag param pen drawOnOwner rotation rotateWithOwner scaleX scaleY pinX pinY vectorPen shouldRedraw
+defineClass Morph owner parts handler bounds costume costumeData transformedCostume costumeChanged isVisible alpha grabRule noticesTransparentTouch isClipping minWidth minHeight fps lastStepTime acceptsEvents penTrails penTrailsData tag param pen drawOnOwner rotation rotateWithOwner scaleX scaleY pinX pinY vectorPen shouldRedraw maxWidth maxHeight
 
 to newMorph handler {
   return (initialize (new 'Morph' nil (list) handler (rect) nil nil nil false true 255 'defer' false false 1 1 nil nil true))
@@ -433,12 +433,21 @@ method setClipping Morph bool {
 
 method minWidth Morph {return minWidth}
 method minHeight Morph {return minHeight}
+method maxWidth Morph {return maxWidth}
+method maxHeight Morph {return maxHeight}
 
 method setMinExtent Morph x y {
   if (isNil x) {x = minWidth}
   if (isNil y) {y = minHeight}
   minWidth = x
   minHeight = y
+}
+
+method setMaxExtent Morph x y {
+  if (isNil x) {x = maxWidth}
+  if (isNil y) {y = maxHeight}
+  maxWidth = x
+  maxHeight = y
 }
 
 method resizingConstraint Morph xOffset yOffset {
@@ -786,7 +795,7 @@ method highlight Morph size {
   } else {
 	s2 = (size * 2)
 	bm = (fullCostume this)
-	hl = (newBitmap (+ s2 (width bm)) (+ s2 (height bm)) (color 153 255 213))
+	hl = (newBitmap (+ s2 (width bm)) (+ s2 (height bm)) (colorHex 'FED722'))
 
 	maskBM = (newBitmap (width hl) (height hl))
 	drawBitmap maskBM bm 0 0
@@ -1105,6 +1114,8 @@ method setExtentToRightBottom Morph another {
 method setWidthToRight Morph another {
   changed this
   setRight bounds (right another)
+  if ((width bounds) < minWidth) { setWidth bounds minWidth }
+  if ((width bounds) > maxWidth) { setWidth bounds maxWidth }
   raise this 'fixLayout' handler
   redraw handler
 }
@@ -1112,6 +1123,8 @@ method setWidthToRight Morph another {
 method setHeightToBottom Morph another {
   changed this
   setBottom bounds (bottom another)
+  if ((height bounds) < minHeight) { setHeight bounds minHeight }
+  if ((height bounds) > maxHeight) { setHeight bounds maxHeight }
   raise this 'fixLayout' handler
   redraw handler
 }

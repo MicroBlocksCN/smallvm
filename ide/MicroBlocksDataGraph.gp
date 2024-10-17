@@ -15,8 +15,8 @@ method initialize MicroBlocksDataGraph {
 	window = (window 'Data Graph')
 	morph = (morph window)
 	setHandler morph this
-	setMinExtent morph (scale * 140) (scale * 50)
-	setExtent morph (scale * 200) (scale * 120)
+	setMinExtent morph (scale * 280) (scale * 150)
+	setExtent morph (scale * 400) (scale * 200)
 	addZoomButtons this
 	lastDataIndex = 0
 	zeroAtBottom = false
@@ -46,12 +46,13 @@ method addZoomButtons MicroBlocksDataGraph {
 }
 
 method fixZoomButtonsLayout MicroBlocksDataGraph {
-	right = ((right morph) - (12 * (global 'scale')))
-	bottom = ((bottom morph) - (8 * (global 'scale')))
+	scale = (global 'scale')
+	right = ((right morph) - (13 * scale))
+	bottom = ((bottom morph) - (12 * scale))
 	for button zoomButtons {
-		right = (right - (width (morph button)))
+		right = (right - ((width (morph button)) + (10 * scale)))
 		setLeft (morph button) right
-		setTop (morph button) ((bottom - (height (morph button))) - 5)
+		setTop (morph button) (bottom - (height (morph button)))
 	}
 }
 
@@ -106,18 +107,19 @@ method graphArea MicroBlocksDataGraph {
 }
 
 method drawOn MicroBlocksDataGraph ctx {
-  scale = (global 'scale')
-  radius = (4 * scale)
+	scale = (global 'scale')
+	radius = (4 * scale)
 
-  // draw window frame
-  fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (gray 80)
+	// draw window frame
+	fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (microBlocksColor 'blueGray' 900)
 
-  // clear graph area
-  bgColor = (gray 240)
-  fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
+	// clear graph area
+	bgColor = (microBlocksColor 'blueGray' 50)
+	fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
 
-  // draw the data
-  drawData this ctx
+	// draw the data
+	drawData this ctx
+	saveSettings this // the graph size, position, or settings have changed
 }
 
 method drawData MicroBlocksDataGraph ctx {
@@ -209,7 +211,7 @@ method drawGrid MicroBlocksDataGraph ctx {
 	lineStep = (round (25 * dataScale))
 	heavyLineStep = (4 * lineStep)
 	if (0.5 == dataScale) { lineStep = 10; heavyLineStep = 50 }
-	if (0.25 >= dataScale) { lineStep = 5;  heavyLineStep = 25 }
+	if (0.25 >= dataScale) { lineStep = 5; heavyLineStep = 25 }
 
 	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
@@ -340,12 +342,46 @@ method importDataFromCSVFile MicroBlocksDataGraph fileName {
 }
 
 method copyDataToClipboard MicroBlocksDataGraph {
-  setClipboard (csvData this)
+	setClipboard (csvData this)
 }
 
 method showRecentData MicroBlocksDataGraph {
-  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
-  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
-  setTitle ws 'Recent Data'
-  setFont ws 'Arial' (16 * (global 'scale'))
+	data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
+	ws = (openWorkspace (global 'page') (joinStrings data (newline)))
+	setTitle ws 'Recent Data'
+	setFont ws 'Arial' (16 * (global 'scale'))
+}
+
+// save/restore settings
+
+method saveSettings MicroBlocksDataGraph {
+	if (isNil dataScale) { return } // do nothing when called during initalization
+
+	settings = (global 'dataGraphSettings')
+	if (isNil settings) { settings = (dictionary) }
+
+	atPut settings 'zeroAtBottom' zeroAtBottom
+	atPut settings 'dataScale' dataScale
+	atPut settings 'x' (left morph)
+	atPut settings 'y' (top morph)
+	atPut settings 'width' (width morph)
+	atPut settings 'height' (height morph)
+
+	setGlobal 'dataGraphSettings' settings
+}
+
+method restoreSettings MicroBlocksDataGraph {
+	settings = (global 'dataGraphSettings')
+	if (isNil settings) { return }
+
+	zeroAtBottom = (at settings 'zeroAtBottom')
+	dataScale = (at settings 'dataScale')
+
+	x = (at settings 'x')
+	y = (at settings 'y')
+	w = (at settings 'width')
+	h = (at settings 'height')
+	setPosition morph x y
+	setExtent morph w h
+	keepWithin morph (bounds (morph (global 'page')))
 }

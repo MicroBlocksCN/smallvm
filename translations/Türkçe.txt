@@ -2207,8 +2207,8 @@ TFT touch pressure
 HTTP client
 HTTP istemcisi
 
-_ data _ to http܃// _
-_ veri _ http܃// _
+_ data _ to http #SVG#colon-double-slash _
+_ veri _ http #SVG#colon-double-slash _
 
 MicroBlocks is fun
 --MISSING--

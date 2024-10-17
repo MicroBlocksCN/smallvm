@@ -197,6 +197,14 @@ method findSubstring String stringToSearch startIndex {
   return nil
 }
 
+method findAnyOf String aListOfStrings startIndex {
+	for s aListOfStrings {
+		match = (findSubstring s this startIndex)
+		if (notNil match) { return match }
+	}
+	return nil
+}
+
 method foundMatch String stringToSearch matchIndex {
   j = matchIndex
   for i (byteCount this) {
@@ -742,6 +750,7 @@ method withoutTrailingDigits String {
 }
 
 method representsANumber String {
+  if (isMicroBlocks) { return (representsAnInteger this) }
   hasDecimalPoint = false
   hasExponent = false
   lastC = nil
@@ -775,9 +784,9 @@ method representsANumber String {
 }
 
 method representsAnInteger String {
-  if ('' == this) { return false }
+  if ('' == this) { return true }
   if ('-' == (at this 1)) {
-  	return (and ((count this) > 1) (allDigits (substring this 2)))
+  	return (allDigits (substring this 2))
   }
   return (allDigits this)
 }

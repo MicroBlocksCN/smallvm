@@ -1,0 +1,59 @@
+SVG Preparation Notes:
+  Covert shapes (e.g. circles, rectangles) to paths
+  	- can use "find" menu to verify that all shapes are converted
+  Add additional control points to circles and ellipses to change Arcs to Cubic Beziers
+  Select all and group objects together then:
+  	- adjust the width and height (in pixels) in the top bar
+  	- set x and y to zero
+  In "Document Properties":
+  	- click "resize page to drawing or selection"
+  	- in "scale" section, select a scale of 1 user unit per pixel
+  	- verify that the zoom box is 0 0 width height (in pixels)
+  Select all and group, then ungroup as many times as needed to remove all subgroups
+  Save a copy using the "optimized SVG" option. This eliminates extra Inkscape clutter
+
+
+Icon Sizes
+
+The top-bar icons were 22 pixels tall (44 in retina mode, as shown below)
+New UI top-bar SVG icons should be 24 pixels tall
+
+Here are the old embedded (PNG) icon sizes; these are for retina mode):
+
+gp> ed = (first (allInstances 'MicroBlocksEditor'))
+
+gp> print (languageButtonIcon ed)
+<Bitmap 40x40>
+
+gp> print (settingsButtonIcon ed)
+<Bitmap 44x44>
+
+gp> print (projectButtonIcon ed)
+<Bitmap 33x44>
+
+gp> print (graphIcon ed)
+<Bitmap 48x44>
+
+gp> print (connectButtonIcon ed)
+<Bitmap 50x45>
+
+gp> print (zoomOutIcon ed)
+<Bitmap 40x40>
+
+gp> print (restoreZoomIcon ed)
+<Bitmap 40x40>
+
+gp> print (zoomInIcon ed)
+<Bitmap 40x40>
+
+gp> print (bunnyIcon ed)
+<Bitmap 36x36>
+
+gp> print (trashcanIcon ed)
+<Bitmap 70x70>
+
+gp> print (hideDefinitionIcon ed)
+<Bitmap 70x70>
+
+gp> print (hideAndDeleteIcon ed)
+<Bitmap 70x165>

@@ -12,7 +12,7 @@ method initialize ColorSlot {
   setGrabRule morph 'defer'
   setTransparentTouch morph true
   contents = (color 35 190 30)
-  size = (16 * (blockScale))
+  size = (20 * (blockScale))
   setExtent morph size size
   return this
 }
@@ -43,7 +43,7 @@ method drawOn ColorSlot ctx {
 	borderWidth = (blockScale)
 	r = (bounds morph)
 	radius = (half (width r))
-	drawCircle (getShapeMaker ctx) (hCenter r) (vCenter r) radius contents borderWidth (gray 0)
+	drawCircle (getShapeMaker ctx) (hCenter r) (vCenter r) radius contents borderWidth (microBlocksColor 'gray')
 }
 
 // events

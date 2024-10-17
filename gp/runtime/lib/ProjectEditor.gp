@@ -5,6 +5,8 @@ method stage ProjectEditor { return stage }
 method library ProjectEditor { return library }
 method scripter ProjectEditor { return scripter }
 
+to isMicroBlocks { return false } // used to distguish between GP and MicroBlocks
+
 to recover baseFilename {
   // Save any projects in memory (usually only one) to files.
   if (isNil baseFilename) { baseFilename = 'recovered' }
@@ -64,12 +66,14 @@ to openProjectEditor tryRetina devMode {
 }
 
 to findProjectEditor {
-  page = (global 'page')
-  if (notNil page) {
-	for p (parts (morph page)) {
-	  if (isClass (handler p) 'ProjectEditor') { return (handler p) }
-	}
-  }
+  // Return the top-level project editor, either for MicroBlocks or for GP.
+
+  m = (findMorph 'MicroBlocksEditor')
+  if (notNil m) { return (handler m) }
+
+  m = (findMorph 'ProjectEditor')
+  if (notNil m) { return (handler m) }
+
   return nil
 }
 
@@ -144,7 +148,7 @@ method textButton ProjectEditor label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (color 130 130 130) selectorOrAction)
+  result = (pushButton label selectorOrAction)
   addPart morph (morph result)
   return result
 }

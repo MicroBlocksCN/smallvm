@@ -30,10 +30,38 @@ method layoutChanged BlocksPalette {
 }
 
 method wantsDropOf BlocksPalette aHandler {
-  return (isAnyClass aHandler 'Block' 'Monitor')
+  return (isAnyClass aHandler 'Block' 'Monitor' 'MicroBlocksSelectionContents')
 }
 
 method justReceivedDrop BlocksPalette aHandler {
+  // Hide a block definition when it is is dropped on the palette.
+  if (not (isMicroBlocks)) {
+    gpJustReceivedDrop this aHandler
+    return
+  }
+  pe = (findProjectEditor)
+  if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
+  if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
+	proto = (editedPrototype aHandler)
+	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
+		hideDefinition (scripter pe) op
+		removeFromOwner (morph aHandler)
+		return
+	}
+  }
+  if (and (isClass aHandler 'Block') (notNil pe)) {
+	recordDrop (scriptEditor (scripter pe)) aHandler
+	deleteChunkFor (smallRuntime) aHandler
+  }
+  if (isClass aHandler 'MicroBlocksSelectionContents') {
+	for part (parts (morph aHandler)) {
+		justReceivedDrop this (handler part)
+	}
+  }
+  removeFromOwner (morph aHandler)
+}
+
+method gpJustReceivedDrop BlocksPalette aHandler {
   // Delete Blocks or Monitors dropped on the palette.
 
   wantsToRaise = (and (isClass aHandler 'Block') (isPrototypeHat aHandler))

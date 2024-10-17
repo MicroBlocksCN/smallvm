@@ -1,0 +1,398 @@
+module 'micro:STEAMakers'
+author 'Joan Guillén'
+version 1 1 
+depends Tone Color 
+tags keyestudio steam 
+choices inclination down x y 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+choices buttons A B 
+choices accel x y z 
+choices energyMeter start stop reset 
+choices energy mA mV mW 
+description 'Provides custom blocks for the micro:STEAMakers. It is an ESP32 board with WiFi, BLE, 5x5 RGB LED matrix, 2 buttons, touching area, light, sound, temperature and humidity sensors, six-axis acc/gyroscope, energy control and io pins and i2c extensions'
+variables _ms_neoPixels _ms_neoPixels_on _sb_neoPixels_on _MiKe_circlePixels _ms_noePixels_scale _ms_scrolling_stopped _tonePin _toneInitalized _ms_energyReading _ms_energySum _ms_aht20_on _ms_aht20_reading _ms_aht20_data _ms_MPU6050_on _ms_MPU6050_add 
+
+  spec ' ' 'ms_display' 'm꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _' 'color color color color color color color color color color color color color color color color color color color color color color color color color'
+  spec ' ' 'ms_displayShape' 'm꞉s display #BR# _ #BR# with color _' 'microbitDisplay color' 15237440
+  spec ' ' 'ms_displayImage' 'm꞉s display image _ with color _' 'menu.led_imageMenu color num num' 'happy'
+  spec ' ' 'ms_clear_display' 'm꞉s clear display'
+  spec ' ' 'ms_setGlobalBrightnessScale' 'm꞉s scale brightness to _ %' 'num' 100
+  spec ' ' 'ms_plot' 'm꞉s plot x _ y _ with _' 'num num color' 3 3
+  spec ' ' 'ms_unplot' 'm꞉s unplot x _ y _' 'num num' 3 3
+  spec ' ' 'ms_displayCharacter' 'm꞉s display character _ with _' 'str color' 'A'
+  spec ' ' 'ms_scroll_text' 'm꞉s scroll text _ with color _ : pausing _ ms' 'str color num' 'micro:STEAMakers' nil 100
+  spec ' ' 'ms_stopScrollingText' 'm꞉s stop scrolling'
+  space
+  spec ' ' 'ms_setup_audio' 'start micro꞉STEAMakers audio'
+  space
+  spec 'r' 'ms_buttons' 'm꞉s button _ ?' 'menu.buttons' 'A'
+  spec 'r' 'ms_touching' 'm꞉s touching ?'
+  spec 'r' 'ms_light' 'm꞉s light %'
+  spec 'r' 'ms_sound' 'm꞉s sound %'
+  spec 'r' 'ms_temperature' 'm꞉s temperature ºC'
+  spec 'r' 'ms_humidity' 'm꞉s humidity %'
+  space
+  spec 'r' 'ms_accel' 'm꞉s accel _ m/s2' 'menu.accel' 'x'
+  spec 'r' 'ms_gyro' 'm꞉s gyro _ deg/s' 'menu.accel' 'x'
+  spec 'r' 'ms_inclination' 'm꞉s inclination towards _ º' 'menu.inclination' 'down'
+  space
+  spec 'r' 'ms_energy' 'm꞉s energy _' 'menu.energy' 'mW'
+  spec ' ' 'ms_energyMeter' 'm꞉s _ energy meter' 'menu.energyMeter' 'start'
+  spec 'r' 'ms_energyConsumption' 'm꞉s energy consumption (µWh)'
+  space
+  spec ' ' '_ms_neoPixels_setup' '_ms_neoPixels_setup'
+  spec ' ' '_ms_neoPixels_update' '_ms_neoPixels_update'
+  spec 'r' '_ms_imageNames' '_ms_imageNames'
+  spec ' ' '_ms_aht20_setup' '_ms_aht20_setup'
+  spec ' ' '_ms_aht20_getData' '_ms_aht20_getData'
+  spec ' ' '_ms_MPU6050_setup' '_ms_MPU6050_setup'
+  spec ' ' '_ms_energy_read_loop' '_ms_energy_read_loop'
+
+to '_ms_MPU6050_setup' {
+  _ms_MPU6050_add = (hexToInt '68')
+  comment 'setclockSource  0x01'
+  local 'value' (i2cGet _ms_MPU6050_add (hexToInt '6b'))
+  value = (value & (hexToInt 'F8'))
+  value = (value | (hexToInt '01'))
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '6B') value)
+  comment 'setScale amb MPU6050_SCALE_2000DPS -> 0x03'
+  comment 'dpsPerDigit = .060975f'
+  local 'value' (i2cGet _ms_MPU6050_add (hexToInt '1B'))
+  value = (value & (hexToInt 'E7'))
+  value = (value | (3 << 3))
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '1B') value)
+  comment 'setRange amb MPU6050_RANGE_2G -> 0x00'
+  comment 'rangePerDigit = .000061f'
+  local 'value' (i2cGet _ms_MPU6050_add (hexToInt '1C'))
+  value = (value & (hexToInt 'E7'))
+  value = (value | (0 << 3))
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '1C') value)
+  comment 'setSleepEnabled -> false'
+  comment 'registerBit (0x6B,6)'
+  local 'value' (i2cGet _ms_MPU6050_add (hexToInt '6B'))
+  value = (value & ('~' (1 << 6)))
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '6B') value)
+}
+
+to '_ms_aht20_getData' {
+  if (not _ms_aht20_on) {'_ms_aht20_setup'}
+  _ms_aht20_reading = (booleanConstant true)
+  local 'aht20_read' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') (hexToInt '00'))
+  waitMillis 75
+  '[sensors:i2cRead]' (hexToInt '38') aht20_read
+  _ms_aht20_data = aht20_read
+  _ms_aht20_reading = (booleanConstant false)
+}
+
+to '_ms_aht20_setup' {
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt 'BE') (hexToInt '08') (hexToInt '00'))
+  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') (hexToInt '00'))
+  _ms_aht20_on = (booleanConstant true)
+  waitMillis 75
+}
+
+to '_ms_energy_read_loop' {
+  repeatUntil (not _ms_energyReading) {
+    _ms_energySum = (_ms_energySum + (ms_energy 'mA'))
+    waitMillis 1000
+  }
+}
+
+to '_ms_imageNames' {
+  return '{"heart":4685802, "small heart":145728, "yes":2269696, "no":18157905, "happy":15237440, "sad":18284864, "confused":22348096, "angry":23036241, "asleep":459616, "surprised":4526090, "silly":25984017, "fabulous":15008639, "meh":2236443, "t-shirt":15154043, "roller skate":11534104, "duck":489702, "house":10976708, "tortoise":359872, "butterfly":29332475, "stick figure":18158564, "ghost":23068334, "sword":4657284, "giraffe":10946627, "skull":15171246, "umbrella":6460398, "snake":469859, "rabbit":16104613, "cow":4685361, "quarter note":7573636, "eight note":7590276, "pitchfork":4357813, "target":4681156, "triangle":1026176, "left triangle":32805985, "chess board":11184810, "diamond":4539716, "small diamond":141440, "square":33080895, "small square":469440, "scissors":20287859}'
+}
+
+to '_ms_neoPixels_setup' {
+  _ms_neoPixels = (newList 25 0)
+  '[display:neoPixelSetPin]' 13 (booleanConstant false)
+  _ms_noePixels_scale = 100
+  _ms_neoPixels_on = (booleanConstant true)
+  if _sb_neoPixels_on {
+    _sb_neoPixels_on = (booleanConstant false)
+  }
+  if (_MiKe_circlePixels != 0) {
+    _MiKe_circlePixels = 0
+  }
+}
+
+to '_ms_neoPixels_update' {
+  if (100 == _ms_noePixels_scale) {
+    '[display:neoPixelSend]' _ms_neoPixels
+  } else {
+    local 'currentPixels' (newList 25)
+    for pix 25 {
+      atPut pix currentPixels ('[misc:hsvColor]' ('[misc:hue]' (at pix _ms_neoPixels)) ('[misc:saturation]' (at pix _ms_neoPixels)) ((('[misc:brightness]' (at pix _ms_neoPixels)) * _ms_noePixels_scale) / 100))
+    }
+    '[display:neoPixelSend]' currentPixels
+  }
+  waitMicros 100
+}
+
+to ms_accel axis {
+  if (not _ms_MPU6050_on) {'_ms_MPU6050_setup'}
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '3B'))
+  local 'reading' (newList 6)
+  '[sensors:i2cRead]' _ms_MPU6050_add reading
+  local 'msB' 3
+  local 'lsB' 4
+  local 'direction' -1
+  if (axis == 'y') {
+    msB = 1
+    lsB = 2
+    direction = 1
+  }
+  if (axis == 'z') {
+    msB = 5
+    lsB = 6
+    direction = 1
+  }
+  local 'result' (at msB reading)
+  if ((result >> 7) == 1) {
+    result = (-1 * (('~' result) & 127))
+  }
+  return (direction * (((result << 8) | (at lsB reading)) / 1672))
+}
+
+to ms_buttons but {
+  if (but == 'B') {
+    return (not (digitalReadOp 17))
+  } else {
+    return (not (digitalReadOp 0))
+  }
+}
+
+to ms_clear_display {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  atPut 'all' _ms_neoPixels 0
+  '_ms_neoPixels_update'
+}
+
+to ms_display c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  atPut 1 _ms_neoPixels c1
+  atPut 2 _ms_neoPixels c2
+  atPut 3 _ms_neoPixels c3
+  atPut 4 _ms_neoPixels c4
+  atPut 5 _ms_neoPixels c5
+  atPut 6 _ms_neoPixels c6
+  atPut 7 _ms_neoPixels c7
+  atPut 8 _ms_neoPixels c8
+  atPut 9 _ms_neoPixels c9
+  atPut 10 _ms_neoPixels c10
+  atPut 11 _ms_neoPixels c11
+  atPut 12 _ms_neoPixels c12
+  atPut 13 _ms_neoPixels c13
+  atPut 14 _ms_neoPixels c14
+  atPut 15 _ms_neoPixels c15
+  atPut 16 _ms_neoPixels c16
+  atPut 17 _ms_neoPixels c17
+  atPut 18 _ms_neoPixels c18
+  atPut 19 _ms_neoPixels c19
+  atPut 20 _ms_neoPixels c20
+  atPut 21 _ms_neoPixels c21
+  atPut 22 _ms_neoPixels c22
+  atPut 23 _ms_neoPixels c23
+  atPut 24 _ms_neoPixels c24
+  atPut 25 _ms_neoPixels c25
+  '_ms_neoPixels_update'
+}
+
+to ms_displayCharacter character color {
+  character = ('[data:join]' '' character)
+  if ((size character) == 0) {
+    ms_clear_display
+    return 0
+  } else {
+    ms_displayShape ('[display:mbShapeForLetter]' (at 1 character)) color
+  }
+}
+
+to ms_displayImage imgName color {
+  ms_displayShape ('[misc:jsonGet]' ('_ms_imageNames') imgName) color
+}
+
+to ms_displayShape shape color {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  local 'checker' 1
+  for i 25 {
+    if ((checker & shape) > 0) {
+      atPut i _ms_neoPixels color
+    } else {
+      atPut i _ms_neoPixels 0
+    }
+    checker = (checker << 1)
+  }
+  '_ms_neoPixels_update'
+}
+
+to ms_energy op {
+  if (op == 'mV') {return 3300}
+  local 'ampCounter' 0
+  for i 500 {
+    ampCounter = (ampCounter + (analogReadOp 36))
+  }
+  ampCounter = (ampCounter * 2)
+  ampCounter = ((ampCounter * 428) + 43560611)
+  ampCounter = (ampCounter / 1000000)
+  if (op == 'mA') {
+    return ampCounter
+  } (op == 'mW') {
+    return ((ampCounter * 3300) / 1000)
+  } else {
+    return
+  }
+}
+
+to ms_energyConsumption {
+  return ((_ms_energySum * 33) / 36)
+}
+
+to ms_energyMeter op {
+  if (op == 'start') {
+    _ms_energyReading = (booleanConstant true)
+    sendBroadcast '_ms_energy_read_loop'
+  } (op == 'stop') {
+    _ms_energyReading = (booleanConstant false)
+  } (op == 'reset') {
+    _ms_energySum = 0
+  }
+}
+
+to ms_gyro axis {
+  if (not _ms_MPU6050_on) {'_ms_MPU6050_setup'}
+  '[sensors:i2cWrite]' _ms_MPU6050_add ('[data:makeList]' (hexToInt '43'))
+  local 'reading' (newList 6)
+  '[sensors:i2cRead]' _ms_MPU6050_add reading
+  local 'msB' 3
+  local 'lsB' 4
+  local 'direction' 1
+  if (axis == 'y') {
+    msB = 1
+    lsB = 2
+    direction = -1
+  }
+  if (axis == 'z') {
+    msB = 5
+    lsB = 6
+    direction = -1
+  }
+  local 'result' (at msB reading)
+  if ((result >> 7) == 1) {
+    result = (-1 * (('~' result) & 127))
+  }
+  return ((10 * direction) * (((result << 8) | (at lsB reading)) / 164))
+}
+
+to ms_humidity {
+  if (not _ms_aht20_reading) {'_ms_aht20_getData'}
+  local 'rawData' _ms_aht20_data
+  local 'calc' 0
+  calc = (at 2 rawData)
+  calc = (calc << 8)
+  calc = (calc + (at 3 rawData))
+  calc = (calc << 4)
+  calc = (calc + ((at 4 rawData) >> 4))
+  return ((calc * 100) / 1048576)
+}
+
+to ms_inclination op {
+  if (not _ms_MPU6050_on) {'_ms_MPU6050_setup'}
+  if (op == 'x') {return ((ms_accel 'x') * 9)}
+  if (op == 'y') {return ((ms_accel 'y') * 9)}
+  return (((ms_accel 'z') + 10) * 9)
+}
+
+to ms_light {
+  return ('[misc:rescale]' (analogReadOp 39) 0 1023 0 100)
+}
+
+to ms_plot x y color {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  if (and (0 < x) (and (0 < y) (and (6 > x) (6 > y)))) {
+    atPut (x + ((y - 1) * 5)) _ms_neoPixels color
+    '_ms_neoPixels_update'
+  }
+}
+
+to ms_scroll_text label color specificDelay {
+  label = ('[data:join]' '' label)
+  local 'delay' 100
+  if ((pushArgCount) > 2) {
+    delay = specificDelay
+  }
+  _ms_scrolling_stopped = (booleanConstant false)
+  ms_clear_display
+  for position (((size label) * 6) + 5) {
+    for i (minimum (size label) (((absoluteValue (position - 2)) / 6) + 1)) {
+      if (((absoluteValue (position - 5)) / 6) < i) {
+        local 'checker' 1
+        for yy 5 {
+          for xx 5 {
+            if ((checker & ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i label))) > 0) {
+              ms_plot (xx + (((i * 6) + 0) - position)) yy color
+            } else {
+              ms_unplot (xx + (((i * 6) + 0) - position)) yy
+            }
+            checker = (checker << 1)
+          }
+        }
+      }
+    }
+    if ((position % 6) != 0) {
+      for j 5 {
+        ms_unplot (6 - (position % 6)) j
+      }
+    }
+    if _ms_scrolling_stopped {
+      return 0
+    }
+    waitMillis delay
+  }
+}
+
+to ms_setGlobalBrightnessScale scale {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  _ms_noePixels_scale = scale
+  '_ms_neoPixels_update'
+}
+
+to ms_setup_audio {
+  _tonePin = 33
+  _toneInitalized = (booleanConstant true)
+}
+
+to ms_sound {
+  return ('[misc:rescale]' (analogReadOp 35) 0 1023 0 100)
+}
+
+to ms_stopScrollingText {
+  _ms_scrolling_stopped = (booleanConstant true)
+  waitMillis 10
+  ms_clear_display
+}
+
+to ms_temperature {
+  if (not _ms_aht20_reading) {'_ms_aht20_getData'}
+  local 'rawData' _ms_aht20_data
+  local 'calc' 0
+  calc = ((at 4 rawData) & (hexToInt '0f'))
+  calc = (calc << 8)
+  calc = (calc + (at 5 rawData))
+  calc = (calc << 8)
+  calc = (calc + (at 6 rawData))
+  return (((calc * 200) / 1048576) - 50)
+}
+
+to ms_touching {
+  return (digitalReadOp 27)
+}
+
+to ms_unplot x y {
+  if (not _ms_neoPixels_on) {'_ms_neoPixels_setup'}
+  if (and (0 < x) (and (0 < y) (and (6 > x) (6 > y)))) {
+    atPut (x + ((y - 1) * 5)) _ms_neoPixels 0
+    '_ms_neoPixels_update'
+  }
+}
+

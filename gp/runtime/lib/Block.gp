@@ -1,7 +1,7 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
+defineClass Block morph blockSpec type expression labelParts corner color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
 
 to block type color opName {
   block = (new 'Block')
@@ -36,11 +36,6 @@ to block type color opName {
   setField block 'labelParts' labelParts
   setField block 'color' color
   setField block 'corner' 3
-  setField block 'rounding' 8
-  setField block 'dent' 2
-  setField block 'hatWidth' 80
-  setField block 'inset' 4
-  setField block 'border' 1
   setField block 'expansionLevel' 1
   setField block 'layoutNeeded' true
   morph = (newMorph block)
@@ -104,6 +99,7 @@ method fixLayoutNow Block {
 method fixLayout Block {
   if (isNil layoutNeeded) { layoutNeeded = true }
   if (not layoutNeeded) { return }
+  border = 1
   scale = (blockScale)
   wasHighlighted = false
 
@@ -125,7 +121,7 @@ method fixLayout Block {
 	}
   }
 
-  space = 3
+  space = 6
   vSpace = 3
 
   break = 450
@@ -133,16 +129,16 @@ method fixLayout Block {
   lines = (list)
   lineArgCount = 0
 
-  left = (left morph)
+  left = ((left morph) + (3 * scale))
   h = 0
   w = 0
 
   if (type == 'hat') {
-    indentation = (* scale (+ border space space))
+    indentation = (* scale (+ border space))
   } (type == 'reporter') {
-    indentation = (* scale rounding)
+    indentation = (* scale 6)
   } (type == 'command') {
-    indentation = (* scale (+ border space space border))
+    indentation = (* scale (+ border space border))
   }
 
   // arrange label parts horizontally and break up into lines
@@ -159,17 +155,30 @@ method fixLayout Block {
           	add lines currentLine
           	add lineHeights h
           }
-          fastSetLeft (morph each) (+ left (* scale (+ border corner)))
+          fastSetLeft (morph each) ((+ left (* scale (+ border corner))) + (2 * scale))
           add lines (list each)
-          add lineHeights (height (morph each))
+          h = (height (morph each))
+          if (notNil (wrapHeight each)) { // increase size for wrapping feedback
+			h = (wrapHeight each)
+			setHeight (bounds (morph each)) h
+		  }
+          add lineHeights h
           currentLine = (list)
           w = 0
           h = 0
         } else {
-          isArgSlot = (not (isClass each 'Text'))
-          x = (+ left indentation w)
-          w += (width (fullBounds (morph each)))
-          w += (space * scale)
+          isArgSlot = (and (not (isClass each 'Text')) (not (isClass each 'SVGImage')))
+		  // forced break indicated by special label #BR#
+		  isForcedBreak = (and (isClass each 'Text') (== (text each) '#BR#'))
+		  if isForcedBreak {
+			isArgSlot = true
+			setColor each (transparent)
+		    lineArgCount = 10
+		  } else {
+			x = (+ left indentation w)
+			w += (width (fullBounds (morph each)))
+			w += (space * scale)
+		  }
           if (and breakLineBeforeFirstArg isArgSlot) {
 			breakLineBeforeFirstArg = false // only do this once
  			lineArgCount = 10 // force a line break before first arg
@@ -188,8 +197,12 @@ method fixLayout Block {
 			  currentLine = (list)
 			}
             h = 0
-            x = (+ left indentation)
-            w = ((width (fullBounds (morph each))) + (space * scale))
+			x = (+ left indentation)
+			if isForcedBreak {
+			  w = 0
+			} else {
+			  w = ((width (fullBounds (morph each))) + (space * scale))
+			}
             lineArgCount = 0
           }
           add currentLine each
@@ -228,32 +241,44 @@ method fixLayout Block {
 	add lineHeights h
   }
 
+  // adjust minimum block height for one-line blocks
+  if (notEmpty lineHeights) {
+    minHeight = (21 * scale)
+    atPut lineHeights 1 (max (at lineHeights 1) minHeight)
+  }
+
   // determine blockWidth from line data
   blockWidth = 0
   for each lines {
     if (notEmpty each) {
       elem = (last each)
-      if (not (isClass elem 'CommandSlot')) {
-        blockWidth = (max blockWidth ((right (fullBounds (morph elem))) - left))
+      if (isClass elem 'CommandSlot') {
+        blockWidth = (max blockWidth (56 * scale)) // min size for "forever" and "if"
+      } else {
+        blockWidth = ((max blockWidth ((right (fullBounds (morph elem))) - left)))
       }
     }
   }
   blockHeight = (callWith + (toArray lineHeights))
-  blockHeight += (* (count lines) vSpace scale)
+  blockHeight += ((count lines) * (vSpace * scale))
 
-  // arrange label parts vertically
-  tp = (+ (top morph) (* 2 scale border))
-  if (type == 'hat') {
+  // set vertical position of block labels and inputs (possibly multiple lines of them)
+  tp = (+ (top morph) (* 2 scale border) scale)
+  if (type == 'hat') { // adjustment for hat blocks
     tp += (hatHeight this)
-  }
-  line = 0
-  for eachLine lines {
-    line += 1
-    bottom = (+ tp (at lineHeights line) (vSpace * scale))
-    for each eachLine {
-      fastSetYCenterWithin (morph each) tp bottom
+    if (blockHeight < 24) {
+      blockHeight = (28 * scale)
+      tp += (4 * scale)
     }
-    tp = bottom
+  }
+  line = 1
+  for eachLine lines {
+    bottom = (+ tp (at lineHeights line))
+    for each eachLine {
+      fastSetYCenterWithin (morph each) tp (bottom + (1 * scale)) // adjust slightly downward
+    }
+    line += 1
+    tp = (bottom + (vSpace * scale))
   }
 
   // add extra space below the bottom-most c-slot
@@ -261,31 +286,31 @@ method fixLayout Block {
   if (isClass (last (last labelParts)) 'CommandSlot') {
 	// adjust space below last command slot
 	if (isNil drawer) {
-	  extraSpace = (scale * corner)
+	  extraSpace = (7 * scale)
 	} else {
 	  // adjust layout of final block drawer in if-else block
 	  blockHeight += (-6 * scale)
-	  fastMoveBy (morph drawer) 0 (-5 * scale)
+	  fastMoveBy (morph drawer) (-2 * scale) (-5 * scale)
 	}
   }
 
   // adjust block width (i.e. right margin)
   if (type == 'command') {
-	blockWidth += (-3 * scale)
+	blockWidth += (2 * scale)
   } (type == 'hat') {
-	blockWidth += (-2 * scale)
+	blockWidth += (2 * scale)
   } (type == 'reporter') {
-	blockWidth += (-8 * scale)
+	blockWidth += (-4 * scale)
   }
 
   if (type == 'command') {
-    setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
+    setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (3 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
   } (type == 'hat') {
-    setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
+    setWidth (bounds morph) (max (scale * 100) (+ blockWidth indentation (3 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
   } (type == 'reporter') {
-    setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
+    setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (11 * scale)))
     setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
   }
 
@@ -293,7 +318,7 @@ method fixLayout Block {
 
   nb = (next this)
   if (notNil nb) {
-    fastSetPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+    fastSetPosition (morph nb) (left morph) ((bottom morph) - (scale * (corner + 1)))
   }
   rerender morph
   if wasHighlighted { addHighlight morph }
@@ -352,16 +377,17 @@ method drawShape Block aShapeMaker {
 	if (type == 'command') {
 		commandSlots = (commandSlots this)
 		if (isEmpty commandSlots) {
-			drawBlock aShapeMaker r color (scale * corner) (scale * dent) (scale * inset)
+			drawBlock aShapeMaker r color
 		} else {
-			drawBlockWithCommandSlots aShapeMaker r commandSlots color (scale * corner) (scale * dent) (scale * inset)
+			drawBlockWithCommandSlots aShapeMaker r commandSlots color
 		}
 	} (type == 'reporter') {
+		radius = (15 * scale) // semi-circular for slot heights up to 30 * blockScale
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
-		drawReporter aShapeMaker r clr (scale * rounding)
+		drawReporter aShapeMaker r clr radius
 	} (type == 'hat') {
-		drawHatBlock aShapeMaker r (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset)
+		drawHatBlock aShapeMaker r color
 	}
 }
 
@@ -369,14 +395,13 @@ method commandSlots Block {
 	result = (list)
 	top = (top morph)
 	for m (parts morph) {
-		if (isClass (handler m) 'CommandSlot') { add result (list ((top m) - top) (height m)) }
+		if (isClass (handler m) 'CommandSlot') { add result (list ((top m) - top) ((height m) - (blockScale))) }
 	}
 	return result
 }
 
 method hatHeight Block {
-  scale = (blockScale)
-  hw = (scale * hatWidth)
+  hw = (80 * (blockScale))
   ru = (hw / (sqrt 2))
   return (truncate (ru - (hw / 2)))
 }
@@ -384,7 +409,6 @@ method hatHeight Block {
 // accessing
 
 method type Block {return type}
-method corner Block {return corner}
 method scale Block {return (blockScale)}
 method blockSpec Block {return blockSpec}
 method function Block {return function}
@@ -463,12 +487,14 @@ method inputIndex Block anInput {
   idx = 0
   items = (flattened labelParts)
 
-  // special case for variable assignments
-  opName = (primName expression)
-  if (or (opName == '=') (opName == '+=')) {
-    // transformed assignment blocks represent the variable name as Text,
-    // not an InputSlot; in this case, increment the input slot index
-    if (and ((count items) > 1) (isClass (at items 2) 'Text')) {idx += 1}
+  if (not (isMicroBlocks)) {
+    // special case for GP variable assignments
+    opName = (primName expression)
+    if (or (opName == '=') (opName == '+=')) {
+      // transformed assignment blocks represent the variable name as Text,
+      // not an InputSlot; in this case, increment the input slot index
+      if (and ((count items) > 1) (isClass (at items 2) 'Text')) {idx += 1}
+    }
   }
 
   for each items {
@@ -488,31 +514,48 @@ method inputs Block {
   )
 }
 
+method openCSlot Block {
+  for cSlot (flattened labelParts) {
+    if (isClass cSlot 'CommandSlot') {
+      if (isEmpty (parts (morph cSlot))) {
+        return cSlot
+      } else {
+        return nil
+      }
+    }
+  }
+  return nil
+}
+
 // events
 
 method justDropped Block hand {
-  snap this (x hand) (y hand)
+  cancelSelection
+  snap this
 }
 
-method snap Block x y {
+method snap Block {
   scale = (blockScale)
-  if (isNil x) {
-    fb = (fullBounds morph)
-    x = (left fb)
-    y = (top fb)
-  }
   parent = (handler (owner morph))
   if (isClass parent 'ScriptEditor') {
-    b = (targetFor parent this x y)
+    b = (targetFor parent this)
     if (and (isClass b 'Block') ((type b) != 'reporter')) { // command or hat type targets
       recordDrop parent this b (next b)
       setNext b this
     } (isClass b 'Array') {
       recordDrop parent this b
-      b = (at b 1)
-      bb = (bottomBlock this)
-      setPosition morph (left (morph b)) (+ (scale * corner) ((top (morph b)) - (height (fullBounds (morph this)))))
-      setNext bb b
+      rec = b
+      b = (at rec 1)
+      dropType = (at rec 2)
+      cSlot = (at rec 3)
+      if (notNil cSlot) { setWrapHeight cSlot nil }
+      if ('top' == dropType) {
+        bb = (bottomBlock this)
+        setPosition morph (left (morph b)) (+ (scale * corner) ((top (morph b)) - (height (fullBounds (morph this)))))
+        setNext bb b
+      } ('wrap' == dropType) {
+        setNested cSlot b
+      }
     } (isClass b 'CommandSlot') {
       recordDrop parent this b (nested b)
       setNested b this
@@ -534,6 +577,7 @@ method snap Block x y {
 }
 
 method aboutToBeGrabbed Block {
+  page = (global 'page')
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -543,6 +587,45 @@ method aboutToBeGrabbed Block {
   removeSignalPart (morph tb)
   removeStackPart (morph tb)
   removeHighlight (morph tb)
+
+  hand = (hand page)
+  setPosition morph (x hand) (y hand)
+
+  if (or
+		(commandKeyDown (keyboard page))
+		(controlKeyDown (keyboard page))
+  ) {
+	// duplicate all with control + grab
+	dup = (duplicate this)
+	owner = (handler (owner morph))
+	if (shiftKeyDown (keyboard page)) {
+		// duplicate block with control + shift + grab
+		if (notNil (next dup)) {setNext dup nil}
+	}
+	if (notNil owner) {
+		if (isClass owner 'CommandSlot') {
+			setNested owner dup
+		} (isClass owner 'Block') {
+			if ((type dup) == 'reporter') {
+				replaceInput owner this dup
+			} else {
+				setNext owner dup
+			}
+		} (isClass owner 'ScriptEditor') {
+			addPart (morph owner) (morph dup)
+		}
+	}
+  }
+
+  // extract block with shift + grab
+  if (and
+		(shiftKeyDown (keyboard page))
+		(notNil (next this))
+  ) {
+    extractBlock this true
+	return
+  }
+
   parent = (handler (owner morph))
   if (isClass parent 'Block') {
     if (type == 'reporter') {
@@ -598,6 +681,47 @@ method expressionChanged Block changedBlock {
 }
 
 method clicked Block hand {
+  if (not (isMicroBlocks)) { return (gpClicked hand) }
+
+  selection = (selection (scripter (findProjectEditor)))
+  kbd = (keyboard (page hand))
+
+  if (and (notNil selection) (shiftKeyDown kbd)) {
+	toggleAddBlock selection this
+	return
+  } else {
+	cancelSelection
+  }
+
+  if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
+    userRenameVariable this
+    return
+  } (isPrototype this) {
+    def = (blockDefinition this)
+    if (notNil def) {
+      return (clicked def hand)
+    }
+    return true
+  } (isPrototypeHat this) {
+    prot = (editedPrototype this)
+    if (notNil prot) {
+      return (clicked prot hand)
+    }
+  } (isClass (handler (owner morph)) 'BlockOp') {
+    return
+  }
+
+  topBlock = (topBlock this)
+  if (isPrototypeHat topBlock) { return }
+  runtime = (smallRuntime)
+  if (isRunning runtime topBlock) {
+	stopRunningChunk runtime (lookupChunkID runtime topBlock)
+  } else {
+	evalOnBoard runtime topBlock
+  }
+}
+
+method gpClicked Block hand {
   tb = (topBlock this)
   kbd = (keyboard (page hand))
   if (shiftKeyDown kbd) {
@@ -727,7 +851,7 @@ method setNext Block another {
   if (isNil another) {
     setField expression 'nextBlock' nil
   } else {
-    setPosition (morph another) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+    setPosition (morph another) (left morph) ((((top morph) + (height morph)) - (scale * corner)) - (max 1 (blockScale)))
     addPart morph (morph another)
     setField expression 'nextBlock' (expression another)
     if (notNil n) {setNext (bottomBlock another) n}
@@ -848,6 +972,111 @@ method revertToDefaultInput Block aReporter {
 // context menu
 
 method contextMenu Block {
+  if (not (isMicroBlocks)) { return (gpContextMenu this) }
+
+  if (isPrototype this) {return nil}
+  menu = (menu nil this)
+  
+  pe = (findProjectEditor)
+  scripter = (scripter pe)
+  selection = (selection scripter)
+  if (and (notNil selection) (notEmpty selection)) {
+  	return (contextMenu selection)
+  }
+
+  isInPalette = ('template' == (grabRule morph))
+  if (and isInPalette (isRenamableVar this)) {
+    addItem menu 'rename...' 'userRenameVariable'
+    addLine menu
+  }
+  addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
+  if (and ('reporter' != type) (notNil (next this))) {
+    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate this block and all blocks below it'
+  }
+  addLine menu
+  if (and (not isInPalette) ('reporter' != type)) {
+    addItem menu 'extract block' 'extractBlock' 'pull out this block'
+  }
+  addLine menu
+  if (hasHelpEntryFor pe this) {
+    addItem menu 'help' (action 'openHelp' pe this) 'show help for this block in a browser'
+    addLine menu
+  }
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this)) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (topBlock this)) 'copy these blocks to the clipboard as a URL'
+  addLine menu
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
+  if (not (isPrototypeHat (topBlock this))) {
+	if (or ('reporter' == (type (topBlock this))) (devMode)) {
+	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
+	}
+  }
+  if (devMode) {
+	addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+    if (and isInPalette (notNil (functionNamed (project pe) (primName expression)))) {
+	  addItem menu 'show call tree' (action 'showCallTree' (smallRuntime) this)
+    }
+
+	// xxx internal testing only; remove later!:
+	if (contains (commandLine) '--allowMorphMenu') {
+		addItem menu 'test decompiler' (action 'testDecompiler' (smallRuntime) this) // xxx
+	}
+  }
+  addLine menu
+
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
+	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
+  } else {
+	  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
+  }
+  if (notNil (functionNamed (project pe) (primName expression))) {
+    addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
+	if isInPalette {
+	  addLine menu
+	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
+	}
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
+  }
+  if ((primName expression) == 'v') {
+	varNames = (allVariableNames (project scripter))
+	if (and (not isInPalette) ((count varNames) > 1)) {
+		for varName varNames {
+			if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
+				b = (toBlock (newReporter 'v' varName))
+				fixLayout b
+				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
+			}
+		}
+	}
+  } else {
+	alternativeOps = (alternateOperators this)
+	if (and (not isInPalette) (notNil alternativeOps)) {
+		addLine menu
+		myOp = (primName expression)
+		for op alternativeOps {
+		  // create and display block morph (with translated spec)
+		  spec = (specForOp (authoringSpecs) op)
+		  if (and (notNil spec) (op != myOp)) {
+			b = (blockForSpec spec)
+			fixLayout b
+			addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
+		  }
+		}
+	}
+  }
+  if (not isInPalette) {
+	addLine menu
+	addItem menu 'delete block' 'delete' 'delete this block'
+  }
+  return menu
+}
+
+method gpContextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   isInPalette = ('template' == (grabRule morph))
@@ -928,11 +1157,60 @@ method duplicate Block {
   return dup
 }
 
+method extractBlock Block whileGrabbing {
+  cancelSelection
+  whileGrabbing = (whileGrabbing == true)
+  if ('reporter' != type) { // hat or command
+    nxt = (next this)
+    if (and (notNil nxt) (notNil (owner morph))) {
+      prev = (ownerThatIsA (owner morph) 'Block')
+      cslot = (ownerThatIsA (owner morph) 'CommandSlot')
+      scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
+      if (and (notNil prev) (=== this (next (handler prev)))) {
+        setNext this nil
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNext (handler prev) nil
+		}
+		setNext (handler prev) nxt
+      } (and (notNil cslot) (=== this (nested (handler cslot)))) {
+        setNext this nil
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNested (handler cslot) nil
+		}
+        setNested (handler cslot) nxt
+      } (notNil scripts) {
+        addPart scripts (morph nxt)
+        fixBlockColor nxt
+      }
+      setNext this nil
+    }
+  }
+  if (not whileGrabbing) { grabTopLeft morph }
+}
+
 method copyToClipboard Block {
   setClipboard (scriptText this)
 }
 
+method copyToClipboardAsURL Block {
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html#scripts='
+	(urlEncode (scriptText this) true)
+  )
+}
+
 method scriptText Block useSemicolons {
+  // Note: scriptText is also called by exportAsImageScaled when saving PNG files.
+
+  if (not (isMicroBlocks)) { return (gpScriptText this) }
+
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  return (scriptStringFor mbScripter this)
+}
+
+method gpScriptText Block useSemicolons {
   useSemicolons = (useSemicolons == true) // useSemicolons is an optional parameter
   pp = (new 'PrettyPrinter')
   if useSemicolons {
@@ -964,7 +1242,8 @@ method scriptText Block useSemicolons {
   return (joinStrings result)
 }
 
-method exportAsImage Block { exportAsImageScaled this }
+method exportAsImage Block { exportAsImageScaled (topBlock this) }
+method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
 method exportAsImageScaled Block result isError fName {
   // Save a PNG picture of the given script at the given scale.
@@ -1015,10 +1294,14 @@ method exportAsImageScaled Block result isError fName {
 	bubbleInsetY = 0
   }
 
+  // add an extra pixel all around to allow for anti-aliasing
+  scriptW += 2
+  scriptH += 2
+
   // combine the morph and result bubble, if any
-  bm = (newBitmap (+ scriptW bubbleW (- bubbleInsetX)) (+ scriptH bubbleH (- bubbleInsetY)))
+  bm = (newBitmap (+ scriptW bubbleW (- bubbleInsetX)) (+ scriptH bubbleH (- bubbleInsetY)) (gray 255 0))
   ctx = (newGraphicContextOn bm)
-  setOffset ctx 0 (bubbleH - bubbleInsetY)
+  setOffset ctx 1 ((bubbleH - bubbleInsetY) + 1) // inset by one pixel for anti-aliasing
   fullDrawOn (morph scaledScript) ctx
   if (notNil scaledBubble) {
 	topMorphWidth = (width (morph scaledScript))
@@ -1139,6 +1422,13 @@ method openClassBrowser Block className {
 }
 
 method showDefinition Block {
+  if (not (isMicroBlocks)) { return gpShowDefinition this }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  showDefinition (scripter pe) (primName expression)
+}
+
+method gpShowDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   scripter = (scripter pe)
@@ -1327,24 +1617,28 @@ to toBlock commandOrReporter {
   return block
 }
 
+method isMathOperator Block aString {
+  return (isOneOf aString '=' '+' '/' '×' '−' '≠' // last three: unicode multiply, minus, not equals
+	'<' '<=' '=' '>=' '>' '&' '|' '^' '~' '<<' '>>')
+}
+
 method labelText Block aString {
   scale = (blockScale)
-  fontName =  'Verdana Bold'
-  fontSize = (11 * scale)
-  if (isOneOf aString '=' '+' '/' '×' '−' '≠') { // last three: unicode multiply, minus, not equals
-  	fontSize = (13 * scale)
-  }
-  if ('Linux' == (platform)) {
-	fontName = 'Sans Bold'
-	fontSize = (round (0.85 * fontSize))
-  }
-  if ('Browser' == (platform)) {
-	fontName = 'Arial Bold'
-	fontSize = (fontSize + (2 * scale))
-  }
+  fontName = 'Arial Bold'
+  fontSize = (14 * scale)
+  if (isMathOperator this aString) { fontSize += (2 * scale) }
+  isSVG = (beginsWith aString '#SVG#')
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
-  if ('comment' == aString) { labelColor = (gray 80) }
+  
+  if (and (notNil blockSpec) ('comment' == (blockOp blockSpec))) { labelColor = (gray 80) }
+  if isSVG {
+    return (newSVGImage (substring aString 6) labelColor color scale)
+  }
+  if ('Linux' == (platform)) {
+    fontName = 'Noto Sans Bold'
+    fontSize = (11 * scale)
+  }
   return (newText aString fontName fontSize labelColor)
 }
 
@@ -1365,11 +1659,6 @@ method rawInitialize Block commandOrReporter {
   labelParts = (list (list (labelText this (primName expression))))
   group = (at labelParts 1)
   corner = 3
-  rounding = 8
-  dent = 2
-  inset = 4
-  hatWidth = 80
-  border = 1
   expansionLevel = 1
 
   for each (argList expression) {
@@ -1546,11 +1835,6 @@ method initializeForSpec Block spec suppressExpansion {
   setTransparentTouch morph false
 
   corner = 3
-  rounding = 8
-  dent = 2
-  inset = 4
-  hatWidth = 80
-  border = 1
   expansionLevel = 1
 
   // create the base label parts
@@ -1638,6 +1922,8 @@ method canCollapse Block {
 }
 
 method expand Block {
+  if ('template' == (grabRule morph)) { return } // do nothing if block is in palette
+
   nb = (next this)
   removeAllParts morph
   expansionLevel += 1
@@ -1837,6 +2123,178 @@ method fixPartColors Block {
   for m (parts morph) {
     if (isClass (handler m) 'Block') {
       fixBlockColor (handler m)
+    }
+  }
+}
+
+// changing block operations in place
+
+method alternateOperators Block {
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	// if it's a variable, return a group with all existing variables
+	return (array '')
+  } else {
+	opGroups = (array
+		(array 'analogReadOp' 'digitalReadOp')
+		(array 'analogWriteOp' 'digitalWriteOp')
+		(array 'analogPins' 'digitalPins')
+		(array 'and' 'or')
+		(array '+' '-' '*' '/' '%')
+		(array 'buttonA' 'buttonB')
+		(array '<' '<=' '==' '!=' '>=' '>')
+		(array 'maximum' 'minimum')
+		(array 'millisOp' 'microsOp')
+		(array '=' '+=')
+		(array '&' '|' '^' '<<' '>>')
+	)
+	op = (primName expression)
+	for group opGroups {
+		if (contains group op) { return group }
+	}
+  }
+  return nil
+}
+
+method changeOperator Block newOp {
+  cancelSelection
+  setField expression 'primName' newOp
+  scripter = (scripter (findProjectEditor))
+  updateScriptAfterOperatorChange scripter this
+}
+
+method changeVar Block varName {
+  cancelSelection
+  newVarReporter = (newReporter 'v' varName)
+  blockOwner = (handler (owner morph))
+  if (isClass blockOwner 'Block') {
+    owningExpr = (expression blockOwner)
+    args = (argList owningExpr)
+    for i (count args) {
+      if ((at args i) == (expression this)) {
+        setArg owningExpr i newVarReporter
+      }
+    }
+  } else { // top level var reporter
+    expression = newVarReporter
+  }
+  scripter = (scripter (findProjectEditor))
+  updateScriptAfterOperatorChange scripter this
+}
+
+// Inspection operations
+
+method findBlockUsers Block {
+	pe = (findProjectEditor)
+	findBlockUsers (project pe) this
+}
+
+method findVarAccessors Block {
+	pe = (findProjectEditor)
+	findVarAccessors (project pe) this
+}
+
+method findVarModifiers Block {
+	pe = (findProjectEditor)
+	findVarModifiers (project pe) this
+}
+
+// Block definition operations
+
+method deleteObsolete Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    if (not
+      (confirm
+	    (global 'page')
+	    nil
+        (join
+          'This block is still being used in '
+          (count (allEntries finder))
+          ' scripts or functions.'
+          (newline)
+          (newline)
+          'Are you sure you want to remove this obsolete block definition?'
+        )
+	  )
+	) { return }
+  }
+
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
+}
+
+method deleteBlockDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+
+  confirmation = 'Are you sure you want to remove this block definition?'
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    confirmation = (join
+      'This block is still being used in '
+      (count (allEntries finder))
+      ' scripts or functions.'
+	  (newline)
+	  (newline)
+	  confirmation
+	)
+  }
+
+  if (not (confirm (global 'page') nil confirmation)) { return }
+
+  deleteFunction (scripter pe) (primName expression)
+}
+
+// additions to Block for script selection
+
+method select Block {
+  if (isNil originalColor) {
+    originalColor = color
+    color = (mixed color 50 (color 0 255 0))
+    pathCache = nil
+    changed morph
+    if (notNil (next this)) {
+      select (next this)
+    }
+    for i (inputs this) {
+      if (isClass i 'Block') {
+        select i
+      } (and
+          (isClass i 'CommandSlot')
+          (notNil (nested i))
+      ) {
+        select (nested i)
+      }
+    }
+  }
+}
+
+method unselect Block {
+  if (notNil originalColor) {
+    color = originalColor
+    originalColor = nil
+    pathCache = nil
+    changed morph
+    if (notNil (next this)) {
+      unselect (next this)
+    }
+    for i (inputs this) {
+      if (isClass i 'Block') {
+        unselect i
+      } (and
+          (isClass i 'CommandSlot')
+          (notNil (nested i))
+      ) {
+        unselect (nested i)
+      }
     }
   }
 }

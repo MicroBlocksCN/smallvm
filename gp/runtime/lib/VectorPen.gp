@@ -26,14 +26,14 @@ method examples VectorPen {
 }
 
 to newVectorPenOnScreen {
-  return (intialize (new 'VectorPen'))
+  return (initialize (new 'VectorPen'))
 }
 
 to newVectorPen bitmap owningMorph noPrimitives {
   if (isNil bitmap) {
 	bitmap = (newBitmap 200 200)
   }
-  return (intialize (new 'VectorPen') bitmap owningMorph noPrimitives)
+  return (initialize (new 'VectorPen') bitmap owningMorph noPrimitives)
 }
 
 to newVectorPenForSVG pageW pageH {
@@ -42,13 +42,14 @@ to newVectorPenForSVG pageW pageH {
 
 method x VectorPen { return (penX - offsetX) }
 method y VectorPen { return (penY - offsetY) }
+method heading VectorPen { return heading }
 method bitmap VectorPen { return bitmap }
 method setColor VectorPen c { noop } // for compatability with pen; ignore
 method setClipRect VectorPen aRect { clipRect = aRect }
 method setHeading VectorPen degrees { heading = degrees }
 method path VectorPen { return (toArray path) }
 
-method intialize VectorPen aBitmap aMorph noPrimitives {
+method initialize VectorPen aBitmap aMorph noPrimitives {
   offsetX = 0
   offsetY = 0
   penX = 100
@@ -79,6 +80,10 @@ method beginPath VectorPen x y {
 
 method beginPathFromCurrentPostion VectorPen {
   path = (list 'M' penX penY)
+}
+
+method closePath VectorPen {
+  add path 'Z'
 }
 
 method goto VectorPen dstX dstY {
@@ -117,8 +122,8 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
 
   startX = penX
   startY = penY
-  penX = (dstX + offsetX)
-  penY = (dstY + offsetY)
+  penX = dstX
+  penY = dstY
 
   // points used to calculate the control points pc2 and pc3
   paX = (interpolate startX c1X 0.75)
@@ -161,6 +166,14 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
   addAll path (array 'C' pa2X pa2Y pc2X pc2Y)
   addAll path (array 'C' pa3X pa3Y pc3X pc3Y)
   addAll path (array 'C' dstX dstY pc4X pc4Y)
+}
+
+method moveBy VectorPen dx dy curvature {
+  startX = penX
+  startY = penY
+  penX += dx
+  penY += dy
+  addSegment this startX startY penX penY curvature
 }
 
 method forward VectorPen dist curvature {
@@ -334,7 +347,9 @@ method svgPath VectorPen aColor closeFlag {
 	  cy = (at path (i + 4))
 	  add result (join 'Q ' cx ' ' cy ' ' endX ' ' endY)
 	  i += 5
-	}
+	} ('Z' == cmd) {
+	  add result 'Z'
+    }
   }
   if (true == closeFlag) { add result 'Z' }
   add result '"'
@@ -517,6 +532,14 @@ method drawLine VectorPen x0 y0 x1 y1 {
 	  y0 = (y0 + sy)
 	}
   }
+}
+
+method hLine VectorPen destX {
+	lineTo this destX (y this)
+}
+
+method vLine VectorPen destY {
+	lineTo this (x this) destY
 }
 
 method fillPath VectorPen {

@@ -57,7 +57,7 @@ method setContents MicroBitDisplaySlot anInteger {
 
 method redraw MicroBitDisplaySlot {
 	scale = (blockScale)
-	bgColor = (colorHSV 235 0.62 0.80)
+	bgColor = (transparent)
 	offColor = (colorHSV 235 0.62 0.40)
 	onColor = (colorHSV 0 1.0 0.9)
 	bm = (costumeData morph)

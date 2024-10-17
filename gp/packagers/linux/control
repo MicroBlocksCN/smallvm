@@ -4,8 +4,9 @@ Maintainer: Bernat Romagosa <bernat@romagosa.work>
 Priority: optional
 Version: @AppVersion
 Section: devel
+Depends: fonts-noto-core, fonts-noto-cjk, fonts-noto-extra, fonts-noto-mono
 Installed-Size: @InstalledSize
-Homepage: http://microblocks.fun
+Homepage: https://microblocks.fun
 Description: MicroBlocks IDE
  MicroBlocks is a graphical and dynamic blocks language for 32 bit
  microcontroller boards such as the BBC micro:bit, the Adafruit

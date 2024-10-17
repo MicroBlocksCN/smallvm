@@ -87,6 +87,9 @@ method initializeRepeater BlockDefinition aBlockSpec {
     hide (morph repeater)
   }
   setPadding repeater (5 * (global 'scale'))
+
+  if (isMicroBlocks) { return } // suppress the ability to make variadic user-defined blocks for now
+
   addPart (morph repeater) (morph drawer)
 
   scale = (global 'scale')
@@ -180,7 +183,44 @@ method typesMenu BlockDefinition {
   popUp menu (global 'page') (left morph) (bottom morph)
 }
 
+// MicroBlocks context menu
+
 method contextMenu BlockDefinition {
+  menu = (menu nil this)
+  addItem menu 'hide block definition' 'hideDefinition'
+  addLine menu
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard as a URL'
+  addLine menu
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of this block definition as a PNG file'
+  if (devMode) {
+    addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+    addItem menu 'show call tree' (action 'showCallTree' this)
+  }
+  addLine menu
+  addItem menu 'delete block definition...' 'deleteBlockDefinition'
+  popUp menu (global 'page') (left morph) (bottom morph)
+}
+
+method exportAsImage BlockDefinition {
+  exportAsImageScaled (handler (ownerThatIsA morph 'Block'))
+}
+
+method showInstructions BlockDefinition {
+  showInstructions (smallRuntime) (handler (owner (owner morph)))
+}
+
+method showCompiledBytes BlockDefinition {
+  showCompiledBytes (smallRuntime) (handler (owner (owner morph)))
+}
+
+method showCallTree BlockDefinition {
+  showCallTree (smallRuntime) (handler (owner (owner morph)))
+}
+
+method gpContextMenu BlockDefinition {
   menu = (menu nil this)
   if isShort {
     addItem menu 'show details' 'showDetails'
@@ -274,26 +314,19 @@ method setMethodName BlockDefinition aName {
   renameScriptToAPublicName scripter oldOp aName
 }
 
-method exportAsImage BlockDefinition {
-  blockM = (ownerThatIsA morph 'Block')
-  if (notNil blockM) { blockM = (owner blockM) } // get the prototype hat block
-  if (or (isNil blockM) (not (isPrototypeHat (handler blockM)))) { return }
-  bnds = (fullBounds blockM)
-  bm = (newBitmap (width bnds) (height bnds))
-  draw blockM bm (- (left bnds)) (- (top bnds))
-  pngData = (encodePNG bm)
-  if ('Browser' == (platform)) {
-	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
-  } else {
-	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
-	fName = (fileToWrite fName '.png')
-	if ('' == fName) { return }
-	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
-	writeFile fName pngData
-  }
-}
+// Hide block defintion
 
 method hideDefinition BlockDefinition {
+  // Remove this method/function definition from the scripting area.
+
+  if (not (isMicroBlocks)) { return (gpHideDefinition this) }
+
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  hideDefinition (scripter pe) op
+}
+
+method gpHideDefinition BlockDefinition {
   // Remove this method/function definition from the scripting area.
 
   pe = (findProjectEditor)
@@ -316,6 +349,20 @@ method hideDefinition BlockDefinition {
   }
   setScripts targetClass (toArray newScripts)
   restoreScripts scripter
+}
+
+// Delete block defintion
+
+method deleteBlockDefinition BlockDefinition {
+  if (not (isMicroBlocks)) { return }
+
+  if (not (confirm (global 'page') nil
+  	'Are you sure you want to remove this block definition?')) {
+		return
+  }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  deleteFunction (scripter pe) op
 }
 
 // conversion to spec
@@ -544,8 +591,13 @@ method addLabel BlockSectionDefinition {
 
 method addLabelText BlockSectionDefinition aString {
   // private
+  if (aString == (newline)) {
+    aString = '#BR#'
+  }
   txt = (labelText this aString)
-  setEditRule txt 'line'
+  if (not (isClass txt 'SVGImage')) { 
+  	setEditRule txt 'line'
+  }
   addPart morph (morph txt)
 }
 

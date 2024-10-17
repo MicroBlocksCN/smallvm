@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libFrame libAddButton lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer gradient
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -26,10 +26,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   morph = (newMorph this)
   listColor = (gray 240)
   fontName = 'Arial Bold'
-  fontSize = 16
+  fontSize = 14
   if ('Linux' == (platform)) {
 	fontName = 'Liberation Sans Bold'
-	fontSize = 13
+	fontSize = 12
   }
   nextX = 0
   nextY = 0
@@ -41,26 +41,44 @@ method initialize MicroBlocksScripter aProjectEditor {
   makeLibraryHeader this
   lastLibraryFolder = 'Libraries'
 
+  spacer = (newBox (newMorph) (color transparent) 0 0 false false)
+  addPart morph (morph spacer)
+
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
   setExtent (morph categorySelector) (140 * scale) 100
+  setMinExtent (morph categorySelector) (65 * scale) (60 * scale)
+  setMaxExtent (morph categorySelector) (300 * scale) 0 // y is ignored
   addPart morph (morph categorySelector)
 
+  makeAddLibraryButton this
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
   setFont libSelector fontName fontSize
-  addPart morph (morph libSelector)
+  libFrame = (scrollFrame libSelector (transparent) false (4 * scale) (4 * scale))
+  setVerticalScrollOnly libFrame true
+  setAutoScroll libFrame false
+  addPart morph (morph libFrame)
+  gradient = (newMorph)
+  setExtent gradient (140 * scale) (30 * scale)
+  setCostume gradient (scaleAndRotate (gradientBitmap this) (140 * scale) 1)
+  addPart morph gradient
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
-  blocksFrame = (scrollFrame blocksPane (gray 220))
-  setExtent (morph blocksFrame) (260 * scale) (100 * scale)
+  blocksFrame = (scrollFrame blocksPane (transparent) false (4 * scale) (4 * scale))
+  setVerticalScrollOnly blocksFrame true
   setAutoScroll blocksFrame false
+  setExtent (morph blocksFrame) (260 * scale) (100 * scale)
+  setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
+  setMaxExtent (morph blocksFrame) (600 * scale) 0 // y is ignored
   addPart morph (morph blocksFrame)
+  addRoundedCorner this
+  addTrashcan this
 
   scriptsPane = (newScriptEditor 10 10 nil)
-  scriptsFrame = (scrollFrame scriptsPane (gray 220))
+  scriptsFrame = (scrollFrame scriptsPane (transparent) false (4 * scale) (4 * scale))
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
@@ -82,13 +100,65 @@ method initialize MicroBlocksScripter aProjectEditor {
   return this
 }
 
+method addRoundedCorner MicroBlocksScripter {
+  scale = (global 'scale')
+  cornerIcon = (newMorph)
+  setCostume cornerIcon (readSVGIcon 'rounded-corner')
+  setPosition cornerIcon (left (morph blocksFrame)) ((height (morph blocksFrame)) - (8 * scale))
+  addPart morph cornerIcon
+}
+
+method addTrashcan MicroBlocksScripter {
+  scale = (global 'scale')
+  trashcanIcon = (newMorph)
+  if (darkModeEnabled projectEditor) {
+	  setCostume trashcanIcon (readSVGIcon 'trashcan-dark')
+  } else {
+	  setCostume trashcanIcon (readSVGIcon 'trashcan-light')
+  }
+  setPosition trashcanIcon ((right (morph blocksFrame)) - ((32 + 8) * scale)) ((height (morph blocksFrame)) + (8 * scale))
+  addPart morph trashcanIcon
+}
+
+method darkModeChanged MicroBlocksScripter {
+  changed morph // report damage
+  sliderBGColor = (transparent)
+  if (darkModeEnabled projectEditor) {
+    scriptsFrameColor = (microBlocksColor 'blueGray' 900)
+    blocksFrameColor = (microBlocksColor 'blueGray' 800)
+    sliderFGColor = (microBlocksColor 'blueGray' 300)
+	scriptingActionsContainerColor = (copy (microBlocksColor 'blueGray' 850))
+	scriptingActionsContainerBorderColor = (copy (microBlocksColor 'blueGray' 700))
+  } else {
+    scriptsFrameColor = (microBlocksColor 'white')
+    blocksFrameColor = (microBlocksColor 'blueGray' 50)
+    sliderFGColor = (microBlocksColor 'blueGray' 200)
+	scriptingActionsContainerColor = (microBlocksColor 'white')
+	scriptingActionsContainerBorderColor = (microBlocksColor 'blueGray' 75)
+  }
+
+  setColor scriptsFrame scriptsFrameColor
+  setColor blocksFrame blocksFrameColor
+  setSliderColors scriptsFrame sliderBGColor sliderFGColor
+  setSliderColors blocksFrame sliderBGColor sliderFGColor
+  scriptingActionsContainer = (scriptingActionsContainer projectEditor)
+  setColor scriptingActionsContainer scriptingActionsContainerColor
+  setAlpha (color scriptingActionsContainer) 220
+  setBorderColor scriptingActionsContainer scriptingActionsContainerBorderColor
+  categorySelected this
+
+  removePart morph trashcanIcon
+  addTrashcan this
+}
+
 method languageChanged MicroBlocksScripter {
+  changed categorySelector
   updateLibraryHeader this
+  updateLibraryButton this
 
   // update the scripts
-  updateBlocks this
   saveScripts this
-  restoreScripts this
+  restoreScripts this // calls updateBlocks
   scriptChanged this
 }
 
@@ -96,58 +166,44 @@ method languageChanged MicroBlocksScripter {
 
 method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
-  libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
+  libHeader = (newBox (newMorph) (microBlocksColor 'blueGray' 850) 0 0)
 
-  label = (newText (localized 'Libraries') 'Arial' (18 * scale) (gray 30))
+  label = (newText (localized 'LIBRARIES') 'Arial' (13 * scale) (microBlocksColor 'blueGray' 300))
   if ('Linux' == (platform)) {
-	label = (newText (localized 'Libraries') 'Liberation Sans' (15 * scale) (gray 30))
+	label = (newText (localized 'LIBRARIES') 'Liberation Sans' (11 * scale) (microBlocksColor 'blueGray' 300))
   }
-  setPosition (morph label) (6 * scale) (6 * scale)
+  setPosition (morph label) (24 * scale) (32 * scale)
   addPart (morph libHeader) (morph label)
 
-  libAddButton = (addLibraryButton this '+' (33 * scale) (33 * scale))
-  setPosition (morph libAddButton) (82 * scale) 0
-  addPart (morph libHeader) (morph libAddButton)
+  hLine = (newBox (newMorph) (microBlocksColor 'blueGray' 700) 0 0 false false)
+  setExtent (morph hLine) (96 * scale) scale
+  setPosition (morph hLine) (24 * scale) ((bottom (morph label)) + (4 * scale))
+
+  addPart (morph libHeader) (morph hLine)
   addPart morph (morph libHeader)
   return libHeader
 }
 
 method updateLibraryHeader MicroBlocksScripter {
   labelM = (first (parts (morph libHeader)))
-  setText (handler labelM) (localized 'Libraries')
-
-  addButton = (handler (last (parts (morph libHeader))))
-  setHint addButton (localized 'Add Library')
+  setText (handler labelM) (localized 'LIBRARIES')
 }
 
 method fixLibraryHeaderLayout MicroBlocksScripter {
-  buttonM = (last (parts (morph libHeader)))
-  setRight buttonM (right (owner buttonM))
+  hLine = (last (parts (morph libHeader)))
+  setExtent hLine ((width (morph categorySelector)) - 24) (global 'scale')
+  setRight hLine (right (owner hLine))
 }
 
-method addLibraryButton MicroBlocksScripter label w h {
+method updateLibraryButton MicroBlocksScripter {
+  drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+}
+
+method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
-  setFont 'Arial Bold' (24 * scale)
-  halfW = (1.5 * scale)
-  lineW = (2 * halfW)
-  halfLen = (7 * scale)
-  len = (2 * halfLen)
-  centerX = (toInteger (w / 2))
-  centerY = (toInteger (h / 2))
-
-  labelY = (6 * scale)
-  bm1 = (newBitmap w h (topBarBlue projectEditor))
-  fillRect bm1 (gray 60) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm1 (gray 60) (centerX - halfW) (centerY - halfLen) lineW len
-
-  bm2 = (newBitmap w h (topBarBlueHighlight projectEditor))
-  fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
-
-  button = (newButton '' (action 'importLibrary' this))
-  setHint button (localized 'Add Library')
-  setCostumes button bm1 bm2
-  return button
+  libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
+  setPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
+  addPart morph (morph libAddButton)
 }
 
 // library item menu
@@ -254,32 +310,67 @@ method exportLibrary MicroBlocksScripter libName {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (20 * scale))
-  catHeight = ((heightForItems categorySelector) / scale)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (20 * scale))
-  columnHeaderHeight = 33
+
+  catWidth = (max (width (morph categorySelector)) (40 * scale))
+  catHeight = (heightForItems categorySelector)
+  libSelectorHeight = (heightForItems libSelector)
+  blocksWidth = (max (width (morph blocksFrame)) (40 * scale))
 
   // prevent pane dividers from going off right side
   catWidth = (min catWidth ((width morph) - (20 * scale)))
   blocksWidth = (min blocksWidth ((width morph) - (catWidth + (20 * scale))))
 
-  packer = (newPanePacker (bounds morph) scale)
-  packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libSelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
-  packPanesV packer blocksFrame '100%'
-  packPanesV packer scriptsFrame '100%'
-  finishPacking packer
+  // resize parts
+  totalHeight = (height morph)
+  totalWidth = (width morph)
+  libHeaderHeight = (30 * scale)
+  setExtent (morph categorySelector) catWidth catHeight
+  setExtent (morph libHeader) catWidth libHeaderHeight
+  setExtent (morph libSelector) catWidth libSelectorHeight
+  setExtent (morph blocksFrame) blocksWidth totalHeight
+  setExtent gradient catWidth (30 * scale)
+  setCostume gradient (scaleAndRotate (gradientBitmap this) catWidth 1)
+  setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
-  // extra damage report for area below libSelector
-  libSelectorM = (morph libSelector)
-  reportDamage morph (rect 0 (bottom libSelectorM) (width libSelectorM) (height morph))
+  // position parts
+  leftEdge = (left morph)
+  topEdge = (top morph)
+  fastSetPosition (morph categorySelector) leftEdge (topEdge + (24 * scale))
+  fastSetPosition (morph libHeader) leftEdge (bottom (morph categorySelector))
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
+  fastSetPosition (morph libSelector) leftEdge ((bottom (morph libAddButton)) + (6 * scale))
+  fastSetPosition (morph libFrame) leftEdge (top (morph libSelector))
+  fastSetPosition gradient leftEdge ((bottom (morph libFrame)) - (30 * scale))
+  fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
+  fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
+
+  // set libFrame extent
+  setExtent (morph libFrame) catWidth (- (bottom morph) (+ (top (morph libSelector)) (12 * scale)))
+
+  changed morph // report damage
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
+  updateTrashcanPosition this
+
+  // rounded corner at bottom left of palette
+  setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
+}
+
+method updateTrashcanPosition MicroBlocksScripter {
+  // trashcan at bottom right of palette, offset by sliders if visible
+  scale = (global 'scale')
+  vOffset = (8 * scale)
+  hOffset = ((32 + 8) * scale)
+  if (isVisible (morph (getField blocksFrame 'hSlider'))) {
+	hOffset += 8
+  }
+  if (isVisible (morph (getField blocksFrame 'vSlider'))) {
+	vOffset += -8
+  }
+  setPosition trashcanIcon ((right (morph blocksFrame)) - hOffset) ((height (morph blocksFrame)) + vOffset)
 }
 
 method fixResizerLayout MicroBlocksScripter {
@@ -299,27 +390,32 @@ method fixResizerLayout MicroBlocksScripter {
 method hideScrollbars MicroBlocksScripter {
   hideSliders blocksFrame
   hideSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 method showScrollbars MicroBlocksScripter {
   showSliders blocksFrame
   showSliders scriptsFrame
+  updateTrashcanPosition this
 }
 
 // drawing
 
 method drawOn MicroBlocksScripter ctx {
   scale = (global 'scale')
-  borderColor = (gray 150)
   borderWidth = (2 * scale)
-  x = (right (morph categorySelector))
-  fillRect ctx (gray 240) 0 (top morph) x (height morph) // bg color for category/lib panes
-  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  paneColor = (microBlocksColor 'blueGray' 850)
+  // border between palette and scripting area
+  if (darkModeEnabled projectEditor) {
+    borderColor = (microBlocksColor 'blueGray' 600)
+  } else {
+    borderColor = (microBlocksColor 'blueGray' 100)
+  }
+  x = ((right (morph categorySelector)) + 1)
+  fillRect ctx paneColor 0 (top morph) x (height morph) // bg color for category/lib panes
   x = (right (morph blocksFrame))
   fillRect ctx borderColor x (top morph) borderWidth (height morph)
   r = (bounds (morph libHeader))
-  fillRect ctx borderColor (left r) ((top r) - borderWidth) (width r) borderWidth
-  fillRect ctx borderColor (left r) (bottom r) (width r) borderWidth
 }
 
 // MicroBlocksScripter UI support
@@ -502,11 +598,12 @@ method addMyBlocks MicroBlocksScripter {
 }
 
 method addButton MicroBlocksScripter label action hint {
-  btn = (newButton label action)
+  scale = (global 'scale')
+  btn = (pushButton label action nil (26 * scale) false (darkModeEnabled projectEditor))
   if (notNil hint) { setHint btn hint }
   setPosition (morph btn) nextX nextY
   addPart (morph (contents blocksFrame)) (morph btn)
-  nextY += ((height (morph btn)) + (7 * (global 'scale')))
+  nextY += ((height (morph btn)) + (7 * scale))
 }
 
 method addBlock MicroBlocksScripter b spec isVarReporter {
@@ -532,14 +629,18 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
   setPosition (morph b) nextX nextY
   if isVarReporter { setLeft (morph b) (nextX + (135 * scale)) }
   addPart (morph (contents blocksFrame)) (morph b)
-  nextY += ((height (morph b)) + (4 * (global 'scale')))
+  nextY += ((height (morph b)) + (8 * (global 'scale')))
 }
 
 // Palette Section Labels
 
 method addSectionLabel MicroBlocksScripter label {
   scale = (global 'scale')
-  labelColor = (gray 80)
+  if (darkModeEnabled projectEditor) {
+	labelColor = (microBlocksColor 'blueGray' 300)
+  } else {
+	labelColor = (microBlocksColor 'blueGray' 600)
+  }
   fontSize = (14 * scale)
   label = (newText label 'Arial Bold' fontSize labelColor)
   nextY += (12 * scale)
@@ -1258,6 +1359,8 @@ method updateLibraryList MicroBlocksScripter {
   if (not (contains libNames oldSelection)) {
 	selectCategory this 'Control'
   }
+  scale = (global 'scale')
+  fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
 }
 
 method justGrabbedPart MicroBlocksScripter part {
@@ -1413,4 +1516,21 @@ method scriptsBottom MicroBlocksScripter {
     }
   }
   return result
+}
+
+method gradientBitmap MicroBlocksScripter {
+  data = ' iVBORw0KGgoAAAANSUhEUgAAAAEAAAAeCAYAAADtlXTHAAAACXBIWXMAAA7DAAAOwwHHb
+6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFh0RVh0Q29weXJpZ2h0AENDM
+CBQdWJsaWMgRG9tYWluIERlZGljYXRpb24gaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvcHVibGljZ
+G9tYWluL3plcm8vMS4wL8bjvfkAAABaSURBVAiZPcixDYNQEETBvWcs3RK4pt9/I/Rg4NaRyUajtdbGc
+Zxm3z/Nl9NsV5qLMS/ezdxjIM0ohqgZYUiaKRkqzQx/lUxFjVRGSaOSkdQoMapqpOf0XOQf/Voh10IMi
+/kAAAAASUVORK5CYII='
+  dataRetina = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAA8CAYAAACn8dD6AAAACXBIWXMAAA7DAAAO
+wwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAFh0RVh0Q29weXJpZ2h0
+AENDMCBQdWJsaWMgRG9tYWluIERlZGljYXRpb24gaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvcHVi
+bGljZG9tYWluL3plcm8vMS4wL8bjvfkAAACASURBVBiVbY1LbgJRDATLNf1yGS7JJTkIC7IJ2CxGw0fK
+xmpVl9zAWU+nS9y263KtjrdtYn6J+lgq8U+i9ROhl96J95poEWGWVcR+EKu2L1YTCyI9a09dZG/BZTWx
+mRfjy+uJlAd7e82xAccGs6SMzEQ4/u2piMzLwwj/eJ9nZ0/INycVXhY1IwAAAABJRU5ErkJggg=='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
 }

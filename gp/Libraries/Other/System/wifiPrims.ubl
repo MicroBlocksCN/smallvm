@@ -18,9 +18,9 @@ description 'Low level network primitives. You are probably looking for either t
 	spec 'r' '[net:myMAC]'					'my MAC address'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
 
-	spec ' ' '[net:httpConnect]'			'connect to http꞉// _ : port _' 'auto num' 'microblocks.fun' 80
+	spec ' ' '[net:httpConnect]'			'connect to http #SVG#colon-double-slash _ : port _' 'auto num' 'microblocks.fun' 80
 	spec 'r' '[net:httpIsConnected]'		'is HTTP connected?'
-	spec ' ' '[net:httpRequest]'			'_ request http꞉// _ / _ : body _' 'menu.requestTypes auto auto str' 'GET' 'microblocks.fun' 'example.txt' ''
+	spec ' ' '[net:httpRequest]'			'_ request http #SVG#colon-double-slash _ / _ : body _' 'menu.requestTypes auto auto str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpResponse]'			'HTTP response'
 
 	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request : binary data _ : port _' 'bool num' false 8080

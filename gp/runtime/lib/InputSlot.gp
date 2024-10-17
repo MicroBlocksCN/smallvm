@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace pathCache cacheW cacheH
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace isComment pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -14,7 +14,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
   scale = (blockScale)
   morph = (newMorph this)
   text = (newText '')
-  addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
 	editRule = 'line'
@@ -24,11 +23,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
   }
   setEditRule text editRule
   setTextFont this
-  if (editRule == 'numerical') {
-    setBorders text (scale * 5) 0
-  } else {
-    setBorders text (scale * 3) scale
-  }
+  addPart morph (morph text)
   if (editRule == 'static') {
     contents = default
     if (notNil blockColor) { color = (lighter blockColor 75) }
@@ -47,7 +42,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
 	default = (toNumber default)
   }
   setContents this default
-  fixLayout this
   return this
 }
 
@@ -56,6 +50,7 @@ method setID InputSlot bool {isID = bool}
 method color InputSlot {return color}
 method isMonospace InputSlot {return isMonospace}
 method setMonospace InputSlot bool {isMonospace = bool}
+method setComment InputSlot {isComment = true}
 
 method contents InputSlot {
   if ((editRule text) == 'static') {
@@ -81,45 +76,29 @@ method setContents InputSlot data fixStringOnlyNum {
     }
   }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
-    setText text (localized (toString data))
+    setText text (localized data)
   } else {
     setText text (toString data)
   }
   if isAuto {
-    scale = (blockScale)
     isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
     if isNumber {
       data = (toNumber data)
-      setBorders text (scale * 5) 0
-    } else {
-      setBorders text (scale * 3) scale
     }
-    fixLayout this
   }
   contents = data
   raise morph 'inputChanged' this
 }
 
 method setTextFont InputSlot {
-  scale = (blockScale)
   fontName = 'Arial'
-  fontSize = 11
-  if isMonospace {
-    if ('Browser' == (platform)) {
-      fontSize = 11
-      fontName = 'monospace'
-    } ('Win' == (platform)) {
-      fontSize = 12
-      fontName = 'Lucida Console' // Lucida Console or Consolas
-    } ('Mac' == (platform)) {
-      fontSize = 11
-      fontName = 'Menlo Regular'
-    } ('Linux' == (platform)) {
-      fontSize = 10
-      fontName = 'DejaVu Sans Mono'
-    }
+  fontSize = 13
+  if ('Win' == (platform)) {
+    fontSize = 14
+  } ('Linux' == (platform)) {
+    fontName = 'Noto Sans'
+    fontSize = 11
   }
-  if ('Linux' == (platform)) { fontSize += -1 }
   setFont text fontName (fontSize * (blockScale))
 }
 
@@ -132,13 +111,21 @@ method isVarSlot InputSlot {
 
 method fixLayout InputSlot {
   scale = (blockScale)
-  h = (height (morph text))
-  w = ((width (morph text)) + 1)
-  if ('Linux' == (platform)) { h += scale }
-  if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
-  textX = (left morph)
-  textY = ((top morph) + 1)
+  textWidth = (max (width (morph text)) (10 * scale))
+  textPadding = (half (textWidth - (width (morph text))))
+  h = ((height (morph text)) + (3 * scale))
+  w = (textWidth + (14 * scale))
+  textX = (+ (left morph) textPadding (7 * scale))
+  textY = ((top morph) + (2 * scale))
+  if ('Linux' == (platform)) {
+    h += (-4 * scale)
+    textY += (-3 * scale)
+  }
   setPosition (morph text) textX textY
+  if (notNil menuSelector) {
+    // leave room for menu arrow
+    w += (12 * scale)
+  }
   setExtent morph w h
   pathCache = nil
   raise morph 'layoutChanged' this
@@ -162,17 +149,10 @@ method drawOn InputSlot ctx {
 }
 
 method drawShape InputSlot aShapeMaker {
-  scale = (blockScale)
-  border = (max 1 (scale / 2))
-
   isNumber = ((editRule text) == 'numerical')
   if (and (isAuto == true) (representsANumber (text text))) {
     isNumber = (notNil (toNumber (text text) nil))
   }
-
-  white = (gray 255)
-  gray = (gray 180)
-  corner = scale
 
   if (isRecording aShapeMaker) {
     r = (rect 0 0 (width morph) (height morph))
@@ -180,27 +160,31 @@ method drawShape InputSlot aShapeMaker {
     r = (bounds morph)
   }
 
-  if isNumber {
-    corner = (((height morph) / 2) - 1)
-    fillRoundedRect aShapeMaker r corner white border gray white
-  } ((editRule text) == 'static') {
+  if isComment {
+	corner = 0 // comment inputs have square borders
+  } else {
+	corner = (15 * (blockScale)) // semi-circular for slot heights up to 30 * blockScale
+  }
+  if ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }
-    fillRoundedRect aShapeMaker r corner c border (darker c) (lighter c)
+    fillRoundedRect aShapeMaker r corner c
   } else {
-    fillRoundedRect aShapeMaker r corner white border gray white
+    fillRoundedRect aShapeMaker r corner (gray 255)
   }
+// xxx uncomment to show text bounds
+// textM = (morph text)
+// textR = (rect ((left textM) - (left morph)) ((top textM) - (top morph)) (width textM) (height textM))
+// outlineRectangle aShapeMaker textR 1 (gray 180)
+
   if (notNil menuSelector) { // draw down-arrow
-	fontH = (fontSize text)
-    border = scale
-    x = (left r)
-    y = (top r)
-    x += (((width morph) - fontH) - border)
-    y += (((height morph) / 4) + border)
-    w = (fontH - (2 * border))
-    h = ((fontH / 2) + border)
-    clr = (gray 0)
-	fillArrow aShapeMaker (rect x y w h) 'down' clr
+	scale = (blockScale)
+	w = (10 * scale)
+	h = (9 * scale)
+	x = ((right r) - (14 * scale))
+	y = ((top r) + (6 * scale))
+	arrowColor = (gray 0 180) // slightly transparent
+	fillArrow aShapeMaker (rect x y w h) 'down' arrowColor
   }
 }
 
@@ -218,13 +202,36 @@ method textChanged InputSlot {
 
 method clicked InputSlot aHand {
   if (notNil menuSelector) {
-    if (or ((x aHand) >= ((right morph) - (fontSize text))) isStatic) {
-	  menu = (call menuSelector this)
-	  if (notNil menu) { popUpAtHand menu (page aHand) }
-      return true
+	arrowLeft = ((right morph) - (12 * (blockScale)))
+    if (or isStatic ((x aHand) >= arrowLeft)) {
+	  if (contains (methodNames (class 'InputSlot')) menuSelector) {
+		menu = (call menuSelector this)
+		if (notNil menu) {
+		  popUpAtHand menu (page aHand)
+		}
+	  } else {
+		project = (project (findProjectEditor))
+		choices = (choicesFor project menuSelector)
+		if (notNil choices) {
+		  menu = (menu nil (action 'setContents' this) true)
+		  for choice choices {
+		    labelAndValue = (splitWith choice ':')
+		    if ((count labelAndValue) == 2) {
+		      if (representsAnInteger (at labelAndValue 2)) {
+		        atPut labelAndValue 2 (toNumber (at labelAndValue 2))
+		      }
+		      addItem menu (at labelAndValue 1) (at labelAndValue 2)
+		    } else {
+			  addItem menu choice
+			}
+		  }
+		  popUpAtHand menu (page aHand)
+		}
+	  }
     }
+	return true
   }
-  return false
+  return (handDownOn text aHand)
 }
 
 method clickedForEdit InputSlot aText {selectAll aText}
@@ -385,6 +392,8 @@ method localVarMenu InputSlot {
 }
 
 method allVarsMenu InputSlot {
+  if (isMicroBlocks) { return (microBlocksVarsMenu this) }
+
   menu = (menu nil (action 'setContents' this) true)
 
   // shared vars
@@ -505,6 +514,140 @@ method voiceNameMenu InputSlot {
   return menu
 }
 
+// MicroBlocks slot menus
+
+method microBlocksVarsMenu InputSlot {
+  menu = (menu)
+
+  // shared vars
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
+  if (notNil scripter) {
+	varNames = (allVariableNames (project (handler scripter)))
+	for varName varNames {
+          // hide vars that start with underscore, used for libraries
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
+            addItemNonlocalized menu varName (action 'setContents' this varName)
+          }
+	}
+	if ((count varNames) > 0) { addLine menu }
+  }
+
+  // local vars
+  myBlock = (handler (ownerThatIsA morph 'Block'))
+  localVars = (collectLocals (expression (topBlock myBlock)))
+
+  // if inside function, add the function arg names
+  topExpr = (expression (topBlock myBlock))
+  if (and ('to' == (primName topExpr)) (notNil scripter)) {
+    fName = (first (argList topExpr))
+    func = (functionNamed (project (handler scripter)) fName)
+    if (notNil func) {
+      for argName (argNames func) {
+        if (not (contains localVars argName)) { add localVars argName }
+      }
+    }
+  }
+
+  remove localVars ''
+  for v varNames { remove localVars v }
+  if (notEmpty localVars) {
+	localVars = (sorted (keys localVars))
+	for varName localVars {
+	  addItemNonlocalized menu varName (action 'setContents' this varName)
+	}
+	addLine menu
+  }
+
+  addItem menu (localized 'Add a variable') (action 'createVariable' (handler scripter) this)
+  scripter = (scripter (findProjectEditor))
+  return menu
+}
+
+method typesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'string'
+  addItem menu 'list'
+  addItem menu 'byte array'
+  return menu
+}
+
+method buttonMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  addItem menu 'A+B'
+  return menu
+}
+
+method AtoDMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  addItem menu 'C'
+  addItem menu 'D'
+  return menu
+}
+
+method pullMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'none'
+  addItem menu 'up'
+  addItem menu 'down'
+  return menu
+}
+
+method itemOfMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 1
+  addItem menu 'last'
+  addItem menu 'random'
+  return menu
+}
+
+method replaceItemMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 1
+  addItem menu 'last'
+  addItem menu 'all'
+  return menu
+}
+
+method functionNameMenu InputSlot {
+  scripterM = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripterM) { return nil }
+  menu = (menu nil (action 'setContents' this) true)
+  project = (project (handler scripterM))
+  specs = (blockSpecs project)
+  for func (functions (main project)) {
+    addItem menu (functionName func)
+  }
+  return menu
+}
+
+method broadcastMenu InputSlot {
+  menu = (menu)
+
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripter) {
+    saveScripts (handler scripter)
+    msgList = (allBroadcasts (project (handler scripter)))
+
+    // special case for default broadcast string
+    defaultBroadcast = 'go!'
+    remove msgList defaultBroadcast
+    addItemNonlocalized menu (localized defaultBroadcast) (action 'setContents' this defaultBroadcast)
+    addLine menu
+
+	for s msgList {
+      addItemNonlocalized menu s (action 'setContents' this s)
+	}
+  }
+  return menu
+}
+
 // context menu - type switching
 
 method rightClicked InputSlot aHand {
@@ -547,15 +690,24 @@ method switchType InputSlot editRule {
 	  dta = (toString dta)
 	}
   }
-  setTextFont this
   setContents this dta
 }
 
-// replacement rule
+// replacement rule - static input slots do not accept reporter drops
 
-to isReplaceableByReporter anInput {return true}
-method isReplaceableByReporter InputSlot {return (not isStatic)}
-method setIsStatic InputSlot bool {isStatic = bool}
+method setIsStatic InputSlot bool { isStatic = bool }
+
+to isReplaceableByReporter anInput { return true }
+
+method isReplaceableByReporter InputSlot {
+  if (not (isMicroBlocks)) { return (not isStatic) }
+  owner = (handler (owner morph))
+  if (and (isClass owner 'Block') ('hat' == (type owner))) {
+    // Don't allow dropping reporters into hat block input slots.
+    return false
+  }
+  return (not isStatic)
+}
 
 // keyboard accessability hooks
 

@@ -152,7 +152,7 @@ method makeButton PartsBin label selector {
   if (isClass selector 'String') {
 	selector = (action selector this)
   }
-  button = (pushButton label (color 130 130 130) selector)
+  button = (pushButton label selector)
   return (morph button)
 }
 

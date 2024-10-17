@@ -2335,8 +2335,8 @@ TFT 點擊力度
 HTTP client
 HTTP 客戶端
 
-_ data _ to http܃// _
-_ 數據 _ 到 http܃// _
+_ data _ to http #SVG#colon-double-slash _
+_ 數據 _ 到 http #SVG#colon-double-slash _
 
 port _
 端口 _

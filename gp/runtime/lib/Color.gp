@@ -24,6 +24,28 @@ to color r g b a {
   return (new 'Color' r g b a)
 }
 
+to colorHex s {
+  a = 255
+  if ((count s) < 6) {
+    // one hex digit per channel
+    r = ((hex (at s 1)) << 8)
+    g = ((hex (at s 2)) << 8)
+    b = ((hex (at s 3)) << 8)
+    if (4 == (count s)) {
+      a = ((hex (at s 4)) << 8)
+    }
+  } else {
+    // two hex digits per channel
+    r = (hex (substring s 1 2))
+    g = (hex (substring s 3 4))
+    b = (hex (substring s 5 6))
+    if (8 == (count s)) {
+      a = (hex (substring s 7 8))
+    }
+  }
+  return (new 'Color' r g b a)
+}
+
 to colorSwatch r g b a { return (color r g b a) }
 to colorFromSwatch c { return c }
 
@@ -199,6 +221,51 @@ method shiftBrightness Color n {
   hsv = (hsv this)
   newBrightness = ((at hsv 3) + (n / 100.0))
   return (colorHSV (at hsv 1) (at hsv 2) newBrightness)
+}
+
+// named colors
+
+to microBlocksColor colorName optionalWeight {
+  // Return a color from the MicroBlocks UI color palette.
+  // The blueGray family takes an optional weight paraemeter (larger numbers are darker).
+
+  palette = (global 'microBlocksPalette')
+  if (isNil palette) { palette = (initMicroBlocksUIColors (color)) }
+  fullName = colorName
+  if (notNil optionalWeight) { fullName = (join '' colorName '-' optionalWeight) }
+  return (at palette fullName (gray 100))
+}
+
+method initMicroBlocksUIColors Color {
+  // Create the MicroBlocks UI color palette.
+
+  palette = (dictionary)
+  atPut palette 'red' (colorHex 'E03B3B')
+  atPut palette 'green' (colorHex '61D14E')
+  atPut palette 'yellow' (colorHex 'FED722')
+  atPut palette 'yellowBorder' (colorHex 'B79701')
+  atPut palette 'white' (gray 255)
+  atPut palette 'black' (colorHex '2A2A2A')
+
+  // gray900 in the style sheet, but it's the only gray we're using
+  atPut palette 'gray' (colorHex '383838')
+
+  // blueGrays
+  atPut palette 'blueGray-50' (colorHex 'ECEDF1')
+  atPut palette 'blueGray-75' (colorHex 'E1E3E8')
+  atPut palette 'blueGray-100' (colorHex 'CFD1DC')
+  atPut palette 'blueGray-200' (colorHex 'B0B3C5')
+  atPut palette 'blueGray-300' (colorHex '9095AE')
+  atPut palette 'blueGray-400' (colorHex '787E9C')
+  atPut palette 'blueGray-500' (colorHex '60678B')
+  atPut palette 'blueGray-600' (colorHex '545A7A')
+  atPut palette 'blueGray-700' (colorHex '454A64')
+  atPut palette 'blueGray-800' (colorHex '373B4F')
+  atPut palette 'blueGray-850' (colorHex '2D3143')
+  atPut palette 'blueGray-900' (colorHex '262938')
+
+  setGlobal 'microBlocksPalette' palette
+  return palette
 }
 
 // equality

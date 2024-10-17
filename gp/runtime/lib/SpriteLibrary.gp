@@ -13,7 +13,7 @@ method initialize SpriteLibrary aScripter {
   setTransparentTouch morph true
   newClassButton = (makeNewThingButton this 'createClass' 'Make a new class')
   newInstanceButton = (makeNewThingButton this 'addInstance' 'Make a new instance of this class')
-  clearButton = (pushButton 'Clear' (gray 120) (action 'clearInstances' this))
+  clearButton = (pushButton 'Clear' (action 'clearInstances' this))
   setHint clearButton 'Remove all instances of this class except the selected one'
 
   addPart morph (morph classesFrame)

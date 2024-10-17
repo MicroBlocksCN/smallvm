@@ -1222,6 +1222,7 @@ method versionReceived SmallRuntime versionString {
 	} else { // not first time: show the version number
 		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
 	}
+	updateConnectionName (findProjectEditor) boardType
 }
 
 method checkVmVersion SmallRuntime {

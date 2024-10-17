@@ -22,16 +22,37 @@ method step ScriptEditor {
   hand = (hand (handler (root morph)))
   if (containsPoint (bounds morph) (left (morph hand)) (top (morph hand))) {
     load = (grabbedObject hand)
-    if (isClass load 'Block') {updateFeedback this load hand}
+    if (isClass load 'Block') {updateFeedback this load}
   }
   updateHighlights this
 }
 
 // events
 
+method handDownOn ScriptEditor aHand {
+	if (notNil (grabbedObject aHand)) { return false } // hand is not empty
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (isNil scripter) { return }
+	selection = (selection scripter)
+	if (and (notNil selection) (notEmpty selection)) {
+		if (shiftKeyDown (keyboard (page aHand))) { return false }
+		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
+		if (and (notNil grabbed) (contains selection (handler grabbed))) {
+			dragBlocks selection
+			return true
+		}
+	}
+	if (isClass (objectAt aHand) 'ScriptEditor') {
+		if (not (isMobile)) {
+			startSelecting scripter aHand
+		}
+	}
+	return true
+}
+
 method wantsDropOf ScriptEditor aHandler {
   return (or
-    (isAnyClass aHandler 'Block' 'CommandSlot')
+    (isAnyClass aHandler 'Block' 'CommandSlot' 'MicroBlocksSelectionContents')
     (and
       (devMode)
       (isClass aHandler 'Text')
@@ -54,6 +75,9 @@ method justGrabbedPart ScriptEditor part {
 }
 
 method clicked ScriptEditor hand {
+  // Support for GP keyboard block entry.
+
+  if (isMicroBlocks) { return } // do nothing in MicroBlocks
   kbd = (keyboard (page hand))
   if (and (devMode) (keyDown kbd 'space')) {
     txt = (newText '' 'Arial' ((global 'scale') * 12) (gray 0))
@@ -136,113 +160,136 @@ method swapTextForBlock ScriptEditor text block hand {
 
 // snapping
 
-method targetFor ScriptEditor block x y {
-  // answer a snapping target or nil
-  if ((type block) == 'reporter') {return (inputFor this block x y)}
-  isHatSrc = (== (type block) 'hat')
-  scale = (blockScale)
-  thres = (15 * scale)
+method targetFor ScriptEditor block {
+  // Answer a snapping target or nil if none found.
+
+  xThreshold = (50 * (blockScale))
+  yThreshold = (15 * (blockScale))
+
+  if ('reporter' == (type block)) {return (inputFor this block)}
+  isHatSrc = ('hat' == (type block))
+
   x = (left (morph block))
   y = (top (morph block))
   yb = (bottom (morph (bottomBlock block)))
+  cSlot = (openCSlot block)
+
   others = (reversed (allMorphs morph))
   remove others morph
-  remove others (morph block)
-  for i (count others) {
-    b = (at others i)
-    if (and (isClass (handler b) 'Block') (isNil (function (handler b)))) {
+  for m others {
+    if (and (isClass (handler m) 'Block') (isNil (function (handler m)))) {
+      targetType = (type (handler m))
       if isHatSrc {
-        if (and ((type (handler b)) == 'command') (this === (handler (owner b)))) { // top of stack
-          xd = (abs (x - (left b)))
-          yd = (abs ((top b) - yb))
-          if (and (xd < thres) (yd < thres)) {return (array (handler b))}
+        if (and ('command' == targetType) (this === (handler (owner m)))) { // top of stack
+          xd = (abs (x - (left m)))
+          yd = (abs ((top m) - yb))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top' cSlot)}
         }
       } else {
-        if ((type (handler b)) == 'command') {
-          xd = (abs (x - (left b)))
-          yd = (abs (y - (bottom b)))
-          if (and (xd < thres) (yd < thres)) {return (handler b)}
-          if (this === (handler (owner b))) { // top of stack
-            yd = (abs ((top b) - yb))
-            if (and (xd < thres) (yd < thres)) {return (array (handler b))}
-          }
-        } ((type (handler b)) == 'hat') {
-          xd = (abs (x - (left b)))
-          yd = (abs (y - (bottom b)))
-          if (and (xd < thres) (yd < thres)) {return (handler b)}
+        if ('command' == targetType) {
+          xd = (abs (x - (left m)))
+          yd = (abs (y - (bottom m)))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
+          if (this === (handler (owner m))) { // top of stack
+            yd = (abs ((top m) - yb))
+            if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'top' cSlot)}
+            if (notNil cSlot) {
+              yd = (abs ((top (morph cSlot)) - (top m)))
+              if (and (xd < xThreshold) (yd < yThreshold)) {return (array (handler m) 'wrap' cSlot)}
+            }
+         }
+        } ('hat' == targetType) {
+          xd = (abs (x - (left m)))
+          yd = (abs (y - (bottom m)))
+          if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
         }
       }
-    } (and (not isHatSrc) (isClass (handler b) 'CommandSlot')) {
-      xd = (abs (x - (+ (scaledCorner (handler b)) (left b))))
-      yd = (abs (y - (+ (scaledCorner (handler b)) (top b))))
-      if (and (xd < thres) (yd < thres)) {return (handler b)}
+    } (and (not isHatSrc) (isClass (handler m) 'CommandSlot')) {
+      xd = (abs (x - (+ (scaledCorner (handler m)) (left m))))
+      yd = (abs (y - (+ (scaledCorner (handler m)) (top m))))
+      if (and (xd < xThreshold) (yd < yThreshold)) {return (handler m)}
     }
   }
   return nil
 }
 
-method inputFor ScriptEditor block x y {
-  // answer an input (slot or reporter) for dropping the block or nil
-  area = (bounds (morph block))
+method inputFor ScriptEditor block {
+  // Answer an input (slot or reporter) for dropping the givenblock or nil if none found.
+
   others = (reversed (allMorphs morph))
   remove others morph
-  removeAll others (allMorphs (morph block))
-  if (notNil x) {
-    for i (count others) {
-      b = (at others i)
-      if (isAnyClass (handler b) 'InputSlot' 'BooleanSlot' 'ColorSlot') {
-        bounds = (bounds b)
-        if (and (isReplaceableByReporter (handler b)) (containsPoint bounds x y)) {
-          return (handler b)
-        }
+  x = (left (morph block))
+  y = (top (morph block))
+
+  // look for a slot
+  for m others {
+    if (isAnyClass (handler m) 'InputSlot' 'BooleanSlot' 'ColorSlot') {
+      // expand drop rectangle to make the target easier to hit
+      dropRect = (expandBy (bounds m) (5 * (global 'scale')))
+      if (and (isReplaceableByReporter (handler m)) (containsPoint dropRect x y)) {
+        return (handler m)
       }
     }
   }
-  for i (count others) {
-    b = (at others i)
+
+  // look for a reporter to replace
+  for m others {
     if (or
-        (and (isReplaceableByReporter (handler b)) (isAnyClass (handler b) 'InputSlot' 'BooleanSlot' 'ColorSlot'))
-        (and
-          (isClass (handler b) 'Block')
-          ((type (handler b)) == 'reporter')
-          (isClass (handler (owner b)) 'Block')
-          ((grabRule b) != 'template')
-          (not (isPrototype (handler b)))
-        )
-      ) {
-      bounds = (bounds b)
-      if (intersects bounds area) {
-        return (handler b)
-      }
+	  (and (isReplaceableByReporter (handler m)) (isAnyClass (handler m) 'InputSlot' 'BooleanSlot' 'ColorSlot'))
+	  (and
+	    (isClass (handler m) 'Block')
+	    ((type (handler m)) == 'reporter')
+	    (isClass (handler (owner m)) 'Block')
+	    ((grabRule m) != 'template')
+	    (not (isPrototype (handler m)))
+      )) {
+        if (containsPoint (bounds m) x y) { return (handler m) }
     }
   }
   return nil
 }
 
-method updateFeedback ScriptEditor block hand {
+method updateFeedback ScriptEditor block {
   hide feedback
   if (isNil block) {return}
-  trgt = (targetFor this block (x hand) (y hand))
-  if (notNil trgt) {
-    if ((type block) != 'reporter') { // command or hat types
-      showCommandDropFeedback this trgt
-    } ((type block) == 'reporter') {
+  cSlot = (openCSlot block)
+  trgt = (targetFor this block)
+  if (isNil trgt) { // no drop target
+    if (and (notNil cSlot) (notNil (wrapHeight cSlot))) { // clear cSlot's wrap height
+      setWrapHeight cSlot nil
+      draggedObjectChanged (hand (global 'page'))
+    }
+  } else { // found a drop target
+    if ('reporter' == (type block)) { // dragging a reporter
       showReporterDropFeedback this trgt
+    } else { // dragging a command or hat block (including C-shaped command blocks)
+      if (notNil cSlot) {
+        // adjust size of cSlot
+        if (and (isClass trgt 'Array') ('wrap' == (at trgt 2))) {
+          setWrapHeight cSlot ((height (fullBounds (morph (first trgt)))) + (10 * (blockScale)))
+        } else {
+          setWrapHeight cSlot nil
+        }
+      }
+      draggedObjectChanged (hand (global 'page'))
+      showCommandDropFeedback this trgt
     }
     addPart morph feedback // come to front
     show feedback
   }
 }
 
+method dropFeedbackColor ScriptEditor { return (colorHex 'FED722') }
+
 method showCommandDropFeedback ScriptEditor target {
-  setHeight (bounds feedback) (scale * 5)
   if (isClass target 'Block') {
     nb = (next target)
     top = (bottom (morph target))
     if (notNil nb) {top = (bottomLine target)}
     setPosition feedback (left (morph target)) top
   } (isClass target 'Array') {
-    target = (at target 1)
+    rec = target
+    target = (at rec 1)
     top = ((top (morph target)) - (height feedback))
     setPosition feedback (left (morph target)) top
   } (isClass target 'CommandSlot') {
@@ -251,7 +298,8 @@ method showCommandDropFeedback ScriptEditor target {
     if (isNil nb) {top += (scaledCorner target)}
     setPosition feedback (+ (scaledCorner target) (left (morph target))) top
   }
-  setCostume feedback (newBitmap (width (morph target)) (scale * 5) (gray 255))
+  setExtent feedback (width (morph target)) (5 * scale)
+  setCostume feedback (dropFeedbackColor this)
 }
 
 method showReporterDropFeedback ScriptEditor target {
@@ -259,8 +307,8 @@ method showReporterDropFeedback ScriptEditor target {
   area = (rect 0 0 (width feedback) (height feedback))
   radius = (10 * scale)
   border = (3 * scale)
-  fillColor = (gray 255 150) // translucent
-  borderColor = (gray 255)
+  fillColor = (withAlpha (dropFeedbackColor this) 150) // translucent
+  borderColor = (dropFeedbackColor this)
   bm = (newBitmap (width area) (height area))
   fillRoundedRect (newShapeMaker bm) area radius fillColor border borderColor borderColor
   setCostume feedback bm
@@ -269,6 +317,32 @@ method showReporterDropFeedback ScriptEditor target {
 // context menu
 
 method contextMenu ScriptEditor {
+  menu = (menu nil this)
+  addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
+  addLine menu
+  if (notNil lastDrop) {
+    addItem menu 'undrop (ctrl-Z)' 'undrop' 'undo the last block drop'
+  }
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  addLine menu
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard as URL' 'copyScriptsToClipboardAsURL'
+  addLine menu
+  clip = (readClipboard)
+  if (beginsWith clip 'GP Scripts') {
+	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
+  } (beginsWith clip 'GP Script') {
+	addItem menu 'paste script from clipboard' 'pasteScripts'
+  }
+  addLine menu
+  addItem menu 'save a picture of all visible scripts' 'saveScriptsImage'
+  if (devMode) {
+    addItem menu 'set exported script scale' 'setExportedScriptScale'
+  }
+  return menu
+}
+
+method contextMenuForGP ScriptEditor {
   menu = (menu nil this)
   addItem menu 'set block size...' 'setBlockSize' 'make blocks smaller'
   addLine menu
@@ -496,7 +570,7 @@ method undrop ScriptEditor {
 
 method grab ScriptEditor aBlock {
   h = (hand (handler (root morph)))
-  setCenter (morph aBlock) (x h) (y h)
+  setPosition (morph aBlock) (x h) (y h)
   grab h aBlock
   changed h
 }
@@ -575,9 +649,9 @@ method croppedScriptsCostume ScriptEditor doNotCrop {
     }
   }
   if ('Browser' == (platform)) { // in browser, draw on Texture for speed
-    result = (newTexture w h (gray 0 0))
+    result = (newTexture w h (gray 255 0))
   } else {
-    result = (newBitmap w h (gray 0 0))
+    result = (newBitmap w h (gray 255 0))
   }
   ctx = (newGraphicContextOn result)
   setOffset ctx (0 - (left r)) (0 - (top r))
@@ -599,17 +673,23 @@ method scriptsRect ScriptEditor {
       merge result (fullBounds m)
     }
   }
-  return result
+  return (expandBy result 2) // add an extra pixel all around to allow for anti-aliasing
 }
 
 // script copy/paste via clipboard
 
 method copyScriptsToClipboard ScriptEditor {
-  scripter = (ownerThatIsA morph 'Scripter')
-  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
-  targetObj = (targetObj (handler scripter))
-  setClipboard (join 'GP Scripts' (newline) (scriptStringWithDefinitionBodies (classOf targetObj)))
+  setClipboard (allScriptsString (handler scripter))
+}
+
+method copyScriptsToClipboardAsURL ScriptEditor {
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripter) { return }
+  scriptsString = (allScriptsString (handler scripter))
+  urlPrefix = (urlPrefix (findMicroBlocksEditor))
+  setClipboard (join urlPrefix '#scripts=' (urlEncode scriptsString true))
 }
 
 method pasteScripts ScriptEditor {

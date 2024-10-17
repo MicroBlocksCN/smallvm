@@ -1832,6 +1832,9 @@ toca nota MIDI _ durante _ ms en el canal _ #BR# volumen _
 stop all notes on channel _
 detén todas las notas en el canal _
 
+stop all notes on channel _
+detén todas las notas en el canal _
+
 set MIDI note _ to _ on channel _ volume _
 pon la nota MIDI _ a _ en el canal _ volumen _
 
@@ -2640,8 +2643,8 @@ m꞉s apaga x _ y _
 m꞉s display character _ with _
 m꞉s muestra el carácter _ con _
 
-m꞉s scroll text _ with color _ 
-m꞉s anima el texto _ con el color _ 
+m꞉s scroll text _ with color _
+m꞉s anima el texto _ con el color _
 
 m꞉s stop scrolling
 m꞉s detén la animación
@@ -3646,7 +3649,7 @@ Drag the firmware file you just saved to the
 Arrastra el archivo de firmware qua acabas de guardar hacia la unidad
 
 drive
-
+unidad
 
 Installing firmware...
 Instalando firmware...

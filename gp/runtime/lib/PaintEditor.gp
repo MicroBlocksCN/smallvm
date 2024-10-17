@@ -93,7 +93,7 @@ method textButton PaintEditor x y label selectorOrAction {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction)
+  result = (pushButton label selectorOrAction)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result

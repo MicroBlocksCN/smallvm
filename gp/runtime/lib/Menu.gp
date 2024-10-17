@@ -1,6 +1,6 @@
 // Morphic Menu handler
 
-defineClass Menu morph label target items reverseCall selection returnFocus
+defineClass Menu morph label target items reverseCall selection returnFocus isTopMenu
 
 to menu label target reverseCall returnFocus {
   if (isNil reverseCall) {reverseCall = false}
@@ -11,7 +11,7 @@ method addItemNonlocalized Menu itemLabel itemAction itemHint itemThumb {
   addItem this itemLabel itemAction itemHint itemThumb false
 }
 
-method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
+method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag disabledFlag {
   if (isNil itemAction) { itemAction = itemLabel }
   if (isNil localizeFlag) { localizeFlag = true }
   if (not (isAnyClass itemLabel 'Bitmap' 'String')) {
@@ -20,7 +20,8 @@ method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
   if (and (isClass itemLabel 'String') localizeFlag) {
         itemLabel = (localized itemLabel)
   }
-  add items (array itemLabel itemAction itemHint itemThumb)
+  if disabledFlag { itemAction = nil }
+  add items (array itemLabel itemAction itemHint itemThumb disabledFlag)
 }
 
 method addLine Menu lineWidth {
@@ -28,6 +29,8 @@ method addLine Menu lineWidth {
   if (lastItemIsLine this) { return }
   add items (array (array 0 lineWidth))
 }
+
+method setIsTopMenu Menu aBool { isTopMenu = aBool }
 
 method lastItemIsLine Menu {
   if ((count items) == 0) { return true }
@@ -37,6 +40,7 @@ method lastItemIsLine Menu {
 
 method popUp Menu page x y noFocus {
   if (or (isNil noFocus) (not (isClass noFocus 'Boolean'))) {noFocus = false}
+  if (isEmpty items) { return }
   buildMorph this page y
   showMenu page this x y
   if (not noFocus) {focus this}
@@ -73,14 +77,16 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
   if (notNil thumbPic) {
     thWidth = (width thumbPic)
     thHeight = (height thumbPic)
-    padding = (* 3 (global 'scale'))
   }
   result = (newBitmap
     (max itemWidth (+ padding (width labelPic) thWidth))
     (+ (max (height labelPic) thHeight) (* 2 itemPaddingV))
   )
   if (notNil bgColor) {fill result bgColor}
-  if (notNil thumbPic) {drawBitmap result thumbPic itemPaddingH (((height result) - thHeight) / 2)}
+  if (notNil thumbPic) {
+    bgColor = (microBlocksColor 'blueGray' 900)
+    drawBitmap result thumbPic itemPaddingH (((height result) - thHeight) / 2)
+  }
   drawBitmap result labelPic (+ padding thWidth itemPaddingH) (((height result) - (height labelPic)) / 2)
   return result
 }
@@ -89,43 +95,44 @@ method buildMorph Menu page yPos {
   scale =  (global 'scale')
 
   // settings, to be refactored later to somewhere else
-  labelFontName = 'Arial Bold'
   fontName = 'Arial'
   fontSize = (scale * 16)
   if ('Linux' == (platform)) { fontSize = (scale * 13) }
   border = (scale * 1)
   corner = (scale * 2)
-  labelPadding = (scale * 4)
   itemPaddingV = (scale * 1)
-  itemPaddingH = (scale * 3)
-  color = (gray 255)
-  labelTextColor = (gray 255)
-  labelBackgroundColor = (gray 60)
-  borderColor = labelBackgroundColor
-  itemTextColorNormal = (gray 0)
-  itemTextColorHighlighted = itemTextColorNormal
-  itemTextColorPressed = (gray 255)
-  itemBackgroundColorHighlighted = (gray 210)
-  itemBackgroundColorPressed = (gray 100)
+  if isTopMenu {
+	itemPaddingH = (scale * 32)
+  } else {
+	itemPaddingH = (scale * 6)
+  }
+
+  if isTopMenu {
+	color = (microBlocksColor 'blueGray' 900)
+	borderColor = (microBlocksColor 'blueGray' 700)
+	itemTextColorNormal = (microBlocksColor 'blueGray' 50)
+	itemTextColorDisabled = (microBlocksColor 'blueGray' 600)
+	itemTextColorHighlighted = color
+	itemTextColorPressed = color
+  } else {
+	color = (microBlocksColor 'blueGray' 50)
+	borderColor = (microBlocksColor 'blueGray' 100)
+	itemTextColorNormal = (microBlocksColor 'blueGray' 900)
+	itemTextColorDisabled = (microBlocksColor 'blueGray' 200)
+	itemTextColorHighlighted = itemTextColorNormal
+	itemTextColorPressed = itemTextColorNormal
+  }
+
+  itemBackgroundColorHighlighted = (microBlocksColor 'yellow')
+  itemBackgroundColorPressed = itemBackgroundColorHighlighted
 
   minHeight = (min (scale * 100) (height (morph page)))
   maxHeight = ((height (morph page)) - 100)
 
-  if (notNil morph) {destroy morph}
+  menuWidth = 50
+  menuHeight = 0
 
-  // create raw label bitmap - lbl
-  lbl = label
-  if (isClass lbl 'String') {
-    lbl = (stringImage lbl labelFontName fontSize labelTextColor 'center' (darker labelTextColor 80) nil nil nil nil labelBackgroundColor)
-  }
-  lblHeight = 0
-  lblWidth = 0
-  if (isClass lbl 'Bitmap') {
-    lblHeight = (+ (height lbl) (* labelPadding 2))
-    lblWidth = (width lbl)
-  }
-  menuWidth = (+ lblWidth (* labelPadding 2))
-  menuHeight = lblHeight
+  if (notNil morph) {destroy morph}
 
   // measure item labels, determine menu dimensions
   itemLbls = (newArray (count items))
@@ -133,9 +140,15 @@ method buildMorph Menu page yPos {
     tuple = (at items i)
     itemLbl = (at tuple 1)
     itemThm = nil
+    disabled = false
     if (> (count tuple) 3) {itemThm = (at tuple 4)}
+    if (> (count tuple) 4) {disabled = (at tuple 5)}
     if (isClass itemLbl 'String') {
-      itemLbl = (stringImage itemLbl fontName fontSize itemTextColorNormal)
+      if disabled {
+        itemLbl = (menuStringImage itemLbl fontName fontSize itemTextColorDisabled color)
+      } else {
+        itemLbl = (menuStringImage itemLbl fontName fontSize itemTextColorNormal color)
+      }
       itemLbl = (itemLabel this itemLbl itemThm)
       menuWidth = (max menuWidth (+ (width itemLbl) (* itemPaddingH 2)))
       menuHeight += (+ (height itemLbl) (* itemPaddingV 2))
@@ -167,29 +180,16 @@ method buildMorph Menu page yPos {
   setWidth (bounds morph) (width bg)
   setHeight (bounds morph) (height bg)
 
-  // create full label bitmap
-  if (isClass lbl 'Bitmap') {
-    fullLabel = (newBitmap widgetWidth lblHeight)
-    fill fullLabel labelBackgroundColor
-    x = (((width fullLabel) - (width lbl)) / 2)
-    y = (((height fullLabel) - (height lbl)) / 2)
-    drawBitmap fullLabel lbl x y
-
-    // render full label on menu
-    drawBitmap bg fullLabel border (+ border corner)
-  } else {
-    fullLabel = (rect)
-  }
-  y = (+ (height fullLabel) border)
   setCostume morph bg
+  y = border
 
   if (widgetHeight < menuHeight) {
     box = (newBox nil (transparent) 0 0 false false)
     container = (morph box)
-    setExtent container menuWidth (menuHeight - lblHeight)
+    setExtent container menuWidth menuHeight
     scrollFrame = (scrollFrame box)
-    setExtent (morph scrollFrame) widgetWidth (widgetHeight - lblHeight)
-    setPosition (morph scrollFrame) border (+ (height fullLabel) border)
+    setExtent (morph scrollFrame) widgetWidth widgetHeight
+    setPosition (morph scrollFrame) border border
     addPart morph (morph scrollFrame)
     updateSliders scrollFrame
     setAlpha (morph (getField scrollFrame 'vSlider')) 255
@@ -201,24 +201,36 @@ method buildMorph Menu page yPos {
   // create and position actual menu items
   for i (count items) {
     tuple = (at items i)
+    paddingH = itemPaddingH
     itemThm = nil
-    if (> (count tuple) 3) {itemThm = (at tuple 4)}
+    disabled = false
+    if (> (count tuple) 3) { itemThm = (at tuple 4) }
+    if (notNil itemThm) { paddingH = 0 }
+    if (> (count tuple) 4) {disabled = (at tuple 5)}
     ilbl = (at itemLbls i)
     if (isClass ilbl 'Bitmap') {
-      nbm = (itemLabel this ilbl nil color menuWidth itemPaddingH itemPaddingV)
-      if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorHighlighted)}
-      hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth itemPaddingH itemPaddingV)
-      if (isClass (at tuple 1) 'String') {ilbl = (stringImage (at tuple 1) fontName fontSize itemTextColorPressed)}
-      pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth itemPaddingH itemPaddingV)
+      nbm = (itemLabel this ilbl nil color menuWidth paddingH itemPaddingV)
+      if (isClass (at tuple 1) 'String') {ilbl = (menuStringImage (at tuple 1) fontName fontSize itemTextColorHighlighted itemBackgroundColorHighlighted)}
+      if disabled {
+        hbm = nbm
+      } else {
+        hbm = (itemLabel this ilbl itemThm itemBackgroundColorHighlighted menuWidth paddingH itemPaddingV)
+      }
+      if (isClass (at tuple 1) 'String') {ilbl = (menuStringImage (at tuple 1) fontName fontSize itemTextColorPressed itemBackgroundColorPressed)}
+      pbm = (itemLabel this ilbl itemThm itemBackgroundColorPressed menuWidth paddingH itemPaddingV)
       if reverseCall {
         itemAction = (action target (at tuple 2))
       } else {
         itemAction = (action (at tuple 2) target)
       }
-      action = (array
-        (action 'unfocus' this)
-        (action 'destroy' morph)
-        itemAction)
+	  if disabled {
+	    action = nil
+	  } else {
+        action = (array
+          (action 'unfocus' this)
+          (action 'destroy' morph)
+          itemAction)
+	  }
       item = (new 'Trigger' nil action nbm hbm pbm)
       setHint item (localized (at tuple 3))
       m = (newMorph item)
@@ -246,7 +258,7 @@ method focus Menu {
 //  if (notNil fallbackFocus) {
 //    stopEditing (keyboard page)
 //  }
-  selectFirstItem this
+//  selectFirstItem this // xxx
   focusOn (keyboard page) this
 }
 

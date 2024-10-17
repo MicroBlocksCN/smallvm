@@ -1,5 +1,40 @@
 // basic Morphic text handler and renderer
 
+to menuStringImage aString fontName fontSize color bgColor {
+  // answer a new bitmap depicting a string rendered
+  // with the specified font settings and alignment
+  // the bitmap's width and height resemble the exact
+  // bounding box's dimensions of the rendered text
+  // borderX and borderY resemble optional space around the text
+
+  if (isNil aString) {aString = ''}
+  if (aString == '') {aString = ' '}
+  if (not (isClass aString 'String')) {aString = (toString aString)}
+  if (isNil fontName) {fontName = 'Arial'}
+  if (isNil fontSize) {fontSize = 12}
+  if (isNil color) {color = (color)}
+
+  if (isNil bgColor) {
+    bgColor = (copy color)
+    setAlpha bgColor 0
+  }
+
+  setFont fontName fontSize
+
+  // determine width
+  w = (stringWidth aString)
+
+  // determine height
+  h = (fontHeight)
+
+  // create bitmap
+  bm = (newBitmap w h bgColor)
+
+  // render the actual text
+  drawString bm aString color 0 0
+  return bm
+}
+
 to stringImage aString fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY bgColor minWidth minHeight flat {
   // answer a new bitmap depicting a string rendered
   // with the specified font settings and alignment
@@ -384,9 +419,9 @@ method handDownOn Text hand {
 }
 
 method handMoveOver Text hand {
-  closeUnclickedMenu (page hand) this
   if (isNil caret) {return}
-  if (isNil startMark) {startMark =  (slot caret)}
+  closeUnclickedMenu (page hand) this
+  if (isNil startMark) {startMark = (slot caret)}
   gotoSlot caret (max 1 (slotAt this (x hand) (y hand)))
 }
 

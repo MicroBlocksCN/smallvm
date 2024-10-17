@@ -4,15 +4,7 @@
 
 defineClass MicroBlocksFilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect onFolderSelect cloudAction
 
-to pickFileToOpen anAction defaultPath extensionList {
-  // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
-  // nil, invoke it on the full path of the choosen file. If it is nil, wait synchronously
-  // until a file is chosen and return its full path, or the empty string if no file is chosen.
-
-  return (pickFile anAction defaultPath extensionList false)
-}
-
-to fileToWrite defaultPath extensionList {
+to microBlocksFileToWrite defaultPath extensionList {
   // Ask the user to enter a file name and location for writing. If provided, defaultPath is
   // offered as a starting point. Wait synchronously until a file is specified and return its
   // full path, or the empty string if the user cancels the operation.
@@ -32,14 +24,14 @@ to fileToWrite defaultPath extensionList {
 	  defaultPath = (join defaultPath extension)
 	}
   }
-  fileName = (pickFile nil defaultPath extensionList true)
+  fileName = (microBlocksPickFile nil defaultPath extensionList true)
   if (endsWith fileName 'png') {
 	 setLastScriptPicFolder (findProjectEditor) (directoryPart fileName)
   }
   return fileName
 }
 
-to pickFile anAction defaultPath extensionList saveFlag {
+to microBlocksPickFile anAction defaultPath extensionList saveFlag {
   if (isNil saveFlag) { saveFlag = false }
   page = (global 'page')
   if (and (notNil defaultPath) (beginsWith defaultPath '//')) {
@@ -130,8 +122,8 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
   okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (520 * scale) (420 * scale)
-  setExtent morph (520 * scale) (420 * scale)
+  setMinExtent morph (520 * scale) (465 * scale)
+  setExtent morph (520 * scale) (465 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
@@ -170,8 +162,8 @@ method addFolderReadoutAndParentButton MicroBlocksFilePicker {
 
   parentButton = (textButton this 0 0 '<' 'parentFolder')
   parentButtonM = (morph parentButton)
-  setTop parentButtonM (y + (3 * scale))
-  setLeft parentButtonM (x - ((width parentButtonM) + (13 * scale)))
+  setTop parentButtonM (y - (4 * scale))
+  setLeft parentButtonM (x - ((width parentButtonM) + (18 * scale)))
   addPart morph parentButtonM
 }
 
@@ -229,8 +221,9 @@ method addShortcutButtons MicroBlocksFilePicker {
   showComputer = (not (contains hidden 'Computer'))
 
   buttonX = ((left morph) + (17 * scale))
-  buttonY = ((top morph) + (55 * scale))
-  dy = (65 * scale)
+  buttonY = ((top morph) + (60 * scale))
+
+  dy = (66 * scale)
   if showExamples {
 	addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
 	buttonY += dy
@@ -270,7 +263,8 @@ method addShortcutButtons MicroBlocksFilePicker {
 	buttonY += dy
   }
 
-  newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
+  buttonY += (5 * scale)
+  newFolderButton = (textButton this buttonX buttonY 'New Folder' 'newFolder')
 }
 
 method addIconButton MicroBlocksFilePicker x y iconName anAction label {
@@ -302,7 +296,7 @@ method addIconButton MicroBlocksFilePicker x y iconName anAction label {
   drawString bm (localized label) (gray 0) labelX labelY
 
   button = (newButton '' anAction)
-  setLabel button bm (gray 225) (gray 245)
+  setLabel button bm (transparent) (microBlocksColor 'yellow')
   setPosition (morph button) x y
   addPart morph (morph button)
   return button
@@ -322,7 +316,7 @@ method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
+  result = (pushButton label selectorOrAction nil (26 * (global 'scale')) makeDefault)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -597,7 +591,7 @@ method redraw MicroBlocksFilePicker {
   topInset = (24 * scale)
   inset = (6 * scale)
   bm = (costumeData morph)
-  fillRect bm (gray 230) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
+  fillRect bm (microBlocksColor 'blueGray' 50) inset topInset ((width bm) - (inset + inset)) ((height bm) - (topInset + inset))
   costumeChanged morph
   fixLayout this
 }
@@ -606,9 +600,10 @@ method fixLayout MicroBlocksFilePicker {
   scale = (global 'scale')
 
   // file list
-  topInset = (55 * scale)
-  bottomInset = (40 * scale)
-  leftInset = (110 * scale)
+  topInset = (60 * scale)
+  if 
+  bottomInset = (48 * scale)
+  leftInset = (113 * scale)
   if (notNil nameLabel) {
     leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
   }
@@ -635,8 +630,8 @@ method fixLayout MicroBlocksFilePicker {
 
   // okay and cancel buttons
   space = (10 * scale)
-  y = ((bottom morph) - (28 * scale))
-  x = ((right morph) - ((width (morph okayButton)) + (25 * scale)))
+  y = ((bottom morph) - (35 * scale))
+  x = ((right morph) - ((width (morph okayButton)) + (20 * scale)))
   setPosition (morph okayButton) x y
   x = (x - ((width (morph cancelButton)) + space))
   setPosition (morph cancelButton) x y

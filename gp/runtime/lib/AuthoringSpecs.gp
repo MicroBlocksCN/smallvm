@@ -156,72 +156,97 @@ method hasTopLevelSpec AuthoringSpecs op {
 }
 
 method setOpCategory AuthoringSpecs op category {
-	atPut opCategory op category
+  atPut opCategory op category
 }
 
 // block colors
 
 method blockColorForOp AuthoringSpecs op {
-  if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
-  return (blockColorForCategory this (at opCategory op))
+  if ('comment' == op) { return (colorHex 'F2EEBF') } // was (colorHSV 55 0.6 0.93)
+  pe = (findProjectEditor)
+  if (and (notNil pe) (isMicroBlocks)) {
+	cat = (categoryForOp (project pe) op) // get category from project, if possible
+  }
+  if (isNil cat) { cat = (at opCategory op) } // get category of a built-in block
+  return (blockColorForCategory this cat)
 }
 
 method blockColorForCategory AuthoringSpecs cat {
+  if (not (isMicroBlocks)) { return (gpBlockColorForCategory this cat) }
+  if (and (notNil cat) (endsWith cat '-Advanced')) {
+  	cat = (substring cat 1 ((count cat) - 9))
+  }
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	lib = (libraryNamed (project pe) cat) // is cat the name of a library?
+	if (and (notNil lib) (notNil (moduleCategory lib))) { // if so, use that library's category
+		cat = (moduleCategory lib)
+	}
+  }
+  defaultColor = (colorHSV 205 0.83 0.87)
+  if ('Output' == cat) { return (colorHex '4852BF')
+  } ('Input' == cat) { return (colorHex '9F42A5')
+  } ('Pins' == cat) { return (colorHex '548799')
+  } ('Comm' == cat) { return (colorHex '1E997A')
+  } ('Control' == cat) { return (colorHex 'D18C25')
+  } ('Operators' == cat) { return (colorHex '479D1D')
+  } ('Variables' == cat) { return (colorHex 'D3732A')
+  } ('Data' == cat) { return (colorHex 'C44E6B')
+  } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+  } ('My Blocks' == cat) { return (colorHex '1A8CDD')
+  } ('Library' == cat) { return (colorHSV 165 0.80 0.60)
+  } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
+  }
+  return defaultColor
+}
+
+method oldMicroBlocksColor AuthoringSpecs cat {
+  // old Comm color: (colorHSV 195 0.50 0.60)
+  // old default color: (colorHSV 200 0.98 0.86)
+  defaultColor = (colorHSV 205 0.83 0.87)
+  if ('Output' == cat) { return (colorHSV 235 0.62 0.75)
+  } ('Input' == cat) { return (colorHSV 296 0.60 0.65)
+  } ('Pins' == cat) { return (colorHSV 195 0.45 0.60)
+  } ('Comm' == cat) {  return (colorHSV 14 0.75 0.80)
+  } ('Control' == cat) { return (colorHSV 36 0.70 0.87)
+  } ('Operators' == cat) { return (colorHSV 100 0.75 0.65)
+  } ('Variables' == cat) { return (colorHSV 26 0.80 0.83)
+  } ('Data' == cat) { return (colorHSV 345 0.60 0.77)
+  } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+  } ('My Blocks' == cat) { return (colorHSV 205 0.83 0.90)
+  } ('Library' == cat) {  return (colorHSV 165 0.80 0.60)
+  } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
+  }
+  return defaultColor
+}
+
+// Scratch block colors
+//
+// Scratch		1.0					2.0
+// Motion	(color 102 124 236)	(color 76 111 209)
+// Looks	(color 147 84 235)	(color 36 139 216)
+// Sound	(color 217 43 225)	(color 185 72 193)
+// Pen		(color 35 165 124)	(color 29 153 109)
+// Control	(color 227 154 43)	(color 224 168 48)
+// Sensing	(color 39 149 230)	(color 53 166 223) like default color
+// Operators (color 99 196 44)	(color 95 181 39)
+// Variables (color 226 95 27)	(color 236 125 42) variables is like 2.0
+// Events						(color 199 130 57)
+// More Blocks					(color 98 50 151)))
+
+
+method gpBlockColorForCategory AuthoringSpecs cat {
   defaultColor = (color 4 148 220)
   if (isOneOf cat 'Control' 'Functions') {
-	if (notNil (global 'controlColor')) { return (global 'controlColor') }
 	return (color 230 168 34)
   } ('Variables' == cat) {
-	if (notNil (global 'variableColor')) { return (global 'variableColor') }
 	return (color 243 118 29)
   } (isOneOf cat 'Operators' 'Math') {
-	if (notNil (global 'operatorsColor')) { return (global 'operatorsColor') }
 	return (color 98 194 19)
   } ('Obsolete' == cat) {
 	return (color 196 15 0)
   }
-  if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
   return defaultColor
-}
-
-to setBlockColors c1 c2 c3 c4 {
-  // Allows experimentation with block colors.
-  setGlobal 'controlColor' c1
-  setGlobal 'variableColor' c2
-  setGlobal 'operatorsColor' c3
-  setGlobal 'defaultColor' c4
-  fixBlockColors
-}
-
-to setBlockTextColor c {
-  setGlobal 'blockTextColor' c
-  fixBlockColors
-}
-
-to resetBlockColors {
-  // Revert to original block colors.
-  setGlobal 'controlColor' (color 230 168 34)
-  setGlobal 'variableColor' (color 243 118 29)
-  setGlobal 'operatorsColor' (color 98 194 19)
-  setGlobal 'defaultColor' (color 4 148 220)
-  setGlobal 'blockTextColor' (gray 255)
-  fixBlockColors
-}
-
-to fixBlockColors {
-  // update colors of existing blocks
-  for b (allInstances (class 'Block')) {
-	expr = (expression b)
-	if (notNil expr) {
-	  setBlockColor b (primName expr)
-	  redraw b
-	}
-	textColor = (global 'blockTextColor')
-	if (isNil textColor) { textColor = (gray 0) }
-	for m (parts (morph b)) {
-	  if (isClass (handler m) 'Text') { setColor (handler m) textColor }
-	}
-  }
 }
 
 // translation
@@ -780,11 +805,6 @@ Line 2')
 	  (array ' ' 'gc'					'collect garbage')
 	  (array 'r' 'mem'					'memory usage')
 	  (array 'r' 'allInstances'			'all instances of _' 'str' 'String')
-
-	'Developer'
-	  (array ' ' 'setBlockColors'		'set block colors _ _ _ _' 'color color color color')
-	  (array ' ' 'setBlockTextColor'	'set block text color _' 'color')
-	  (array ' ' 'resetBlockColors'		'reset block colors')
 
 	'Generic'
 	  (array ' ' 'initialize'			'initialize _' 'this')

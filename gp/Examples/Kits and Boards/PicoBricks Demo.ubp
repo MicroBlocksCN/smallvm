@@ -580,7 +580,7 @@ variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABL
   spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
   spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
   spec ' ' 'OLEDfillRect' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
-  spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
+  spec ' ' '_OLEDflip' '_flip display top _' 'bool' false
   spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
   spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
   spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
@@ -637,7 +637,7 @@ flip setting controls display hardware write direction:
   }
   '_initDisplayHW'
   if flip {
-    OLEDflip true
+    _OLEDflip true
   }
   '_initLibrary'
   OLEDclear
@@ -675,7 +675,7 @@ flip setting controls display hardware write direction:
   '[sensors:spiSetup]' 10000000
   '_initDisplayHW'
   if flip {
-    OLEDflip true
+    _OLEDflip true
   }
   '_initLibrary'
   OLEDclear
@@ -893,7 +893,7 @@ to OLEDfillRect x y w h erase {
   }
 }
 
-to OLEDflip flip {
+to _OLEDflip flip {
   comment 'Flips the display initialization horizontally or vertically.
 Horizontal or vertical is based on the pin connector location.'
   if flip {

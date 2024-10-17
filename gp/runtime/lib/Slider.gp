@@ -1,6 +1,6 @@
-defineClass Slider morph orientation action floor ceiling value size thickness
+defineClass Slider morph orientation action floor ceiling value size thickness backgroundColor sliderColor padding
 
-to slider orientation span action thickness floor ceiling value size {
+to slider orientation span action thickness floor ceiling value size padding {
 	if (isNil span) { span = 100 }
 	if (isNil action) { action = 'nop' }
 	if (isNil thickness) { thickness = (10 * (global 'scale')) }
@@ -8,21 +8,30 @@ to slider orientation span action thickness floor ceiling value size {
 	if (isNil ceiling) { ceiling = 100 }
 	if (isNil value) { value = 50 }
 	if (isNil size) { size = 10 }
-	result = (new 'Slider' nil orientation action floor ceiling value size thickness)
+	if (isNil padding) { padding = 0 }
+	result = (new 'Slider' nil orientation action floor ceiling value size thickness nil nil padding)
 	return (initialize result span)
 }
 
 method initialize Slider span {
 	if (orientation == 'horizontal') {
 		w = span
-		h = thickness
+		h = (thickness + (2 * padding))
 	} else {
-		w = thickness
+		w = (thickness + (2 * padding))
 		h = span
 	}
 	morph = (newMorph this)
 	setExtent morph w h
+	backgroundColor = (gray 255 90) // default background color
+	sliderColor = (gray 110 180) // default handle color
 	return this
+}
+
+method setColors Slider bgColor fgColor {
+	if (notNil bgColor) { backgroundColor = bgColor }
+	if (notNil fgColor) { sliderColor = fgColor }
+	changed morph
 }
 
 method ceiling Slider { return ceiling }
@@ -56,42 +65,55 @@ method update Slider floorNum ceilNum valNum sizeNum {
 
 method drawOn Slider ctx {
 	scale = (global 'scale')
-	sliderSize = (20 * scale)
 
-	bgColor = (gray 255 90)
-	fillRect ctx bgColor (left morph) (top morph) (width morph) (height morph)
+	fillRect ctx backgroundColor (left morph) (top morph) (width morph) (height morph)
 	if ((ceiling - floor) == 0) {
 		frac = 0
 	} else {
 		frac = ((value - floor) / (ceiling - floor))
 	}
 	if (orientation == 'horizontal') {
+		sliderSize = (* ((width (bounds morph)) / ceiling) scale 150)
 		sliderRange = ((width morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
-		sliderRect = (rect ((left morph) + offset) (top morph) sliderSize (height morph))
+		sliderRect = (rect ((left morph) + offset) ((top morph) + padding) sliderSize thickness)
 	} (orientation == 'vertical') {
+		sliderSize = (* ((height (bounds morph)) / ceiling) scale 150)
 		sliderRange = ((height morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
-		sliderRect = (rect (left morph) ((top morph) + offset) (width morph) sliderSize)
+		sliderRect = (rect ((left morph) + padding) ((top morph) + offset) thickness sliderSize)
 	}
 
 	sliderCorner = (4 * scale)
-	sliderColor = (gray 110 180)
 	fillRoundedRect (getShapeMaker ctx) sliderRect sliderCorner sliderColor 0
 }
 
 // events
 
-method clicked Slider { return true }
+method clicked Slider {
+	return true
+	setCursor 'move'
+}
+
 method rightClicked Slider { return true }
 
 method handDownOn Slider aHand {
+	setCursor 'move'
 	focusOn aHand this
 	handMoveFocus this aHand
 	return true
 }
 
+method handEnter Slider aHand {
+	setCursor 'move'
+}
+
+method handLeave Slider aHand {
+	setCursor 'default'
+}
+
 method handMoveFocus Slider aHand {
+	setCursor 'move'
 	if (orientation == 'horizontal') {
 		frac = (((x aHand) - (left morph)) / (width morph))
 	} (orientation == 'vertical') {

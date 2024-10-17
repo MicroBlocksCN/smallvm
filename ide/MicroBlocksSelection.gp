@@ -17,7 +17,9 @@ to startSelecting aScripter aHand {
 }
 
 to cancelSelection {
-	scripter = (scripter (findMicroBlocksEditor))
+	editor = (findMicroBlocksEditor)
+	if (isNil editor) { return }
+	scripter = (scripter editor)
 	for p (allMorphs (morph (scriptEditor scripter))) {
 		if (isClass (handler p) 'Block') { unselect (handler p) }
 	}
@@ -60,6 +62,11 @@ method handUpOn MicroBlocksSelection aHand {
 	return true
 }
 
+method handMoveOver MicroBlocksSelection aHand {
+	updateSelection this aHand
+	return true
+}
+
 // selecting
 
 method updateSelection MicroBlocksSelection aHand {
@@ -91,6 +98,24 @@ method endSelection MicroBlocksSelection {
 	destroy this
 }
 
+method toggleAddBlock MicroBlocksSelection aBlock {
+	tb = (topBlock aBlock)
+	if (contains blocks tb) {
+		removeBlock this tb
+	} else {
+		addBlock this tb
+	}
+}
+
+method addBlock MicroBlocksSelection aBlock {
+	add blocks aBlock
+	select aBlock
+}
+
+method removeBlock MicroBlocksSelection aBlock {
+	remove blocks aBlock
+	unselect aBlock
+}
 
 // debugging
 
@@ -127,22 +152,14 @@ method containsBlocks MicroBlocksSelection {
 	return false
 }
 
-// events
-
-method handUpOn MicroBlocksSelection aHand {
-	endSelection this
-	return true
-}
-
-method handMoveOver MicroBlocksSelection aHand {
-	updateSelection this aHand
-	return true
-}
-
 // actions
 
 method contextMenu MicroBlocksSelection {
 	menu = (menu nil this)
+	addItem menu 'run selected' 'startProcesses'
+	addItem menu 'stop selected' 'stopProcesses'
+	addItem menu 'toggle selected' 'toggleProcesses'
+	addLine menu
 	addItem menu 'duplicate selection' 'duplicateBlocks'
 	addItem menu 'drag selection' 'dragBlocks'
 	addLine menu
@@ -158,34 +175,52 @@ method deleteBlocks MicroBlocksSelection {
 	cancelSelection
 }
 
+method stopProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		}
+	}
+	cancelSelection
+}
+
+method startProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (not (isRunning runtime block)) {
+			evalOnBoard runtime block
+		}
+	}
+	cancelSelection
+}
+
+method toggleProcesses MicroBlocksSelection {
+	runtime = (smallRuntime)
+	for block blocks {
+		if (isRunning runtime block) {
+			stopRunningChunk runtime (lookupChunkID runtime block)
+		} else {
+			evalOnBoard runtime block
+		}
+	}
+	cancelSelection
+}
+
 method duplicateBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan (findMicroBlocksEditor)
 	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true scripter)
 	grab (hand (global 'page')) contents
 }
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan this
 	if ((count blocks) == 1) {
 		grab (hand (global 'page')) (first blocks)
 	} else {
 		contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
 		grab (hand (global 'page')) contents
 	}
-}
-
-method showTrashcan MicroBlocksSelection {
-	purpose = 'delete'
-	containsDefs = (containsDefinitions this)
-	containsBlocks = (containsBlocks this)
-	if (and containsDefs containsBlocks) {
-		purpose = 'hideAndDelete'
-	} containsDefs {
-		purpose = 'hide'
-	}
-	showTrashcan (findMicroBlocksEditor) purpose
 }
 
 defineClass MicroBlocksSelectionContents morph
@@ -215,7 +250,6 @@ method justDropped MicroBlocksSelectionContents aHand {
 		restoreScripts scripter
 		scriptChanged scripter
 	}
-	hideTrashcan (findMicroBlocksEditor)
 }
 
 method destroy MicroBlocksSelectionContents {

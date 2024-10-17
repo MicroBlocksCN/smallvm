@@ -1,6 +1,6 @@
-defineClass ColorPicker morph action paletteBM lastColor grayPalette colorPalette slider swatch rText gText bText
+defineClass ColorPicker morph action paletteBM lastColor grayPalette colorPalette slider swatch inputs
 
-to newColorPicker action initialColor {
+to newColorPicker action initialColor withTransparentButton {
   // If there is already a ColorPicker on the screen, return it.
   // Otherwise, create and return a new one.
 
@@ -16,22 +16,23 @@ to newColorPicker action initialColor {
 	  return picker
 	}
   }
-  return (initialize (new 'ColorPicker') action initialColor)
+  return (initialize (new 'ColorPicker') action initialColor withTransparentButton)
 }
 
 method setAction ColorPicker anAction { action = anAction }
 
-method initialize ColorPicker anAction initialColor {
+method initialize ColorPicker anAction initialColor withTransparentButton {
   morph = (newMorph this)
   setGrabRule morph 'ignore'
-  setCostume morph (drawFrame this 297 158)
-  addGrayPalette this 10 10 200 10
-  addColorPalette this 10 25 200 128
-  addSlider this 220 25 10 128
-  addSwatch this 240 25 50 50
-  addTransparentButton this 244 141
-  addCloseButton this 273 5
-  addReadouts this 250 85
+  setCostume morph (drawFrame this 285 166)
+  addGrayPalette this 10 18 200 10
+  addColorPalette this 10 32 200 128
+  addSlider this 214 32 10 128
+  addSwatch this 228 32 52 52
+  if (isNil withTransparentButton) { withTransparentButton = false }
+  if withTransparentButton { addTransparentButton this 244 141 }
+  addCloseButton this 256 8
+  addReadouts this 250 82
   action = anAction
   if (notNil initialColor) {
 	lastColor = initialColor
@@ -56,9 +57,9 @@ method drawFrame ColorPicker w h {
   w = (w * scale)
   h = (h * scale)
   cornerRadius = (4 * scale)
-  fillColor = (gray 200)
+  fillColor = (microBlocksColor 'blueGray' 850)
   border = (2 * scale)
-  frameColor = (gray 100)
+  frameColor = (transparent)
   bm = (newBitmap (w + (2 * border)) (h + (2 * border)))
   fillRoundedRect (newShapeMaker bm) (rect 0 0 (width bm) (height bm)) cornerRadius fillColor border frameColor frameColor
   return bm
@@ -109,6 +110,7 @@ method addSlider ColorPicker x y w h {
   h = (h * scale)
 
   slider = (slider 'vertical' h (action 'setBrightness' this) w 0 100 50)
+  setColors slider (microBlocksColor 'blueGray' 100) (microBlocksColor 'blueGray' 200)
   setPosition (morph slider) x y
   addPart morph (morph slider)
   slider changed
@@ -130,7 +132,7 @@ method addSwatch ColorPicker x y w h {
 
 method addTransparentButton ColorPicker x y {
   scale = (global 'scale')
-  b = (pushButton 'Trans.' (gray 100) (action 'setTransparent' this))
+  b = (pushButton 'Trans.' (action 'setTransparent' this))
   setPosition (morph b) (x * scale) (y * scale)
   addPart morph (morph b)
 }
@@ -144,25 +146,44 @@ method addCloseButton ColorPicker x y {
   x = (x * scale)
   y = (y * scale)
 
-  closeBtn = (pushButton 'X' (color 140 100 100) (action 'destroy' (morph this)))
+  buttonW = (20 * scale)
+  buttonH  = (15 * scale)
+  closeBtn = (pushButton 'X' (action 'destroy' (morph this)) buttonW buttonH)
   setPosition (morph closeBtn) x y
   addPart morph (morph closeBtn)
 }
 
 method addReadouts ColorPicker x y {
   scale = (global 'scale')
-  x = ((left swatch) + (4 * scale))
-  y = ((bottom swatch) + (10 * scale))
+  x = (left swatch)
+  y = ((bottom swatch) + (9 * scale))
   fontSize = (13 * scale)
-  rText = (newText 'R   0' 'Courier Bold' fontSize)
-  gText = (newText 'G   0' 'Courier Bold' fontSize)
-  bText = (newText 'B   0' 'Courier Bold' fontSize)
-  setPosition (morph rText) x y
-  setPosition (morph gText) x (y + (13 * scale))
-  setPosition (morph bText) x (y + (26 * scale))
-  addPart morph (morph rText)
-  addPart morph (morph gText)
-  addPart morph (morph bText)
+  inputs = (list)
+  color = (microBlocksColor 'blueGray' 200)
+  for component (array 'R' 'G' 'B') {
+	text = (newText component 'Courier Bold' fontSize color)
+	setPosition (morph text) x (y + (2 * scale))
+	addPart morph (morph text)
+
+	input = (newInput this 0)
+	add inputs input
+	setPosition (morph input) ((right (morph text)) + (6 * scale)) y
+	addPart morph (morph input)
+
+	y += (26 * scale)
+  }
+}
+
+method newInput ColorPicker value {
+  scale = (global 'scale')
+  input = (newText (toString value) 'Courier Bold' (13 * scale) (microBlocksColor 'blueGray' 900))
+  setBorders input (3 * scale) (2 * scale) true
+  setEditRule input 'numerical'
+  setGrabRule (morph input) 'ignore'
+  inputFrame = (newBox nil (gray 255) 1 nil false false)
+  addPart (morph inputFrame) (morph input)
+  setExtent (morph inputFrame) (36 * scale) (15 * scale)
+  return inputFrame
 }
 
 method setBrightness ColorPicker n {
@@ -195,6 +216,7 @@ method handDownOn ColorPicker aHand {
 
 method handUpOn ColorPicker aHand {
   setCursor 'default'
+  return true
 }
 
 method handMoveFocus ColorPicker aHand {
@@ -211,10 +233,40 @@ method selectColor ColorPicker c updateSlider {
   changed morph
 }
 
+method textEdited ColorPicker input {
+  // is raised while being edited
+  text = (text input)
+  if ((count text) > 3) {
+    setText input (substring text 1 3)
+  }
+}
+
+method textChanged ColorPicker input {
+  // is raised while finished editing
+  setText input (leftPadded (text input) 3 '0')
+  updateComponents this
+}
+
+method updateComponents ColorPicker {
+  c = (array 0 0 0)
+  for i 3 {
+    input = (handler (at (parts (morph (at inputs i))) 1))
+	atPut c i (toNumber (text input))
+  }
+  if (or
+	((at c 1) != (red lastColor))
+	((at c 2) != (green lastColor))
+	((at c 3) != (blue lastColor))
+  ) {
+	  selectColor this (color (at c 1) (at c 2) (at c 3))
+  }
+}
+
 method updateRGBReadouts ColorPicker c {
-  setText rText (join 'R ' (leftPadded (toString (red c)) 3 '0'))
-  setText gText (join 'G ' (leftPadded (toString (green c)) 3 '0'))
-  setText bText (join 'B ' (leftPadded (toString (blue c)) 3 '0'))
+  for i 3 {
+    input = (handler (at (parts (morph (at inputs i))) 1))
+	setText input (leftPadded (toString (getField c (at (array 'r' 'g' 'b') i))) 3 '0')
+  }
 }
 
 method drawColorPalette ColorPicker bm brightness {

@@ -1,0 +1,242 @@
+module 'shield:bit' Output
+author 'Joan Guillén'
+version 1 1
+tags keyestudio micro:bit
+description 'Provides custom blocks for the shield:bit. It has control for 4 DC motors, 2 Steppers, 1 Buzzer/Audio_out, 1 potenciometer and 4 neopixel LEDs'
+variables _sb_neoPixels _sb_neoPixels_on _ms_neoPixels_on _MiKe_circlePixels _tonePin _toneInitalized _pca9685_on _pca9685_prescale _pca9685_st_steps
+choices motorDirections clockwise 'counter-clockwise'
+choices motorTypes 'sb_all_motors' 'sb_servomotors' 'sb_DC/Stepper_motors'
+choices stepperSteps turns degrees
+depends Color
+
+	spec ' ' 'sb LEDs off' 's꞉b LEDs off'
+	spec ' ' 'sb LEDs to color' 's꞉b LEDs to _' 'color'
+	spec ' ' 'sb LED to color' 's꞉b LED _ (1-4) to _' 'num color' 1
+	space
+	spec ' ' 'sb change audio output to shield' 's꞉b audio output to shield _' 'bool' true
+	space
+	spec ' ' 'sb stop motors' 's꞉b stop _' 'menu.motorTypes' 'sb_all_motors'
+	space
+	spec ' ' 'sb turn 180 servo' 's꞉b turn 180 servo S- _ (1-8) to angle _' 'num num' 1 90
+	spec ' ' 'sb turn 360 servo' 's꞉b turn 360 servo S- _ (1-8) _ at _ %' 'num menu.motorDirections num' 1 'clockwise' 50
+    space
+	spec ' ' 'sb turn M motor' 's꞉b turn DC M- _ (1-4) motor _ at _ %' 'num menu.motorDirections num' 1 'clockwise' 50
+	spec ' ' 'sb turn Stepper' 's꞉b turn Stepper- _ (1-2) motor _ for _ _' 'num menu.motorDirections num menu.stepperSteps' 1 'clockwise' 1 'turns'
+	space
+	spec ' ' 'sb set pin' 's꞉b set pin S- _ (1-8) to _ %' 'num num' 1 100
+	space
+    spec ' ' '_sb_neoPixels_setup' '_sb_neoPixels_setup'
+	spec ' ' '_sb_neoPixels_update' '_sb_neoPixels_update'
+	spec ' ' '_pca9685_pwm' '_pca9685_pwm pin _ from _ to _' 'num num num' 1 0 0
+    spec ' ' '_pca9685_setup' '_pca9685_setup'
+
+//////
+//4 neopixel LEDs at pin 16
+//////
+
+to 'sb LEDs off' {
+  if (not _sb_neoPixels_on) {'_sb_neoPixels_setup'}
+  atPut 'all' _sb_neoPixels 0
+  '_sb_neoPixels_update'
+}
+
+to 'sb LEDs to color' color {
+  if (not _sb_neoPixels_on) {'_sb_neoPixels_setup'}
+  atPut 'all' _sb_neoPixels color
+  '_sb_neoPixels_update'
+}
+
+to 'sb LED to color' i color {
+  if (not _sb_neoPixels_on) {'_sb_neoPixels_setup'}
+  if (and (1 <= i) (i <= 4)) {
+    atPut i _sb_neoPixels color
+    '_sb_neoPixels_update'
+  }
+}
+
+//////
+//Shield audio connection for micro:bit v2
+//////
+to 'sb change audio output to shield' on {
+  if on {
+    if ((boardType) == 'ESP32') {
+      _tonePin = 12
+    } else {
+      _tonePin = 0
+    }
+  } else {
+    if ((boardType) == 'ESP32') {
+      _tonePin = 33
+    } else {
+      _tonePin = -1
+    }
+  }
+  _toneInitalized = true
+}
+
+//////
+//PCA9685 for servos, DC and Stepper motors
+//////
+
+to 'sb stop motors' type {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (or (type == 'DC/Steppers') (type == 'all')) {
+    for i 8 {
+      '_pca9685_pwm' (i - 1) 0 0
+    }
+  }
+  if (or (type == 'servos') (type == 'all')) {
+    for i 8 {
+      '_pca9685_pwm' (i + 7) 0 0
+    }
+  }
+}
+
+//////
+//Servo motors S1 to S8
+//////
+
+to 'sb turn 180 servo' s angle {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (and (1 <= s) (s <= 8)) {
+    if (angle < 0) {angle = 0}
+    if (180 < angle) {angle = 180}
+    angle = (((((angle * 1800) / 180) + 600) * 4095) / 20000)
+    '_pca9685_pwm' (s + 7) 0 angle
+  }
+}
+
+to 'sb turn 360 servo' s direction speed {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (and (1 <= s) (s <= 8)) {
+    if (speed < 0) {speed = 0}
+    if (100 < speed) {speed = 100}
+    if (direction == 'counter-clockwise') {
+      speed = (((((speed * 900) / 100) + 1500) * 4095) / 20000)
+    } else {
+      speed = (((((speed * -900) / 100) + 1500) * 4095) / 20000)
+    }
+    '_pca9685_pwm' (s + 7) 0 speed
+  }
+}
+
+//////
+//DC Motors M1 to M4 and Steppers 1 and 2
+//////
+
+to 'sb turn M motor' m direction speed {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (and (1 <= m) (m <= 4)) {
+    if (speed < 0) {speed = 0}
+    if (100 < speed) {speed = 100}
+    speed = ((speed * 4095) / 100)
+    local 'pin2' ((m - 1) * 2)
+    local 'pin1' (pin2 + 1)
+    if (or (and (or (m == 1) (m == 2)) (direction == 'counter-clockwise')) (and (or (m == 3) (m == 4)) (not (direction == 'counter-clockwise')))) {
+      pin2 = pin1
+      pin1 = (pin2 - 1)
+    }
+    '_pca9685_pwm' pin1 0 0
+    '_pca9685_pwm' pin2 0 speed
+  }
+}
+
+to 'sb turn Stepper' stp direction steps unit {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (steps < 0) {steps = 0}
+  steps = (steps * ((1000 * _pca9685_st_steps) / 50))
+  if (unit == 'degrees') {
+    steps = (steps / 360)
+  }
+  if (stp == 1) {
+    if (direction == 'counter-clockwise') {
+      '_pca9685_pwm' 1 0 1023
+      '_pca9685_pwm' 0 1024 2047
+      '_pca9685_pwm' 3 2048 3071
+      '_pca9685_pwm' 2 3072 4095
+    } else {
+      '_pca9685_pwm' 2 0 1023
+      '_pca9685_pwm' 3 1024 2047
+      '_pca9685_pwm' 0 2048 3071
+      '_pca9685_pwm' 1 3072 4095
+    }
+    waitMillis steps
+    for i 4 {
+      '_pca9685_pwm' (i - 1) 0 0
+    }
+  }
+  if (stp == 2) {
+    if (direction == 'counter-clockwise') {
+      '_pca9685_pwm' 7 0 1023
+      '_pca9685_pwm' 6 1024 2047
+      '_pca9685_pwm' 5 2048 3071
+      '_pca9685_pwm' 4 3072 4095
+    } else {
+      '_pca9685_pwm' 4 0 1023
+      '_pca9685_pwm' 5 1024 2047
+      '_pca9685_pwm' 6 2048 3071
+      '_pca9685_pwm' 7 3072 4095
+    }
+    waitMillis steps
+    for i 4 {
+      '_pca9685_pwm' (i + 3) 0 0
+    }
+  }
+}
+
+//////
+//PWM servo pins
+//////
+
+to 'sb set pin' pin value {
+  if (not _pca9685_on) {'_pca9685_setup'}
+  if (and (1 <= pin) (pin <= 8)) {
+    if (value < 0) {value = 0}
+    if (100 < value) {value = 100}
+    value = ((value * 4095) / 100)
+    '_pca9685_pwm' (pin + 7) 0 value
+  }
+}
+
+//////
+//Library blocks
+//////
+
+to '_sb_neoPixels_setup' {
+  _sb_neoPixels = (newList 4 0)
+  if ((boardType) == 'ESP32') {
+    '[display:neoPixelSetPin]' 5 false
+  } else {
+    '[display:neoPixelSetPin]' 16 false
+  }
+  _sb_neoPixels_on = true
+  if _ms_neoPixels_on {_ms_neoPixels_on = false}
+  if (_MiKe_circlePixels != 0) {_MiKe_circlePixels = 0}
+}
+
+to '_sb_neoPixels_update' {
+  '[display:neoPixelSend]' _sb_neoPixels
+  waitMicros 100
+}
+to '_pca9685_pwm' pin in out {
+  '[sensors:i2cWrite]' (64) ('[data:makeList]' (6 + (4 * pin)) (in & 255) ((in >> 8) & 255) (out & 255) ((out >> 8) & 255))
+}
+
+to '_pca9685_setup' {
+  if (_pca9685_prescale == 0) {_pca9685_prescale = 129}
+  if (_pca9685_st_steps == 0) {_pca9685_st_steps = 512}
+  i2cSet (hexToInt '40') 0 128
+  waitMillis 100
+  i2cSet (hexToInt '40') 0 16
+  i2cSet (hexToInt '40') (hexToInt 'FE') _pca9685_prescale
+  i2cSet (hexToInt '40') 0 0
+  waitMillis 100
+  i2cSet (hexToInt '40') 0 160
+  for i 16 {
+    '_pca9685_pwm' (i - 1) 0 0
+  }
+  _pca9685_on = (booleanConstant true)
+}
+
+
+
