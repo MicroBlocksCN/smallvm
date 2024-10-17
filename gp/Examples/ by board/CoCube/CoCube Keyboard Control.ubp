@@ -1,0 +1,1053 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 702 40 {
+whenBroadcastReceived '1_up'
+stopTone
+}
+
+script 510 44 {
+whenBroadcastReceived '1_down'
+startTone 262
+}
+
+script 305 51 {
+whenBroadcastReceived 'w_up'
+'CoCube wheels stop'
+}
+
+script 40 54 {
+whenBroadcastReceived 'w_down'
+'CoCube move' 'forward' 50
+}
+
+script 697 132 {
+whenBroadcastReceived '2_up'
+stopTone
+}
+
+script 514 134 {
+whenBroadcastReceived '2_down'
+startTone 294
+}
+
+script 305 136 {
+whenBroadcastReceived 'a_up'
+'CoCube wheels stop'
+}
+
+script 40 137 {
+whenBroadcastReceived 'a_down'
+'CoCube rotate' 'left' 50
+}
+
+script 515 224 {
+whenBroadcastReceived '3_down'
+startTone 330
+}
+
+script 696 224 {
+whenBroadcastReceived '3_up'
+stopTone
+}
+
+script 306 225 {
+whenBroadcastReceived 's_up'
+'CoCube wheels stop'
+}
+
+script 41 228 {
+whenBroadcastReceived 's_down'
+'CoCube move' 'backward' 50
+}
+
+script 512 316 {
+whenBroadcastReceived '4_down'
+startTone 349
+}
+
+script 299 318 {
+whenBroadcastReceived 'd_up'
+'CoCube wheels stop'
+}
+
+script 704 318 {
+whenBroadcastReceived '4_up'
+stopTone
+}
+
+script 40 321 {
+whenBroadcastReceived 'd_down'
+'CoCube rotate' 'right' 50
+}
+
+script 514 397 {
+whenBroadcastReceived '5_down'
+startTone 392
+}
+
+script 698 404 {
+whenBroadcastReceived '5_up'
+stopTone
+}
+
+script 42 435 {
+whenBroadcastReceived 'j_down'
+'set display color' (makeColor 0 255 0)
+'[display:mbDisplay]' 15237440
+'play ringtone' 'Reward:d=16,o=6,b=180: e6,g6,a6,b6,e7,d7,c7,b6,a6'
+}
+
+script 705 495 {
+whenBroadcastReceived '6_up'
+stopTone
+}
+
+script 515 497 {
+whenBroadcastReceived '6_down'
+startTone 440
+}
+
+script 516 603 {
+whenBroadcastReceived '7_down'
+startTone 494
+}
+
+script 705 608 {
+whenBroadcastReceived '7_up'
+stopTone
+}
+
+script 40 680 {
+whenBroadcastReceived 'k_down'
+'set display color' (makeColor 255 0 0)
+led_displayImage 'sad'
+'play ringtone' 'Punish:d=16,o=5,b=150: g5,e5,c5,d5,c5,b4,a4,g4'
+}
+
+
+module CoCube
+author 'Liang Shuai'
+version 2 1 
+depends Tone Ringtone TFT Display 'Motors/PID' 
+tags 'cocube机器人' 
+choices rotate_Menu left right 
+choices move_Menu forward backward 
+description 'CoCube的控制库
+v1.0 基本功能
+v2.0 全面增加编码器控制电机的功能
+v2.1 修复一些广播造成的bug
+v2.2 提高定位精度为1/128
+'
+variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
+
+  spec 'r' 'CoCube Battery Percentage' 'Battery Percentage'
+  space
+  spec 'r' 'CoCube On The Mat' 'On The Mat'
+  spec 'r' 'CoCube Card ID' 'Card ID'
+  space
+  spec 'r' 'CoCube position_X' 'X position'
+  spec 'r' 'CoCube position_Y' 'Y position'
+  spec 'r' 'CoCube position_Direction' 'Direction'
+  space
+  spec ' ' 'CoCube set TFT backlight' 'set TFT backlight _' 'bool' false
+  spec ' ' 'CoCube draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'num' 0
+  spec ' ' 'CoCube draw AprilTag on TFT' 'draw AprilTag on TFT _' 'num' 0
+  space
+  spec ' ' 'CoCube move' 'move _ at _ speed (0-50)' 'menu.move_Menu num' 'forward' 40
+  spec ' ' 'CoCube rotate' 'rotate _ at _ speed (0-50)' 'menu.rotate_Menu num' 'left' 30
+  space
+  spec ' ' 'CoCube move for millisecs' 'move _ at _ speed (0-50) for _ millisecs' 'menu.move_Menu num num' 'forward' 40 1000
+  spec ' ' 'CoCube rotate for millisecs' 'rotate _ at _ speed (0-50) for _ millisecs' 'menu.rotate_Menu num num' 'left' 30 1000
+  space
+  spec ' ' 'CoCube move by step' 'move _ at _ speed (0-50) by _ steps' 'menu.move_Menu num num' 'forward' 40 50
+  spec ' ' 'CoCube rotate by degree' 'rotate _ at _ speed (0-50) by _ degrees' 'menu.rotate_Menu num num' 'left' 30 90
+  space
+  spec ' ' 'CoCube set wheel' 'set wheel left _ right _ (-50 to 50)' 'num num' 40 40
+  space
+  spec ' ' 'CoCube wheels stop' 'wheels stop'
+  spec ' ' 'CoCube wheels break' 'wheels break'
+  space
+  spec ' ' 'CoCube rotate to angle' 'rotate to angle _ at _ speed (0-50)' 'num num' 0 30
+  spec ' ' 'CoCube rotate to target' 'rotate to target X _ Y _ at _ speed (0-50)' 'num num num' 0 0 30
+  spec ' ' 'CoCube move to target' 'move to target X _ Y _ at _ speed (0-50)' 'num num num' 0 0 50
+  space
+  spec ' ' '_cocube_motors_speed' '_cocube_motors_speed left _ right _' 'num num' 10 10
+  spec ' ' '_cocube_pid_init' '_cocube_pid_init'
+  spec ' ' '_cocube_pid_left_motor' '_cocube_pid_left_motor'
+  spec ' ' '_cocube_pid_right_motor' '_cocube_pid_right_motor'
+  spec ' ' '_cocube_calculate_angle_error_' '_cocube_calculate_angle_error angle _' 'num' 0
+  spec ' ' '_cocube_calculate_distance_error target_x _ target_y _' '_cocube_calculate_distance_error Target_X _ Target_Y _' 'num num' 0 0
+
+to 'CoCube Battery Percentage' {
+  return (minimum (((254 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 680000) / 1600) 100)
+}
+
+to 'CoCube Card ID' {
+  return (callCustomReporter '[sensors:cube_index]')
+}
+
+to 'CoCube On The Mat' {
+  return (callCustomReporter '[sensors:cube_status]')
+}
+
+to 'CoCube draw AprilTag on TFT' id {
+  comment '0 <= id < 100'
+  if (id >= 100) {
+    sayIt '0 <= id < 100'
+  } else {
+    callCustomCommand '[tft:aprilTag]' ('[data:makeList]' id)
+  }
+}
+
+to 'CoCube draw Aruco Marker on TFT' id {
+  comment '0 <= id < 100'
+  if (id >= 100) {
+    sayIt '0 <= id < 100'
+  } else {
+    callCustomCommand '[tft:aruco]' ('[data:makeList]' id)
+  }
+}
+
+to 'CoCube move' direction speed {
+  if (direction == 'forward') {
+    'CoCube set wheel' speed speed
+  } else {
+    'CoCube set wheel' (0 - speed) (0 - speed)
+  }
+}
+
+to 'CoCube move by step' direction speed steps {
+  local 'begin_x' ('CoCube position_X')
+  local 'begin_y' ('CoCube position_Y')
+  'CoCube move' direction speed
+  forever {
+    '_cocube_calculate_distance_error target_x _ target_y _' begin_x begin_y
+    if ((steps - _cocube_error_distance) < 2) {
+      'CoCube wheels break'
+      comment 'wait for break function 200ms'
+      waitMillis 210
+      return 0
+    }
+  }
+}
+
+to 'CoCube move for millisecs' direction speed time {
+  'CoCube move' direction speed
+  waitMillis time
+  'CoCube wheels break'
+}
+
+to 'CoCube move to target' target_x target_y speed {
+  _cocube_target_x = target_x
+  _cocube_target_y = target_y
+  _cocube_target_speed = speed
+  forever {
+    comment 'calculate error'
+    '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
+    _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
+    '_cocube_calculate_angle_error_' _cocube_target_angle
+    if (_cocube_error_distance < 7) {
+      comment 'Arrived'
+      'CoCube wheels stop'
+      return 0
+    } else {
+      'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
+      waitMillis 10
+    }
+  }
+}
+
+to 'CoCube position_Direction' {
+  return (callCustomReporter '[sensors:position_yaw]')
+}
+
+to 'CoCube position_X' {
+  return ((callCustomReporter '[sensors:position_x]') / 128)
+}
+
+to 'CoCube position_Y' {
+  return ((callCustomReporter '[sensors:position_y]') / 128)
+}
+
+to 'CoCube rotate' direction speed {
+  if (direction == 'left') {
+    'CoCube set wheel' (0 - speed) speed
+  } else {
+    'CoCube set wheel' speed (0 - speed)
+  }
+}
+
+to 'CoCube rotate by degree' direction speed degree {
+  local 'begin_degree' ('CoCube position_Direction')
+  forever {
+    if (direction == 'left') {
+      '_cocube_calculate_angle_error_' (begin_degree + degree)
+    } else {
+      '_cocube_calculate_angle_error_' (begin_degree - degree)
+    }
+    if (_cocube_error_angle > 1) {
+      comment 'turn left'
+      '_cocube_motors_speed' (0 - speed) speed
+    } (_cocube_error_angle < -1) {
+      comment 'turn right'
+      '_cocube_motors_speed' speed (0 - speed)
+    } else {
+      comment 'motors break'
+      '_cocube_motors_speed' -99 -99
+      return 0
+    }
+  }
+}
+
+to 'CoCube rotate for millisecs' direction speed time {
+  'CoCube rotate' direction speed
+  waitMillis time
+  'CoCube wheels break'
+}
+
+to 'CoCube rotate to angle' angle speed {
+  local 'abs_speed' (absoluteValue speed)
+  forever {
+    '_cocube_calculate_angle_error_' angle
+    if (_cocube_error_angle > 1) {
+      comment 'turn left'
+      '_cocube_motors_speed' (0 - abs_speed) abs_speed
+    } (_cocube_error_angle < -1) {
+      comment 'turn right'
+      '_cocube_motors_speed' abs_speed (0 - abs_speed)
+    } else {
+      comment 'motors break'
+      '_cocube_motors_speed' -99 -99
+      return 0
+    }
+  }
+}
+
+to 'CoCube rotate to target' target_x target_y speed {
+  _cocube_target_angle = (('[misc:atan2]' (target_y - ('CoCube position_Y')) (target_x - ('CoCube position_X'))) / 100)
+  'CoCube rotate to angle' _cocube_target_angle speed
+}
+
+to 'CoCube set TFT backlight' state {
+  if state {
+    '[tft:setBacklight]' 10
+  } else {
+    '[tft:setBacklight]' 0
+  }
+}
+
+to 'CoCube set wheel' speed_left speed_right {
+  _cocube_set_left_speed = speed_left
+  _cocube_set_right_speed = speed_right
+  sendBroadcast '_cocube_pid_left_motor'
+  sendBroadcast '_cocube_pid_right_motor'
+}
+
+to 'CoCube wheels break' {
+  'CoCube set wheel' -99 -99
+}
+
+to 'CoCube wheels stop' {
+  'CoCube set wheel' 0 0
+}
+
+to '_cocube_calculate_angle_error_' angle {
+  _cocube_error_angle = ((angle % 360) - ('CoCube position_Direction'))
+  if (_cocube_error_angle > 180) {
+    _cocube_error_angle += -360
+  } (_cocube_error_angle < -180) {
+    _cocube_error_angle += 360
+  }
+}
+
+to '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y {
+  _cocube_error_x = (target_x - ('CoCube position_X'))
+  _cocube_error_y = (target_y - ('CoCube position_Y'))
+  _cocube_error_distance = ('[misc:sqrt]' ((_cocube_error_x * _cocube_error_x) + (_cocube_error_y * _cocube_error_y)))
+}
+
+to '_cocube_motors_speed' left_speed right_speed {
+  comment 'without pid control'
+  if (and (left_speed == 0) (right_speed == 0)) {
+    digitalWriteOp 9 false
+    digitalWriteOp 10 false
+    digitalWriteOp 26 false
+    digitalWriteOp 25 false
+  } (and (left_speed == -99) (right_speed == -99)) {
+    digitalWriteOp 9 true
+    digitalWriteOp 10 true
+    digitalWriteOp 26 true
+    digitalWriteOp 25 true
+    waitMillis 200
+    digitalWriteOp 9 false
+    digitalWriteOp 10 false
+    digitalWriteOp 26 false
+    digitalWriteOp 25 false
+  } else {
+    if (left_speed > 0) {
+      analogWriteOp 9 ((4 * (absoluteValue left_speed)) + 36)
+      digitalWriteOp 10 false
+    } else {
+      digitalWriteOp 9 false
+      analogWriteOp 10 ((4 * (absoluteValue left_speed)) + 36)
+    }
+    if (right_speed > 0) {
+      analogWriteOp 26 ((4 * (absoluteValue right_speed)) + 36)
+      digitalWriteOp 25 false
+    } else {
+      digitalWriteOp 26 false
+      analogWriteOp 25 ((4 * (absoluteValue right_speed)) + 36)
+    }
+  }
+}
+
+to '_cocube_pid_init' {
+  if (not _cocube_pid_initialized) {
+    _cocube_pid_p = 320
+    _cocube_pid_i = 1
+    _cocube_pid_d = 3
+    _cocube_pid_ratio = 1000
+    _cocube_pid_initialized = 1
+  }
+}
+
+to '_cocube_pid_left_motor' {
+  '_cocube_pid_init'
+  pid_resetPID 1
+  local 'var' 0
+  forever {
+    if (_cocube_set_left_speed == 0) {
+      comment 'speed = 0 :motor stop'
+      digitalWriteOp 9 false
+      digitalWriteOp 10 false
+      return 0
+    } (_cocube_set_left_speed == -99) {
+      comment 'speed = -99 : motor break'
+      digitalWriteOp 9 true
+      digitalWriteOp 10 true
+      waitMillis 200
+      digitalWriteOp 9 false
+      digitalWriteOp 10 false
+      return 0
+    } else {
+      comment 'PID control'
+      var = ((((4 * (absoluteValue _cocube_set_left_speed)) + 36) + (pid_computePID 1 ((18 * (absoluteValue _cocube_set_left_speed)) - (callCustomReporter '[sensors:speed_left]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
+      if (_cocube_set_left_speed > 0) {
+        analogWriteOp 9 var
+        digitalWriteOp 10 false
+      } else {
+        analogWriteOp 10 var
+        digitalWriteOp 9 false
+      }
+    }
+  }
+}
+
+to '_cocube_pid_right_motor' {
+  '_cocube_pid_init'
+  pid_resetPID 2
+  local 'var' 0
+  forever {
+    if (_cocube_set_right_speed == 0) {
+      comment 'speed = 0 :motor stop'
+      digitalWriteOp 26 false
+      digitalWriteOp 25 false
+      return 0
+    } (_cocube_set_right_speed == -99) {
+      comment 'speed = -99 : motor break'
+      digitalWriteOp 26 true
+      digitalWriteOp 25 true
+      waitMillis 200
+      digitalWriteOp 26 false
+      digitalWriteOp 25 false
+      return 0
+    } else {
+      comment 'PID control'
+      var = ((((4 * (absoluteValue _cocube_set_right_speed)) + 36) + (pid_computePID 2 ((18 * (absoluteValue _cocube_set_right_speed)) - (callCustomReporter '[sensors:speed_right]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
+      if (_cocube_set_right_speed > 0) {
+        analogWriteOp 26 var
+        digitalWriteOp 25 false
+      } else {
+        analogWriteOp 25 var
+        digitalWriteOp 26 false
+      }
+    }
+  }
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 8 
+choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
+variables _stop_scrolling_text 
+
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' 'led_displayImage' 'display image _ : x _ y _' 'menu.led_imageMenu num num' 'happy' 1 1
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  space
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
+  space
+  spec ' ' 'set display color' 'set display color _' 'color'
+  space
+  spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
+  spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
+  spec 'r' '_led_imageData' '_led_imageData'
+
+to '_led_image' twentyFiveBitInt {
+  comment 'An LED image is a 25-bit integer'
+  return twentyFiveBitInt
+}
+
+to '_led_imageData' {
+  return 'heart:4685802,small heart:145728,yes:2269696,no:18157905,happy:15237440,sad:18284864,confused:22348096,angry:23036241,asleep:459616,surprised:4526090,silly:25984017,fabulous:15008639,meh:2236443,t-shirt:15154043,roller skate:11534104,duck:489702,house:10976708,tortoise:359872,butterfly:29332475,stick figure:18158564,ghost:23068334,sword:4657284,giraffe:10946627,skull:15171246,umbrella:6460398,snake:469859,rabbit:16104613,cow:4685361,quarter note:7573636,eight note:7590276,pitchfork:4357813,target:4681156,triangle:1026176,left triangle:32805985,chess board:11184810,diamond:4539716,small diamond:141440,square:33080895,small square:469440,scissors:20287859,'
+}
+
+to '_led_namedImage' name {
+  local 'data' ('_led_imageData')
+  local 'i' ('[data:find]' name data)
+  if (i == -1) {
+    comment 'Name not found'
+    return 0
+  }
+  local 'start' (('[data:find]' ':' data i) + 1)
+  local 'end' (('[data:find]' ',' data i) - 1)
+  return ('[data:convertType]' ('[data:copyFromTo]' data start end) 'number')
+}
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+to led_displayImage imageName optionalX optionalY {
+  local 'image' imageName
+  if (isType image 'string') {
+    image = ('_led_namedImage' imageName)
+  }
+  '[display:mbDrawShape]' image (argOrDefault 2 1) (argOrDefault 3 1)
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' '' text)
+  local 'delay' 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  if ('Pico:ed' == (boardType)) {
+    for position (((size text) * 6) + 18) {
+      if _stop_scrolling_text {return 0}
+      '[display:mbDisplayOff]'
+      '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
+      waitMillis (delay / 2)
+    }
+  } else {
+    for position (((size text) * 6) + 6) {
+      if _stop_scrolling_text {return 0}
+      for i (size text) {
+        '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+      }
+      waitMillis delay
+    }
+  }
+}
+
+to 'set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
+module PID Operators
+author 'Russell Owen'
+version 0 9 
+description 'PID Control Loop'
+variables _pid__initialized _pid__numPIDs _pid__prevError _pid__prevMicros _pid__prevIntegral 
+
+  spec 'r' 'pid_computePID' 'compute pid at index _ error _ p coeff _ i coeff _ d coeff _ max integral _ (ignored if 0)' 'num num num num num num' 1 0 1 0 0 0
+  spec ' ' 'pid_resetPID' 'reset pid at index _' 'num' 1
+  space
+  spec 'r' 'pid_constrainValue' 'constrain value _ deadband _ minimum _ maximum _' 'num num num num' 0 0 0 1000
+  spec 'r' 'pid_applySign' 'apply sign of _ to value _' 'num num' 1 0
+  space
+  spec ' ' '_pid_extendPIDLists' '_extend pid lists; index _' 'num' 1
+  spec ' ' '_pid_initLibrary' '_init pid library'
+
+to '_pid_extendPIDLists' index {
+  comment 'Extend global list variables, if needed,
+so that they are large enough to use the specified index.'
+  '_pid_initLibrary'
+  repeatUntil ((size _pid__prevError) >= index) {
+    '[data:addLast]' 0 _pid__prevError
+    '[data:addLast]' -1 _pid__prevMicros
+    '[data:addLast]' 0 _pid__prevIntegral
+  }
+  comment 'Set _pid__numPIDs so pid_computePID can efficiently decide if the list needs to be extended'
+  _pid__numPIDs = (size _pid__prevError)
+}
+
+to '_pid_initLibrary' {
+  comment 'Create global lists.'
+  if (not _pid__initialized) {
+    _pid__prevError = (newList 0)
+    _pid__prevMicros = (newList 0)
+    _pid__prevIntegral = (newList 0)
+    _pid__initialized = (booleanConstant true)
+  }
+}
+
+to pid_applySign sign value {
+  comment 'If sign < 0 return -value else return value'
+  return (ifExpression (sign >= 0) value (0 - value))
+}
+
+to pid_computePID index error pCoeff iCoeff dCoeff maxIntegral {
+  comment 'Compute the next PID value value, using inputs:
+* index: index of the PID loop
+* error: error to correct
+* pCoeff: proportional coefficient (corr/error)
+* iCoeff: integral coefficient (corr-msec/error)
+* dCoeff: derivitive coefficient (corr/error-msec)
+* maxIntegral: maximum absolute value of the integrated error; ignored if 0'
+  if (_pid__numPIDs < index) {
+    '_pid_extendPIDLists' index
+  }
+  local 'pValue' 0
+  local 'iValue' 0
+  local 'dValue' 0
+  local 'integral' 0
+  local 'currMicros' (microsOp)
+  local 'prevMicros' (at index _pid__prevMicros)
+  pValue = (pCoeff * error)
+  if (prevMicros >= 0) {
+    comment 'We have old data for this PID loop, so compute derivitive and integral contributions.'
+    local 'deltaMicros' (microsSince prevMicros currMicros)
+    local 'deltaErrorr' (error - (at index _pid__prevError))
+    dValue = (((dCoeff * deltaErrorr) * 1000) / deltaMicros)
+    integral = (((error * deltaMicros) / 1000) + (at index _pid__prevIntegral))
+    if (and (maxIntegral > 0) ((absoluteValue integral) > maxIntegral)) {
+      integral = (pid_applySign integral maxIntegral)
+    }
+    iValue = (iCoeff * integral)
+  }
+  atPut index _pid__prevMicros currMicros
+  atPut index _pid__prevError error
+  atPut index _pid__prevIntegral integral
+  return (pValue + (iValue + dValue))
+}
+
+to pid_constrainValue value deadband minimum maximum {
+  comment 'Constrain a value as follows:
+If |value| < deadband: return 0.
+If |value| < minimum: return minimum with sign of value.
+If |value| > maximum: return maximum with sign of value.'
+  local 'absValue' (absoluteValue value)
+  if (absValue < deadband) {
+    return 0
+  } (absValue < minimum) {
+    return (pid_applySign value minimum)
+  } (absValue > maximum) {
+    return (pid_applySign value maximum)
+  } else {
+    return value
+  }
+}
+
+to pid_resetPID index {
+  comment 'Zero the recorded error data for a specific PID loop.
+Call this before starting each move, to avoid unwanted values
+from the integral and derivitive terms.'
+  if (_pid__numPIDs < index) {
+    '_pid_extendPIDLists' index
+  }
+  atPut index _pid__prevError 0
+  atPut index _pid__prevMicros -1
+  atPut index _pid__prevIntegral 0
+}
+
+
+module Ringtone Output
+author MicroBlocks
+version 1 2 
+depends Tone 
+description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
+Also known as Nokring.'
+variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
+
+  spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
+  spec ' ' 'play ringtone' 'play ringtone _' 'str' 'Pacman:d=16,o=6,b=140:
+b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
+  spec 'r' 'current song name' 'current song name'
+  spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
+
+to '_RTTTL parse control from' 'control section' {
+  comment 'Extract control section'
+  local 'd' 4
+  local 'o' 6
+  local 'b' 63
+  repeatUntil ((size (v 'control section')) == 0) {
+    local 'next separator' ('[data:find]' ',' (v 'control section'))
+    if ((v 'next separator') == -1) {
+      'next separator' = (size (v 'control section'))
+    }
+    local 'to process' ('[data:copyFromTo]' (v 'control section') 1 (v 'next separator'))
+    'control section' = ('[data:copyFromTo]' (v 'control section') ((v 'next separator') + 1))
+    'next separator' = ('[data:find]' ',' (v 'to process'))
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size (v 'to process')) + 1)
+    }
+    if (('[data:find]' 'd' (v 'to process')) > 0) {
+      d = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'b' (v 'to process')) > 0) {
+      b = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'o' (v 'to process')) > 0) {
+      o = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    }
+  }
+  return ('[data:makeList]' d o b)
+}
+
+to '_RTTTL play note' note {
+  local 'duration' ''
+  local 'note name' ''
+  local 'octave' (v '_RTTTL default octave')
+  local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
+  local 'isDotted' (('[data:find]' '.' note) > -1)
+  note = ('_trimmedLowercase' note)
+  if (note == '') {
+    comment 'empty note string; skip'
+    return 0
+  }
+  comment 'parse duration value, if there is one'
+  repeatUntil (or (('[data:unicodeAt]' 1 note) < 48) (('[data:unicodeAt]' 1 note) > 57)) {
+    duration = ('[data:join]' duration (at 1 note))
+    note = ('[data:copyFromTo]' note 2)
+  }
+  if (duration == '') {
+    duration = (v '_RTTTL default duration')
+  }
+  comment 'parse note name'
+  if (or (('[data:find]' '#' note) > -1) (('[data:find]' '_' note) > -1)) {
+    'note name' = ('[data:copyFromTo]' note 1 2)
+  } else {
+    'note name' = (at 1 note)
+  }
+  note = ('[data:copyFromTo]' note ((size (v 'note name')) + 1))
+  comment 'deal with dotted notes'
+  if isDotted {
+    duration = ((((v 'ms / whole note') / duration) * 15) / 10)
+  } else {
+    duration = ((v 'ms / whole note') / duration)
+  }
+  comment 'parse octave, if there is one'
+  if (note != '') {
+    octave = (at 1 note)
+  }
+  'play tone' (v 'note name') (octave - 4) duration
+}
+
+to 'current song name' {
+  return (v '_RTTTL song name')
+}
+
+to 'play ringtone' RTTTL {
+  comment 'Initialize frequency map.'
+  ignoreArgs ('_baseFreqForNote' 'c')
+  comment 'Remove song name'
+  '_RTTTL song name' = ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1))
+  RTTTL = ('[data:copyFromTo]' RTTTL ((size (v '_RTTTL song name')) + 2))
+  local 'control' ('_RTTTL parse control from' ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1)))
+  '_RTTTL default duration' = (at 1 control)
+  '_RTTTL default octave' = (at 2 control)
+  '_RTTTL bpm' = (at 3 control)
+  RTTTL = ('[data:copyFromTo]' RTTTL (('[data:find]' ':' RTTTL) + 1))
+  repeatUntil ((size RTTTL) == 0) {
+    local 'next separator' ('[data:find]' ',' RTTTL)
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size RTTTL) + 1)
+    }
+    local 'next note' ('[data:copyFromTo]' RTTTL 1 ((v 'next separator') - 1))
+    RTTTL = ('[data:copyFromTo]' RTTTL ((v 'next separator') + 1))
+    '_RTTTL play note' (v 'next note')
+  }
+  '_RTTTL song name' = ''
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 9 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[tft:clear]' 'clear TFT display'
+  space
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' 'tft_drawVector' 'draw vector x _ y _ angle _ length _ color _' 'num num num num color' 40 40 45 40
+  space
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _ : bg color _' 'str num num color num bool color' 'Hello World!' 5 5 nil 2 true
+  spec ' ' 'tft_drawText' 'draw text _ on TFT at x _ y _ color _ : scale _ : bg color _' 'str num num color num color' 'Line 1
+Line 2' 50 20 nil 2
+  space
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
+  space
+  spec 'r' 'tft_colorSwatch' '_' 'color'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to tft_colorSwatch color {
+  return color
+}
+
+to tft_drawText s x y color optionalScale optionalBGColor {
+  local 'scale' (argOrDefault 5 2)
+  local 'bgColor' (argOrDefault 6 '')
+  local 'lines' ('[data:split]' s ('[data:unicodeString]' 10))
+  for line ('[data:split]' s ('[data:unicodeString]' 10)) {
+    if (isType bgColor 'number') {
+      '[tft:text]' line x y color scale false bgColor
+    } else {
+      '[tft:text]' line x y color scale false
+    }
+    y += (8 * scale)
+  }
+}
+
+to tft_drawVector x y angle length color {
+  local 'endX' (x + ((length * ('[misc:sin]' (100 * (angle + 90)))) >> 14))
+  local 'endY' (y + ((length * ('[misc:sin]' (100 * angle))) >> 14))
+  '[tft:line]' x y endX endY color
+}
+
+
+module Tone Output
+author MicroBlocks
+version 1 8 
+tags tone sound music audio note speaker 
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
+
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  space
+  spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
+  spec ' ' 'stopTone' 'stop tone'
+  space
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  space
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
+  }
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
+    } else {
+      _tonePin = -1
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to startTone freq {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {'[io:playTone]' _tonePin freq}
+}
+
+to stopTone {
+  startTone 0
+}
+
