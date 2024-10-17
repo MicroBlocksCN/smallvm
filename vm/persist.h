@@ -14,7 +14,7 @@ extern "C" {
 // Persistent Memory Records
 
 // Records in persistent memory start with two header words. They have the form:
-//	<'R'><record type><id of chunk/variable/comment><extra> (8-bits for each field)
+//	<'R'><record type><id of chunk/variable><extra> (8-bits for each field)
 //	word count (32-bits)
 //	... word count data words ...
 //
@@ -23,8 +23,9 @@ extern "C" {
 #define PERSISTENT_HEADER_WORDS 2
 
 typedef enum {
-	chunkCode = 10,
+	chunkCode32bit = 10, // deprecated
 	chunkAttribute = 11, // deprecated
+	chunkCode = 12, // 16-bit code chunk
 	chunkDeleted = 19,
 	varName = 21,
 	varsClearAll = 29,

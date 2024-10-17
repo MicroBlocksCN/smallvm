@@ -42,7 +42,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
-    if (or (isNil vmVersion) (vmVersion >= 300)) {
+    if (or (isNil vmVersion) (vmVersion < 300)) {
         return (vmIncomptabibleWithIDE this)
     }
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
@@ -124,31 +124,46 @@ method showInstructions SmallRuntime aBlock {
 				add result '--------'
 			}
 		} ('pushLiteral' == (first item)) {
-			instr = (join (at item 1) ' ' (at item 2) ' ("' (at item 3) '")')
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			instr = (join instr (at item 2) ' ("' (at item 3) '")')
 			addWithLineNum this result instr
 		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
 				if (arg >= 4194304) { arg = (arg - 8388608) }
+				if (and (arg < 128) (arg > 63)) { arg = (arg - 128) } // 8-bit integer
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
 				arg = true
 			}
-			addWithLineNum this result (join 'pushImmediate ' arg)
-		} ('pushBigImmediate' == (first item)) {
-			addWithLineNum this result 'pushBigImmediate' // don't show arg count; could be confusing
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr arg)
+		} (isOneOf (first item) 'pushLargeInteger' 'pushHugeInteger') {
+			arg = (at item 2)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ' arg)
+			addWithLineNum this result instr
 		} ('callFunction' == (first item)) {
 			arg = (at item 2)
 			calledChunkID = ((arg >> 8) & 255)
 			argCount = (arg & 255)
-			addWithLineNum this result (join 'callFunction ' calledChunkID ' ' argCount)
+			instr = (join '[' (opcodeForInstr compiler (first item)) '] ' (first item) ' ')
+			addWithLineNum this result (join instr calledChunkID ' ' argCount)
 		} (not (isLetter (at (first item) 1))) { // operator; don't show arg count
 			addWithLineNum this result (toString (first item))
+		} ('placeholder' == (first item)) {
+			addWithLineNum this result '<data>'
 		} else {
+	        if (isOneOf (first item) 'commandPrimitive' 'reporterPrimitive') {
+	            // re-order item to display argCount last
+	            item = (copy item)
+	            argCount = (at item 4)
+	            atPut item 4 (at item 5)
+	            atPut item 5 argCount
+	        }
 			// instruction (an array of form <cmd> <args...>)
-			instr = ''
+			instr = (join '[' (opcodeForInstr compiler (at item 1)) '] ')
 			for s item { instr = (join instr s ' ') }
 			addWithLineNum this result instr item
 		}
@@ -156,7 +171,7 @@ method showInstructions SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	setExtent (morph ws) (400 * (global 'scale')) (400 * (global 'scale'))
 	fixLayout ws
 }
 
@@ -166,9 +181,13 @@ method addWithLineNum SmallRuntime aList instruction items {
 	if (and
 		(notNil items)
 		(isOneOf (first items)
-			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse'
-			'decrementAndJmp' 'callFunction' 'forLoop')) {
+			'pushLiteral' 'jmp' 'longJmp' 'jmpTrue' 'jmpFalse' 'jmpAnd' 'jmpOr' 'decrementAndJmp')) {
 		offset = (toInteger (last items))
+		if ('pushLiteral' != (first items)) {
+		    if (or (0 == offset) (offset < -128) (offset > 127) ('longJmp' == (first items))) {
+		        offset += 1
+		    }
+		}
 		targetLine = (join ' (line ' (+ currentLine 1 offset) ')')
 	}
 	add aList (join '' currentLine ' ' instruction targetLine)
@@ -182,7 +201,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	add result (join '[' (count bytes) ' bytes]' (newline))
 	for i (count bytes) {
 		add result (toString (at bytes i))
-		if (0 == (i % 4)) {
+		if (0 == (i % 2)) {
 			add result (newline)
 		} else {
 			add result ' '
@@ -264,9 +283,14 @@ method appendCallsForFunction SmallRuntime funcName result indent globalVars all
 // Decompiler tests
 
 method testDecompiler SmallRuntime aBlock {
-	topBlock = (topBlock aBlock)
-	gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
-	showCodeInHand this gpCode
+    if (isClass aBlock 'BlockDefinition') {
+        funcName = (functionNamed (project scripter) (op aBlock))
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this funcName) (chunkBytesFor this funcName))
+    } else {
+        topBlock = (topBlock aBlock)
+        gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
+    }
+     showCodeInHand this gpCode
 }
 
 method showCodeInHand SmallRuntime gpCode {
@@ -283,16 +307,16 @@ method showCodeInHand SmallRuntime gpCode {
 }
 
 method compileAndDecompile SmallRuntime aBlockOrFunction {
-	if (isClass aBlockOrFunction 'Function') {
-		chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
-	}
+    if (isClass aBlockOrFunction 'Function') {
+        chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
+    }
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
 	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
 	bytecodes2 = (chunkBytesFor this gpCode)
 	if (bytecodes1 == bytecodes2) {
-		if ((count bytecodes1) > 750) {
-			print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+		if ((count bytecodes1) > 900) {
+			print 'large chunkType:' chunkType 'bytes:' (count bytecodes1)
 		}
 	} else {
 		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
@@ -306,6 +330,8 @@ method decompileAll SmallRuntime {
 }
 
 method decompileAllExamples SmallRuntime {
+    // decompileAllExamples (smallRuntime)
+
 	for fn (listEmbeddedFiles) {
 		if (beginsWith fn 'Examples') {
 			print fn
@@ -315,7 +341,22 @@ method decompileAllExamples SmallRuntime {
 	}
 }
 
+method decompileAllLibraries SmallRuntime {
+    // decompileAllLibraries (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Libraries') {
+			print fn
+			clearProject (findMicroBlocksEditor)
+			importLibraryFromFile (scripter (findMicroBlocksEditor)) (join '//' fn)
+			decompileAllInProject this
+		}
+	}
+}
+
 method decompileAllInProject SmallRuntime {
+    // decompileAllInProject (smallRuntime)
+
 	assignFunctionIDs this
 	for aFunction (allFunctions (project scripter)) {
 		compileAndDecompile this aFunction
@@ -361,6 +402,67 @@ method analyzeProject SmallRuntime {
 	return totalBytes
 }
 
+method metadataBytesInAllLibraries SmallRuntime {
+   // metadataBytesInAllProjects (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInAllProjects SmallRuntime {
+   // metadataBytesInAllProjects (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInAllLibraries SmallRuntime {
+   // metadataBytesInAllLibraries (smallRuntime)
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Libraries') {
+			clearProject (findMicroBlocksEditor)
+			importLibraryFromFile (scripter (findMicroBlocksEditor)) (join '//' fn)
+			print (metadataBytesInProject this) fn
+		}
+	}
+}
+
+method metadataBytesInProject SmallRuntime {
+    // metadataBytesInProject (smallRuntime)
+
+    byteCount = 0
+	assignFunctionIDs this
+	for aFunction (allFunctions (project scripter)) {
+		byteCount += (metadataBytesFor this aFunction)
+	}
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // functions are handled above
+		    byteCount += (metadataBytesFor this aBlock)
+		}
+	}
+	return byteCount
+}
+
+method metadataBytesFor SmallRuntime aBlockOrFunction {
+	if (isClass aBlockOrFunction 'String') { // look up function by name
+		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
+		if (isNil aBlockOrFunction) { return (list) } // unknown function
+	}
+	opcodes = (list)
+	appendDecompilerMetadata (initialize (new 'SmallCompiler')) aBlockOrFunction opcodes
+	metadata = (joinStrings (copyFromTo (last opcodes) 2) (string 9))
+    return (byteCount metadata)
+}
+
 // Decompiling
 
 method readCodeFromNextBoardConnected SmallRuntime {
@@ -401,7 +503,7 @@ method readCodeFromBoard SmallRuntime {
 		waitMSecs 10
 	}
 
-	sendMsg this 'getAllCodeMsg'
+	sendMsg this 'getAllCodeMsg' 1
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < 2000) {
 		processMessages this
@@ -1232,7 +1334,7 @@ method clearBoardIfConnected SmallRuntime doReset {
 	if (notNil port) {
 		sendStopAll this
 		if doReset { softReset this }
-		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
+		sendMsgSync this 'deleteAllCodeMsg' 1 // delete all code from board
 	}
 	clearVariableNames this
 	clearRunningHighlights this
@@ -1245,7 +1347,7 @@ method sendStopAll SmallRuntime {
 }
 
 method startAll SmallRuntime {
-    if (or (isNil vmVersion) (vmVersion >= 300)) {
+    if (or (isNil vmVersion) (vmVersion < 300)) {
         return (vmIncomptabibleWithIDE this)
     }
     sendStartAll this
@@ -1253,7 +1355,7 @@ method startAll SmallRuntime {
 
 method sendStartAll SmallRuntime {
 	step scripter // save script changes if needed
-	sendMsg this 'startAllMsg'
+	sendMsg this 'startAllMsg' 1
 }
 
 // Saving and verifying
@@ -1314,7 +1416,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 
 	if (isNil checkCRCs) { checkCRCs = true }
 	if (not (connectedToBoard this)) { return }
-    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 
 	setCursor 'wait'
 
@@ -1451,6 +1553,13 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	chunkBytes = (chunkBytesFor this aBlockOrFunction)
+
+    while (((count chunkBytes) % 4) != 0) {
+        // pad with zeros to make chunk byte count be an even multiple of four
+        // this ensures 32-bit word chunk alignment in the code store
+        add chunkBytes 0
+    }
+
 	data = (list chunkType)
 	addAll data chunkBytes
 	if ((count data) > 1000) {
@@ -1485,10 +1594,10 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 // Old code to store chunk on board; does not check crc:
 // 	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
 // 	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
-// 		sendMsg this 'chunkCodeMsg' chunkID data
+// 		sendMsg this 'chunkCode16Msg' chunkID data
 // 		sendMsg this 'pingMsg'
 // 	} else {
-// 		ok = (sendMsgSync this 'chunkCodeMsg' chunkID data)
+// 		ok = (sendMsgSync this 'chunkCode16Msg' chunkID data)
 // 	}
 // 	processMessages this
 // 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
@@ -1517,7 +1626,7 @@ method storeChunkOnBoard SmallRuntime chunkID data chunkCRC {
 	// This can take several seconds if the board does a Flash compaction.
 
 	lastCRC = nil
-	sendMsg this 'chunkCodeMsg' chunkID data
+	sendMsg this 'chunkCode16Msg' chunkID data
 	sendMsg this 'getChunkCRCMsg' chunkID
 
 	// wait for CRC to be reported
@@ -1705,7 +1814,7 @@ method collectCRCsBulk SmallRuntime {
 	crcDict = nil
 
 	// request CRCs for all chunks on board
-	sendMsgSync this 'getAllCRCsMsg'
+	sendMsgSync this 'getAllCRCsMsg' 1
 
 	// wait until crcDict is filled in or timeout
 	startT = (msecsSinceStart)
@@ -1765,7 +1874,7 @@ method saveVariableNames SmallRuntime {
 }
 
 method runChunk SmallRuntime chunkID {
-    if (or (isNil vmVersion) (vmVersion >= 300)) { return } // incompatible VM
+    if (or (isNil vmVersion) (vmVersion < 300)) { return } // incompatible VM
 	sendMsg this 'startChunkMsg' chunkID
 }
 
@@ -1818,7 +1927,7 @@ method variablesChanged SmallRuntime {
 }
 
 method clearVariableNames SmallRuntime {
-	if (notNil port) { sendMsgSync this 'clearVarsMsg' }
+	if (notNil port) { sendMsgSync this 'clearVarsMsg' 1 }
 	oldVarNames = nil
 }
 
@@ -1879,6 +1988,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
 		atPut msgDict 'enableBLEMsg' 31
+		atPut msgDict 'chunkCode16Msg' 32
 		atPut msgDict 'getAllCRCsMsg' 38
 		atPut msgDict 'allCRCsMsg' 39
 		atPut msgDict 'deleteFile' 200
@@ -2170,7 +2280,7 @@ method handleMessage SmallRuntime msg {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
-	} (op == (msgNameToID this 'chunkCodeMsg')) {
+	} (op == (msgNameToID this 'chunkCode16Msg')) {
 		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)

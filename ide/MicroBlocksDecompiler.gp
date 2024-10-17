@@ -6,8 +6,9 @@
 
 // MicroBlocksDecompiler.gp - Decompiles bytecodes back to scripts and functions
 // John Maloney, March, 2020
+// Converted to 16-bit instructions, September, 2024
 
-defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
+defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionName functionLibrary functionSpecInfo
 
 to newDecompiler {
 	return (initialize (new 'MicroBlocksDecompiler'))
@@ -30,7 +31,7 @@ to decompileBytecodes chunkID chunkType chunkData {
 }
 
 method addNamesFromRuntime MicroBlocksDecompiler {
-	// For testing. Add var and fuction names from current project.
+	// For testing. Add var and function names from current project.
 
 	initialize this
 
@@ -102,14 +103,15 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 	funcName = (functionName aFunc)
 	targetLib = module
 
-	if ((count functionInfo) >= 6) { // use function info if available
+	if ((count functionSpecInfo) >= 3) { // use function info if available
 		// set the target library for this function
-		libName = (at functionInfo 1)
-		libCat = (at functionInfo 2)
+		libName = functionLibrary
 		if (libName != '') {
 			if (isNil (libraryNamed project libName)) { // create library module
 				targetLib = (newMicroBlocksModule libName)
-				setField targetLib 'moduleCategory' libCat
+				if (notNil functionLibrary) {
+					setField targetLib 'moduleCategory' (categoryForLibrary this libName)
+				}
 				setVersion targetLib (array 0 0) // unknown version
 				addLibrary project targetLib
 			}
@@ -117,9 +119,9 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 		}
 
 		 // create blockspec from function info
-		blockType = (at functionInfo 3)
-		specString = (at functionInfo 5)
-		typeString = (at functionInfo 6)
+		blockType = (at functionSpecInfo 1)
+		specString = (at functionSpecInfo 2)
+		typeString = (at functionSpecInfo 3)
 		defaults = (list)
 		spec = (blockSpecFromStrings funcName blockType specString typeString defaults)
 	} else { // no function info, so generate a blockspec
@@ -139,24 +141,24 @@ method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
 	recordBlockSpec project funcName spec
 }
 
+method categoryForLibrary MicroBlocksDecompiler libName {
+	// xxx to do - return library category of built-in library if possible
+	return ''
+}
+
 method nameForFunction MicroBlocksDecompiler chunkID chunkData {
 	// If the function has a recvBroadcast opcode (i.e. it has no arguments)
 	// then use that as the function name. Otherwise, generate a name based on chunkID.
 
-	fName = (extractFunctionName this chunkData)
-	if (isNil fName) { fName = (join 'func' chunkID) }
-	return fName
-}
-
-method extractFunctionName MicroBlocksDecompiler chunkData {
-	extractOpcodes this chunkData
+	functionName = nil
+	extractOpcodes this chunkData // reads metadata
+	if (notNil functionName) { return functionName } // function name from metadata
 	if (and ((count opcodes) >= 3)
 			('recvBroadcast' == (cmdOp this (at opcodes 3)))
 			('pushLiteral' == (cmdOp this (at opcodes 2)))) {
-				return (cmdArg this (at opcodes 2))
+				return (cmdArg this (at opcodes 2)) // function name from recvBroadcast
 	}
-	if ((count functionInfo) > 3) { return (at functionInfo 4) }
-	return nil
+	return (join 'func' chunkID) // create a unique function name from chunkID
 }
 
 // Decompiling
@@ -190,10 +192,9 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 		print '----'
 	}
 
-	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }  // remove final halt
+	if (cmdIs this (last opcodes) 'codeEnd' 0) { removeLast opcodes } // remove final codeEnd
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
-	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
 	gpCode = (addHatBlock this chunkID chunkType gpCode)
 	if (isNil gpCode) {
 		return (newCommand 'comment' 'Stand-alone comment')
@@ -204,23 +205,86 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 }
 
 method extractOpcodes MicroBlocksDecompiler chunkData {
+	// 16-bit version
+
+	// build array to map opcode number -> op name
+	compiler = (initialize (new 'SmallCompiler'))
+	opcodeToName = (range 0 255)
+	for p (sortedPairs (opcodes compiler) false) {
+		atPut opcodeToName ((first p) + 1) (last p)
+	}
+
 	opcodes = (list)
 	msgName = nil
-	for i (range 1 (count chunkData) 4) {
-		op = (at chunkData i)
-		arg = (+
-			((at chunkData (i + 3)) << 16)
-			((at chunkData (i + 2)) << 8)
-			 (at chunkData (i + 1)))
-		arg = ((arg << 7) >> 7) // shift to sign-extend arg
-		addr = (floor ((i + 3) / 4))
-		add opcodes (array addr op arg)
+	byteCount = (count chunkData)
+	i = 1
+	while (and (i < byteCount) ('codeEnd' != op)) { // stop if last op was codeEnd
+		addr = (round (i / 2)) // 16-bit instruction address (1-based)
+		op = (at opcodeToName ((at chunkData i) + 1)) // opcode
+		arg = (at chunkData (i + 1)) // arg byte
+		extraWords = 0
+		primCall = nil
+		i += 2
+		if ('pushImmediate' == op) { // arg is a boolean or an integer object that fits in 8 bits
+			if (1 == (arg & 1)) {
+				arg = ((arg << 23) >> 24) // small integer (7 bits, signed); shifts do sign extension
+			} (0 == arg) {
+				arg = false
+			} (4 == arg) {
+				arg = true
+			} else {
+				print 'cannot decode immediate value:' arg
+			}
+		} ('pushLargeInteger' == op) { // arg is 24 bit integer object
+			arg = (arg | ((at chunkData i) << 8))
+			arg = (arg | ((at chunkData (i + 1)) << 16))
+			arg = ((arg << 7) >> 8) // convert integer object to integer with sign extension
+			extraWords += 1
+		} ('pushHugeInteger' == op) { // 32 bit integer; arg byte ignored
+			arg = ((at chunkData i) >> 1)
+			arg = (arg | ((at chunkData (i + 1)) << 7))
+			arg = (arg | ((at chunkData (i + 2)) << 15))
+			arg = (arg | ((at chunkData (i + 3)) << 23))
+			extraWords += 2
+		} ('pushLiteral' == op) { // literal string
+			offset = (at chunkData i)
+			offset = (offset | ((at chunkData (i + 1)) << 8))
+			// Use offset to extract the actual literal string.
+			startByte = (i + (2 * offset))
+			arg = (readLiteral this chunkData startByte)
+			extraWords += 1
+		} (isOneOf op 'jmp' 'jmpTrue' 'jmpFalse' 'jmpOr' 'jmpAnd' 'decrementAndJmp' 'waitUntil') {
+			if (arg == 0) { // extended jump; 16-bit signed offset in following two bytes
+				arg = (at chunkData i)
+				arg = (arg | ((at chunkData (i + 1)) << 8))
+				if (arg > 32767) { arg = (arg - 65536) }
+				extraWords += 1
+			} else { // arg is 8-bit signed offset
+				if (arg > 127) { arg = (arg - 256) }
+			}
+		} (isOneOf op 'commandPrimitive' 'reporterPrimitive') { // 24 bit arg
+			arg = (arg | ((at chunkData i) << 8))
+			arg = (arg | ((at chunkData (i + 1)) << 16))
+
+			primSetIndex = ((arg >> 18) & 63) // 6 bits
+			primSetName = (keyAtValue (primsets compiler) primSetIndex)
+			primNameOffset = ((arg >> 8) & 1023) // offset to primitive name literal string, 10 bits
+			primName = (readLiteral this chunkData (i + (2 * primNameOffset)))
+			arg = (arg & 255) // argument count, low 8 bits
+			primCall = (join '[' primSetName ':' primName ']') // replace op with primitive call
+			extraWords += 1
+		} ('callFunction' == op) {
+			// 16-bit arg is chunk ID (high byte) and arg count (low byte); arg byte ignored
+			arg = ((at chunkData i) | ((at chunkData (i + 1)) << 8))
+			extraWords += 1
+		}
+		add opcodes (array addr op arg primCall)
+		repeat extraWords { // add temporary placeholders so jump offsets are correct
+			add opcodes (array (addr + 1) 'placeholder' 0 nil)
+			i += 2
+		}
 	}
-	lastInstruction = (readLiteralStrings this)
-	hasMetadata = (readDecompilerMetadata this lastInstruction)
-	opcodes = (copyFromTo opcodes 1 lastInstruction)
-	getOpNames this
-	decodeImmediates this
+	hasMetadata = (readMetadata this chunkData)
 	if (not hasMetadata) { findArgs this } // no metadata; generate argument names if needed
 }
 
@@ -237,26 +301,6 @@ method removePrefix MicroBlocksDecompiler gpCode {
 	return gpCode
 }
 
-method removeFinalReturn MicroBlocksDecompiler gpCode {
-	// Return possible final 'return false' from the code for a function.
-
-	if (isNil gpCode) { return nil }
-
-	// find the last two commands:
-	lastCmd = gpCode
-	while (notNil (nextBlock lastCmd)) {
-		nextToLastCmd = lastCmd
-		lastCmd = (nextBlock lastCmd)
-	}
-
-	// if the last command is a 'return false', remove it
-	if (and ('return' == (primName lastCmd)) (false == (first (argList lastCmd)))) {
-		if (gpCode == lastCmd) { return nil } // the return was the only command
-		setField nextToLastCmd 'nextBlock' nil
-	}
-	return gpCode
-}
-
 // Command tuple operations
 
 method cmdOp MicroBlocksDecompiler cmd { return (at cmd 2) }
@@ -265,7 +309,12 @@ method cmdArg MicroBlocksDecompiler cmd { return (at cmd 3) }
 method jumpTarget MicroBlocksDecompiler jmpCmd {
 	// Return the target index of the given jump command.
 
-	return (+ (at jmpCmd 1) (cmdArg this jmpCmd) 1)
+	extra = 0
+	i = (at jmpCmd 1)
+	if (and (i < (count opcodes)) ('placeholder' == (cmdOp this (at opcodes (i + 1))))) {
+		extra = 1
+	}
+	return (+ i extra (cmdArg this jmpCmd) 1)
 }
 
 method cmdIs MicroBlocksDecompiler cmd op arg {
@@ -273,6 +322,27 @@ method cmdIs MicroBlocksDecompiler cmd op arg {
 
 	return (and (notNil cmd) (op == (at cmd 2)) (arg == (at cmd 3)))
 }
+
+method opcodeAfter MicroBlocksDecompiler i {
+	// Return the index of the opcode after the opcode at i.
+
+	i = (i + 1)
+	while ('placeholder' == (at (at opcodes i) 2)) {
+		i += 1
+	}
+	return i
+}
+
+method opcodeBefore MicroBlocksDecompiler i {
+	// Return the index of the opcode before the opcode at i.
+
+	i = (i - 1)
+	while ('placeholder' == (at (at opcodes i) 2)) {
+		i += -1
+	}
+	return i
+}
+
 
 // Debugging
 
@@ -351,83 +421,103 @@ method prettyPrint MicroBlocksDecompiler expression {
 
 // Helper methods
 
-method readLiteralStrings MicroBlocksDecompiler {
-	// Replace offsets in 'pushLiteral' instructions with the actual literal strings.
-	// Return the index of the last instruction in opcodes.
+method readLiteral MicroBlocksDecompiler chunkData startByte {
+	// Return the literal string starting at the given byte index.
 
-	result = (count opcodes)
-	for i (count opcodes) {
-		if (i > result) { return result }
-		instr = (at opcodes i)
-		if (240 == (cmdOp this instr)) { return (i - 1) } // pseudo opcode that marks start of metadata
-		if (4 == (cmdOp this instr)) { // pushLiteralOpcode
-			literalIndex = (+ i (cmdArg this instr) 1)
-			if (literalIndex <= result) {
-				result = (literalIndex - 1)
-			}
-			literalString = (readLiteral this literalIndex)
-			atPut instr 3 literalString // insert the literal into instruction
-			litWords = (floor (((byteCount literalString) + 3) / 4))
-		}
-	}
-	return result
-}
-
-method readLiteral MicroBlocksDecompiler literalIndex {
-	// Return the literal string starting at the given index in the opcode list.
-
-	header = (at opcodes literalIndex)
-	lowByte = (at header 2)
-	if (4 != (lowByte & 15)) {
-		print 'bad string literal (should not happen)'
+	chunkByteCount = (count chunkData)
+	byte0 = (at chunkData startByte)
+	objType = (byte0 & 15)
+	if (or (objType != 4) ((startByte + 3) > chunkByteCount)) {
+		print 'bad string literal type' // should not happen...
 		return ''
 	}
-	highBytes = (at header 3)
-	wordCount = ((highBytes << 4) | (lowByte >> 4))
-	bytes = (list)
-	for i (range (literalIndex + 1) (literalIndex + wordCount)) {
-		instr = (at opcodes i)
-		add bytes (at instr 2)
-		highBytes = (at instr 3)
-		add bytes (highBytes & 255)
-		add bytes ((highBytes >> 8) & 255)
-		add bytes ((highBytes >> 16) & 255)
+	wordCount = (byte0 >> 4)
+	wordCount += ((at chunkData (startByte + 1)) << 4)
+	wordCount += ((at chunkData (startByte + 2)) << 12)
+	wordCount += ((at chunkData (startByte + 3)) << 20)
+	if ((+ startByte 4 (4 * wordCount)) > chunkByteCount) {
+		print 'bad string literal size' // should not happen...
+		return ''
 	}
-	while (and (notEmpty bytes) (0 == (last bytes))) {
-		removeLast bytes // remove trailing zero bytes
+	stringBytes = (list)
+	i = (startByte + 4)
+	end = (i + (4 * wordCount))
+	while (i < end) {
+		ch = (at chunkData i)
+		if (ch != 0) { add stringBytes (at chunkData i) } // skip zero terminator byte(s)
+		i += 1
 	}
-	return (callWith 'string' (toArray bytes))
+	return (callWith 'string' (toArray stringBytes))
 }
 
-method readDecompilerMetadata MicroBlocksDecompiler lastInstruction {
+method bytesForLiteralAt MicroBlocksDecompiler chunkData startByte {
+	// Return the total number of bytes for the literal starting at the given index,
+	// include the header and padding bytes. Used to skip to the next literal.
+
+	chunkByteCount = (count chunkData)
+	byte0 = (at chunkData startByte)
+	objType = (byte0 & 15)
+	if (or (objType != 4) ((startByte + 3) > chunkByteCount)) {
+		print 'bad string literal type' // should not happen...
+		return (chunkByteCount - startByte) // skip to end
+	}
+	wordCount = (byte0 >> 4)
+	wordCount += ((at chunkData (startByte + 1)) << 4)
+	wordCount += ((at chunkData (startByte + 2)) << 12)
+	wordCount += ((at chunkData (startByte + 3)) << 20)
+	if ((+ startByte 4 (4 * wordCount)) > chunkByteCount) {
+		print 'bad string literal size' // should not happen...
+		return (chunkByteCount - startByte) // skip to end
+	}
+	return (4 * (wordCount + 1))
+}
+
+method readMetadata MicroBlocksDecompiler chunkData {
 	// Read decompiler metadata, if any, and return true if found.
 
+	if (isEmpty opcodes) { return false }
+
+	functionName = nil
+	functionLibrary = nil
+	functionSpecInfo = (array)
 	localNames = (array)
 	argNames = (array)
-	functionInfo = (array)
 
-	end = (count opcodes)
-	i = lastInstruction
-	while (240 != (cmdOp this (at opcodes i))) {
-		i += 1
-		if (i > end) { return false } // no meta information
+	codeEndOp = 127
+	metadataOp = 240
+	stringType = 4
+
+	i = ((2 * (first (last opcodes))) + 1)
+	if (codeEndOp == (at chunkData i)) { i += 2 } // skip extra codeEnd instruction
+	end = (count chunkData)
+	while (and (i < end) ((at chunkData i) != metadataOp)) {
+		i += (bytesForLiteralAt this chunkData i)
 	}
-	i += 1 // skip the meta info marker (opcode 240)
-	if (i < end) {
-		s = (readLiteral this i)
-		localNames = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
+	if (or (i > end) (metadataOp != (at chunkData i))) {
+		return false // metadata tag not found
 	}
-	if (i < end) {
-		s = (readLiteral this i)
-		functionInfo = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
+	metadataStrings = (list)
+	while (i < end) {
+		start = (i + 1)
+		i = (indexOf chunkData 0 i) // find zero terminator
+		if (notNil i) {
+			stringBytes = (copyFromTo chunkData start (i - 1))
+			add metadataStrings (toString (toBinaryData (toArray stringBytes)))
+		} else {
+			i = end // terminate while loop
+		}
 	}
-	if (i < end) {
-		s = (readLiteral this i)
-		argNames = (splitWith s (string 9))
-		i += ((floor ((byteCount s) / 4)) + 2)
-	}
+	if ((count metadataStrings) < 4) { return false }
+
+	functionName = (at metadataStrings 1)
+	functionLibrary = (at metadataStrings 2)
+	functionSpecInfo = (splitWith (at metadataStrings 3) (string 9))
+
+	localCount = (cmdArg this (first opcodes))
+	localAndArgNames = (splitWith (at metadataStrings 4) (string 9))
+	localNames = (copyFromTo localAndArgNames 1 localCount)
+	argNames = (copyFromTo localAndArgNames (localCount + 1))
+
 	return true
 }
 
@@ -444,49 +534,6 @@ method findArgs MicroBlocksDecompiler {
 	while (i <= maxArgIndex) {
 		add argNames (join 'A' (i + 1))
 		i += 1
-	}
-}
-
-method getOpNames MicroBlocksDecompiler {
-	// Replace the numerical opcode of each opcode entry with its name except
-	// for entries immediately following a pushBigImmediate instruction, which
-	// are inline integer constants.
-
-	opcodeDefs = (opcodes (initialize (new 'SmallCompiler')))
-	opcodeToName = (range 0 255)
-	for p (sortedPairs opcodeDefs false) {
-		atPut opcodeToName ((first p) + 1) (last p)
-	}
-	for i (count opcodes) {
-		op = nil
-		if ('pushBigImmediate' != lastOp) {
-			instr = (at opcodes i)
-			op = (at opcodeToName ((at instr 2) + 1))
-			atPut instr 2 op
-		}
-		lastOp = op
-	}
-}
-
-method decodeImmediates MicroBlocksDecompiler {
-	// Decode values encoded in pushImmediate instructions (true, false, or small integer.)
-
-	for i (count opcodes) {
-		instr = (at opcodes i)
-		if ('pushImmediate' == (cmdOp this instr)) {
-			val = (last instr)
-			decoded = val
-			if (1 == (val & 1)) {
-				decoded = (floor (val / 2)) // small integer
-			} (0 == val) {
-				decoded = false
-			} (4 == val) {
-				decoded = true
-			} else {
-				print 'cannot decode immediate value:' val
-			}
-			atPut instr 3 decoded
-		}
 	}
 }
 
@@ -523,9 +570,10 @@ method addHatBlock MicroBlocksDecompiler chunkID chunkType gpCode {
 		// Note: result is Function object
 		if (not (contains funcs chunkID)) {
 			// this happens during testing when decompiling a single function
-			if ((count functionInfo) > 3) {
-				atPut funcs chunkID (at functionInfo 4)
+			if (isNil functionName) {
+				functionName = (join 'func' chunkID)
 			}
+			atPut funcs chunkID functionName
 		}
 		fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
 		result = (newFunction fName argNames gpCode module)
@@ -562,7 +610,7 @@ method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
 			slotType = (first (slotInfoForIndex spec i))
 			val = (at args i)
 			if (and ('color' == slotType) (isClass val 'Integer')) {
-				c = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
+				c = (color ((val >> 16) & 255) ((val >> 8) & 255) (val & 255))
 				setArg block i c
 			} (and ('bool' != slotType) (isClass val 'Boolean') ) {
 				setArg block i (newReporter 'booleanConstant' val)
@@ -580,68 +628,81 @@ method findLoops MicroBlocksDecompiler {
 	i = 1
 	while (i <= (count opcodes)) {
 		cmd = (at opcodes i)
+// print 'cmd:' cmd
 		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp' 'waitUntil')
 				((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
+			loopEnd = i
 			if ('ignore' == loopType) {
 				loopRec = nil
-				loopEnd = i
 			} ('whenCondition' == loopType) {
 				loopStart = 2
-				loopEnd = i
 				conditionStart = 4
-				conditionEnd = (i - 1)
-				bodyStart = (i + 1)
-				bodyEnd = ((count opcodes) - 1)
-				loopRec = (array 'whenCondition' (count opcodes) conditionStart conditionEnd bodyStart bodyEnd)
+				conditionEnd = (opcodeBefore this i)
+				bodyStart = (opcodeAfter this i)
+				loopEnd = (opcodeBefore this (count opcodes))
+				bodyEnd = (opcodeBefore this loopEnd)
+				loopRec = (array 'whenCondition' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('repeatUntil' == loopType) {
 				bodyStart = (jumpTarget this cmd)
-				loopStart = (bodyStart - 1)
+				loopStart = (opcodeBefore this bodyStart)
 				conditionStart = (jumpTarget this (at opcodes loopStart))
-				conditionEnd = (i - 1)
-				bodyEnd = (conditionStart - 1)
-				loopEnd = i
+				conditionEnd = (opcodeBefore this i)
+				bodyEnd = (opcodeBefore this conditionStart)
 				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
 			} ('waitUntil' == loopType) {
 				loopStart = (jumpTarget this cmd)
-				loopEnd = i
 				conditionStart = loopStart
-				conditionEnd = (i - 1)
+				conditionEnd = (opcodeBefore this i)
 				loopRec = (array 'waitUntil' loopEnd conditionStart conditionEnd)
 			} else {
 				bodyStart = (jumpTarget this cmd)
-				bodyEnd = (i - 1)
+				bodyEnd = (opcodeBefore this i)
 				loopStart = bodyStart
-				loopEnd = i
 				if ('for' == loopType) {
 					loopStart = (bodyStart - 3)
-					bodyEnd = (i - 2)
-					loopEnd = (i + 1)
-					if (notNil (at controlStructures (bodyStart - 1))) {
-						cmd2 = (at controlStructures (bodyStart - 1))
-						if ('repeatUntil' == (first cmd2)) {
-							// fix waitUntil (xxx can be removed eventually)
-							rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-							recordControlStructure this bodyStart rec
-							atPut controlStructures (bodyStart - 1) nil
-						}
+					if ('placeholder' == (cmdOp this (at opcodes (bodyStart - 1)))) {
+						loopStart += -1 // empty body results in a jmp 0, using an extra word
 					}
+					bodyEnd = (opcodeBefore this (opcodeBefore this i))
+					loopEnd = (opcodeAfter this i)
 				} ('repeat' == loopType) {
-					loopStart = (bodyStart - 1)
+					loopStart = (opcodeBefore this bodyStart)
 				}
 				loopRec = (array loopType loopEnd bodyStart bodyEnd)
 				if ('for' == loopType) {
 					forIndexVar = (cmdArg this (at opcodes (i - 1)))
 					loopRec = (copyWith loopRec forIndexVar)
 				}
+				if ('forever' == loopType) {
+					if (and
+						(bodyStart == 2)
+						(i == (opcodeBefore this (count opcodes)))
+						(isInwhenCondition this)) {
+							// final jmp of a when hat, not a forever loop; ignore it
+							loopRec = nil
+					}
+				}
 			}
 			if (notNil loopRec) { recordControlStructure this loopStart loopRec }
-			i = (loopEnd + 1)
-		} else {
-			i += 1
 		}
+		i += 1
 	}
+}
+
+method isInwhenCondition MicroBlocksDecompiler {
+	// Return true if the current script is in a 'whenCondition' hat.
+
+	rec = (at controlStructures 2)
+	if (isNil rec) {
+		return false
+	} ('whenCondition' == (first rec)) {
+		return true
+	} ('multiple' == (first rec)) {
+		if ('whenCondition' == (first (at rec 3))) { return true }
+	}
+	return false
 }
 
 method loopTypeAt MicroBlocksDecompiler i seq {
@@ -654,25 +715,19 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
-		} (and (i == (count opcodes)) (2 == (jumpTarget this cmd))) {
-			return 'ignore' // ignore the final jump of a 'whenCondition'
 		} else {
 			return 'forever'
 		}
 	}
 	if ('jmpFalse' == op) {
-		loopStart = (i + (cmdArg this cmd))
-		if (and (1 == loopStart)
-				('jmp' == (cmdOp this (last seq)))
-				(2 == (jumpTarget this (last seq)))) {
+		loopStart = (jumpTarget this cmd)
+		lastOp = (at opcodes (opcodeBefore this (count seq)))
+		if (and (2 == loopStart)
+				('jmp' == (cmdOp this lastOp))
+				(2 == (jumpTarget this lastOp))) {
 					return 'whenCondition'
 		}
-		if ('jmp' == (cmdOp this (at seq loopStart))) {
-			// xxx remove this test once compiler generates 'waitUntil' opcodes
-			return 'repeatUntil'
-		} else {
-			return 'waitUntil'
-		}
+		return 'repeatUntil'
 	}
 	return 'unknown loop type'
 }
@@ -685,13 +740,13 @@ method findIfs MicroBlocksDecompiler {
 	for i (count opcodes) {
 		cmd = (at opcodes i)
 		if (and ('jmpFalse' == (cmdOp this cmd)) ((cmdArg this cmd) >= 0) (not (isAnd this opcodes cmd))) {
-			trueStart = (i + 1)
-			trueEnd = ((jumpTarget this cmd) - 1)
+			trueStart = (opcodeAfter this i)
+			trueEnd = (opcodeBefore this (jumpTarget this cmd))
 			lastCmdOfTrue = (at opcodes trueEnd)
 			if ('jmp' == (cmdOp this lastCmdOfTrue)) {
-				falseStart = (trueEnd + 1)
-				falseEnd = ((jumpTarget this lastCmdOfTrue) - 1)
-				conditionalRec = (array 'if-else' falseEnd trueStart (trueEnd - 1) falseStart falseEnd)
+				falseStart = (opcodeAfter this trueEnd)
+				falseEnd = (opcodeBefore this (jumpTarget this lastCmdOfTrue))
+				conditionalRec = (array 'if-else' falseEnd trueStart (opcodeBefore this trueEnd) falseStart falseEnd)
 			} else {
 				conditionalRec = (array 'if' trueEnd trueStart trueEnd)
 			}
@@ -733,7 +788,7 @@ method fixLocals MicroBlocksDecompiler {
 // Decoding
 
 method codeForSequence MicroBlocksDecompiler start end {
-	// Decode the given sequence of opecodes and return a GP Reporter (if it is an expression)
+	// Decode the given sequence of opcodes and return a GP Reporter (if it is an expression)
 	// or a GP Command (if it is a command or sequence of commands). The opcode sequence must
 	// be complete and well-formed (e.g. if it encodes a command sequence it should leave the
 	// stack empty) and does not contain any control structures (loops or if statements).
@@ -756,30 +811,28 @@ method codeForSequence MicroBlocksDecompiler start end {
 			op = (first ctrl)
 			next = ((at ctrl 2) + 1)
 		}
-		if ('jmpTrue' == op) { // conditional rexpression
+		if ('placeholder' == op) { // skip placeholders
+			i = next
+		} ('jmpTrue' == op) { // conditional expression
 			i = (decodeConditionalExpression this op i)
 		} (isOneOf op 'jmpAnd' 'jmpOr') { // new style "and" or "or" reporter
 			i = (decodeNewANDorORreporter this op i)
-		} ('pushBigImmediate' == op) {
-			nextCmd = (at opcodes (i + 1))
-			add stack ((((at nextCmd 3) << 8) | (at nextCmd 2)) >> 1) // convert obj to int
-			i += 2
 		} ('callFunction' == op) {
 			cmdArg = (cmdArg this cmd)
 			argCount = (cmdArg & 255)
 			chunkID = ((cmdArg >> 8) & 255)
 			fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			if isReporter {
 				add stack (buildCmdOrReporter this fName argCount true)
-				i += 1
+				i += 2
 			} else {
 				add code (buildCmdOrReporter this fName argCount false)
-				i += 2
+				i += 3
 			}
 		} ('multiple' == op) {
 			// Remove and process the outer-most control structure (the last one in the list).
-			// This does  a recursive call to codeForSequence, but with one fewer control
+			// This does a recursive call to codeForSequence, but with one fewer control
 			// structures in the 'multiple' list. Recursion terminates when there are no more
 			// control structures.
 			cmd = (removeLast ctrl)
@@ -790,21 +843,9 @@ method codeForSequence MicroBlocksDecompiler start end {
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'forever' body)
 			} ('repeat' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (i + 1) rec
-				}
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'repeat' (removeLast stack) body)
 			} ('repeatUntil' == op) {
-				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat (xxx can remove eventually)
-					cmd2 = (removeLast ctrl)
-					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
-					recordControlStructure this (i + 1) rec
-				}
 				condition = (codeForSequence this (at cmd 3) (at cmd 4))
 				body = (codeForSequence this (at cmd 5) (at cmd 6))
 				add code (newCommand 'repeatUntil' condition body)
@@ -814,7 +855,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 			}
 			i = next
 		} (isOneOf op 'callCustomCommand' 'callCustomReporter') {
-			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			isReporter = (not (cmdIs this (at opcodes (opcodeAfter this i)) 'pop' 1))
 			decodeCmd this i
 			if isReporter {
 				i += 1
@@ -835,7 +876,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 		if (not (isEmpty stack)) { error 'incomplete sequence?' }
 		if (notEmpty code) {
 			lastCmd = nil
-			for cmd code {  // chain all commands together
+			for cmd code { // chain all commands together
 				if (notNil lastCmd) {
 					setField lastCmd 'nextBlock' cmd
 				}
@@ -855,7 +896,7 @@ method decodeNewANDorORreporter MicroBlocksDecompiler op i {
 	// Decode an new AND or OR reporter (using jmpAnd/jmpOr).
 
 	if ('jmpAnd' == op) { gpOp = 'and' } else { gpOp = 'or' }
-	start = (i + 1)
+	start = (opcodeAfter this i)
 	end = (i + (cmdArg this (at opcodes i)))
 	arg1 = (removeLast stack)
 	arg2 = (codeForSequence this start end)
@@ -867,7 +908,7 @@ method decodeNewANDorORreporter MicroBlocksDecompiler op i {
 method decodeConditionalExpression MicroBlocksDecompiler op i {
 	 // Note: The false case comes first in the compiled code.
 
-	start = (i + 1)
+	start = (opcodeAfter this i)
 	endOfFalse = (i + (cmdArg this (at opcodes i))) // jump to end
 	end = (endOfFalse + (cmdArg this (at opcodes endOfFalse)))
 	arg1 = (removeLast stack)
@@ -890,15 +931,15 @@ method decodeCmd MicroBlocksDecompiler i {
 
 	if ('halt' == op) {
 		add code (newCommand 'stopTask')
-	} (isOneOf op 'pushImmediate' 'pushLiteral') {
+	} (isOneOf op 'pushImmediate' 'pushLiteral' 'pushLargeInteger' 'pushHugeInteger') {
 		add stack cmdArg
 
 	// Variables
-	} ('pushVar' == op) {
+	} ('pushGlobal' == op) {
 		add stack (newReporter 'v' (globalVarName this cmdArg))
-	} ('storeVar' == op) {
+	} ('storeGlobal' == op) {
 		add code (newCommand '=' (globalVarName this cmdArg) (removeLast stack))
-	} ('incrementVar' == op) {
+	} ('incrementGlobal' == op) {
 		add code (newCommand '+=' (globalVarName this cmdArg) (removeLast stack))
 	} ('pushArgCount' == op) {
 		add stack (newReporter 'pushArgCount')
@@ -920,7 +961,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('initLocals' == op) {
 		// skip
 	} ('pop' == op) {
-		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
+		add code (buildCmdOrReporter this 'pop' cmdArg false)
 	} ('returnResult' == op) {
 		add code (buildCmdOrReporter this 'return' 1 false)
 	} ('digitalSet' == op) {
@@ -935,7 +976,10 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('if-else' == op) {
 		ifPart = (codeForSequence this (at cmd 3) (at cmd 4))
 		elsePart = (codeForSequence this (at cmd 5) (at cmd 6))
-		if (and (notNil elsePart) ('if' == (primName elsePart))) {
+		if (and
+			(notNil elsePart)
+			('if' == (primName elsePart))
+			(isNil (nextBlock elsePart))) {
 			// combine nested if's
 			argList = (list 'if' (removeLast stack) ifPart)
 			addAll argList (argList elsePart)
@@ -969,6 +1013,14 @@ method decodeCmd MicroBlocksDecompiler i {
 		}
 		add code whenHat
 
+	} (isOneOf op 'commandPrimitive' 'reporterPrimitive') {
+		primName = (at cmd 4)
+		if ('commandPrimitive' == op) {
+			add code (buildCmdOrReporter this primName cmdArg false)
+		} else { // reporterPrimitive
+			add stack (buildCmdOrReporter this primName cmdArg true)
+		}
+
 	// everything else
 	} (contains reporters op) {
 		add stack (buildCmdOrReporter this op cmdArg true)
@@ -981,16 +1033,6 @@ method decodeCmd MicroBlocksDecompiler i {
 method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
 	// If optional isReporter arg is not supplied, look up the op in the reporters dictionary.
-
-	if (or ('callCommandPrimitive' == op) ('callReporterPrimitive' == op)) {
-		argsStart = ((count stack) - (argCount - 1))
-		primName = (at stack argsStart)
-		primSet = (at stack (argsStart + 1))
-		op = (join '[' primName ':' primSet ']')
-		removeAt stack argsStart
-		removeAt stack argsStart
-		argCount += -2
-	}
 
 	if isReporter {
 		result = (newIndexable 'Reporter' argCount)
@@ -1037,7 +1079,6 @@ method buildReporterDictionary MicroBlocksDecompiler {
 	reporters = (dictionary)
 	add reporters 'pushArgCount'
 	add reporters 'getArg'
-	add reporters 'callReporterPrimitive'
 	for spec (microBlocksSpecs (new 'SmallCompiler')) {
 		if (and (isClass spec 'Array') ('r' == (first spec))) {
 			op = (at spec 2)

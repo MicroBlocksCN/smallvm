@@ -48,11 +48,14 @@ extern "C" {
 		#define HAS_LED_MATRIX 1
 #endif
 
-// Unsigned integer types
+// Integer types
 
 typedef unsigned char uint8;
+typedef unsigned short uint16;
 typedef unsigned int uint32;
 typedef unsigned long long uint64;
+
+typedef signed short int int16;
 
 // Boolean constants for readability (if not already defined)
 

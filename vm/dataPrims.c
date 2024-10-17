@@ -142,8 +142,6 @@ OBJ primFillList(int argCount, OBJ *args) {
 		int count = obj2int(FIELD(obj, 0));
 		if (count >= WORDS(obj))count = WORDS(obj) - 1;
 		for (int i = 0; i < count; i++) FIELD(obj, i + 1) = value;
-		int end = WORDS(obj) + HEADER_WORDS;
-		for (int i = HEADER_WORDS + 1; i < end; i++) ((OBJ *) obj)[i] = value;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		int byteValue = obj2int(value);

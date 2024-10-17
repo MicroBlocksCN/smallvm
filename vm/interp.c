@@ -365,38 +365,27 @@ static OBJ argOrDefault(OBJ *fp, int argNum, OBJ defaultValue) {
 
 static int functionNameMatches(int chunkIndex, char *functionName) {
 	// Return true if given chunk is the function with the given function name.
-	// by checking the function name in the function's metadata.
+	// Use the function name in the function's metadata.
+	// Scan backwards from the end of the chunk to avoid possible
+	// matches of the meta flag with offsets in instructions.
+	// Note: 248 (0xF8) is not a valid byte in UTF-8 encoding
 
-	const uint32 META_FLAG = 240;
-	uint32 wordCount = ((uint32 *) chunks[chunkIndex].code)[1];
-	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
-	int metaStart = -1;
-	for (int i = 0; i < wordCount; i++) {
-		if (META_FLAG == code[i]) {
-			metaStart = i;
+	const uint8 META_FLAG = 248;
+	char *metaData = NULL;
+	uint32 *code = (uint32 *) chunks[chunkIndex].code;
+	uint8 *chunkStart = (uint8 *) (code + PERSISTENT_HEADER_WORDS);
+	uint8 *src = chunkStart + (4 * code[1]) - 1; // start at last byte
+	while (src > chunkStart) {
+		if (META_FLAG == *src) {
+			metaData = (char *) src + 1;
 			break;
 		}
+		src--; // scan backwards to find start of metadata
 	}
-	if (metaStart < 0) return false; // no metadata
+	if (!metaData) return false; // no metadata
 
-	OBJ meta = (OBJ) &code[metaStart + 1];
-	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
-	meta += HEADER_WORDS + WORDS(meta); // skip var names string
-	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
-
-	// s is a tab-delimited string with meta information about the function:
-	//	libraryName libraryCategory blockType funcName specString argTypes
-	char *s = obj2str(meta);
-
-	// skip the first three tab-delimited fields (libraryName libraryCategory blockType)
-	for (int i = 0; i < 3; i++) {
-		s = strchr(s, '\t'); // find next tab
-		if (!s) return false; // tab not found; should not happen
-		s += 1;
-	}
-
-	// return true if s begins with the given function name
-	return (strstr(s, functionName) == s);
+	// return true if metaDat starts with the given function name
+	return (strstr(metaData, functionName) == metaData);
 }
 
 static int chunkIndexForFunction(char *functionName) {
@@ -446,13 +435,21 @@ static int findCallee(char *functionOrPrimitiveName) {
 // Macros to support function calls
 #define IN_CALL() (fp > task->stack)
 
+static void interpDebug(int ip, int cmd, int arg, int sp) {
+	// Show interpreter state for debugging.
+
+	char tmpStr[100];
+	sprintf(tmpStr, "ip: %d cmd: %d arg: %d sp: %d", ip - 4, cmd, arg, sp);
+	outputString(tmpStr); \
+}
+
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
 	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
+	/* interpDebug((ip - (int16 *) task->code), CMD(op), arg, task->sp); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
@@ -465,7 +462,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 
 static void runTask(Task *task) {
 	register int op;
-	register int *ip;
+	register int16 *ip;
 	register OBJ *sp;
 	register OBJ *fp;
 	int arg, tmp;
@@ -473,138 +470,138 @@ static void runTask(Task *task) {
 
 	// initialize jump table
 	static void *jumpTable[] = {
-		&&halt_op,
-		&&noop_op,
-		&&pushImmediate_op,
-		&&pushBigImmediate_op,
-		&&pushLiteral_op,
-		&&pushVar_op,
-		&&storeVar_op,
-		&&incrementVar_op,
-		&&pushArgCount_op,
-		&&pushArg_op,
-		&&storeArg_op,
-		&&incrementArg_op,
-		&&pushLocal_op,
+		&&halt_op,					// stop this task
+		&&stopAll_op,				// stop all tasks except this one
+		&&pushImmediate_op,			// true, false, and ints that fit in 8 bits [-64..63]
+		&&pushLargeInteger_op,		// ints that fit in 24 bits
+		&&pushHugeInteger_op,		// ints that need > 24 bits
+		&&pushLiteral_op,			// string constant from literals frame
+		&&pushGlobal_op,
+		&&storeGlobal_op,
+		&&incrementGlobal_op,
+		&&initLocals_op,
+		&&pushLocal_op,				// 10
 		&&storeLocal_op,
 		&&incrementLocal_op,
-		&&pop_op,
-		&&jmp_op,
-		&&jmpTrue_op,
-		&&jmpFalse_op,
-		&&decrementAndJmp_op,
-		&&callFunction_op,
-		&&returnResult_op,
-		&&waitMicros_op,
-		&&waitMillis_op,
-		&&sendBroadcast_op,
-		&&recvBroadcast_op,
-		&&stopAllButThis_op,
-		&&forLoop_op,
-		&&initLocals_op,
+		&&pushArg_op,
+		&&storeArg_op,
+		&&incrementArg_op,			// 15
+		&&pushArgCount_op,
 		&&getArg_op,
-		&&getLastBroadcast_op,
+		&&argOrDefault_op,
+		&&pop_op,
+		&&ignoreArgs_op,			// 20 (alias for pop_op)
+		&&noop_op,
+		&&jmp_op,
+		&&longJmp_op,				// (alias for jmp_op)
+		&&jmpTrue_op,
+		&&jmpFalse_op,				// 25
+		&&decrementAndJmp_op,
+		&&forLoop_op,
 		&&jmpOr_op,
 		&&jmpAnd_op,
-		&&minimum_op,
-		&&maximum_op,
-		&&lessThan_op,
-		&&lessOrEq_op,
-		&&equal_op,
-		&&notEqual_op,
-		&&greaterOrEq_op,
-		&&greaterThan_op,
-		&&not_op,
-		&&add_op,
+		&&waitUntil_op,				// 30 (alias for jmpFalse_op)
+	&&RESERVED_op,
+		&&waitMicros_op,
+		&&waitMillis_op,
+		&&callFunction_op,
+		&&returnResult_op,			// 35
+		&&commandPrimitive_op,
+		&&reporterPrimitive_op,
+		&&callCustomCommand_op,
+		&&callCustomReporter_op,
+		&&sendBroadcast_op,			// 40
+		&&recvBroadcast_op,
+		&&getLastBroadcast_op,
+		&&millis_op,
+		&&micros_op,
+		&&secs_op,					// 45
+		&&millisSince_op,
+		&&microsSince_op,
+		&&timer_op,
+		&&resetTimer_op,
+		&&add_op,					// 50
 		&&subtract_op,
 		&&multiply_op,
 		&&divide_op,
 		&&modulo_op,
-		&&absoluteValue_op,
-		&&random_op,
-		&&hexToInt_op,
-		&&bitAnd_op,
+		&&bitAnd_op,				// 55
 		&&bitOr_op,
 		&&bitXor_op,
 		&&bitInvert_op,
 		&&bitShiftLeft_op,
-		&&bitShiftRight_op,
-		&&longMultiply_op,
+		&&bitShiftRight_op,			// 60
+		&&lessThan_op,
+		&&lessOrEq_op,
+		&&equal_op,
+		&&notEqual_op,
+		&&greaterOrEq_op,			// 65
+		&&greaterThan_op,
+		&&not_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+		&&longMultiply_op,			// 70
+		&&absoluteValue_op,
+		&&minimum_op,
+		&&maximum_op,
+		&&random_op,
+		&&hexToInt_op,				// 75
 		&&isType_op,
-		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
-		&&pop_op, // this is the ignoreArgs opcode, an alias for pop_op
-		&&newList_op,
-		&&RESERVED_op,
-		&&fillList_op,
+		&&sayIt_op,
+		&&graphIt_op,
+		&&boardType_op,
+		&&newList_op,				// 80
 		&&at_op,
 		&&atPut_op,
-		&&length_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&millis_op,
-		&&micros_op,
-		&&timer_op,
-		&&resetTimer_op,
-		&&sayIt_op,
-		&&logData_op,
-		&&boardType_op,
-		&&comment_op,
-		&&argOrDefault_op,
-		&&RESERVED_op,
+		&&size_op,
 		&&analogPins_op,
-		&&digitalPins_op,
+		&&digitalPins_op,			// 85
 		&&analogRead_op,
 		&&analogWrite_op,
 		&&digitalRead_op,
 		&&digitalWrite_op,
-		&&digitalSet_op,
+		&&digitalSet_op,			// 90
 		&&digitalClear_op,
 		&&buttonA_op,
 		&&buttonB_op,
 		&&setUserLED_op,
-		&&i2cSet_op,
+		&&i2cSet_op,				// 95
 		&&i2cGet_op,
 		&&spiSend_op,
 		&&spiRecv_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&secs_op,
-		&&millisSince_op,
-		&&microsSince_op,
-		&&mbDisplay_op,
-		&&mbDisplayOff_op,
-		&&mbPlot_op,
-		&&mbUnplot_op,
-		&&mbTiltX_op,
-		&&mbTiltY_op,
-		&&mbTiltZ_op,
-		&&mbTemp_op,
-		&&neoPixelSend_op,
-		&&drawShape_op,
-		&&shapeForLetter_op,
-		&&neoPixelSetPin_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&primitiveCommand_op,
-		&&primitiveReporter_op,
-		&&callCustomCommand_op,
-		&&callCustomReporter_op,
-		&&callCommandPrimitive_op,
-		&&callReporterPrimitive_op,
+	&&RESERVED_op,
+	&&RESERVED_op,					// 100
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+	&&RESERVED_op,
+		&&comment_op,				// (alias for noop_op)
+		&&codeEnd_op,				// 127 (alias for halt_op)
 	};
 
 	// Restore task state
-	ip = task->code + task->ip;
+	ip = (int16 *) task->code + task->ip;
 	sp = task->stack + task->sp;
 	fp = task->stack + task->fp;
 
@@ -621,7 +618,7 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
-		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
+		tmp = ((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
 		task->status = unusedTask;
 		if (unusedTask == tasks[taskCount - 1].status) taskCount--;
@@ -629,38 +626,44 @@ static void runTask(Task *task) {
 		goto suspend;
 	suspend:
 		// save task state
-		task->ip = ip - task->code;
+		task->ip = ip - (int16 *) task->code;
 		task->sp = sp - task->stack;
 		task->fp = fp - task->stack;
 		return;
 	RESERVED_op:
 	halt_op:
+	codeEnd_op:
 		sendTaskDone(task->taskChunkIndex);
 		task->status = unusedTask;
 		if (unusedTask == tasks[taskCount - 1].status) taskCount--;
 		goto suspend;
 	noop_op:
+	comment_op:
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	pushImmediate_op:
 		STACK_CHECK(1);
 		*sp++ = (OBJ) arg;
 		DISPATCH();
-	pushBigImmediate_op:
+	pushLargeInteger_op:
+		// push an integer object that fits into 24 bits
 		STACK_CHECK(1);
-		*sp++ = (OBJ) *ip++;
+		tmp = (*ip++ << 8) | (arg & 0xFF); // most significant bits are in the following 16-bit word
+		*sp++ = (OBJ) tmp;
 		DISPATCH();
 	pushLiteral_op:
 		STACK_CHECK(1);
-		*sp++ = (OBJ) (ip + arg); // arg is offset from the current ip to the literal object
+		tmp = *ip; // offset to the literal is in the following 16-bit word
+		*sp++ = (OBJ) (ip++ + tmp);
 		DISPATCH();
-	pushVar_op:
+	pushGlobal_op:
 		STACK_CHECK(1);
 		*sp++ = vars[arg];
 		DISPATCH();
-	storeVar_op:
+	storeGlobal_op:
 		vars[arg] = *--sp;
 		DISPATCH();
-	incrementVar_op:
+	incrementGlobal_op:
 		tmp = evalInt(vars[arg]);
 		if (!errorCode) {
 			vars[arg] = int2obj(tmp + evalInt(*--sp));
@@ -704,6 +707,7 @@ static void runTask(Task *task) {
 		*(fp + arg) = int2obj(obj2int(*(fp + arg)) + evalInt(*--sp));
 		DISPATCH();
 	pop_op:
+	ignoreArgs_op:
 		sp -= arg;
 		if (sp >= task->stack) {
 			DISPATCH();
@@ -712,24 +716,30 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	jmp_op:
+	longJmp_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
 		if (arg < 0) goto suspend;
 #endif
 		DISPATCH();
 	jmpTrue_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (trueObj == (*--sp)) ip += arg;
 #if USE_TASKS
 		if ((arg < 0) && (trueObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	jmpFalse_op:
+	waitUntil_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (trueObj != (*--sp)) ip += arg; // treat any value but true as false
 #if USE_TASKS
 		if ((arg < 0) && (trueObj != *sp)) goto suspend;
 #endif
 		DISPATCH();
 	 decrementAndJmp_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (isInt(*(sp - 1))) {
 			tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter (normal case)
 		} else {
@@ -758,6 +768,8 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
+		arg = *ip++;
+	callFunctionByName:
 		tmp = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
 		if (chunks[tmp].chunkType != functionHat) {
 			fail(badChunkIndexError);
@@ -765,12 +777,12 @@ static void runTask(Task *task) {
 		}
 		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
-		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
+		*sp++ = int2obj(((ip - (int16 *) task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
 		task->currentChunkIndex = tmp; // callee's chunk index (middle byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
+		ip = (int16 *) (task->code + PERSISTENT_HEADER_WORDS); // first instruction in callee
 		DISPATCH();
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
@@ -788,7 +800,7 @@ static void runTask(Task *task) {
 		tmp = obj2int(*(fp - 2)); // return address
 		task->currentChunkIndex = tmp & 0xFF;
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + ((tmp >> 8) & 0x3FFFFF); // restore old ip
+		ip = ((int16 *) task->code) + ((tmp >> 8) & 0x3FFFFF); // restore old ip
 		fp = task->stack + obj2int(*(fp - 1)); // restore the old fp
 		DISPATCH();
 	waitMicros_op:
@@ -822,7 +834,7 @@ static void runTask(Task *task) {
 	recvBroadcast_op:
 		POP_ARGS_COMMAND(); // pop the broadcast name (a literal string)
 		DISPATCH();
-	stopAllButThis_op:
+	stopAll_op:
 		stopAllTasksButThis(task); // clears all tasks except the current one
 		DISPATCH();
 	forLoop_op:
@@ -871,7 +883,7 @@ static void runTask(Task *task) {
 				goto error;
 			}
 		} else { // loop counter <= 0
-			ip++; // skip the following jmp instruction thus ending the loop
+			ip += 2; // skip the following longJmp instruction (two words) thus ending the loop
 		}
 		DISPATCH();
 	initLocals_op:
@@ -899,10 +911,12 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	jmpOr_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		// if true, jump leaving true (result of "or" expression) on stack, otherwise pop
 		if (trueObj == *(sp - 1)) { ip += arg; } else { sp--; }
 		DISPATCH();
 	jmpAnd_op:
+		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		// if not true, push false (result of "and" expression) on stack and jump
 		if (trueObj != (*--sp)) { // treat any value but true as false
 			*sp++ = falseObj;
@@ -1063,10 +1077,6 @@ static void runTask(Task *task) {
 		*(sp - arg) = primNewList(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
-	fillList_op:
-		primFillList(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
 	at_op:
 		*(sp - arg) = primAt(arg, sp - arg);
 		POP_ARGS_REPORTER();
@@ -1075,7 +1085,7 @@ static void runTask(Task *task) {
 		primAtPut(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	length_op:
+	size_op:
 		*(sp - arg) = primLength(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -1135,7 +1145,7 @@ static void runTask(Task *task) {
 		task->status = waiting_micros;
 		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
-	logData_op:
+	graphIt_op:
 		if (!ideConnected()) {
 			POP_ARGS_COMMAND(); // serial port not open; do nothing
 			DISPATCH();
@@ -1158,9 +1168,6 @@ static void runTask(Task *task) {
 	boardType_op:
 		*(sp - arg) = primBoardType();
 		POP_ARGS_REPORTER();
-		DISPATCH();
-	comment_op:
-		POP_ARGS_COMMAND();
 		DISPATCH();
 	argOrDefault_op:
 		if (arg < 2) {
@@ -1249,67 +1256,27 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
-	// micro:bit operations:
-	mbDisplay_op:
-		primMBDisplay(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbDisplayOff_op:
-		primMBDisplayOff(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbPlot_op:
-		primMBPlot(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbUnplot_op:
-		primMBUnplot(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	mbTiltX_op:
-		*(sp - arg) = primMBTiltX(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTiltY_op:
-		*(sp - arg) = primMBTiltY(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTiltZ_op:
-		*(sp - arg) = primMBTiltZ(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	mbTemp_op:
-		*(sp - arg) = primMBTemp(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	neoPixelSend_op:
-		primNeoPixelSend(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	drawShape_op:
-		primMBDrawShape(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	shapeForLetter_op:
-		*(sp - arg) = primMBShapeForLetter(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	neoPixelSetPin_op:
-		primNeoPixelSetPin(arg, sp - arg);
-		POP_ARGS_COMMAND();
+	pushHugeInteger_op:
+		// push integer object that requires 32 bits
+		STACK_CHECK(1);
+		tmp = (uint16) *ip++; // least significant bits
+		tmp |= (uint16) *ip++ << 16; // most significant bits
+		*sp++ = (OBJ) tmp;
 		DISPATCH();
 
 	// new primitive call ops:
-	primitiveCommand_op:
-		tmp = (arg >> 17) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+	commandPrimitive_op:
+		tmp = (*ip >> 10) & 0x3F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
+		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	primitiveReporter_op:
-		tmp = (arg >> 17) & 0x7F; // primitive set index
-		tmpObj = (OBJ) (ip + ((arg >> 8) & 0x1FF)); // primitive name object
+	reporterPrimitive_op:
+		tmp = (*ip >> 10) & 0x3F; // primitive set index
+		tmpObj = (OBJ) (ip + (*ip & 0x3FF)); // primitive name object
+		ip++; // skip second instruction word
 		arg = arg & 0xFF; // argument count
 		*(sp - arg) = newPrimitiveCall(tmp, obj2str(tmpObj), arg, sp - arg);
 		POP_ARGS_REPORTER();
@@ -1347,7 +1314,7 @@ static void runTask(Task *task) {
 				task->sp = sp - task->stack; // record the stack pointer in case callee does a GC
 				if ((callee & 0xFFFFFF00) == 0xFFFFFF00) { // callee is a MicroBlocks function (i.e. a chunk index)
 					arg = ((callee & 0xFF) << 8) | paramCount;
-					goto callFunction_op;
+					goto callFunctionByName;
 				} else { // callee is a named primitive (i.e. a pointer to a C function)
 					tmpObj = ((PrimitiveFunction) callee)(paramCount, sp - paramCount); // call the primitive
 					tempGCRoot = NULL; // clear tempGCRoot in case it was used
@@ -1359,16 +1326,6 @@ static void runTask(Task *task) {
 		}
 		// failed: bad arguments
 		*sp++ = falseObj; // push a dummy return value
-		DISPATCH();
-
-	// named primitives:
-	callCommandPrimitive_op:
-		callPrimitive(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	callReporterPrimitive_op:
-		*(sp - arg) = callPrimitive(arg, sp - arg);
-		POP_ARGS_REPORTER();
 		DISPATCH();
 }
 

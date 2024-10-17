@@ -211,7 +211,7 @@ void startTaskForChunk(uint8 chunkIndex) {
 	tasks[i].taskChunkIndex = chunkIndex;
 	tasks[i].currentChunkIndex = chunkIndex;
 	tasks[i].code = chunks[chunkIndex].code;
-	tasks[i].ip = PERSISTENT_HEADER_WORDS; // relative to start of code
+	tasks[i].ip = 4; // offset is 4 short words (8 bytes) relative to start of the code chunk
 	tasks[i].sp = 0; // relative to start of stack
 	tasks[i].fp = 0; // 0 means "not in a function call"
 	if (i >= taskCount) taskCount = i + 1;
@@ -273,24 +273,25 @@ void stopAllTasksButThis(Task *thisTask) {
 
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)
 
-#define pushLiteral 4
-#define recvBroadcast 25
-#define initLocals 28
+#define pushLiteral 5
+#define initLocals 9
+#define recvBroadcast 41
 
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
-	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	int16 *code = (int16 *) (chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS);
 	// First three instructions of a broadcast hat should be:
 	//	initLocals
 	//	pushLiteral
+	//	(data: literal offset)
 	//	recvBroadcast
 	// A function with zero arguments can be also launched via a broadcast.
+
 	if ((initLocals != CMD(code[0])) ||
 		(pushLiteral != CMD(code[1])) ||
-		(recvBroadcast != CMD(code[2])))
+		(recvBroadcast != CMD(code[3])))
 			return false;
-
 	code++; // skip initLocals
-	char *s = obj2str((OBJ) code + ARG(*code) + 1);
+	char *s = obj2str((OBJ) (code + *(code + 1) + 1));
 	if (strlen(s) == 0) return true; // empty parameter in the receiver means "any message"
 	if (strlen(s) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
@@ -925,7 +926,7 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 	int msgSize = 1 + chunkBytes;
 	waitForOutbufBytes(5 + msgSize);
 	queueByte(251);
-	queueByte(chunkCodeMsg);
+	queueByte(chunkCode16Msg);
 	queueByte(chunkID);
 	queueByte(msgSize & 0xFF); // low byte of size
 	queueByte((msgSize >> 8) & 0xFF); // high byte of size
@@ -1105,7 +1106,7 @@ static void processShortMessage() {
 		sendPingNow(chunkIndex); // send a ping to acknowledge
 		break;
 	case startAllMsg:
-		if (0 != chunkIndex) break; // ignore msg from later VM
+		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
 		startAll();
 		break;
 	case stopAllMsg:
@@ -1120,7 +1121,7 @@ static void processShortMessage() {
 		sendVarNames();
 		break;
 	case clearVarsMsg:
-		if (0 != chunkIndex) break; // ignore msg from later VM
+		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
 		clearAllVariables();
 		memClear();
 		break;
@@ -1128,7 +1129,7 @@ static void processShortMessage() {
 		sendChunkCRC(chunkIndex);
 		break;
 	case getAllCRCsMsg:
-		if (0 != chunkIndex) break; // ignore msg from later VM
+		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		sendAllCRCs();
 		break;
@@ -1136,12 +1137,14 @@ static void processShortMessage() {
 		sendVersionString();
 		break;
 	case getAllCodeMsg:
-		if (0 != chunkIndex) break; // ignore msg from later VM
+		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
-		sendAllCode();
+		if (chunkIndex == 1) { // requested by 16-bit IDE
+			sendAllCode();
+		}
 		break;
 	case deleteAllCodeMsg:
-		if (0 != chunkIndex) break; // ignore msg from later VM
+		if (1 != chunkIndex) break; // ignore msg from 32-bit IDE
 		deleteAllChunks();
 		memClear();
 		primMBDisplayOff(0, NULL);
@@ -1188,7 +1191,7 @@ static void processLongMessage() {
 	int chunkIndex = rcvBuf[2];
 	int bodyBytes = msgLength - 1; // subtract terminator byte
 	switch (cmd) {
-	case chunkCodeMsg:
+	case chunkCode16Msg: // code chunk from 16-bit IDE
 		sendPingNow(chunkIndex); // send a ping to acknowledge receipt
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
 		sendChunkCRC(chunkIndex);
