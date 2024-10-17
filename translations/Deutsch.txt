@@ -3640,13 +3640,13 @@ If your micro:bit shows a sad face, save the firmware.hex file to your disk then
 Wenn dein Micro:bit ein trauriges Gesicht zeigt, speichere die Datei Firmware.hex auf deine Festplatte und lege sie dann auf dem MICROBIT-Laufwerk ab.
 
 Save the firmware file when prompted.
---MISSING--
+Die Firmware Datei lokal speichern.
 
 Drag the firmware file you just saved to the
---MISSING--
+Die gerade gespeicherte Firmware Datei auf das
 
 drive
---MISSING--
+Laufwerk ziehen
 
 Installing firmware...
 Installiere Firmware...
