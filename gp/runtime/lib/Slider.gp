@@ -78,7 +78,7 @@ method drawOn Slider ctx {
 		offset = (toInteger (frac * sliderRange))
 		sliderRect = (rect ((left morph) + offset) ((top morph) + padding) sliderSize thickness)
 	} (orientation == 'vertical') {
-		sliderSize = (* ((height (bounds morph)) / ceiling) scale 150)
+		sliderSize = (* ((height (bounds morph)) / (max ceiling 1)) scale 150)
 		sliderRange = ((height morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
 		sliderRect = (rect ((left morph) + padding) ((top morph) + offset) thickness sliderSize)

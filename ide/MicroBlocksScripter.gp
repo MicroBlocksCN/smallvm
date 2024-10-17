@@ -46,7 +46,7 @@ method initialize MicroBlocksScripter aProjectEditor {
 
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
-  setExtent (morph categorySelector) (140 * scale) 100
+  setExtent (morph categorySelector) (190 * scale) 100
   setMinExtent (morph categorySelector) (65 * scale) (60 * scale)
   setMaxExtent (morph categorySelector) (300 * scale) 0 // y is ignored
   addPart morph (morph categorySelector)
@@ -154,6 +154,7 @@ method darkModeChanged MicroBlocksScripter {
 method languageChanged MicroBlocksScripter {
   changed categorySelector
   updateLibraryHeader this
+  computeLibraryButtonSize this
   updateLibraryButton this
 
   // update the scripts
@@ -201,21 +202,30 @@ method fixLibraryHeaderLayout MicroBlocksScripter {
 }
 
 method updateLibraryButton MicroBlocksScripter {
+  scale = (global 'scale')
   if (isNil libAddIcons) {
 	bm1 = (readSVGIcon 'plus1')
 	bm2 = (readSVGIcon 'plus2')
 	libAddIcons = (array bm1 bm2)
   }
-  if ((width (morph categorySelector)) > 75) {
-	drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+  if ((width (morph categorySelector)) > (+ (data libAddButton) (24 * scale))) {
+	drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * scale) false true
   } else {
 	replaceCostumes libAddButton (at libAddIcons 1) (at libAddIcons 2) (at libAddIcons 2)
   }
 }
 
+method computeLibraryButtonSize MicroBlocksScripter {
+	costumes = (array (normalCostume libAddButton) (highlightCostume libAddButton))
+	drawLabelCostumes libAddButton (localized 'Add Library') nil (26 * (global 'scale')) false true
+	setData libAddButton (width (morph libAddButton))
+	replaceCostumes libAddButton (at costumes 1) (at costumes 2) (at costumes 2)
+}
+
 method makeAddLibraryButton MicroBlocksScripter {
   scale = (global 'scale')
   libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (26 * scale) false true)
+  setData libAddButton (width (morph libAddButton))
   setPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (36 * scale))
   addPart morph (morph libAddButton)
 }
