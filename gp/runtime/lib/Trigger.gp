@@ -107,6 +107,8 @@ method rightClicked Trigger {
 }
 
 method normalCostume Trigger { return normalCostume }
+method highlightCostume Trigger { return highlightCostume }
+method pressedCostume Trigger { return pressedCostume }
 
 method replaceCostumes Trigger normalBM highlightBM pressedBM {
   if (notNil normalBM) {

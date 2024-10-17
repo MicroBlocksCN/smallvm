@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 21 2024
+# Last updated: October 03 2024
 
 #########################
 # Blocks and categories #
@@ -32,9 +32,6 @@ Stoppuhr
 reset timer
 Stoppuhr zurücksetzen
 
-seconds
-Sekunden
-
 microseconds
 Mikrosekunden
 
@@ -43,24 +40,6 @@ Millisekunden
 
 board type
 Board-Typ
-
-BLE id
-BLE-ID
-
-BLE connected
-BLE verbunden
-
-version
-Version
-
-milliseconds since _
-Millisekunden seit _
-
-microseconds since _
-Mikrosekunden seit _
-
-end time _
-endet _
 
 connected to IDE
 mit IDE verbunden
@@ -226,6 +205,9 @@ _ ist ein(e) _
 
 convert _ to _
 wandle _ in _ um
+
+if _ then _ else _
+--MISSING--
 
 boolean
 Wahrheitswert
@@ -500,7 +482,7 @@ radio send string _
 Radio sende Zeichenfolge _
 
 Hello!
-Hallo!
+--MISSING--
 
 radio send pair _ = _
 Radio sende Paar _ = _
@@ -874,8 +856,11 @@ IR übertrage an Gerät _ Befehl _
 Keyboard and Mouse
 Tastatur und Maus
 
-press key _ : while holding _
-drücke Taste _ : solange _ gehalten
+press key _
+--MISSING--
+
+while holding _
+--MISSING--
 
 hold key _
 halte Taste _
@@ -898,8 +883,8 @@ Alt
 Logo / ⌘
 Logo
 
-AltGr 
 AltGr
+--MISSING--
 
 enter
 Enter
@@ -914,13 +899,13 @@ backspace
 Backspace
 
 delete
-Löschen
+löschen
 
 insert
 Einfügen
 
 home
-Ursprung
+gehe zum Ursprung
 
 end
 Ende
@@ -950,16 +935,16 @@ _ mouse click
 _ Mausklick
 
 left
-links
+--MISSING--
 
 right
-rechts
+--MISSING--
 
 middle
 Mitte
 
 both
-beide
+--MISSING--
 
 move mouse pointer by _ , _
 bewege Mauszeiger zu _ , _
@@ -1310,9 +1295,6 @@ defer display updates
 ####
 # TFT display library
 
-clear TFT display
-lösche TFT-Display
-
 enable TFT _
 aktiviere TFT
 
@@ -1608,19 +1590,19 @@ Chinese Cymbal
 Ride Bell
 --MISSING--
 
-Tambourine 
+Tambourine
 --MISSING--
 
 Splash Cymbal
 --MISSING--
 
-Cowbell 
+Cowbell
 --MISSING--
 
 Crash Cymbal 2
 --MISSING--
 
-Vibraslap 
+Vibraslap
 --MISSING--
 
 Ride Cymbal 2
@@ -1656,7 +1638,7 @@ Low Agogo
 Cabasa
 --MISSING--
 
-Maracas 
+Maracas
 --MISSING--
 
 Short Whistle
@@ -1671,7 +1653,7 @@ Short Guiro
 Long Guiro
 --MISSING--
 
-Claves 
+Claves
 --MISSING--
 
 Hi Wood Block
@@ -1694,7 +1676,7 @@ Open Triangle
 
 # General MIDI instrument categories
 
-piano 
+piano
 --MISSING--
 
 chromatic percussion
@@ -1721,7 +1703,7 @@ brass
 reed
 --MISSING--
 
-pipe 
+pipe
 --MISSING--
 
 synth lead
@@ -1739,7 +1721,7 @@ ethnic
 percussive
 --MISSING--
 
-SFX 
+SFX
 --MISSING--
 
 # General MIDI drum sets
@@ -1753,7 +1735,7 @@ room
 power
 --MISSING--
 
-electronic 
+electronic
 --MISSING--
 
 TR-808
@@ -1768,7 +1750,7 @@ brush
 orchestra
 --MISSING--
 
-SFX 
+SFX
 --MISSING--
 
 CM-64/CM-32L
@@ -1782,7 +1764,7 @@ bank select 1
 bank select 2
 --MISSING--
 
-modulation 
+modulation
 --MISSING--
 
 portamento time
@@ -1809,7 +1791,7 @@ sostenuto
 soft
 --MISSING--
 
-resonance 
+resonance
 --MISSING--
 
 release time
@@ -1818,7 +1800,7 @@ release time
 attack time
 --MISSING--
 
-cutoff 
+cutoff
 --MISSING--
 
 decay time
@@ -1847,13 +1829,22 @@ effect 2
 play MIDI note _ for _ ms on channel _ volume _
 spiele MIDI-Note _ für _ ms auf Kanal _ Lautstärke _
 
+stop all notes on channel _
+--MISSING--
+
 set MIDI note _ to _ on channel _ volume _
 setze MIDI-Note _ auf _ auf Kanal _ Lautstärke _
 
 note _ octave _ to MIDI key
 --MISSING--
 
+select MIDI instrument _ number _ for channel _
+--MISSING--
+
 select MIDI instrument _ for channel _
+--MISSING--
+
+variation _
 --MISSING--
 
 instrument _ number _
@@ -1922,7 +1913,7 @@ locrian
 major
 --MISSING--
 
-minor 
+minor
 --MISSING--
 
 # chord types
@@ -1942,7 +1933,7 @@ major 7th
 minor 7th
 --MISSING--
 
-Maj7 
+Maj7
 --MISSING--
 
 # sound destinations for arpeggiate block
@@ -1950,7 +1941,7 @@ Maj7
 MIDI channel
 --MISSING--
 
-tone pin 
+tone pin
 --MISSING--
 
 # library blocks
@@ -2488,7 +2479,7 @@ register event _ type _
 registriere Ereignis _ Typ _
 
 start WebThing server
-starte WebThing Server
+starte WebThing-Server
 
 trigger event _
 löse Ereignis _ aus
@@ -2572,6 +2563,129 @@ MiKe rotate lights by _
 --MISSING--
 
 MiKe digital D8 to _
+--MISSING--
+
+####
+# Shield:bit
+
+s꞉b LEDs off
+--MISSING--
+
+s꞉b LEDs to _
+--MISSING--
+
+s꞉b LED _ (1-4) to _
+--MISSING--
+
+s꞉b audio output to shield _
+--MISSING--
+
+s꞉b stop _
+--MISSING--
+
+s꞉b turn 180 servo S- _ (1-8) to angle _
+--MISSING--
+
+s꞉b turn 360 servo S- _ (1-8) _ at _ %
+--MISSING--
+
+s꞉b turn DC M- _ (1-4) motor _ at _ %
+--MISSING--
+
+s꞉b turn Stepper- _ (1-2) motor _ for _ _
+--MISSING--
+
+s꞉b set pin S- _ (1-8) to _ %
+--MISSING--
+
+sb_DC/Stepper_motors
+--MISSING--
+
+sb_servomotors
+--MISSING--
+
+sb_all_motors
+--MISSING--
+
+turns
+--MISSING--
+
+degrees
+--MISSING--
+
+####
+# micro:STEAMakers
+
+m꞉s display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _
+--MISSING--
+
+m꞉s display #BR# _ #BR# with color _
+--MISSING--
+
+m꞉s display image _ with color _
+--MISSING--
+
+m꞉s clear display
+--MISSING--
+
+m꞉s scale brightness to _ %
+--MISSING--
+
+m꞉s plot x _ y _ with _
+--MISSING--
+
+m꞉s unplot x _ y _
+--MISSING--
+
+m꞉s display character _ with _
+--MISSING--
+
+m꞉s scroll text _ with color _ 
+--MISSING--
+
+m꞉s stop scrolling
+--MISSING--
+
+start micro꞉STEAMakers audio
+--MISSING--
+
+m꞉s button _ ?
+--MISSING--
+
+m꞉s touching ?
+--MISSING--
+
+m꞉s light %
+--MISSING--
+
+m꞉s sound %
+--MISSING--
+
+m꞉s temperature ºC
+--MISSING--
+
+m꞉s humidity %
+--MISSING--
+
+m꞉s inclination towards _ º
+--MISSING--
+
+m꞉s energy _
+--MISSING--
+
+m꞉s _ energy meter
+--MISSING--
+
+m꞉s energy consumption (µWh)
+--MISSING--
+
+start
+--MISSING--
+
+reset
+--MISSING--
+
+down
 --MISSING--
 
 ####
@@ -2741,6 +2855,132 @@ at _ % speed
 --MISSING--
 
 3dBot line on _ ?
+--MISSING--
+
+####
+# ESP32 Smart Farm
+
+voltage (V)
+--MISSING--
+
+current (mA)
+--MISSING--
+
+power (mW)
+--MISSING--
+
+open
+--MISSING--
+
+close
+--MISSING--
+
+on
+--MISSING--
+
+off
+--MISSING--
+
+Farm fan _
+--MISSING--
+
+start
+--MISSING--
+
+Farm display _ in line _
+--MISSING--
+
+Farm _ the trapdoor
+--MISSING--
+
+Farm play _ octave _ for _ ms
+--MISSING--
+
+Farm set light _
+--MISSING--
+
+Farm water pump _
+--MISSING--
+
+Farm temperature ºC
+--MISSING--
+
+Farm humidity
+--MISSING--
+
+Farm movement detected?
+--MISSING--
+
+Farm button pressed?
+--MISSING--
+
+Farm distance (cm)
+--MISSING--
+
+Farm light level
+--MISSING--
+
+Farm water level
+--MISSING--
+
+Farm soil moisture
+--MISSING--
+
+Farm steam level
+--MISSING--
+
+Farm electric consumption _
+--MISSING--
+
+####
+# ESP32 Smart Home
+
+Home fan _
+--MISSING--
+
+Home display _ in line _
+--MISSING--
+
+Home _ the window
+--MISSING--
+
+Home activate the door
+--MISSING--
+
+Home play _ octave _ for _ ms
+--MISSING--
+
+Home set light _
+--MISSING--
+
+Home temperature ºC
+--MISSING--
+
+Home humidity
+--MISSING--
+
+Home steam level
+--MISSING--
+
+Home read RFID card
+--MISSING--
+
+Home movement detected?
+--MISSING--
+
+Home _ button pressed?
+--MISSING--
+
+Home gas detected?
+--MISSING--
+
+Home set NeoPixels _ _ _ _
+--MISSING--
+
+Home clear leds
+--MISSING--
+
+Home electric consumption _
 --MISSING--
 
 ####
@@ -3073,13 +3313,19 @@ Octopus OLED fill circle x _ y _ radius _
 ####
 # OctoStudio
 
-Octo start
---MISSING--
-
 Octo beam to phones _
 --MISSING--
 
 duration _ ms
+--MISSING--
+
+Octo beam received?
+--MISSING--
+
+Octo last beam
+--MISSING--
+
+Octo set group _ (0-99)
 --MISSING--
 
 Octo receive beam
@@ -3393,6 +3639,15 @@ als Ziellaufwerk, und klicke dann auf Speichern.
 If your micro:bit shows a sad face, save the firmware.hex file to your disk then drop it onto the MICROBIT drive.
 Wenn dein Micro:bit ein trauriges Gesicht zeigt, speichere die Datei Firmware.hex auf deine Festplatte und lege sie dann auf dem MICROBIT-Laufwerk ab.
 
+Save the firmware file when prompted.
+Die Firmware Datei lokal speichern.
+
+Drag the firmware file you just saved to the
+Die gerade gespeicherte Firmware Datei auf das
+
+drive
+Laufwerk ziehen
+
 Installing firmware...
 Installiere Firmware...
 
@@ -3671,6 +3926,9 @@ Bestätigen
 
 # Library folders
 
+LIBRARIES
+MODULE
+
 Libraries
 Module
 
@@ -3682,9 +3940,6 @@ Displays und Anzeigen
 
 Kits and Boards
 Kits und Boards
-
-Motors
-Motoren
 
 Network
 Netzwerk

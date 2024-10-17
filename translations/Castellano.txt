@@ -3929,6 +3929,9 @@ Confirmación
 
 # Library folders
 
+LIBRARIES
+LIBRERÍAS
+
 Libraries
 Librerías
 
