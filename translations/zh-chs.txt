@@ -4531,6 +4531,12 @@ light mode
 dark mode
 深色模式
 
+keyboard event
+键盘事件
+
+broadcast keyboard event(for debugging only)
+广播键盘事件(仅用于调试)
+
 AI
 人工智能
 
