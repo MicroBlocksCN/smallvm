@@ -26,7 +26,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode keyboardEvent
 
 method scriptingActionsContainer MicroBlocksEditor { return scriptingActionsContainer }
 method fileName MicroBlocksEditor { return fileName }
@@ -996,6 +996,9 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'showImplementationBlocks')) {
 		showHiddenBlocks = (at prefs 'showImplementationBlocks')
 	}
+  if (notNil (at prefs 'keyboardEvent')) {
+		keyboardEvent = (at prefs 'keyboardEvent')
+	}
 	if (notNil (at prefs 'darkMode')) {
 		darkMode = (at prefs 'darkMode')
 	}
@@ -1053,6 +1056,16 @@ method toggleDarkMode MicroBlocksEditor {
 
 method darkModeEnabled MicroBlocksEditor {
 	return (darkMode == true)
+}
+
+method toggleKeyboardEvent MicroBlocksEditor {
+	keyboardEvent = (not (keyboardEventEnabled this))
+	saveToUserPreferences this 'keyboardEvent' keyboardEvent
+	// keyboardEventChanged scripter
+}
+
+method keyboardEventEnabled MicroBlocksEditor {
+	return (keyboardEvent == true)
 }
 
 // developer mode
@@ -1208,6 +1221,8 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 
 	addLine menu
 	addItem menu 'dark mode' (action 'toggleDarkMode' this false) 'make the IDE darker' (newCheckmark this (darkModeEnabled this))
+  addItem menu 'keyboard event' (action 'toggleKeyboardEvent' this false) 'broadcast keyboard event(for debugging only)' (newCheckmark this (keyboardEventEnabled this))
+
   }
   return menu
 }
