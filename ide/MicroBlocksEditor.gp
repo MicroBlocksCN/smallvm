@@ -26,7 +26,7 @@ to uload fileName {
 	return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer indicator nextIndicatorUpdateMSecs connectionName progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode keyboardEvent
 
 method scriptingActionsContainer MicroBlocksEditor { return scriptingActionsContainer }
 method fileName MicroBlocksEditor { return fileName }
@@ -1007,6 +1007,9 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'showImplementationBlocks')) {
 		showHiddenBlocks = (at prefs 'showImplementationBlocks')
 	}
+  if (notNil (at prefs 'keyboardEvent')) {
+		keyboardEvent = (at prefs 'keyboardEvent')
+	}
 	if (notNil (at prefs 'darkMode')) {
 		darkMode = (at prefs 'darkMode')
 	}
@@ -1064,6 +1067,16 @@ method toggleDarkMode MicroBlocksEditor {
 
 method darkModeEnabled MicroBlocksEditor {
 	return (darkMode == true)
+}
+
+method toggleKeyboardEvent MicroBlocksEditor {
+	keyboardEvent = (not (keyboardEventEnabled this))
+	saveToUserPreferences this 'keyboardEvent' keyboardEvent
+	// keyboardEventChanged scripter
+}
+
+method keyboardEventEnabled MicroBlocksEditor {
+	return (keyboardEvent == true)
 }
 
 // developer mode
@@ -1173,40 +1186,10 @@ method gearMenu MicroBlocksEditor {
 	addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
 	addLine menu
 	addItem menu 'dark mode' (action 'toggleDarkMode' this false) 'make the IDE darker' (newCheckmark this (darkModeEnabled this))
-	addItem menu 'advanced mode' 'toggleAdvancedMode' 'show advanced blocks, menu items and editor functionalities' (newCheckmark this (devMode))
+  addItem menu 'keyboard event' (action 'toggleKeyboardEvent' this false) 'broadcast keyboard event(for debugging only)' (newCheckmark this (keyboardEventEnabled this))
 
-	if (devMode) {
-		addLine menu
-		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)' (newCheckmark this (showHiddenBlocksEnabled this))
-		addItem menu 'autoload board libraries' (action 'toggleBoardLibAutoLoad' this) nil (newCheckmark this (not (boardLibAutoLoadDisabled this)))
-// Does anyone ever enable 'PlugShare when project empty'?
-		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
-		addLine menu
-		addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime))
-		addItem menu 'install ESP firmware from microblocks.fun' (action 'installESPFirmwareFromRepo' (smallRuntime))
-		addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
-		addLine menu
-		addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
-
-		if (boardIsBLECapable (smallRuntime)) {
-			addLine menu
-			addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
-		}
-
-// Let's deprecate the HTTP server since it doesn't work in browser?
-// Don't think anyone is using it now that we have so many other ways to communicate.
-// And we might not want to -- or be able to -- implement it when we rewrite MicroBlocks.
-//		if ('Browser' != (platform)) {
-//			addLine menu
-//			if (not (isRunning httpServer)) {
-//				addItem menu 'start HTTP server' 'startHTTPServer'
-//			} else {
-//				addItem menu 'stop HTTP server' 'stopHTTPServer'
-//			}
-//		}
-
-	}
-	return menu
+  }
+  return menu
 }
 
 method downloadTest MicroBlocksEditor {
