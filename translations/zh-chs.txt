@@ -3856,10 +3856,67 @@ Ambient Light
 环境光强
 
 Returns the battery percentage of CoCube.
-返回CoCube电量百分比
+返回 CoCube 电量百分比
 
 Returns (-o) if CoCube on the CoMap.
-如果CoCube在垫上，则返回 (-o)
+如果 CoCube 在垫上，则返回 (-o)
+
+Returns the Index value of CoTag.
+返回 CoTag 的 Index 值
+
+Returns the X coordinate of CoCube.
+返回 CoCube 的 X 坐标
+
+Returns the Y coordinate of CoCube.
+返回 CoCube 的 Y 坐标
+
+Returns the rotation angle of CoCube (0~359°).
+返回 CoCube 的旋转角度 (0~359°)
+
+Turn on/off the TFT backlight.
+开启/关闭 TFT 屏幕背光
+
+Display an ArUco Marker on the TFT screen.
+在 TFT 屏幕上显示 ArUco 标签
+
+Display an AprilTag Marker on the TFT screen.
+在 TFT 屏幕上显示 AprilTag 标签
+
+Move CoCube at unit/s speed.
+CoCube 以 unit/s 的速度移动
+
+Rotate CoCube at unit/s speed.
+CoCube 以unit/s 的速度转动
+
+Move CoCube at unit/s speed for milliseconds.
+CoCube 以 unit/s 的速度移动一定时间（毫秒）
+
+Rotate CoCube at unit/s speed for milliseconds.
+CoCube 以 unit/s 的速度转动一定时间（毫秒）
+
+Move CoCube at unit/s speed for a specific distance.
+CoCube 以 unit/s 的速度移动一定距离（unit）
+
+Rotate CoCube at unit/s speed for a specific degree.
+CoCube 以 unit/s 的速度转动一定角度（°）
+
+Control the speed of the left and right wheels of CoCube separately.
+分别控制 CoCube 左右轮的速度
+
+Control CoCube stop.
+控制 CoCube 停止移动
+
+Control CoCube break.
+控制 CoCube 快速刹车
+
+Turn to a specific angle.
+转向特定角度
+
+Turn to a specific target.
+转向特定目标点
+
+Move to a specific target.
+移动到指定目标点处
 
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
