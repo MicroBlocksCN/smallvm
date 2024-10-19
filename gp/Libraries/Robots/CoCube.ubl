@@ -1,6 +1,6 @@
 module CoCube
 author 'Liang Shuai'
-version 2 1 
+version 2 3
 depends Tone Ringtone TFT Display 'Motors/PID' 
 tags 'cocube机器人' 
 choices rotate_Menu left right 
@@ -10,6 +10,7 @@ v1.0 基本功能
 v2.0 全面增加编码器控制电机的功能
 v2.1 修复一些广播造成的bug
 v2.2 提高定位精度为1/128
+v2.3 增加积木提示
 '
 variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
 
