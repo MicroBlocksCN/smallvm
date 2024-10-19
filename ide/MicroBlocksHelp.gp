@@ -372,6 +372,10 @@ method initialize MicroBlocksHelp {
         (array '_cbpro_getOrientation' '/extension_libraries/cutebotpro#_cbpro_getorientation' 'Returns orientation of car.')
         (array '_cbpro_readEncoders' '/extension_libraries/cutebotpro#_cbpro_readencoders' 'Reads encoder values and sets variables _cbpro_leftCount and _cbpro_rightCount.')
 
+		// CoCube
+		(array 'CoCube Battery Percentage' '/extension_libraries/cocube#cocube-battery-percentage' 'Returns the battery percentage of CoCube.')
+		(array 'CoCube On The Mat' '/extension_libraries/cocube#cocube-on-the-mat' 'Returns (-o) if CoCube on the CoMap.')
+
 		// PID
 		(array 'pid_computePID' '/extension_libraries/pid#compute-pid' 'Compute the next PID correction for the specified PID loop.')
 		(array 'pid_resetPID' '/extension_libraries/pid#reset-pid' 'Reset the specified PID loop.')
