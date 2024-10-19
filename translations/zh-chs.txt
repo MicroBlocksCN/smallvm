@@ -3855,6 +3855,12 @@ Ultrasonic distance (cm)
 Ambient Light
 环境光强
 
+Returns the battery percentage of CoCube.
+返回CoCube电量百分比
+
+Returns (-o) if CoCube on the CoMap.
+如果CoCube在垫上，则返回 (-o)
+
 #### Four Digit Display (TM1637)
 Four Digit Display (TM1637)
 4位数码管(TM1637)
