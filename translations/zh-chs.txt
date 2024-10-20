@@ -4217,20 +4217,8 @@ compact code store
 autoload board libraries
 自动加载和主板相关的积木库
 
-autoload board libraries
-自动加载和主板相关的积木库
-
 PlugShare when project empty
 项目为空时从主板里获取代码
-
-The firmware on the board is not compatible with this version of MicroBlocks.
-主板上的固件与此版本的 MicroBlocks 不兼容
-
-enable PlugShare when project empty
-允许项目为空时从主板里获取代码
-
-disable PlugShare when project empty
-禁止项目为空时从主板里获取代码
 
 hide implementation blocks
 隐藏实现块
