@@ -2409,8 +2409,8 @@ static int readDigitalMicrophone() {
 	return result;
 }
 
-#elif defined(M5_CARDPUTER) 
-// || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2)
+#elif defined(M5_CARDPUTER)  || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C) \
+|| defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 
 #define USE_DIGITAL_MICROPHONE 1
 
@@ -2423,6 +2423,9 @@ static int readDigitalMicrophone() {
 #elif defined(FUTURE_LITE)
 	#define PIN_CLK  39
 	#define PIN_DATA 41
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#define PIN_CLK  33
+	#define PIN_DATA 23
 #elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) 
 	#define PIN_CLK  0
 	#define PIN_DATA 34
@@ -2444,7 +2447,7 @@ void initI2SMicrophone() {
 	.sample_rate = 22050,
 	.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // is fixed at 12bit, stereo, MSB
 	.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
-	.communication_format = I2S_COMM_FORMAT_I2S,
+	.communication_format = I2S_COMM_FORMAT_STAND_I2S,
 	.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
 	.dma_buf_count = 2,
 	.dma_buf_len = 8,
