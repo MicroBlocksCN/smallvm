@@ -1,7 +1,7 @@
 module '未来科技盒v2.0'
 author '邵悦'
-version 1 4 
-depends Tone Servo 
+version 1 6 
+depends Tone Servo 'Temperature Humidity (DHT11, DHT22)' 
 choices PosMenu left right 
 choices ServoMenu s1 s2 
 description '未来科技盒 2.0 驱动
@@ -14,7 +14,7 @@ grove 端口映射
 超声波，巡线，舵机
 yue.shao@gmail.com
 '
-variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_last zeroCount _tx_line_pins 
+variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_last zeroCount _tx_line_pins _veml6040_addr 
 
   spec ' ' '点亮所有LED' '点亮所有LED'
   spec ' ' '熄灭所有LED' '熄灭所有LED'
@@ -33,6 +33,27 @@ variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_l
   spec 'r' '_get_led_status x' '_get_led_status x _ y _' 'auto auto' 1 1
   spec ' ' '_leds_loop' '_leds_loop'
   spec ' ' '_tx_box_init' '_tx_box_init'
+  spec 'r' '光线传感器连到端口grove' '光线传感器连到端口grove _' 'auto' 6
+  spec 'r' '_get_grove_port_pin' '_get_grove_port_pin _ B? _' 'auto bool' 3 true
+  spec 'r' '声音传感器连接到端口grove' '声音传感器连接到端口grove _' 'auto' 3
+  spec 'r' '温度传感器连接到端口grove' '温度传感器连接到端口grove _' 'auto' 3
+  spec 'r' '湿度传感器连接到端口grove' '湿度传感器连接到端口grove _' 'auto' 3
+  spec 'r' 'veml6040_get_white' 'veml6040_get_white'
+  spec 'r' '_vem6040_read2bytes' '_veml6040_read2bytes _' 'auto' '10'
+  spec 'r' 'veml6040_get_RGB_color' 'veml6040_get_RGB_color'
+  spec 'r' 'veml6040_get_color_data' 'veml6040_get_color_data'
+  spec ' ' '_veml6040_init' '_veml6040_init'
+
+to '_get_grove_port_pin' pin foo {
+  '_tx_box_init'
+  if (isType pin 'number') {
+    pin = (tx_getPort pin)
+  }
+  if (isType pin 'list') {
+    pin = (ifExpression foo (at 'last' pin) (at 1 pin))
+  }
+  return pin
+}
 
 to '_get_led_status x' foo bar {
   return ((at (((bar - 1) * 3) + foo) _leds_status) == 1)
@@ -77,6 +98,9 @@ to '_tx_motor pos' foo bar {
 左侧 速度正 前进
 右边 速度负 前进'
   foo = (minimum 4 (maximum 1 foo))
+  if (bar != 0) {
+    waitMillis 10
+  }
   if ((foo % 2) == 0) {
     bar = (0 - bar)
   }
@@ -89,10 +113,26 @@ to '_tx_motor pos' foo bar {
   }
 }
 
+to '_vem6040_read2bytes' foo {
+  '[sensors:i2cWrite]' _veml6040_addr foo false
+  local 'var' (newList 2)
+  '[sensors:i2cRead]' _veml6040_addr var
+  return (((at 2 var) << 8) | (at 1 var))
+}
+
+to '_veml6040_init' {
+  if (_veml6040_addr != 0) {return 0}
+  _veml6040_addr = (hexToInt '10')
+  comment '320ms integration time
+auto mode
+ color sensor enable1'
+  '[sensors:i2cWrite]' _veml6040_addr ('[data:makeList]' (hexToInt '00') (hexToInt '30') (hexToInt '00'))
+}
+
 to 'tx distance cm' pin {
   '_tx_box_init'
   if (isType pin 'number') {
-    pin = (tx_getPort 4)
+    pin = (tx_getPort pin)
   }
   if (isType pin 'list') {
     pin = (at 'last' pin)
@@ -124,7 +164,12 @@ to 'tx distance cm' pin {
 
 to 'tx set line port' foo {
   '_tx_box_init'
-  _tx_line_pins = (tx_getPort foo)
+  if (isType foo 'number') {
+    _tx_line_pins = (tx_getPort foo)
+  }
+  if (isType foo 'list') {
+    _tx_line_pins = foo
+  }
 }
 
 to 'tx setLED x' foo bar baz {
@@ -148,8 +193,37 @@ to tx_mcar_move x y z {
   }
   '_tx_motor pos' 2 (maximum -100 (minimum 100 ((y + x) - z)))
   '_tx_motor pos' 1 (maximum -100 (minimum 100 ((y - x) + z)))
+  waitMillis 10
   '_tx_motor pos' 3 (maximum -100 (minimum 100 ((y + x) + z)))
   '_tx_motor pos' 4 (maximum -100 (minimum 100 ((y - x) - z)))
+}
+
+to veml6040_get_RGB_color {
+  local 'var' (veml6040_get_color_data)
+  local 'max' (maximum (at 1 var) (at 2 var) (at 3 var))
+  return ((((((at 1 var) * 255) / max) << 16) | ((((at 2 var) * 255) / max) << 8)) | (((at 3 var) * 255) / max))
+}
+
+to veml6040_get_color_data {
+  local 'rtdata' (newList 0)
+  '_veml6040_init'
+  '[data:addLast]' ('_vem6040_read2bytes' (hexToInt '08')) rtdata
+  '[data:addLast]' ('_vem6040_read2bytes' (hexToInt '09')) rtdata
+  '[data:addLast]' ('_vem6040_read2bytes' (hexToInt '0A')) rtdata
+  '[data:addLast]' ('_vem6040_read2bytes' (hexToInt '0B')) rtdata
+  return rtdata
+}
+
+to veml6040_get_white {
+  return (at 4 (veml6040_get_color_data))
+}
+
+to '光线传感器连到端口grove' pin {
+  return (analogReadOp ('_get_grove_port_pin' pin true))
+}
+
+to '声音传感器连接到端口grove' pin {
+  return (analogReadOp ('_get_grove_port_pin' pin true))
 }
 
 to '巡线传感器' lr {
@@ -165,6 +239,14 @@ to '巡线传感器' lr {
 to '巡线状态' leftSide rightSide {
   comment '在线上是指检测到在黑线上'
   return (and (leftSide == ('巡线传感器' 'left')) (rightSide == ('巡线传感器' 'right')))
+}
+
+to '温度传感器连接到端口grove' pin {
+  return (temperature_DHT11 ('_get_grove_port_pin' pin true))
+}
+
+to '湿度传感器连接到端口grove' foo {
+  return (humidity_DHT11 ('_get_grove_port_pin' foo true))
 }
 
 to '点亮所有LED' {
