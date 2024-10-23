@@ -1,7 +1,8 @@
 module 'LUWU CykeBot'
 author '邵悦'
-version 1 6 
-depends NeoPixel Servo 'LED Display' 'Graphics and Displays/Color'
+version 1 78 
+depends NeoPixel 'LED Display' 'Graphics and Displays/TFT' Tune 
+choices lineMenu L2 L1 R1 R2 
 description 'LUWU CykeBot 陆吾智能 赛克号
 TT 电机
 4路巡线
@@ -9,13 +10,15 @@ TT 电机
 3路舵机
 6轴加速计
 '
-variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data 
+variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data _servoPulseWidth _servoPin 
 
   spec ' ' '_motor' '_motor _ speed _' 'auto num' 1 50
   spec ' ' 'cykebot wheel L' '赛克号设置左轮速度为 _ 右轮速度为 _ （-100~100)' 'auto auto' 50 50
   spec ' ' 'cykebot stop' '赛克号 停止'
   spec 'r' '_cykebot_linetracking' '_cykebot_linetracking _' 'auto' 1
   spec 'r' 'cyke see center line' '赛克号巡线探头状态是(左 ... 右)  _ _ _ _' 'bool bool bool bool' true true true true
+  spec 'r' '赛克号巡线探头L1和R1的状态是' '赛克号巡线探头L1和R1的状态是 _ _' 'bool bool' true true
+  spec 'r' '赛克号巡线探头' '赛克号巡线探头 _ 的状态是 _' 'menu.lineMenu bool' 'L1' true
   spec ' ' '_cykebot_init' '_cykebot_init'
   spec ' ' 'cykebot set RGB all' '赛克号 设置所有 RGB 彩灯颜色 _' 'color'
   spec ' ' 'cykebot clear RGB' '赛克号 关闭所有 RGB 彩灯'
@@ -33,6 +36,10 @@ variables _cyke_bot_init _ICM4257_init_num _ICM4267_accl_data
   spec 'r' 'ICM4267_tiltZ' '赛克号 倾角Z'
   spec 'r' '赛克号 检测颜色' '赛克号 检测颜色'
   spec 'r' '赛克号 获取颜色' '赛克号 获取颜色 RGB'
+  spec ' ' '_setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
+  spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+  spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
+  spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
 
 to ICM4267_Temperature {
   '_ICM4267_init'
@@ -139,6 +146,68 @@ to '_motor' num speed {
   }
 }
 
+to '_servoIndex' which {
+  if (_servoPin == 0) {
+    _servoPin = ('[data:makeList]')
+    _servoPulseWidth = ('[data:makeList]')
+    sendBroadcast '_servoUpdateLoop'
+  }
+  local 'i' ('[data:find]' which _servoPin)
+  if (i < 0) {
+    comment 'Add new pin'
+    '[data:addLast]' which _servoPin
+    '[data:addLast]' '1500' _servoPulseWidth
+    i = (size _servoPin)
+  }
+  return i
+}
+
+to '_servoPulse' pin usecs {
+  if (usecs == 0) {
+    comment 'Servo stopped; do nothing'
+    return 0
+  }
+  usecs = (maximum 850 (minimum usecs 2150))
+  comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
+  local 'endTime' ((microsOp) + usecs)
+  digitalWriteOp pin true
+  waitMicros (usecs - 30)
+  waitMicros (endTime - (microsOp))
+  digitalWriteOp pin false
+}
+
+to '_servoUpdateLoop' {
+  forever {
+    if (_servoPin != 0) {
+      comment 'If the _servoPin list is not 0, update the servos'
+      for i (size _servoPin) {
+        local 'pin' (at i _servoPin)
+        local 'usecs' (at i _servoPulseWidth)
+        if (and (pin >= 0) (usecs != 0)) {
+          '_servoPulse' pin usecs
+        }
+      }
+      waitMillis 15
+    }
+  }
+}
+
+to '_setServoAngle' which degrees optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    degrees = (0 - degrees)
+  }
+  local 'pulseWidth' (1500 - (10 * degrees))
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
 to 'cyke see center line' foo bar baz quux {
   return (and (and (('_cykebot_linetracking' 1) == foo) (('_cykebot_linetracking' 2) == bar)) (and (('_cykebot_linetracking' 3) == baz) (('_cykebot_linetracking' 4) == quux)))
 }
@@ -191,7 +260,7 @@ to distance {
 }
 
 to servo foo angle {
-  setServoAngle (at (minimum 3 (maximum 1 foo)) ('[data:makeList]' 27 14 12)) ('[misc:rescale]' angle -140 140 -50 50)
+  '_setServoAngle' (at (minimum 3 (maximum 1 foo)) ('[data:makeList]' 27 14 12)) ('[misc:rescale]' angle -140 140 -50 50)
 }
 
 to '赛克号 检测颜色' {
@@ -223,5 +292,13 @@ to '赛克号 获取颜色' {
   local 'var' ('_CykeBot_color_get_rawdata')
   local 'max' (maximum (at 1 var) (at 2 var) (at 3 var))
   return ((((((at 1 var) * 255) / max) << 16) | ((((at 2 var) * 255) / max) << 8)) | (((at 3 var) * 255) / max))
+}
+
+to '赛克号巡线探头' foo bar {
+  return (('_cykebot_linetracking' ('[data:find]' foo ('[data:makeList]' 'L2' 'L1' 'R1' 'R2'))) == bar)
+}
+
+to '赛克号巡线探头L1和R1的状态是' foo bar {
+  return (and (('_cykebot_linetracking' 2) == foo) (('_cykebot_linetracking' 3) == bar))
 }
 

@@ -1,6 +1,6 @@
 module M5FireKits Input
 author '邵悦'
-version 1 0 
+version 1 1 
 depends NeoPixel 
 tags m5fire 
 description 'M5Core Fire kits pinout
@@ -11,7 +11,8 @@ Mic 34
 PortA Red 21/22 
 PortB Black 26/36 36 input only
 PortC Blue 17/16
-视频说明：https://www.bilibili.com/video/BV1Za4y1G7MZ/'
+视频说明：https://www.bilibili.com/video/BV1Za4y1G7MZ/
+'
 variables _m5go_init_flag _np_pixels 
 
   spec 'r' 'buttonC' 'buttonC'
@@ -29,6 +30,7 @@ variables _m5go_init_flag _np_pixels
   spec ' ' '_m5go_init' '_m5go_init'
   spec 'r' 'MicPin34' '_MicPin34'
   spec ' ' 'Screen' 'Screen _' 'bool' true
+  spec 'r' 'M5Core battery level' 'M5Core battery level'
 
 to IRPin {
   comment 'm5go 底座红外发射 13'
@@ -38,6 +40,25 @@ to IRPin {
 to LEDLightPin15 {
   comment 'm5go 底座(10 LED)灯带 15'
   return 15
+}
+
+to 'M5Core battery level' {
+  local 'var' (i2cGet (hexToInt '75') (hexToInt '78'))
+  if (var < 0) {
+    return -1
+  }
+  var = (var & (hexToInt 'F0'))
+  if (var == (hexToInt '00')) {
+    return 100
+  } (var == (hexToInt '80')) {
+    return 75
+  } (var == (hexToInt 'C0')) {
+    return 50
+  } (var == (hexToInt 'E0')) {
+    return 25
+  } else {
+    return 0
+  }
 }
 
 to MicPin34 {
