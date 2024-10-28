@@ -1370,18 +1370,20 @@ method languageMenu MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	for fn (sorted (listFiles 'translations')) {
 	  fn = (withoutExtension fn)
-	  language = (withoutExtension fn)
-	  addItem menu language (action 'setLanguage' this language)
+	  langCode = (withoutExtension fn)
+	  language = (languageNameForCode (authoringSpecs) langCode)
+	  addItem menu language (action 'setLanguage' this langCode)
 	}
   } else {
 	for fn (sorted (listEmbeddedFiles)) {
 	  fn = (withoutExtension fn)
 	  if (beginsWith fn 'translations/') {
-		language = (withoutExtension (substring fn 14))
+		langCode = (withoutExtension (substring fn 14))
+		language = (languageNameForCode (authoringSpecs) langCode)
 		if (language == (language (authoringSpecs))) {
-		  addItem menu language (action 'setLanguage' this language) nil (newCheckmark this true)
+		  addItem menu language (action 'setLanguage' this langCode) nil (newCheckmark this true)
 		} else {
-		  addItem menu language (action 'setLanguage' this language)
+		  addItem menu language (action 'setLanguage' this langCode)
 		}
 	  }
 	}
@@ -1393,10 +1395,9 @@ method languageMenu MicroBlocksEditor {
   popUpAtHand menu (global 'page')
 }
 
-method setLanguage MicroBlocksEditor newLangOrCode {
-  newLang = (languageNameForCode (authoringSpecs) newLangOrCode)
-  saveToUserPreferences this 'locale' newLang
-  setLanguage (authoringSpecs) newLang
+method setLanguage MicroBlocksEditor langCode {
+  saveToUserPreferences this 'locale' langCode
+  setLanguage (authoringSpecs) langCode
   languageChanged this
 }
 

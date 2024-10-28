@@ -26,7 +26,7 @@ if test -n "$help"; then
     echo "                              will be embedded into the IDE."
     echo "--tools                       Automatically try to install missing tools needed"
     echo "                              by the build process."
-    echo "--locale=[LANGUAGE-NAME]      Update locales for the specified language. To print"
+    echo "--locale=[LANGUAGE-CODE]      Update locales for the specified language. To print"
     echo "                              all currently available languages, run it without"
     echo "                              an argument. If language does not exist, a new"
     echo "                              locale file will be created for it. If it does, a"

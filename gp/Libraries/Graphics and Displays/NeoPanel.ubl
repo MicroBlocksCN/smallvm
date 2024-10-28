@@ -9,12 +9,12 @@ variables _neoPanel_width _neoPanel_height _neoPanel_isHorizontal
 
   spec ' ' 'neoPanel_attach' 'attach NeoPixel panel width _ height _ at pin _' 'num num num' 8 8 1
   space
-  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1
-  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1
-  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1
-  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4
+  spec ' ' 'neoPanel_drawPixel' 'NeoPanel set x _ y _ color _' 'num num color' 1 1 14723129
+  spec ' ' 'neoPanel_drawVerticalLine' 'NeoPanel fill column _ color _' 'num color' 1 13212343
+  spec ' ' 'neoPanel_drawHorizontalLine' 'NeoPanel fill row _ color _' 'num color' 1 9842312
+  spec ' ' 'neoPanel_fillRectangle' 'NeoPanel fill rectangle x _ y _ width _ height _ color _' 'num num num num color' 1 1 4 4 4774633
   space
-  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1
+  spec ' ' 'neoPanel_drawText' 'NeoPanel draw text _ at x _ y _ color _' 'str num num color' 'HELLO' 1 1 1500032
   spec ' ' 'neoPanel_drawBMP' 'NeoPanel draw BMP file _ at x _ y _' 'str num num' '' 1 1
   space
   spec 'r' '_neoPanel_indexForXY' '_neoPanel_index for x _ y _' 'num num' 1 1

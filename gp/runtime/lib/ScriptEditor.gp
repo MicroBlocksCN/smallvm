@@ -218,8 +218,12 @@ method inputFor ScriptEditor block {
 
   others = (reversed (allMorphs morph))
   remove others morph
-  x = (left (morph block))
-  y = (top (morph block))
+  for m (allMorphs (morph block)) { // remove the subparts of block as possible drop targets
+    remove others m
+  }
+  inset = (10 * (blockScale))
+  x = ((left (morph block)) + inset)
+  y = ((top (morph block)) + inset)
 
   // look for a slot
   for m others {

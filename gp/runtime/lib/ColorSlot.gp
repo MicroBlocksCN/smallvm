@@ -2,16 +2,20 @@
 
 defineClass ColorSlot morph contents
 
-to newColorSlot {
-  return (initialize (new 'ColorSlot'))
+to newColorSlot defaultColor {
+  return (initialize (new 'ColorSlot') defaultColor)
 }
 
-method initialize ColorSlot {
+method initialize ColorSlot defaultColor {
   morph = (newMorph this)
   setHandler morph this
   setGrabRule morph 'defer'
   setTransparentTouch morph true
-  contents = (color 35 190 30)
+  if (isNil defaultColor) {
+    contents = (color 35 190 30)
+  } else {
+    setContents this defaultColor
+  }
   size = (20 * (blockScale))
   setExtent morph size size
   return this

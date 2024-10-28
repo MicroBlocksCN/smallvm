@@ -578,6 +578,16 @@ method snap Block {
 
 method aboutToBeGrabbed Block {
   page = (global 'page')
+  hand = (hand page)
+
+  // adjust drag offset
+  if ('reporter' == type) {
+    inset = (10 * (blockScale))
+    setPosition morph ((x hand) - inset) ((y hand) - inset)
+  } else {
+    moveBy morph ((x hand) - (downX hand)) ((y hand) - (downY hand))
+  }
+
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -588,8 +598,6 @@ method aboutToBeGrabbed Block {
   removeStackPart (morph tb)
   removeHighlight (morph tb)
 
-  hand = (hand page)
-  setPosition morph (x hand) (y hand)
 
   if (or
 		(commandKeyDown (keyboard page))
@@ -976,7 +984,7 @@ method contextMenu Block {
 
   if (isPrototype this) {return nil}
   menu = (menu nil this)
-  
+
   pe = (findProjectEditor)
   scripter = (scripter pe)
   selection = (selection scripter)
@@ -1630,7 +1638,7 @@ method labelText Block aString {
   isSVG = (beginsWith aString '#SVG#')
   labelColor = (global 'blockTextColor')
   if (isNil labelColor) { labelColor = (gray 255) }
-  
+
   if (and (notNil blockSpec) ('comment' == (blockOp blockSpec))) { labelColor = (gray 80) }
   if isSVG {
     return (newSVGImage (substring aString 6) labelColor color scale)

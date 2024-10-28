@@ -3,23 +3,23 @@ author MicroBlocks
 version 1 1 
 description 'Support for color operations, Work with color hue, saturation, and brightness (HSV).'
 
-  spec 'r' 'color_colorSwatch' '_' 'color'
+  spec 'r' 'color_colorSwatch' '_' 'color' 15067480
   spec 'r' 'color_RGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'color_gray' 'gray _ %' 'num' 50
   spec 'r' 'color_random' 'random color'
   space
-  spec 'r' 'color_red' 'red _' 'color'
-  spec 'r' 'color_green' 'green _' 'color'
-  spec 'r' 'color_blue' 'blue _' 'color'
+  spec 'r' 'color_red' 'red _' 'color' 5545158
+  spec 'r' 'color_green' 'green _' 'color' 5545158
+  spec 'r' 'color_blue' 'blue _' 'color' 5545158
   space
   spec 'r' '[misc:hsvColor]' 'color hue _ (0-360) saturation _ % brightness _ %' 'num num num' 0 90 100
-  spec 'r' '[misc:hue]' 'hue _' 'color'
-  spec 'r' '[misc:saturation]' 'saturation _' 'color'
-  spec 'r' '[misc:brightness]' 'brightness _' 'color'
+  spec 'r' '[misc:hue]' 'hue _' 'color' 14731839
+  spec 'r' '[misc:saturation]' 'saturation _' 'color' 14731839
+  spec 'r' '[misc:brightness]' 'brightness _' 'color' 14731839
   space
-  spec 'r' 'color_withHue' '_ with hue _ (0-360)' 'color num' nil 60
-  spec 'r' 'color_withSaturation' '_ with saturation _ %' 'color num' nil 100
-  spec 'r' 'color_withBrightness' '_ with brightness _ %' 'color num' nil 100
+  spec 'r' 'color_withHue' '_ with hue _ (0-360)' 'color num' 14703787 60
+  spec 'r' 'color_withSaturation' '_ with saturation _ %' 'color num' 14703787 100
+  spec 'r' 'color_withBrightness' '_ with brightness _ %' 'color num' 14703787 100
 
 to color_RGB r g b {
   r = (maximum 0 (minimum r 255))

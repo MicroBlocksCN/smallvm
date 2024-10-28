@@ -1,4 +1,4 @@
-defineClass AuthoringSpecs specsList specsByOp opCategory language translationDictionary
+defineClass AuthoringSpecs specsList specsByOp opCategory language translationDictionary langNameDict
 
 method allOpNames AuthoringSpecs {
   result = (toList (keys specsByOp))
@@ -254,22 +254,21 @@ method gpBlockColorForCategory AuthoringSpecs cat {
 method language AuthoringSpecs { return language }
 method languageCode AuthoringSpecs { return (languageCodeForName this language) }
 
-method setLanguage AuthoringSpecs newLangOrCode {
-  newLang = (languageNameForCode this newLangOrCode)
-  translationData = (readEmbeddedFile (join 'translations/' newLang '.txt'))
+method setLanguage AuthoringSpecs langCode {
+  translationData = (readEmbeddedFile (join 'translations/' langCode '.txt'))
   if (isNil translationData) {
 	// if not embedded file, try reading external file
-	translationData = (readFile (join 'translations/' newLang '.txt'))
+	translationData = (readFile (join 'translations/' langCode '.txt'))
   }
   if (isNil translationData) {
 	// if still nil, we may be in the wrong dir
-	translationData = (readFile (join '../translations/' newLang '.txt'))
+	translationData = (readFile (join '../translations/' langCode '.txt'))
   }
   if (isNil translationData) {
 	language = 'English'
 	translationDictionary = nil
   } else {
-	language = newLang
+	language = (languageNameForCode this langCode)
 	installTranslation this translationData
   }
 }
@@ -369,24 +368,25 @@ method languageNameForCode AuthoringSpecs langCode {
 
 method languageCodeList AuthoringSpecs {
   // Return an array of (<languageName> <abbreviation>) pairs."
-
   return (array
-    (array 'English' 'en' )
-    (array 'Castellano' 'es' )
-    (array 'Català' 'ca' )
-    (array 'Deutsch' 'de' )
-    (array 'Français' 'fr' )
-    (array 'Galego' 'gl' )
-    (array 'Nederlands' 'nl' )
-    (array 'Português (Brasil)' 'pt-br' )
-    (array 'Português' 'pt' )
-    (array 'Türkçe' 'tr' )
-    (array 'Uzbek' 'ux' )
-    (array 'Ελληνικά' 'el' )
-    (array 'Русский' 'ru' )
-    (array 'عربى' 'ar' )
-    (array '日本語' 'ja' )
-    (array '简体中文' 'zh' )
+	(array 'Català' 'ca')
+	(array 'Castellano' 'es')
+	(array 'Deutsch' 'de')
+	(array 'English' 'en')
+	(array 'Français' 'fr')
+	(array 'Galego' 'gl')
+	(array 'Nederlands' 'nl')
+	(array 'Português (Brasil)' 'pt-br')
+	(array 'Português' 'pt')
+	(array 'Türkçe' 'tr')
+	(array 'Uzbek' 'uz')
+	(array 'Čeština' 'cs')
+	(array 'Ελληνικά' 'el')
+	(array 'Русский' 'ru')
+	(array 'عربى' 'ar')
+	(array '日本語' 'ja')
+	(array '简体中文' 'zh-chs')
+	(array '繁體中文' 'zh-cht')
   )
 }
 

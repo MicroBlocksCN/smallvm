@@ -185,7 +185,8 @@ to buttonBitmap label color w h isInset corner border hasFrame flat {
     scale = (global 'scale')
     off = (max (scale / 2) 1)
     fontName = 'Arial Bold'
-    fontSize = (11 * scale)
+    fontSize = (14 * scale)
+    if ('Linux' == (platform)) { fontSize = (11 * scale) }
     textColor = (gray 0)
     if (color == (gray 0)) { textColor = (gray 255) }
 	if (isClass color 'Array') {

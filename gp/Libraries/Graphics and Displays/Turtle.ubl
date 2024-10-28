@@ -19,11 +19,11 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
   spec ' ' 'setHeading' 'point in direction _' 'auto' 0
   space
   spec ' ' '[display:mbDisplayOff]' 'clear display'
-  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  spec ' ' 'clearDisplay' 'fill display with _' 'color' 11271427
   space
   spec ' ' 'pen down' 'pen down'
   spec ' ' 'pen up' 'pen up'
-  spec ' ' 'set pen color to' 'set pen color to _' 'color'
+  spec ' ' 'set pen color to' 'set pen color to _' 'color' 16777215
   spec ' ' 'setPenToRandomColor' 'set pen to random color'
   space
   spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'

@@ -8,8 +8,8 @@ variables _np_pixels
   spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
   spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
   spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
-  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color' 8091903
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1 16737380
   space
   spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'randomColor' 'random color'

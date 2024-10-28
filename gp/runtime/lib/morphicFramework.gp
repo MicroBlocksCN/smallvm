@@ -110,6 +110,8 @@ method setPage Hand aPage {page = aPage}
 method isDown Hand {return isDown}
 method x Hand {return x}
 method y Hand {return y}
+method downX Hand {return downX}
+method downY Hand {return downY}
 method focus Hand {return focus}
 method focusOn Hand aHandler {focus = aHandler}
 
@@ -149,7 +151,6 @@ method grabbedObject Hand {
 method grab Hand handler {
   cancelTouchHold this
   if (notNil (owner (morph handler))) {parent = (handler (owner (morph handler)))}
-  aboutToBeGrabbed handler
   oldOwner = parent
   oldX = (left (morph handler))
   oldY = (top (morph handler))
@@ -158,6 +159,7 @@ method grab Hand handler {
     // avoid "trailing behind" the mouse cursor
     setPosition (morph handler) (x - 5) (y - 5)
   }
+  aboutToBeGrabbed handler
   removeAllParts morph
   addPart morph (morph handler)
   justGrabbedPart parent handler

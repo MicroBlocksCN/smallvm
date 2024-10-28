@@ -1057,6 +1057,8 @@ method loadBlockList MicroBlocksModule cmdList {
 	for cmd cmdList {
 		if ('space' == (primName cmd)) {
 			add blockList '-' // spacer
+		} ('advanced' == (primName cmd)) {
+			add blockList 'advanced'
 		} ('spec' == (primName cmd)) {
 			add blockList (at (argList cmd) 2)
 		}

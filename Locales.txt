@@ -1,6 +1,10 @@
 # MicroBlocks translation file
 # Last updated: October 03 2024
 
+LangName
+
+LangCode
+
 #########################
 # Blocks and categories #
 #########################

@@ -36,6 +36,10 @@ static char bleDeviceName[32];
 // Generic helper functions
 
 void BLE_initThreeLetterID() {
+	#if defined(BLE_PICO)
+		memset(BLE_ThreeLetterID, 0, sizeof(BLE_ThreeLetterID));
+		if (!__isPicoW) return;
+	#endif
 	unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
 	getMACAddress(mac);
 	int machineNum = (mac[4] << 8) | mac[5]; // 16 least signifcant bits
@@ -454,6 +458,8 @@ static int gattWriteCallback(uint16_t attribute_handle, uint8_t *data, uint16_t 
 }
 
 static void updateConnectionState() {
+	if (!__isPicoW) return;
+
 	if (!USB_connected_to_IDE) { // either not connected or connected via BLE
 		if (Serial.available()) {
 			// new serial connection; disconnect BLE if it is connected

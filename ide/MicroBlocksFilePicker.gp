@@ -426,6 +426,11 @@ method showFolder MicroBlocksFilePicker path isTop {
 
 method folderContents MicroBlocksFilePicker {
   result = (list)
+  showExtension = (not (or
+    (contains extensions '.ubl')
+    (contains extensions '.ubp')
+    (contains extensions '.gpp'))
+  )
   if useEmbeddedFS {
 	dirsAndFiles = (embeddedFilesAndDirs this (join currentDir '/'))
 	dirList = (at dirsAndFiles 1)
@@ -442,7 +447,11 @@ method folderContents MicroBlocksFilePicker {
   for fn (sorted fileList 'caseInsensitiveSort') {
 	if (not (beginsWith fn '.')) {
 	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add result (array (localized (withoutExtension fn)) fn)
+        if showExtension {
+		  add result (array fn fn)
+        } else {
+		  add result (array (localized (withoutExtension fn)) fn)
+        }
 	  }
 	}
   }

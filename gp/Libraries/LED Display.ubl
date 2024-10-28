@@ -1,6 +1,6 @@
 module 'LED Display' Output
 author MicroBlocks
-version 1 8
+version 1 9
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text
@@ -16,11 +16,11 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' 'set display color' 'set display color _' 'color'
-  space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
+  space
+  spec ' ' 'set display color' 'set display color _' 'color'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
