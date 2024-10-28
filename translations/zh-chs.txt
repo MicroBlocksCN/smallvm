@@ -3996,8 +3996,8 @@ Reading project from board...
 Loading project...
 加载项目
 
-Found a newer version of
-发现新版本
+Found a newer version of 
+发现新版本 
 
 Do you want me to update the one in the project?
 你希望在项目中进行升级吗？
