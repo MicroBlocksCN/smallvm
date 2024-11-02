@@ -549,20 +549,20 @@ method step MicroBlocksEditor {
 		nextIndicatorUpdateMSecs = ((msecsSinceStart) + 200)
 	}
 
-  if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
-  if (isRunning httpServer) {
-	step httpServer
-  }
-  if ('unknown' == newerVersion) {
-    // launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
-    // newerVersion = nil
-  } (notNil newerVersion) {
-    reportNewerVersion this
-    newerVersion = nil
-  }
-  if (notNil frameRate) {
-	updateFPS this
-  }
+	if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
+	if (isRunning httpServer) {
+		step httpServer
+	}
+	if ('unknown' == newerVersion) {
+		// launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
+		// newerVersion = nil
+	} (notNil newerVersion) {
+		reportNewerVersion this
+		newerVersion = nil
+	}
+	if (notNil frameRate) {
+		updateFPS this
+	}
 }
 
 method updateFPS MicroBlocksEditor {
@@ -911,26 +911,26 @@ method checkLatestVersion MicroBlocksEditor {
 }
 
 method fetchLatestVersionNumber MicroBlocksEditor {
-  platform = (platform)
-  if ('Browser' == platform) {
-    if (browserIsChromeOS) {
-      suffix = '?C='
-    } else {
-      suffix = '?B='
-    }
-  } ('Mac' == (platform)) {
-    suffix = '?M='
-  } ('Linux' == (platform)) {
-    suffix = '?L='
-  } ('Win' == (platform)) {
-    suffix = '?W='
-  } else {
-    suffix = '?R='
-  }
-  url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
-  versionText = (basicHTTPGet 'microblocksfun.cn' url)
-  if (isNil versionText) { return (array 0 0 0) }
-  return (splitWith (substring (first (lines versionText)) 1) '.')
+	platform = (platform)
+	if ('Browser' == platform) {
+		if (browserIsChromeOS) {
+			suffix = '?C='
+		} else {
+			suffix = '?B='
+		}
+	} ('Mac' == (platform)) {
+		suffix = '?M='
+	} ('Linux' == (platform)) {
+		suffix = '?L='
+	} ('Win' == (platform)) {
+		suffix = '?W='
+	} else {
+		suffix = '?R='
+	}
+	url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
+	versionText = (basicHTTPGet 'microblocksfun.cn' url)
+	if (isNil versionText) { return (array 0 0 0) }
+	return (splitWith (substring (first (lines versionText)) 1) '.')
 }
 
 method fetchLatestPilotVersionNumber MicroBlocksEditor {
@@ -1186,10 +1186,40 @@ method gearMenu MicroBlocksEditor {
 	addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
 	addLine menu
 	addItem menu 'dark mode' (action 'toggleDarkMode' this false) 'make the IDE darker' (newCheckmark this (darkModeEnabled this))
-  addItem menu 'keyboard event' (action 'toggleKeyboardEvent' this false) 'broadcast keyboard event(for debugging only)' (newCheckmark this (keyboardEventEnabled this))
+	addItem menu 'advanced mode' 'toggleAdvancedMode' 'show advanced blocks, menu items and editor functionalities' (newCheckmark this (devMode))
+	addItem menu 'keyboard event' (action 'toggleKeyboardEvent' this false) 'broadcast keyboard event(for debugging only)' (newCheckmark this (keyboardEventEnabled this))
 
-  }
-  return menu
+	if (devMode) {
+		addLine menu
+		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)' (newCheckmark this (showHiddenBlocksEnabled this))
+		addItem menu 'autoload board libraries' (action 'toggleBoardLibAutoLoad' this) nil (newCheckmark this (not (boardLibAutoLoadDisabled this)))
+// Does anyone ever enable 'PlugShare when project empty'?
+		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
+		addLine menu
+		addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
+		addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
+		addLine menu
+		addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
+
+		if (boardIsBLECapable (smallRuntime)) {
+			addLine menu
+			addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+		}
+
+// Let's deprecate the HTTP server since it doesn't work in browser?
+// Don't think anyone is using it now that we have so many other ways to communicate.
+// And we might not want to -- or be able to -- implement it when we rewrite MicroBlocks.
+//		if ('Browser' != (platform)) {
+//			addLine menu
+//			if (not (isRunning httpServer)) {
+//				addItem menu 'start HTTP server' 'startHTTPServer'
+//			} else {
+//				addItem menu 'stop HTTP server' 'stopHTTPServer'
+//			}
+//		}
+
+	}
+	return menu
 }
 
 method downloadTest MicroBlocksEditor {
