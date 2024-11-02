@@ -4428,1408 +4428,205 @@ msgstr "报告一个新的字节数组，其长度为输入值，数组元素为
 msgid "Report a byte array containing the UTF-8 bytes of the given string."
 msgstr "报告一个字节数组，该数组包含输入字符串的 UTF-8 字节"
 
-#. NeoPixel library block
-msgid "shift NeoPixel _ color by _"
-msgstr "将 NeoPixel _ 颜色移动 _"
 
-#. Settings menu option
+#.######################
+#. CN
+
 msgid "advanced mode"
 msgstr "高级模式"
 
-#. Block in Input category
-msgid "version"
-msgstr "版本"
+msgid "keyboard event"
+msgstr "键盘事件"
 
-#. Block in Input category
-msgid "BLE connected"
-msgstr "BLE 已连接"
+msgid "broadcast keyboard event(for debugging only)"
+msgstr "广播键盘事件(仅用于调试)"
 
-#. Block in Input category
-msgid "seconds"
-msgstr "秒"
+#### CoCube
 
-#. CoCube library block
-msgid "rotate _ at _ speed (0-50)"
-msgstr "向 _ 以 _ 速度 (0-50) 旋转"
+msgid "left"
+msgstr "左"
 
-#. CoCube library block
-msgid "rotate _ at _ speed (0-50) for _ msecs"
-msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 毫秒"
+msgid "right"
+msgstr "右"
 
-#. CoCube library block
-msgid "move _ at _ speed (0-50)"
-msgstr "向 _ 以 _ 速度 (0-50) 移动"
+msgid "forward"
+msgstr "前"
 
-#. CoCube library block
-msgid "move _ at _ speed (0-50) for _ msecs"
-msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 毫秒"
+msgid "backward"
+msgstr "后"
 
-#. CoCube library block
-msgid "set wheel left _ right _ (-50 to 50)"
-msgstr "左轮以 _ 速度、右轮以 _ 速度移动"
+msgid "Battery Percentage"
+msgstr "电量百分比"
 
-#. CoCube library block
-msgid "wheels stop"
-msgstr "电机停转"
+msgid "On The Mat"
+msgstr "在定位垫上"
 
-#. CoCube Module library block
-msgid "power on module"
-msgstr "开启外接模块电源"
+msgid "Card ID"
+msgstr "卡片ID"
 
-#. CoCube library block
 msgid "X position"
 msgstr "位置X"
 
-#. CoCube library block
 msgid "Y position"
 msgstr "位置Y"
 
-#. CoCube library block
-msgid "direction"
+msgid "Direction"
 msgstr "方向角"
 
-#. CoCube library block
-msgid "move _ at _ speed (0-50) by _ steps"
-msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 步"
-
-#. CoCube library block
-msgid "rotate _ at _ speed (0-50) by _ degrees"
-msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 度"
-
-#. CoCube library block
-msgid "rotate to angle _ at _ speed (0-50)"
-msgstr "转向角度 _ 速度 _ (0-50)"
-
-#. CoCube library block
-msgid "move to X _ Y _ at _ speed (0-50)"
-msgstr "移动到目标点 X _ Y _ 速度 _ (0-50)"
-
-#. CoCube library block
-msgid "on the mat"
-msgstr "在定位垫上"
-
-#. CoCube library block
-msgid "card ID"
-msgstr "卡片ID"
-
-#. CoCube library block
-msgid "draw ArUco marker on TFT _"
-msgstr "TFT绘制ArUco标签 _"
-
-#. CoCube library block
-msgid "draw AprilTag on TFT _"
-msgstr "TFT绘制AprilTag标签 _"
-
-#. CoCube library block
 msgid "set TFT backlight _"
 msgstr "设置TFT背光 _"
 
-#. CoCube library block
-msgid "battery percentage"
-msgstr "电量百分比"
+msgid "draw Aruco Marker on TFT _"
+msgstr "TFT绘制ArUco标签 _"
 
-#. CoCube Module library block
-msgid "gripper stop"
-msgstr "夹爪停止"
+msgid "draw AprilTag on TFT _"
+msgstr "TFT绘制AprilTag标签 _"
 
-#. CoCube Module library block
-msgid "gripper degrees _ (0 to 70)"
-msgstr "夹爪角度 _ (0 to 70)"
+msgid "move _ at _ speed (0-50)"
+msgstr "向 _ 以 _ 速度 (0-50) 移动"
 
-#. CoCube Module library block
-msgid "attach NeoPixels"
-msgstr "连接 NeoPixels"
+msgid "rotate _ at _ speed (0-50)"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转"
 
-#. CoCube Module library block
-msgid "ultrasonic distance (mm)"
-msgstr "超声波 距离(mm)"
+msgid "move _ at _ speed (0-50) for _ millisecs"
+msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 毫秒"
 
-#. CoCube library block
+msgid "rotate _ at _ speed (0-50) for _ millisecs"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 毫秒"
+
+msgid "move _ at _ speed (0-50) by _ steps"
+msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 步"
+
+msgid "rotate _ at _ speed (0-50) by _ degrees"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 度"
+
+msgid "set wheel left _ right _ (-50 to 50)"
+msgstr "左轮以 _ 速度、右轮以 _ 速度移动"
+
+msgid "wheels stop"
+msgstr "电机停转"
+
 msgid "wheels break"
 msgstr "电机刹车"
 
-#. CoCube Module library block
-msgid "3D gesture read"
-msgstr "3D 手势传感器读取数据"
+msgid "rotate to angle _ at _ speed (0-50)"
+msgstr "转向角度 _ 速度 _ (0-50)"
 
-#. CoCube Module library block
-msgid "3D gesture connected"
-msgstr "3D 手势传感器已连接"
-
-#. CoCube Module library block
-msgid "ToF connected"
-msgstr "ToF 已连接"
-
-#. CoCube Module library block
-msgid "gripper close"
-msgstr "夹爪闭合"
-
-#. CoCube Module library block
-msgid "gripper open"
-msgstr "夹爪张开"
-
-#. CoCube Module library block
-msgid "ToF distance (mm)"
-msgstr "ToF 距离(mm)"
-
-#. Block in Input category
-msgid "BLE id"
-msgstr "蓝牙 ID"
-
-#. CoCube library block
-msgid "point towards X _ Y _ at _ speed (0-50)"
+msgid "rotate to target X _ Y _ at _ speed (0-50)"
 msgstr "转向目标点 X _ Y _ 速度 _ (0-50)"
 
-#. CoCube library block
-msgid "cocube;forward"
-msgstr "前"
-
-#. CoCube library block
-msgid "cocube;left"
-msgstr "左"
-
-#. CoCube library block
-msgid "cocube;right"
-msgstr "右"
-
-#. CoCube library block
-msgid "cocube;backward"
-msgstr "后"
-
-#. TFT display library block
-msgid "clear TFT display"
-msgstr "清除 TFT 屏幕显示"
-
-#. NeoPanel library block
-msgid "NeoPanel draw line from x _ y _ to x _ y _ color _"
-msgstr "像素屏绘制行从坐标x_ y_到坐标x_ y_ 颜色 _"
-
-#. NeoPanel library block
-msgid "NeoPanel draw circle at x _ y _ radius _ color _"
-msgstr "像素屏绘制圆, 圆心x_ y_ 半径_ 颜色_"
-
-#. CoCube Sengo2 library choice
-msgid "AprilTag"
-msgstr "标签识别"
-
-#. Example message for [ when _ received ] and [ broadcast _ ] blocks
-msgid "go!"
-msgstr "go!"
-
-#. Block in Control category
-msgid "exit loop"
-msgstr "退出循环"
-
-#. Example value for the ( list < > ) block
-msgid "cat"
-msgstr "cat"
-
-#. Example value for the ( list < > ) block
-msgid "dog"
-msgstr "dog"
-
-#. Example value for the ( list < > ) block
-msgid "bird"
-msgstr "bird"
-
-#. Example value for the ( list < > ) block
-msgid "fish"
-msgstr "fish"
-
-#. Example value for the ( copy (smiles) from 2 > ) block, which will become "miles" when run.
-#. You could think of a word that still has meaning when you remove its first character in your language.
-msgid "smiles"
-msgstr "微笑"
-
-#. Example string. Tells the user this input accepts a byte list or a string.
-msgid "aByteListOrString"
-msgstr "字节列表或字符串"
-
-#. Option in dropdown menu of editable input slots on mobile devices:
-msgid "edit"
-msgstr "编辑"
-
-#. Example string. Tells the user this input accepts a byte array
-msgid "aByteArray"
-msgstr "字节数组"
-
-#. Example string. Tells the user this input accepts an integer, a string list or a byte array
-msgid "anIntegerStringListOrByteArray"
-msgstr "整数字符串列表或字节数组"
-
-#. Microphone library block
-msgid "turn off microphone"
-msgstr "关闭麦克风"
-
-#. Example string. Tells the user this input accepts a list or a string
-msgid "aListOrString"
-msgstr "列表或字符串"
-
-#. Script right-click context menu
-msgid "copy callable name"
-msgstr "复制调用名称"
-
-#. Graph context menu option
-msgid "decrease range"
-msgstr "缩小量程"
-
-#. Graph context menu option
-msgid "increase range"
-msgstr "增大量程"
-
-#. Settings menu tooltip
-msgid "show advanced blocks, menu items and editor functionalities"
-msgstr "显示高级模块、菜单项和编辑器功能"
-
-#. Firmware install instruction
-msgid "Do not switch browser tabs!"
-msgstr "请勿切换浏览器标签页！"
+msgid "move to target X _ Y _ at _ speed (0-50)"
+msgstr "移动到目标点 X _ Y _ 速度 _ (0-50)"
 
-#. Firmware install instruction
-msgid "Connecting..."
-msgstr "正在连接..."
+msgid "_cocube_motors_speed left _ right _"
+msgstr "_左电机速度 _ 右电机速度 _"
 
-#. MicroBlocks IDE information
-msgid "Reconnect to the board by clicking the \"Connect\" button."
-msgstr "点击“连接”按钮重新连接到设备。"
+msgid "_cocube_pid_init"
+msgstr "_初始化pid参数"
 
-#. MicroBlocks IDE block deletion error message.
-msgid "This block is still being used in"
-msgstr "该积木仍然在使用中"
+msgid "_cocube_pid_left_motor"
+msgstr "_pid控制左电机"
 
-#. In MicroBlocks IDE connection menu
-msgid "connect (USB)"
-msgstr "有线连接 (USB)"
+msgid "_cocube_pid_right_motor"
+msgstr "_pid控制右电机"
 
-#. MicroBlocks IDE message
-msgid "Connect board to proceed."
-msgstr "连接电路板以继续。"
+msgid "_cocube_calculate_angle_error angle _"
+msgstr "_计算角度误差 _"
 
-#. Library button, abbreviated
-msgid "LIBS"
-msgstr "积木库"
+msgid "_cocube_calculate_distance_error Target_X _ Target_Y _"
+msgstr "_计算距离误差 X _ Y _"
 
-#. BLE Radio library block
-msgid "ble set group _ (0-255)"
-msgstr "设置 BLE 组为 _ (0-255)"
+#.### CoCube Module
 
-#. BLE Radio library block
-msgid "ble last string"
-msgstr "BLE 最后一个字符串"
+msgid "Power on module"
+msgstr "开启外接模块电源"
 
-#. BLE Radio library block
-msgid "ble last number"
-msgstr "BLE 最后一个数字"
+msgid "Power off module"
+msgstr "关闭外接模块电源"
 
-#. BLE Radio library block
-msgid "ble message received?"
-msgstr "BLE 消息已收到？"
+msgid "Gripper Open"
+msgstr "夹爪张开"
 
-#. BLE Radio library block
-msgid "ble send pair _ = _"
-msgstr "BLE 发送消息对 _ = _"
+msgid "Gripper Close"
+msgstr "夹爪闭合"
 
-#. BLE Radio library block
-msgid "ble send string _"
-msgstr "BLE 发送字符串 _"
+msgid "Gripper degrees _ (-70 to 0)"
+msgstr "夹爪角度 _ (-70 to 0)度"
 
-#. BLE Radio library block
-msgid "ble send number _"
-msgstr "BLE 发送数字 _"
+msgid "attach NeoPixel"
+msgstr "连接 NeoPixel"
 
-#. Settings menu option
-msgid "open vm folder on microblocks.fun"
-msgstr "打开 microblocks.fun 上的 vm 文件夹"
+msgid "set all NeoPixels color _"
+msgstr "设置所有 NeoPixels 的颜色为 _"
 
-#. Settings menu tooltip
-msgid "when plugging a board, automatically read its contents into the IDE if the current project is empty"
-msgstr "插入开发板时，如果当前项目为空，则自动将其内容读取到 IDE 中"
+msgid "clear NeoPixels"
+msgstr "关闭 NeoPixels"
 
-#. Settings menu option
-msgid "when opening the IDE, show a notification if a new version of MicroBlocks has been released"
-msgstr "打开 IDE 时，如果 MicroBlocks 发布了新版本，则显示通知"
+msgid "Ultrasonic distance (cm)"
+msgstr "超声波 距离(cm)"
 
-#. Settings menu option
-msgid "inform of new versions"
-msgstr "通知新版本"
+msgid "Ambient Light"
+msgstr "环境光强"
 
-#. MicroBlocks IDE block deletion error message.
-msgid "scripts or functions."
-msgstr "脚本或函数。"
+msgid "Returns the battery percentage of CoCube."
+msgstr "返回 CoCube 电量百分比"
 
-#. Examples folder
-msgid "folder;Music"
-msgstr "音乐"
+msgid "Returns (-o) if CoCube on the CoMap."
+msgstr "如果 CoCube 在垫上，则返回 (-o)"
 
-#. Examples folder
-msgid "folder;Games"
-msgstr "游戏"
+msgid "Returns the Index value of CoTag."
+msgstr "返回 CoTag 的 Index 值"
 
-#. Examples folder
-msgid "folder;Art"
-msgstr "艺术"
+msgid "Returns the X coordinate of CoCube."
+msgstr "返回 CoCube 的 X 坐标"
 
-#. Examples folder
-msgid "folder;MakerPort"
-msgstr "MakerPort"
+msgid "Returns the Y coordinate of CoCube."
+msgstr "返回 CoCube 的 Y 坐标"
 
-#. Examples folder
-msgid "folder;Citilab ED1 and M5Stack"
-msgstr "Citilab ED1 和 M5Stack"
+msgid "Returns the rotation angle of CoCube (0~359°)."
+msgstr "返回 CoCube 的旋转角度 (0~359°)"
 
-#. Examples folder
-msgid "folder;microbit and Calliope"
-msgstr "microbit 和 Calliope"
+msgid "Turn on/off the TFT backlight."
+msgstr "开启/关闭 TFT 屏幕背光"
 
-#. Examples folder
-msgid "folder;CPX"
-msgstr "CPX"
+msgid "Display an ArUco Marker on the TFT screen."
+msgstr "在 TFT 屏幕上显示 ArUco 标签"
 
-#. Examples folder
-msgid "folder;Web of Things"
-msgstr "物联网"
+msgid "Display an AprilTag Marker on the TFT screen."
+msgstr "在 TFT 屏幕上显示 AprilTag 标签"
 
-#. Examples folder
-msgid "folder;CoCube"
-msgstr "CoCube 机器人"
+msgid "Move CoCube at unit/s speed."
+msgstr "CoCube 以 unit/s 的速度移动"
 
-#. Examples folder
-msgid "folder; by board"
-msgstr " 按板子分类"
+msgid "Rotate CoCube at unit/s speed."
+msgstr "CoCube 以unit/s 的速度转动"
 
-#. Examples folder
-msgid "folder;Examples"
-msgstr "示例"
+msgid "Move CoCube at unit/s speed for milliseconds."
+msgstr "CoCube 以 unit/s 的速度移动一定时间（毫秒）"
 
-#. Language menu item. Takes the user to documentation about adding a missing language
-msgid "Missing language?"
-msgstr "缺少语言？"
+msgid "Rotate CoCube at unit/s speed for milliseconds."
+msgstr "CoCube 以 unit/s 的速度转动一定时间（毫秒）"
 
-#. Program size information
-msgid "Using %1 out of %2 bytes"
-msgstr "已使用 %1/%2 字节"
+msgid "Move CoCube at unit/s speed for a specific distance."
+msgstr "CoCube 以 unit/s 的速度移动一定距离（unit）"
 
-#. Settings menu option
-msgid "show program size on board"
-msgstr "显示开发板上的程序大小"
+msgid "Rotate CoCube at unit/s speed for a specific degree."
+msgstr "CoCube 以 unit/s 的速度转动一定角度（°）"
 
-#. Settings menu option
-msgid "install ESP firmware from microblocks.fun"
-msgstr "从 microblocks.fun 安装 ESP 固件"
+msgid "Control the speed of the left and right wheels of CoCube separately."
+msgstr "分别控制 CoCube 左右轮的速度"
 
-#. CoCube Sengo2 library block
-msgid "Sengo2 set color recog area x _ y _ width _ height _ (0-100)"
-msgstr "Sengo2 设置颜色检测区域 x _ y _ 宽度 _ 高度 _ (0-100)"
+msgid "Control CoCube stop."
+msgstr "控制 CoCube 停止移动"
 
-#. CoCube Sengo2 library block
-msgid "Sengo2 set blob detect property color _ width _ height _"
-msgstr "Sengo2 设置色块检测颜色 _ 宽度 _ 高度 _"
+msgid "Control CoCube break."
+msgstr "控制 CoCube 快速刹车"
 
-#. CoCube Sengo2 library block
-msgid "Sengo2 set AprilTag type _"
-msgstr "Sengo2 设置AprilTag类型 _"
+msgid "Turn to a specific angle."
+msgstr "转向特定角度"
 
-#. CoCube Sengo2 library block
-msgid "Sengo2 reset"
-msgstr "Sengo2 重置算法"
+msgid "Turn to a specific target."
+msgstr "转向特定目标点"
 
-#. CoCube Sengo2 library block
-msgid "Sengo2 record learning ID _ (1-15)"
-msgstr "Sengo2 记录学习ID _ (1-15)"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 record face ID _ (1-10)"
-msgstr "Sengo2 记录人脸ID _ (1-10)"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read color"
-msgstr "Sengo2 读取颜色"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read card"
-msgstr "Sengo2 读取卡片"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read blob"
-msgstr "Sengo2 读取色块"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read Obj20Class"
-msgstr "Sengo2 读取20种分类"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read AprilTag"
-msgstr "Sengo2 读取AprilTag"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 init"
-msgstr "Sengo2 初始化"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get motion _"
-msgstr "Sengo2 获取运动物体的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get line _"
-msgstr "Sengo2 获取线条的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get learning ID"
-msgstr "Sengo2 获取学习ID"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get face ID"
-msgstr "Sengo2 获取人脸ID"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get color _"
-msgstr "Sengo2 获取颜色分量 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get card _"
-msgstr "Sengo2 获取卡片的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get blob _"
-msgstr "Sengo2 获取色块的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get QRcode _"
-msgstr "Sengo2 获取二维码的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get Obj20Class _"
-msgstr "Sengo2 获取20种分类的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 get AprilTag _"
-msgstr "Sengo2 获取AprilTag的 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 delete learning ID _ (1-15)"
-msgstr "Sengo2 删除学习ID _ (1-15)"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 delete face ID _ (1-10)"
-msgstr "Sengo2 删除人脸ID _ (1-10)"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 change algorithm _"
-msgstr "Sengo2 设置算法为 _"
-
-#. CoCube Sengo2 library block
-msgid "Sengo2 read QRcode"
-msgstr "Sengo2 读取二维码"
-
-#. CoCube Sengo2 library choice
-msgid "Motion Detect"
-msgstr "运动物体检测"
-
-#. CoCube Sengo2 library choice
-msgid "Obj20Class"
-msgstr "20类物体识别"
-
-#. CoCube Sengo2 library choice
-msgid "Deep Learning"
-msgstr "深度学习"
-
-#. CoCube Sengo2 library choice
-msgid "36H11"
-msgstr "36H11"
-
-#. CoCube Sengo2 library choice
-msgid "25H9"
-msgstr "25H9"
-
-#. CoCube Sengo2 library choice
-msgid "16H5"
-msgstr "16H5`````"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 set color recog area x _ y _ width _ height _ (0-100)"
-msgstr "Sengo1 设置颜色检测区域 x _ y _ 宽度 _ 高度 _ (0-100)"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 set blob detect property color _ width _ height _"
-msgstr "Sengo1 设置色块检测颜色 _ 宽度 _ 高度 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 reset"
-msgstr "Sengo1 重置算法"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 record face ID _ (1-10)"
-msgstr "Sengo1 记录人脸ID _ (1-10)"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 read color"
-msgstr "Sengo1 读取颜色"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 read card"
-msgstr "Sengo1 读取卡片"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 read blob"
-msgstr "Sengo1 读取色块"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 init"
-msgstr "Sengo1 初始化"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get line _"
-msgstr "Sengo1 获取线条的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get face ID"
-msgstr "Sengo1 获取人脸ID"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get face _"
-msgstr "Sengo1 获取人脸的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get color _"
-msgstr "Sengo1 获取颜色分量 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get card _"
-msgstr "Sengo1 获取卡片的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get blob _"
-msgstr "Sengo1 获取色块的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get ball _"
-msgstr "Sengo1 获取球的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 get QRcode _"
-msgstr "Sengo1 获取二维码的 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 detect ball (ping pong or tennis)"
-msgstr "Sengo1 球类检测（乒乓球或网球）"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 delete face ID _ (1-10)"
-msgstr "Sengo1 删除人脸ID _ (1-10)"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 change algorithm _"
-msgstr "Sengo1 设置算法为 _"
-
-#. CoCube Sengo1 library block
-msgid "Sengo1 read QRcode"
-msgstr "Sengo1 读取二维码"
-
-#. CoCube Sengo1 library choice
-msgid "B"
-msgstr "B"
-
-#. CoCube Sengo1 library choice
-msgid "G"
-msgstr "G"
-
-#. CoCube Sengo1 library choice
-msgid "R"
-msgstr "R"
-
-#. CoCube Sengo1 library choice
-msgid "h"
-msgstr "高度"
-
-#. CoCube Sengo1 library choice
-msgid "w"
-msgstr "宽度"
-
-#. CoCube Sengo1 library choice
-msgid "degree"
-msgstr "角度"
-
-#. CoCube Sengo1 library choice
-msgid "y2"
-msgstr "y2"
-
-#. CoCube Sengo1 library choice
-msgid "x2"
-msgstr "x2"
-
-#. CoCube Sengo1 library choice
-msgid "y1"
-msgstr "y1"
-
-#. CoCube Sengo1 library choice
-msgid "x1"
-msgstr "x1"
-
-#. CoCube Sengo1 library choice
-msgid "blue"
-msgstr "蓝色"
-
-#. CoCube Sengo1 library choice
-msgid "white"
-msgstr "白色"
-
-#. CoCube Sengo1 library choice
-msgid "black"
-msgstr "黑色"
-
-#. CoCube Sengo1 library choice
-msgid "QRcode"
-msgstr "二维码识别"
-
-#. CoCube Sengo1 library choice
-msgid "Face Recog"
-msgstr "人脸识别"
-
-#. CoCube Sengo1 library choice
-msgid "Card Recog"
-msgstr "卡片识别"
-
-#. CoCube Sengo1 library choice
-msgid "Line Detect"
-msgstr "线条检测"
-
-#. CoCube Sengo1 library choice
-msgid "Ball Detect"
-msgstr "球类检测"
-
-#. CoCube Sengo1 library choice
-msgid "Blob Detect"
-msgstr "色块检测"
-
-#. CoCube Sengo1 library choice
-msgid "Color Recog"
-msgstr "颜色识别"
-
-#. CoCube Module library block
-msgid "DLight level"
-msgstr "Dlight 环境光强"
-
-#. CoCube Module library block
-msgid "ASR play command _"
-msgstr "ASR 播报指令 _"
-
-#. CoCube Module library block
-msgid "ASR get command"
-msgstr "ASR 获取指令"
-
-#. WiFi library block
-msgid "allow WiFi while using BLE _"
-msgstr "在使用 BLE 时允许 WiFi _"
-
-#. WiFi library block
-msgid "wifi set local domain name _ .local"
-msgstr "wifi 设置本地域名为 _ .local"
-
-#. Files library block
-msgid "contents of file _"
-msgstr "文件 _ 的内容"
-
-#. Sound destination for arpeggiate block in Scales & Chords library
-msgid "MIDI channel"
-msgstr "MIDI 通道"
-
-#. Example string. Tells the user this input accepts a string list or a byte array
-msgid "aStringListOrByteArray"
-msgstr "字符串列表或字节数组"
-
-#. Musical note name
-msgid "nt;c"
-msgstr "c"
-
-#. Musical note name
-msgid "nt;c#"
-msgstr "c#"
-
-#. Musical note name
-msgid "nt;d"
-msgstr "d"
-
-#. Musical note name
-msgid "nt;d#"
-msgstr "d#"
-
-#. Musical note name
-msgid "nt;e"
-msgstr "e"
-
-#. Musical note name
-msgid "nt;f"
-msgstr "f"
-
-#. Musical note name
-msgid "nt;f#"
-msgstr "f#"
-
-#. Musical note name
-msgid "nt;g"
-msgstr "g"
-
-#. Musical note name
-msgid "nt;g#"
-msgstr "g#"
-
-#. Musical note name
-msgid "nt;a"
-msgstr "a"
-
-#. Musical note name
-msgid "nt;a#"
-msgstr "a#"
-
-#. Musical note name
-msgid "nt;b"
-msgstr "b"
-
-#. General MIDI instrument category
-msgid "piano"
-msgstr "钢琴"
-
-#. General MIDI instrument category
-msgid "chromatic percussion"
-msgstr "色彩打击乐器"
-
-#. General MIDI instrument category
-msgid "organ"
-msgstr "风琴"
-
-#. General MIDI instrument category
-msgid "guitar"
-msgstr "吉他"
-
-#. General MIDI instrument category
-msgid "bass"
-msgstr "贝斯"
-
-#. General MIDI instrument category
-msgid "strings"
-msgstr "弦乐"
-
-#. General MIDI instrument category
-msgid "ensemble"
-msgstr "合奏"
-
-#. General MIDI instrument category
-msgid "brass"
-msgstr "铜管"
-
-#. General MIDI instrument category
-msgid "reed"
-msgstr "簧管"
-
-#. General MIDI instrument category
-msgid "pipe"
-msgstr "笛"
-
-#. General MIDI instrument category
-msgid "synth lead"
-msgstr "合成主音"
-
-#. General MIDI instrument category
-msgid "synth pad"
-msgstr "合成音色"
-
-#. General MIDI instrument category
-msgid "synth SFX"
-msgstr "合成效果"
-
-#. General MIDI instrument category
-msgid "ethnic"
-msgstr "民间乐器"
-
-#. General MIDI instrument category
-msgid "percussive"
-msgstr "打击乐器"
-
-#. General MIDI instrument category
-msgid "gm;SFX"
-msgstr "声音效果"
-
-#. MIDI library block
-msgid "play MIDI note _ for _ ms on channel _ volume _"
-msgstr "播放 MIDI 音符 _ 时长 _ ms 通道 _ 音量 _"
-
-#. MIDI library block
-msgid "stop all notes on channel _"
-msgstr "停止通道 _ 的所有音符"
-
-#. MIDI library block
-msgid "set MIDI note _ to _ on channel _ volume _"
-msgstr "设置 MIDI 音符 _ 为 _ 通道 _ 音量 _"
-
-#. MIDI library block
-msgid "note _ octave _ to MIDI key"
-msgstr "音符 _ 升降八度 _ 到MIDI键"
-
-#. MIDI library block
-msgid "select MIDI instrument _ number _ for channel _"
-msgstr "选择 MIDI 乐器 _ 编号 _ 为通道 _"
-
-#. MIDI library block
-msgid "select MIDI instrument _ for channel _"
-msgstr "选择 MIDI 乐器 _ 为通道 _"
-
-#. MIDI library block
-msgid "variation _"
-msgstr "变体 _"
-
-#. MIDI library block
-msgid "instrument _ number _"
-msgstr "乐器 _ 编号 _"
-
-#. TFT Display library block
-msgid "Hello World!"
-msgstr "Hello World!"
-
-#. NeoPixel library block
-msgid "set NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _"
-msgstr ""
-"设置 NeoPixels #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ "
-"#BR# _ _ _ _ _"
-
-#. NeoPanel library block
-msgid "NeoPanel draw rectangle at x _ y _ width _ height _ color _"
-msgstr "像素屏绘制正方形 x _ y _ 宽度 _ 高度 _ 颜色 _"
-
-#. Key name (as in computer keyboard key)
-msgid "kbd;AltGr"
-msgstr "AltGr"
-
-#. Lists library block
-msgid "unique _"
-msgstr "去重 _"
-
-#. Lists library block
-msgid "uniqued _"
-msgstr "已去重的 _"
-
-#. Pseudorandomness library label
-#. Creates pseudorandom numbers and lists of numbers given a particular seed
-msgid "Pseudorandomness"
-msgstr "伪随机库"
-
-#. Pseudorandomness library block
-msgid "pseudorandom _ to _ with seed _"
-msgstr "伪随机数 从 _ 到 _ ，种子为"
-
-#. Pseudorandomness library block
-msgid "_ pseudorandom numbers _ to _ with seed _"
-msgstr "_ 个伪随机数 从 _ 到 _ ，种子为 _"
-
-#. Example string for blocks that send a message via some communication channel.
-msgid "light"
-msgstr "light"
-
-#. Lists library block. It takes a list and replaces a few, some, most or (list of indices) items with some other element
-msgid "_ with _ items replaced by _"
-msgstr "_ 中的 _ 项目被 _ 替换"
-
-#. TFT Display library block
-msgid "draw pixel row _ x _ y _"
-msgstr "在 TFT 上绘制像素行_ x _ y _"
-
-#. Color library label
-msgid "Color Operators"
-msgstr "颜色运算符"
-
-#. Color library block
-msgid "red _"
-msgstr "红色分量 _"
-
-#. Color library block
-msgid "green _"
-msgstr "绿色分量 _"
-
-#. Color library block
-msgid "blue _"
-msgstr "蓝色分量 _"
-
-#. Color library block
-msgid "color hue _ (0-360) saturation _ % brightness _ %"
-msgstr "颜色 色调 _ (0-360) 饱和度 _ (%)亮度 _ (%)"
-
-#. Color library block
-msgid "hue _"
-msgstr "色调 _"
-
-#. Color library block
-msgid "saturation _"
-msgstr "饱和度 _"
-
-#. Color library block
-msgid "brightness _"
-msgstr "亮度 _"
-
-#. Color library block
-msgid "_ with hue _ (0-360)"
-msgstr "_ 将色调设为 _ (0-360)"
-
-#. Color library block
-msgid "_ with saturation _ %"
-msgstr "_ 将饱和度设为 _ %"
-
-#. Color library block
-msgid "_ with brightness _ %"
-msgstr "_ 将亮度设为 _ %"
-
-#. Fractions library block
-msgid "fract _ − _"
-msgstr "分数 _ − _"
-
-#. General MIDI drum instrument name
-msgid "Crash Cymbal 1"
-msgstr "强音镲 1"
-
-#. General MIDI drum instrument name
-msgid "Tambourine"
-msgstr "铃鼓"
-
-#. General MIDI drum instrument name
-msgid "Cowbell"
-msgstr "牛铃"
-
-#. General MIDI drum instrument name
-msgid "Vibraslap"
-msgstr "震音板"
-
-#. General MIDI drum instrument name
-msgid "High Timbale"
-msgstr "高音天巴鼓"
-
-#. General MIDI drum instrument name
-msgid "Low Timbale"
-msgstr "低音天巴鼓"
-
-#. General MIDI drum instrument name
-msgid "High Agogo"
-msgstr "高音阿哥哥铃"
-
-#. General MIDI drum instrument name
-msgid "Low Agogo"
-msgstr "低音阿哥哥铃"
-
-#. General MIDI drum instrument name
-msgid "Cabasa"
-msgstr "铁沙铃"
-
-#. General MIDI drum instrument name
-msgid "Maracas"
-msgstr "沙锤"
-
-#. General MIDI drum instrument name
-msgid "Short Whistle"
-msgstr "短哨子"
-
-#. General MIDI drum instrument name
-msgid "Long Whistle"
-msgstr "长哨子"
-
-#. General MIDI drum instrument name
-msgid "Short Guiro"
-msgstr "短刮瓜"
-
-#. General MIDI drum instrument name
-msgid "Long Guiro"
-msgstr "长刮瓜"
-
-#. General MIDI drum instrument name
-msgid "Claves"
-msgstr "击木"
-
-#. General MIDI drum instrument name
-msgid "Hi Wood Block"
-msgstr "高音木鱼"
-
-#. General MIDI drum instrument name
-msgid "Low Wood Block"
-msgstr "低音木鱼"
-
-#. General MIDI drum instrument name
-msgid "Mute Cuica"
-msgstr "闷音库伊卡"
-
-#. General MIDI drum instrument name
-msgid "Open Cuica"
-msgstr "开放库伊卡"
-
-#. General MIDI drum instrument name
-msgid "Mute Triangle"
-msgstr "闷音三角铁"
-
-#. General MIDI drum instrument name
-msgid "Open Triangle"
-msgstr "开放三角铁"
-
-#. General MIDI drum set
-msgid "standard"
-msgstr "标准鼓组"
-
-#. General MIDI drum set
-msgid "room"
-msgstr "房间混响鼓组"
-
-#. General MIDI drum set
-msgid "power"
-msgstr "强力鼓组"
-
-#. General MIDI drum set
-msgid "electronic"
-msgstr "电子鼓组"
-
-#. General MIDI drum set
-msgid "TR-808"
-msgstr "TR-808"
-
-#. General MIDI drum set
-msgid "jazz"
-msgstr "爵士鼓组"
-
-#. General MIDI drum set
-msgid "brush"
-msgstr "鼓刷鼓组"
-
-#. General MIDI drum set
-msgid "orchestra"
-msgstr "管弦乐"
-
-#. General MIDI drum set
-msgid "drumkit;SFX"
-msgstr "声音特效"
-
-#. General MIDI drum set
-msgid "CM-64/CM-32L"
-msgstr "CM-64/CM-32L"
-
-#. General MIDI control change
-msgid "bank select 1"
-msgstr "音色库选择 1"
-
-#. General MIDI control change
-msgid "bank select 2"
-msgstr "音色库选择 2"
-
-#. General MIDI control change
-msgid "modulation"
-msgstr "调制"
-
-#. General MIDI control change
-msgid "portamento time"
-msgstr "滑音时间"
-
-#. General MIDI control change
-msgid "volume"
-msgstr "主音量"
-
-#. General MIDI control change
-msgid "pan"
-msgstr "声像"
-
-#. General MIDI control change
-msgid "expression"
-msgstr "表情控制"
-
-#. General MIDI control change
-msgid "hold"
-msgstr "踏板延音"
-
-#. General MIDI control change
-msgid "portamento"
-msgstr "滑音开关"
-
-#. General MIDI control change
-msgid "sostenuto"
-msgstr "特定延音"
-
-#. General MIDI control change
-msgid "soft"
-msgstr "弱音"
-
-#. General MIDI control change
-msgid "resonance"
-msgstr "谐振"
-
-#. General MIDI control change
-msgid "release time"
-msgstr "释放时间"
-
-#. General MIDI control change
-msgid "attack time"
-msgstr "起始时间"
-
-#. General MIDI control change
-msgid "cutoff"
-msgstr "截止频率"
-
-#. General MIDI control change
-msgid "decay time"
-msgstr "衰减时间"
-
-#. General MIDI control change
-msgid "vibrato rate"
-msgstr "颤音速率"
-
-#. General MIDI control change
-msgid "vibrato depth"
-msgstr "颤音深度"
-
-#. General MIDI control change
-msgid "vibrato delay"
-msgstr "颤音延迟"
-
-#. General MIDI control change
-msgid "portamento control"
-msgstr "滑音控制器"
-
-#. MIDI library block
-msgid "select MIDI drum kit _"
-msgstr "选择 MIDI 鼓组 _"
-
-#. MIDI library block
-msgid "play MIDI drum _ for _ ms volume _"
-msgstr "播放 MIDI 鼓 _ 持续 _ 毫秒 音量 _"
-
-#. MIDI library block
-msgid "drum _"
-msgstr "鼓点 _"
-
-#. MIDI library block
-msgid "change MIDI control _ on channel _ to _"
-msgstr "将 MIDI 控制器 _ 设在通道 _ 强度 _"
-
-#. MIDI library block
-msgid "pitch bend MIDI channel _ to _ %"
-msgstr "弯音 MIDI 通道 _ 设为 _ %"
-
-#. MIDI library block
-msgid "send MIDI reset"
-msgstr "发送 MIDI 重置"
-
-#. MIDI library block
-msgid "send MIDI start playing"
-msgstr "发送 MIDI 开始播放"
-
-#. MIDI library block
-msgid "send MIDI stop playing"
-msgstr "发送 MIDI 停止播放"
-
-#. MIDI library block
-msgid "send MIDI continue playing"
-msgstr "发送 MIDI 继续播放"
-
-#. MIDI library block
-msgid "start MIDI clock"
-msgstr "启动 MIDI 时钟"
-
-#. MIDI library block
-msgid "stop MIDI clock"
-msgstr "停止 MIDI 时钟"
-
-#. MIDI library block
-msgid "set MIDI signal to pin _"
-msgstr "设置 MIDI 信号到引脚 _"
-
-#. Scales & Chords library label
-#. Abstractions for musical theory
-msgid "Scales & Chords"
-msgstr "音阶与和弦"
-
-#. Musical scale name
-msgid "ionian"
-msgstr "伊奥尼亚"
-
-#. Musical scale name
-msgid "dorian"
-msgstr "多利亚"
-
-#. Musical scale name
-msgid "phrygian"
-msgstr "弗利几亚"
-
-#. Musical scale name
-msgid "lydian"
-msgstr "利底亚"
-
-#. Musical scale name
-msgid "mixolydian"
-msgstr "混合利底亚"
-
-#. Musical scale name
-msgid "aeolian"
-msgstr "艾奥利亚"
-
-#. Musical scale name
-msgid "locrian"
-msgstr "洛克利亚"
-
-#. Music chord type
-msgid "major"
-msgstr "大调 / 大和弦"
-
-#. Music chord type
-msgid "minor"
-msgstr "小调 / 小和弦"
-
-#. Music chord type
-msgid "diminished"
-msgstr "减和弦"
-
-#. Music chord type
-msgid "major 7th"
-msgstr "大七和弦"
-
-#. Music chord type
-msgid "minor 7th"
-msgstr "小七和弦"
-
-#. Music chord type
-msgid "Maj7"
-msgstr "大七和弦"
-
-#. Sound destination for arpeggiate block in Scales & Chords library
-msgid "tone pin"
-msgstr "发声引脚"
-
-#. Scales & Chords library block
-msgid "_ scale root _"
-msgstr "_ 音阶 根音 _"
-
-#. Scales & Chords library block
-msgid "steps _"
-msgstr "步数 _"
-
-#. Scales & Chords library block
-msgid "pentatonic _ scale root _"
-msgstr "五声音阶 _ 根音 _"
-
-#. Scales & Chords library block
-msgid "_ chord root _"
-msgstr "_ 和弦 根音 _"
-
-#. Scales & Chords library block
-msgid "_ chord for root _"
-msgstr "_ 和弦 对应根音 _"
-
-#. Scales & Chords library block
-msgid "arpeggiate _ in order _ duration _ and volume _ on _ _"
-msgstr "分解琶音 _ 顺序 _ 时长 _ 音量 _ 在 _ _"
-
-#. Scales & Chords library block
-msgid "improvised arpeggio over _ for _ bars with durations _"
-msgstr "即兴琶音 基于 _ 持续 _ 小节 时长 _"
-
-#. Scales & Chords library block
-msgid "improvise over _ for _ bars with durations _ on _ _ volume _"
-msgstr "即兴创作 基于 _ 持续 _ 小节 时长 _ 在 _ _ 音量 _"
-
-#. Scales & Chords library block
-msgid "_ transposed _ semitones"
-msgstr "_ 移调 _ 半音"
-
-#. Scales & Chords library block
-msgid "and _ steps per chord"
-msgstr "且每个和弦 _ 步长"
-
-#. Scales & Chords library block
-msgid "rotation _ of circle of 5ths _ M _ m _ º"
-msgstr "旋转 _ 五度圈 _ 大调 _ 小调 _ 减和弦"
-
-#. File System library block
-msgid "read position of file _"
-msgstr "读取文件 _ 的位置"
-
-#. File System library block
-msgid "set read position _ of file _"
-msgstr "设置读取位置 _ 对应文件 _"
-
-#. File System library block
-msgid "skip _ bytes of file _"
-msgstr "跳过 _ 字节 对应文件 _"
-
-#. Example text for Scrolling library.
-msgid "HELLO ROSA!"
-msgstr "HELLO ROSA!"
-
-#. 5x5 LED Display library block
-msgid "LED image #BR# _"
-msgstr "LED 图像 #BR# _"
-
-#. HTTP Client library example data to send to a server
-msgid "MicroBlocks is fun"
-msgstr "MicroBlocks is fun"
-
-#. Octostudio communication library block
-msgid "Octo stop"
-msgstr "Octo 停止"
-
-#. Octostudio shape names
-msgid "octo;circle"
-msgstr "圆形"
-
-#. Octostudio shape names
-msgid "octo;square"
-msgstr "正方形"
-
-#. Octostudio shape names
-msgid "octo;star"
-msgstr "星星"
-
-#. Octostudio shape names
-msgid "octo;heart"
-msgstr "心形"
-
-#. Octostudio shape names
-msgid "octo;triangle"
-msgstr "三角形"
-
-#. Octostudio shape names
-msgid "octo;clover"
-msgstr "三叶草"
-
-#. Octostudio shape names
-msgid "octo;diamond"
-msgstr "钻石"
-
-#. Octostudio shape names
-msgid "octo;moon"
-msgstr "月亮"
-
-#. Image name for the "display image" block
-msgid "yes"
-msgstr "对钩"
-
-#. Rhythm library block
-msgid "set pattern to _ bars"
-msgstr "设置循环长度为 _ 小节"
-
-#. Rhythm library block
-msgid "wait until next _ duration"
-msgstr "等待直到下一个 _ 时值"
-
-#. Rhythm library block
-msgid "wait until beat _"
-msgstr "等待直到第 _ 拍"
-
-#. Rhythm library block
-msgid "wait until bar _"
-msgstr "等待直到第 _ 小节"
-
-#. Analog Synthesis library label
-#. Generate synthesized sound waves to play on a DAC, over PWM, or any other analog means
-msgid "Analog Synthesis"
-msgstr "模拟合成"
-
-#. Analog Synthesis library block menu option
-msgid "asy;MCP4725"
-msgstr "MCP4725 I2C DAC"
-
-#. Scales & Chords library block
-msgid "chord progression _ with root _"
-msgstr "和弦进行 _ 根音 _"
-
-#. Library name
-msgid "Function Calls"
-msgstr "调用函数"
+msgid "Move to a specific target."
+msgstr "移动到指定目标点处"
