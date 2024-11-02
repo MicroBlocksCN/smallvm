@@ -4428,22 +4428,205 @@ msgstr "报告一个新的字节数组，其长度为输入值，数组元素为
 msgid "Report a byte array containing the UTF-8 bytes of the given string."
 msgstr "报告一个字节数组，该数组包含输入字符串的 UTF-8 字节"
 
-#. NeoPixel library block
-msgid "shift NeoPixel _ color by _"
-msgstr "将 NeoPixel _ 颜色移动 _"
 
-#. Settings menu option
+#.######################
+#. CN
+
 msgid "advanced mode"
 msgstr "高级模式"
 
-#. Block in Input category
-msgid "version"
-msgstr "版本"
+msgid "keyboard event"
+msgstr "键盘事件"
 
-#. Block in Input category
-msgid "BLE connected"
-msgstr "BLE 已连接"
+msgid "broadcast keyboard event(for debugging only)"
+msgstr "广播键盘事件(仅用于调试)"
 
-#. Block in Input category
-msgid "seconds"
-msgstr "秒"
+#### CoCube
+
+msgid "left"
+msgstr "左"
+
+msgid "right"
+msgstr "右"
+
+msgid "forward"
+msgstr "前"
+
+msgid "backward"
+msgstr "后"
+
+msgid "Battery Percentage"
+msgstr "电量百分比"
+
+msgid "On The Mat"
+msgstr "在定位垫上"
+
+msgid "Card ID"
+msgstr "卡片ID"
+
+msgid "X position"
+msgstr "位置X"
+
+msgid "Y position"
+msgstr "位置Y"
+
+msgid "Direction"
+msgstr "方向角"
+
+msgid "set TFT backlight _"
+msgstr "设置TFT背光 _"
+
+msgid "draw Aruco Marker on TFT _"
+msgstr "TFT绘制ArUco标签 _"
+
+msgid "draw AprilTag on TFT _"
+msgstr "TFT绘制AprilTag标签 _"
+
+msgid "move _ at _ speed (0-50)"
+msgstr "向 _ 以 _ 速度 (0-50) 移动"
+
+msgid "rotate _ at _ speed (0-50)"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转"
+
+msgid "move _ at _ speed (0-50) for _ millisecs"
+msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 毫秒"
+
+msgid "rotate _ at _ speed (0-50) for _ millisecs"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 毫秒"
+
+msgid "move _ at _ speed (0-50) by _ steps"
+msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 步"
+
+msgid "rotate _ at _ speed (0-50) by _ degrees"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 度"
+
+msgid "set wheel left _ right _ (-50 to 50)"
+msgstr "左轮以 _ 速度、右轮以 _ 速度移动"
+
+msgid "wheels stop"
+msgstr "电机停转"
+
+msgid "wheels break"
+msgstr "电机刹车"
+
+msgid "rotate to angle _ at _ speed (0-50)"
+msgstr "转向角度 _ 速度 _ (0-50)"
+
+msgid "rotate to target X _ Y _ at _ speed (0-50)"
+msgstr "转向目标点 X _ Y _ 速度 _ (0-50)"
+
+msgid "move to target X _ Y _ at _ speed (0-50)"
+msgstr "移动到目标点 X _ Y _ 速度 _ (0-50)"
+
+msgid "_cocube_motors_speed left _ right _"
+msgstr "_左电机速度 _ 右电机速度 _"
+
+msgid "_cocube_pid_init"
+msgstr "_初始化pid参数"
+
+msgid "_cocube_pid_left_motor"
+msgstr "_pid控制左电机"
+
+msgid "_cocube_pid_right_motor"
+msgstr "_pid控制右电机"
+
+msgid "_cocube_calculate_angle_error angle _"
+msgstr "_计算角度误差 _"
+
+msgid "_cocube_calculate_distance_error Target_X _ Target_Y _"
+msgstr "_计算距离误差 X _ Y _"
+
+#.### CoCube Module
+
+msgid "Power on module"
+msgstr "开启外接模块电源"
+
+msgid "Power off module"
+msgstr "关闭外接模块电源"
+
+msgid "Gripper Open"
+msgstr "夹爪张开"
+
+msgid "Gripper Close"
+msgstr "夹爪闭合"
+
+msgid "Gripper degrees _ (-70 to 0)"
+msgstr "夹爪角度 _ (-70 to 0)度"
+
+msgid "attach NeoPixel"
+msgstr "连接 NeoPixel"
+
+msgid "set all NeoPixels color _"
+msgstr "设置所有 NeoPixels 的颜色为 _"
+
+msgid "clear NeoPixels"
+msgstr "关闭 NeoPixels"
+
+msgid "Ultrasonic distance (cm)"
+msgstr "超声波 距离(cm)"
+
+msgid "Ambient Light"
+msgstr "环境光强"
+
+msgid "Returns the battery percentage of CoCube."
+msgstr "返回 CoCube 电量百分比"
+
+msgid "Returns (-o) if CoCube on the CoMap."
+msgstr "如果 CoCube 在垫上，则返回 (-o)"
+
+msgid "Returns the Index value of CoTag."
+msgstr "返回 CoTag 的 Index 值"
+
+msgid "Returns the X coordinate of CoCube."
+msgstr "返回 CoCube 的 X 坐标"
+
+msgid "Returns the Y coordinate of CoCube."
+msgstr "返回 CoCube 的 Y 坐标"
+
+msgid "Returns the rotation angle of CoCube (0~359°)."
+msgstr "返回 CoCube 的旋转角度 (0~359°)"
+
+msgid "Turn on/off the TFT backlight."
+msgstr "开启/关闭 TFT 屏幕背光"
+
+msgid "Display an ArUco Marker on the TFT screen."
+msgstr "在 TFT 屏幕上显示 ArUco 标签"
+
+msgid "Display an AprilTag Marker on the TFT screen."
+msgstr "在 TFT 屏幕上显示 AprilTag 标签"
+
+msgid "Move CoCube at unit/s speed."
+msgstr "CoCube 以 unit/s 的速度移动"
+
+msgid "Rotate CoCube at unit/s speed."
+msgstr "CoCube 以unit/s 的速度转动"
+
+msgid "Move CoCube at unit/s speed for milliseconds."
+msgstr "CoCube 以 unit/s 的速度移动一定时间（毫秒）"
+
+msgid "Rotate CoCube at unit/s speed for milliseconds."
+msgstr "CoCube 以 unit/s 的速度转动一定时间（毫秒）"
+
+msgid "Move CoCube at unit/s speed for a specific distance."
+msgstr "CoCube 以 unit/s 的速度移动一定距离（unit）"
+
+msgid "Rotate CoCube at unit/s speed for a specific degree."
+msgstr "CoCube 以 unit/s 的速度转动一定角度（°）"
+
+msgid "Control the speed of the left and right wheels of CoCube separately."
+msgstr "分别控制 CoCube 左右轮的速度"
+
+msgid "Control CoCube stop."
+msgstr "控制 CoCube 停止移动"
+
+msgid "Control CoCube break."
+msgstr "控制 CoCube 快速刹车"
+
+msgid "Turn to a specific angle."
+msgstr "转向特定角度"
+
+msgid "Turn to a specific target."
+msgstr "转向特定目标点"
+
+msgid "Move to a specific target."
+msgstr "移动到指定目标点处"
