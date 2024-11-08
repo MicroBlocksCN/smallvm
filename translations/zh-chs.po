@@ -4451,12 +4451,17 @@ msgstr "秒"
 #.######################
 #. CN
 
+msgid "Libraries"
+msgstr "积木库"
+
 msgid "install ESP firmware from microblocks.fun"
 msgstr "安装社区固件"
 
 msgid "Open port?"
 msgstr "选择设备"
 
+msgid "exit loop"
+msgstr "退出循环"
 
 msgid "keyboard event"
 msgstr "键盘事件"
