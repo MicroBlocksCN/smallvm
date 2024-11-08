@@ -1,0 +1,70 @@
+module 'M5 Scroll'
+author '邵悦'
+version 1 0 
+description 'M5 Stack Scroll Unit
+https://docs.m5stack.com/en/unit/UNIT-Scroll
+'
+variables _M5ScrollAddr 
+
+  spec ' ' '_M5 scroll init' '_M5 scroll init'
+  spec 'r' 'M5 Scroll button' 'M5 Scroll button'
+  spec 'r' '_fixed16bitsign' '_fixed16bitsign _' 'auto' '10'
+  spec 'r' 'M5 Scroll get value' 'M5 Scroll get value'
+  spec ' ' 'M5 Scroll reset counter' 'M5 Scroll reset counter'
+  spec 'r' 'M5 Scroll getIncValue' 'M5 Scroll getIncValue'
+  spec ' ' 'M5 Scroll set value' 'M5 Scroll set value _' 'auto' '10'
+  spec ' ' 'M5 Scroll set RGB' 'M5 Scroll set RGB _ _ _' 'auto auto auto' 0 0 0
+  spec 'r' 'M5 Scroll get RGB' 'M5 Scroll get RGB'
+
+to 'M5 Scroll button' {
+  '_M5 scroll init'
+  return ((i2cGet _M5ScrollAddr (hexToInt '20')) == 0)
+}
+
+to 'M5 Scroll get RGB' {
+  '_M5 scroll init'
+  return ('[data:makeList]' (i2cGet _M5ScrollAddr (hexToInt '31')) (i2cGet _M5ScrollAddr (hexToInt '32')) (i2cGet _M5ScrollAddr (hexToInt '33')))
+}
+
+to 'M5 Scroll get value' {
+  '_M5 scroll init'
+  '[sensors:i2cWrite]' _M5ScrollAddr (hexToInt '10')
+  local 'var' (newList 2)
+  '[sensors:i2cRead]' _M5ScrollAddr var
+  return ('_fixed16bitsign' ((at 1 var) | ((at 2 var) << 8)))
+}
+
+to 'M5 Scroll getIncValue' {
+  '_M5 scroll init'
+  '[sensors:i2cWrite]' _M5ScrollAddr (hexToInt '50')
+  local 'var' (newList 4)
+  '[sensors:i2cRead]' _M5ScrollAddr var
+  return ('_fixed16bitsign' ((at 1 var) | ((at 2 var) << 8)))
+}
+
+to 'M5 Scroll reset counter' {
+  '_M5 scroll init'
+  i2cSet _M5ScrollAddr (hexToInt '40') 1
+}
+
+to 'M5 Scroll set RGB' r g b {
+  '_M5 scroll init'
+  '[sensors:i2cWrite]' _M5ScrollAddr ('[data:makeList]' (hexToInt '30') 0 r g b)
+}
+
+to 'M5 Scroll set value' foo {
+  '_M5 scroll init'
+  if (foo < 0) {
+    foo = (65536 + foo)
+  }
+  '[sensors:i2cWrite]' _M5ScrollAddr ('[data:makeList]' (hexToInt '10') (foo & (hexToInt 'FF')) (foo >> 8))
+}
+
+to '_M5 scroll init' {
+  if (_M5ScrollAddr == 0) {_M5ScrollAddr = (hexToInt '40')}
+}
+
+to '_fixed16bitsign' foo {
+  return (ifExpression (foo > 32768) (foo - 65536) foo)
+}
+
