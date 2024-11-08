@@ -3513,14 +3513,13 @@ method flashESPFirmwareFromURL SmallRuntime boardName url {
 
 method installESPFirmwareFromRepo SmallRuntime {
 	setCursor 'wait'
-	if (isPilot (findMicroBlocksEditor)) {
-		version = 'pilot'
-	} else {
-		version = (join 'v' ideVersion)
-	}
-	if (endsWith version '-pilot') {
-		version = (substring version 1 ((count version) - 6))
-	}
+	//if (isPilot (findMicroBlocksEditor)) {
+	//	version = 'pilot'
+	//} else {
+	//	version = ideVersion
+	//}
+	// devCN
+	version = 'pilot'
 	menu = (menu 'Select firmware:' this)
 	html = (basicHTTPGet 'microblocks.fun' (join '/downloads/' version '/vm/'))
 	for line (lines html) {
