@@ -1,0 +1,75 @@
+module 'M5 miniEncoder'
+author '邵悦'
+version 1 0 
+description 'M5 miniEncoder 
+https://docs.m5stack.com/en/unit/MiniEncoderC%20Hat
+only use 16bit data
+'
+variables _M5miniEncoderAddr 
+
+  spec ' ' '_M5 miniEncoder init' '_M5 miniEncoder init'
+  spec 'r' 'M5 miniEncoder button status' 'M5 miniEncoder button status'
+  spec 'r' 'M5 miniEncoder get value' 'M5 miniEncoder get value'
+  spec 'r' 'M5 miniEncoder getIncValue' 'M5 miniEncoder getIncValue'
+  spec 'r' '_fix16bitsign' '_fix16bitsign _' 'auto' '10'
+  spec ' ' 'M5 miniEncoder set value' 'M5 miniEncoder set value _' 'auto' '10'
+  spec ' ' 'M5 miniEncoder reset counter' 'M5 miniEncoder reset counter'
+  spec ' ' 'M5 miniEncoder set RGB' 'M5 miniEncoder set RGB _ _ _' 'auto auto auto' 255 0 0
+  spec ' ' 'M5 miniEncoder set color' 'M5 miniEncoder set color _' 'color'
+
+to 'M5 miniEncoder button status' {
+  '_M5 miniEncoder init'
+  return ((i2cGet _M5miniEncoderAddr (hexToInt '20')) == 0)
+}
+
+to 'M5 miniEncoder get value' {
+  '_M5 miniEncoder init'
+  '[sensors:i2cWrite]' _M5miniEncoderAddr (hexToInt '00')
+  local 'var' (newList 4)
+  '[sensors:i2cRead]' _M5miniEncoderAddr var
+  return ('_fix16bitsign' ((at 1 var) | ((at 2 var) << 8)))
+}
+
+to 'M5 miniEncoder getIncValue' {
+  '_M5 miniEncoder init'
+  '[sensors:i2cWrite]' _M5miniEncoderAddr (hexToInt '10')
+  local 'var' (newList 4)
+  '[sensors:i2cRead]' _M5miniEncoderAddr var
+  return ('_fix16bitsign' ((at 1 var) | ((at 2 var) << 8)))
+}
+
+to 'M5 miniEncoder reset counter' {
+  '_M5 miniEncoder init'
+  i2cSet _M5miniEncoderAddr (hexToInt '40') 1
+}
+
+to 'M5 miniEncoder set RGB' r g b {
+  '_M5 miniEncoder init'
+  '[sensors:i2cWrite]' _M5miniEncoderAddr ('[data:makeList]' (hexToInt '30') r g b)
+}
+
+to 'M5 miniEncoder set color' foo {
+  'M5 miniEncoder set RGB' ((foo >> 16) & 255) ((foo >> 8) & 255) (foo & 255)
+}
+
+to 'M5 miniEncoder set value' foo {
+  '_M5 miniEncoder init'
+  if (foo >= 0) {
+    '[sensors:i2cWrite]' _M5miniEncoderAddr ('[data:makeList]' (hexToInt '00') (foo & (hexToInt 'FF')) (foo >> 8) 0 0)
+  } else {
+    foo = (65536 + foo)
+    '[sensors:i2cWrite]' _M5miniEncoderAddr ('[data:makeList]' (hexToInt '00') (foo & (hexToInt 'FF')) (foo >> 8) 255 255)
+  }
+}
+
+to '_M5 miniEncoder init' {
+  if (_M5miniEncoderAddr == 0) {
+    '[sensors:i2cSetPins]' 0 26
+    _M5miniEncoderAddr = (hexToInt '42')
+  }
+}
+
+to '_fix16bitsign' foo {
+  return (ifExpression (foo > 32768) (foo - 65536) foo)
+}
+
