@@ -68,11 +68,11 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE) || defined(M5_ATOMS3) || defined(XESGAME)//学而思游戏机
+	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(XESGAME)//学而思游戏机
 
-	#ifndef COCUBE
+	#if !defined(COCUBE) && !defined(COCUBE_SOCCER)
 	#define BLACK 0
-	#endif // !COCUBE
+	#endif // !COCUBE && !COCUBE_SOCCER
 
 	#if defined(ARDUINO_CITILAB_ED1)
 		#define TFT_CS	5
@@ -1192,6 +1192,31 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			tft.println(battery_percentage_char);
 			delay(800);
 		}
+	
+	#elif defined(COCUBE_SOCCER)
+		#include <Arduino_GFX_Library.h>
+		#define TFT_MOSI 23
+		#define TFT_SCLK 18
+		#define TFT_CS 25
+		#define TFT_DC 2
+		#define TFT_RST 5
+		#define TFT_BL 4
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 115
+
+		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
+        Arduino_GC9107 tft = Arduino_GC9107(&bus, TFT_RST, 0, false, TFT_WIDTH, TFT_HEIGHT, 0, 13, 2, 1);
+
+        void tftInit() {
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, LOW);
+			tft.begin();
+			tft.invertDisplay(1);
+			tft.fillScreen(RGB565_BLACK);
+			delay(35);
+			digitalWrite(TFT_BL, HIGH);
+			useTFT = true;
+		}
 
 	#endif // end of board-specific sections
 
@@ -1258,7 +1283,15 @@ void tftSetHugePixel(int x, int y, int state) {
 	}
 	int lineWidth = (minDimension > 60) ? 3 : 1;
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
-	tft->fillRect(
+	// CoCube Soccer has a round screen, so it's treated specially.
+	#if defined(COCUBE_SOCCER)
+		lineWidth = 2;
+		squareSize = 16;
+		minDimension = squareSize *  5 + lineWidth * 6;
+		yInset = (tft.width() - minDimension) / 2;
+		xInset = yInset;
+	#endif
+	tft.fillRect(
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
 		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
 		squareSize, squareSize,
@@ -1313,7 +1346,7 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	#if defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);
 		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
-	#elif defined(COCUBE)
+	#elif defined(COCUBE) || defined(COCUBE_SOCCER)
         pinMode(TFT_BL, OUTPUT);
 		if (brightness < 0) brightness = 0;
 		if (brightness > 10) brightness = 10;
@@ -1772,7 +1805,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 		for (int i = 0; i < scale; i++) {
 			tft->draw16bitRGBBitmap(originX * scale, (originY + y) * scale + i, bufferPixels, originWidth * scale, 1);
 		}
-		#if defined(COCUBE) ||  defined(M5_ATOMS3)
+		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3)
 			tft.fillRect(
 			originX * scale,
 			(originY + y) * scale,
