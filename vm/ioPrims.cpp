@@ -154,6 +154,10 @@ void hardwareInit() {
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
 		cocubeSensorInit();
 	#endif
+	#if defined(COCUBE_SOCCER)
+        #include "soc/rtc_cntl_reg.h"  // for brownout control
+        WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
+	#endif
 	#if defined(TX_FT_BOX)
 		pinMode(37, OUTPUT);
 		pinMode(33, OUTPUT);
@@ -698,7 +702,23 @@ void hardwareInit() {
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-		
+
+#elif defined(COCUBE_SOCCER)
+	#define BOARD_TYPE "CoCube_Soccer"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 9
+	#define PIN_LED -1
+	#define PIN_BUTTON_A 38
+	#define PIN_BUTTON_B 37
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};		
+
 #elif defined(ARDUINO_ESP32_PICO)
 	#define BOARD_TYPE "ESP32-Pico-D4"
 	#define DIGITAL_PINS 40
@@ -1786,7 +1806,7 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
 		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY) || defined(M5_CARDPUTER) || \
-		defined(FUTURE_LITE) || defined(COCUBE) || defined(XESGAME)
+		defined(FUTURE_LITE) || defined(COCUBE) || defined(COCUBE_SOCCER) || defined(XESGAME)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (PIN_LED < 0) return; // board does not have a user LED
