@@ -482,7 +482,7 @@ to MenuAction4 {}
 }
 
 
-module 'Distance (HC-SR04)' 'cat;Input'
+module 'Distance (HC-SR04)' Input
 author 'Joan Guillén & Josep Ferràndiz'
 version 1 2 
 tags sensor 'hc-sr04' distance ultrasound 
@@ -523,7 +523,7 @@ to sr04_distanceOnePin pin {
 }
 
 
-module 'IR Remote' 'cat;Comm'
+module 'IR Remote' Comm
 author MicroBlocks
 version 1 7 
 tags ir infrared remote 
@@ -736,10 +736,10 @@ to receiveIR {
 }
 
 
-module 'Keyboard and Mouse' 'cat;Comm'
+module 'Keyboard and Mouse' Comm
 author MicroBlocks
-version 1 7 
-choices keyModifiers 'kbd;Shift' 'kbd;Control' 'kbd;Alt' '/' '⌥'' 'kbd;Logo / ⌘' 'kbd;AltGr' 
+version 1 8 
+choices keyModifiers 'kbd;Shift' 'kbd;Control' 'kbd;Alt / ⌥' 'kbd;Logo / ⌘' 'kbd;AltGr' 
 choices mouseButtons 'mouse;left' 'mouse;right' 'mouse;middle' 'mouse;both' 
 choices specialKeys 'kbd;enter:10' 'kbd;tab:9' 'kbd;backspace:8' 'kbd;ESC:177' 'kbd;insert:209' 'kbd;delete:212' 'kbd;home:210' 'kbd;end:213' 'kbd;PgUp:211' 'kbd;PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'kbd;PrintScreen:206' 
 description 'This library can send mouse and keyboard events to a computer over USB (i.e. it emulates a USB HID device) on boards with the necessary hardware. It currently works on RP2040 and SAMD21 boards such as the Adafruit Circuit Playground Express, Trinket M0, and Metro M0 Express. It also works on the MakerPort.
@@ -775,7 +775,7 @@ to 'press key' key modifier {
 }
 
 
-module 'LCD Display' 'cat;Output'
+module 'LCD Display' Output
 author MicroBlocks
 version 1 5 
 description 'Library for 16x2 LCD text displays with 1602 controller I2C "backpack" like the ones from DFRobot, SunFounder, and others. These displays have two lines of sixteen characters.
@@ -911,7 +911,7 @@ to '_LCD1602 toggle enable' bits {
 }
 
 
-module 'MP3 Player' 'cat;Output'
+module 'MP3 Player' Output
 author MicroBlocks
 version 1 11 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
@@ -1076,9 +1076,9 @@ to mp3_setVolume level {
 }
 
 
-module MakerPort 'cat;Output'
+module MakerPort Output
 author MicroBlocks
-version 2 1 
+version 2 2 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 choices makerport_loudnessPin 'mp3 player' 'analog pin (13)' 'extra pin (17)' 
@@ -1153,9 +1153,9 @@ to makerport_typeString s {
 }
 
 
-module NeoPixel 'cat;Output'
+module NeoPixel Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -1207,13 +1207,11 @@ to NeoPixel_shift_color i delta {
 }
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+  if (_np_pixels == 0) {if (or ((boardType) == 'M5Atom-Matrix') (or ((boardType) == 'Mbits') ((boardType) == 'micro:STEAMakers'))) {
     neoPixelAttach 25 '' false
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
-  } ((boardType) == 'Mbits') {
-    neoPixelAttach 25 '' false
   } else {
     neoPixelAttach 10 '' false
   }}
@@ -1360,7 +1358,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 }
 
 
-module Servo 'cat;Output'
+module Servo Output
 author MicroBlocks
 version 1 3 
 tags servo motor angle rotation position 
@@ -1465,7 +1463,7 @@ to stopServo which {
 }
 
 
-module Touch 'cat;Input'
+module Touch Input
 author MicroBlocks
 version 1 11 
 description 'Support for one or two MPR121 12-channel i2c touch sensors.

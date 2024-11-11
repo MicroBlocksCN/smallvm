@@ -1084,6 +1084,7 @@ method pageResized MicroBlocksEditor {
 	scale = (global 'scale')
 	page = (global 'page')
 	fixLayout this
+	fixLayout scripter
 	if ('Win' == (platform)) {
 		// workaround for a Windows graphics issue: when resizing a window it seems to clear
 		// some or all textures. this forces them to be updated from the underlying bitmap.
@@ -1188,7 +1189,8 @@ method gearMenu MicroBlocksEditor {
 // Does anyone ever enable 'PlugShare when project empty'?
 		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
 		addLine menu
-		addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
+		addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime))
+		addItem menu 'install ESP firmware from microblocks.fun' (action 'installESPFirmwareFromRepo' (smallRuntime))
 		addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 		addLine menu
 		addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
@@ -1388,6 +1390,12 @@ method languageMenu MicroBlocksEditor {
 method setLanguage MicroBlocksEditor langCode {
 	saveToUserPreferences this 'locale' langCode
 	setLanguage (authoringSpecs) langCode
+	// localizable user libraries
+	for lib (values (libraries (project this))) {
+		if (hasTranslationFor lib langCode) {
+			updateTranslation (authoringSpecs) (getTranslationSources lib langCode)
+		}
+	}
 	languageChanged this
 }
 

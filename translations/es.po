@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-28 16:23+0200\n"
-"PO-Revision-Date: 2024-10-30 10:50+0000\n"
+"PO-Revision-Date: 2024-11-06 13:53+0000\n"
 "Last-Translator: Bernat Romagosa <bernat@romagosa.work>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/microblocks/ide/"
 "es/>\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.8.2\n"
 
 #. Block part type, while making a new block
 msgid "input"
@@ -186,11 +186,11 @@ msgstr "Hummingbird LED tricolor _ R _ % G _ % B _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Wheels L _ % R _ %"
-msgstr "Pon las ruedas a velocidad I _ % D _ %"
+msgstr "pon las ruedas a velocidad I _ % D _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Light"
-msgstr "Luz _"
+msgstr "luz _"
 
 #. Keyboard and Mouse library block
 msgid "hold key _"
@@ -1498,7 +1498,7 @@ msgstr "con contenido _"
 
 #. Keyestudio Smart Farm library block
 msgid "on"
-msgstr "abre"
+msgstr "enciende"
 
 #. MIDI library block
 msgid "stop all notes on channel _"
@@ -1715,7 +1715,7 @@ msgstr "MiKe Robot ir _ a _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Turn _ _ ° at _ %"
-msgstr "Gira hacia la _ _ ° a velocidad _ %"
+msgstr "gira hacia la _ _ ° a velocidad _ %"
 
 #. Scales & Chords library block
 msgid "arpeggiate _ in order _ duration _ and volume _ on _ _"
@@ -1727,7 +1727,7 @@ msgstr "7ª mayor"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Distance (cm)"
-msgstr "Distancia (cm)"
+msgstr "distancia (cm)"
 
 #. Touch Screen library block
 msgid "TFT touch pressure"
@@ -2007,7 +2007,7 @@ msgstr "ESC"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "Enciende la cola de color R _ % V _ % A _ %"
+msgstr "enciende la cola de color R _ % V _ % A _ %"
 
 #. Turtle Geometry library block
 msgid "turn _ degrees"
@@ -2083,7 +2083,7 @@ msgstr "ensemble"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Line"
-msgstr "Línea _"
+msgstr "línea _"
 
 #. 5x5 LED Display library block
 msgid "display _"
@@ -2739,11 +2739,11 @@ msgstr "Luz"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Encoder"
-msgstr "Recuento de vueltas _"
+msgstr "recuento de vueltas _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Accelerometer _"
-msgstr "Acelerómetro"
+msgstr "acelerómetro"
 
 #. Infrared Remote library block
 msgid "receive IR code"
@@ -4152,7 +4152,7 @@ msgstr "sentido horario"
 
 #. BirdBrain Technologies Finch library label
 msgid "Finch Beak Red _ Green _ Blue _"
-msgstr "Enciende el pico de color R _ % V _ % A _ %"
+msgstr "enciende el pico de color R _ % V _ % A _ %"
 
 #. Citilab ED1 Stepper Motor library block
 msgid "move motor _ angle _ °"
@@ -4164,11 +4164,11 @@ msgstr "mueve motor _ _ vueltas completas"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Move _ _ cm at _ %"
-msgstr "Mueve hacia _ _ cm  a velocidad _ %"
+msgstr "mueve hacia _ _ cm a velocidad _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Stop"
-msgstr "Detén el Finch"
+msgstr "detén el Finch"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Right"
@@ -4176,15 +4176,15 @@ msgstr "Derecha"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Tilt Left"
-msgstr "Inclinado haciaa la izquierda"
+msgstr "Inclinado hacia la izquierda"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Reset Encoders"
-msgstr "Reinicializa los contadores de vueltas"
+msgstr "reinicializa los contadores de vueltas"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Battery"
-msgstr "Nivel de batería"
+msgstr "nivel de batería"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Forward"
@@ -5473,7 +5473,7 @@ msgstr "Reporta (-o) si el primer valor es mayor o igual que el segundo."
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 #. The (-o) tag turns into an icon of a boolean input set to on, or true (green)
 msgid "Report (-o) if both values are (-o)"
-msgstr "Reporta (-o) si ambos valores son (-o)."
+msgstr "Reporta (-o) si ambos valores son (-o)"
 
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 msgid "Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)"
@@ -5504,7 +5504,7 @@ msgstr ""
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 #. The (-o) tag turns into an icon of a boolean input set to on, or true (green)
 msgid "Report (-o) if either value is (-o)"
-msgstr "Reporta (-o) si alguno de los valores es (-o)."
+msgstr "Reporta (-o) si alguno de los valores es (-o)"
 
 #. Tip Bar text for a block (at the bottom of the IDE, gives info on the currently hovered block or input)
 msgid "Find and report the index of an item in a list or a substring within a string. Report -1 if not found."
@@ -5904,3 +5904,112 @@ msgid "Report a list containing the given range of numbers (with optional increm
 msgstr ""
 "Reporta una lista que contiene el rango de números definido (con incremento "
 "opcional). Útil en bucles \"por\"."
+
+#. Cutebot Pro library block
+msgid "CBPro set _ servo _ angle to _ deg"
+msgstr "fija servo de _ número _ a _ grados"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 clear all rainbowLED"
+msgstr "apaga LEDs multicolor"
+
+#. Cutebot Pro library block
+msgid "CBPro IR code received?"
+msgstr "¿código IR recibido?"
+
+#. MicroBlocks IDE information
+msgid "The firmware on the board is not compatible with this version of MicroBlocks."
+msgstr ""
+"El firmware de esta placa no es compatible con esta versión de MicroBlocks."
+
+#. Elecfreaks Octopus sensor library label
+msgid "Octopus"
+msgstr "Octopus"
+
+#. Settings menu option
+msgid "autoload board libraries"
+msgstr "auto-carga librarías de placa"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 stop all motors"
+msgstr "detén todos los motores"
+
+#. Cutebot Pro library block
+msgid "CBPro stop external motor"
+msgstr "detén motor externo"
+
+#. Cutebot Pro library block
+msgid "CBPro version"
+msgstr "versión del CBPro"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 rainbowLED _ R _ G _ B _ (0~255)"
+msgstr "pon LED multicolor _ a rojo _ verde _ azul _ (0~255)"
+
+#. WuKong2040 robot library label
+msgid "WuKong2040"
+msgstr "WuKong2040"
+
+#. Settings menu option
+msgid "PlugShare when project empty"
+msgstr "auto-PlugShare en proyectos vacíos"
+
+#. Cutebot Pro library block
+msgid "CBPro tracking state"
+msgstr "estado del seguimiento de línea"
+
+#. Cutebot Pro library block
+msgid "CBPro set external motor power to _ (-100 to 100)"
+msgstr "fija la potencia del motor externo a _ (-100 a 100)"
+
+#. Cutebot Pro library block
+msgid "CBPro servo _ speed to _ (-100 to 100)"
+msgstr "pon servo _ a velocidad _ (-100 a 100)"
+
+#. Cutebot Pro library block
+msgid "CBPro tracking state is (L - - R) _ _ _ _"
+msgstr "el estado del seguimiento de línea es (I--D) _ _ _ _"
+
+#. Cutebot Pro library block
+msgid "CBPro tracking offset"
+msgstr "desfase del seguimiento de línea"
+
+#. Cutebot Pro library block
+msgid "CBPro IR code"
+msgstr "código IR"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 motor _ speed to _ (-100~100)"
+msgstr "pon el motor _ a velocidad _ (-100~100)"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 stop motor _"
+msgstr "detén el motor _"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 buzzer beep _ ms"
+msgstr "pita durante _ ms"
+
+#. WuKong2040 robot library block
+msgid "WuKong2040 rainbowLED _ color to _"
+msgstr "pon LED multicolor _ a _"
+
+#. Settings menu tooltip
+msgid "make the IDE darker"
+msgstr "oscurece la IDE"
+
+#. Block in Input category
+msgid "BLE id"
+msgstr "identificador BLE"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "conectado por BLE"
+
+#. Block in Input category
+msgid "seconds"
+msgstr "segundos"
+
+#. Block in Input category
+msgid "version"
+msgstr "versión"

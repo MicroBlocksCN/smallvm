@@ -1,4 +1,4 @@
-module 'OLED Graphics' 'cat;Output'
+module 'OLED Graphics' 'Output'
 author 'Turgut Guneysu'
 version 1 15 
 choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 

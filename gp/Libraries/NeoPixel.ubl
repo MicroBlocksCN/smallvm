@@ -1,6 +1,6 @@
-module NeoPixel Output
+module NeoPixel 'Output'
 author MicroBlocks
-version 1 9 
+version 1 10 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -8,8 +8,8 @@ variables _np_pixels
   spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
   spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
   spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color' 8091903
-  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1 16737380
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
   space
   spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
   spec 'r' 'randomColor' 'random color'
@@ -52,13 +52,11 @@ to NeoPixel_shift_color i delta {
 }
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+  if (_np_pixels == 0) {if (or ((boardType) == 'M5Atom-Matrix') (or ((boardType) == 'Mbits') ((boardType) == 'micro:STEAMakers'))) {
     neoPixelAttach 25 '' false
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
-  } ((boardType) == 'Mbits') {
-    neoPixelAttach 25 '' false
   } else {
     neoPixelAttach 10 '' false
   }}

@@ -235,6 +235,12 @@ static OBJ primConnectedToIDE(int argCount, OBJ *args) {
 	return ideConnected() ? trueObj : falseObj;
 }
 
+static OBJ primScriptTooLarge(int argCount, OBJ *args) {
+	// Used by IDE to report scriptTooLarge errors.
+
+	return fail(scriptTooLarge);
+}
+
 static OBJ primJSONGet(int argCount, OBJ *args) {
 	// Return the value at the given path in a JSON string or the empty string
 	// if the path doesn't refer to anything. The optional third argument returns
@@ -360,6 +366,7 @@ static PrimEntry entries[] = {
 	{"bme680GasResistance", primBMP680GasResistance},
 	{"connectedToIDE", primConnectedToIDE},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
+	{"scriptTooLarge", primScriptTooLarge},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},
 	{"jsonValueAt", primJSONValueAt},

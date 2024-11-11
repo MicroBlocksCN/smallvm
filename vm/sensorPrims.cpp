@@ -1188,7 +1188,6 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_Mbits)
 
-#define MPU6050 0x69
 #define MPU6050_ACCEL_XOUT_H 59
 #define MPU6050_PWR_MGMT_1 107
 
@@ -1198,11 +1197,10 @@ static void mpu6050readData() {
 	if (!accelStarted) {
 		if (!wireStarted) startWire();
 		if (!wireStarted) return;
-
-		writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
-		delay(1);
 		accelStarted = true;
 	}
+
+	writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
 
 	// Request accelerometer data
 	Wire.beginTransmission(MPU6050);
@@ -1220,7 +1218,6 @@ static void mpu6050readData() {
 
 static int readAcceleration(int registerID) {
 	mpu6050readData();
-
 	int val = 0;
 	if (1 == registerID) val = fix16bitSign((mpuData[2] << 8) | mpuData[3]); // x-axis
 	if (3 == registerID) val = -fix16bitSign((mpuData[0] << 8) | mpuData[1]); // y-axis
@@ -1237,10 +1234,61 @@ static void setAccelRange(int range) {
 	writeI2CReg(MPU6050, 0x1C, (range << 3));
 }
 
+#define AHT20_ADDR 0x38
+
+int aht20_initialized = false;
+
+static int aht20_temperature(); // forward reference
+
+static void aht20_init() {
+	if (aht20_initialized) return;
+
+	// Send initialization commands
+	Wire.beginTransmission(AHT20_ADDR);
+	Wire.write(0xBE);
+	Wire.write(0x08);
+	Wire.write(0x00);
+	Wire.endTransmission();
+
+	delay(10); // initialization time
+	aht20_initialized = true;
+
+	aht20_temperature(); // get initial reading
+}
+
+static int aht20_temperature() {
+	if (!wireStarted) startWire();
+	if (!wireStarted) return 0;
+	aht20_init();
+
+	// get the data from the last reading
+	uint8 data[6];
+	int readCount = sizeof(data);
+	Wire.requestFrom(AHT20_ADDR, readCount);
+	for (int i = 0; i < readCount; i++) {
+		data[i] = Wire.available() ? Wire.read() : 255; // 255 if no data available
+	}
+
+	// send a new read command so data will be ready on the next call
+	Wire.beginTransmission(AHT20_ADDR);
+	Wire.write(0xAC);
+	Wire.write(0x33);
+	Wire.write(0x00);
+	Wire.endTransmission();
+	taskSleep(75);
+
+	int raw = ((data[3] & 15) << 16) | (data[4] << 8) | data[5];
+	return ((raw * 200) / 1048576) - 50;
+}
+
 #define TMP75_ADDR 0x48
 #define TMP75_TEMP_REG 0
 
 static int readTemperature() {
+	#if defined(STEAMaker)
+		return aht20_temperature();
+	#endif
+
 	if (!wireStarted) startWire();
 	if (!wireStarted) return 0;
 
@@ -2190,8 +2238,6 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	#if defined(DATABOT)
 		return int2obj(databotMageneticField());
-	#elif defined(ESP32_ORIGINAL)
-		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
 		readMagMicrobitV1CalliopeClue(buf);
@@ -2639,7 +2685,7 @@ int readAnalogMicrophone() {
 	#if defined(ARDUINO_CITILAB_ED1)
 		int pin = 36; // Pin A0 on ED1
 		return (analogRead(pin) >> 2);
-	#elif defined(ARDUINO_Mbits)
+	#elif defined(ARDUINO_Mbits) || defined(STEAMaker)
 		int pin = 35;
 		return (analogRead(pin) >> 2);
 	#endif

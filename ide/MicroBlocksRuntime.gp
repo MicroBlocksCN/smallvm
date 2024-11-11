@@ -83,7 +83,9 @@ method chunkTypeFor SmallRuntime aBlockOrFunction {
 	error 'Unexpected argument to chunkTypeFor'
 }
 
-method chunkBytesFor SmallRuntime aBlockOrFunction {
+method compiledBytesFor SmallRuntime aBlockOrFunction {
+    // Compile the given block or function and return a list of code bytes.
+
 	if (isClass aBlockOrFunction 'String') { // look up function by name
 		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
 		if (isNil aBlockOrFunction) { return (list) } // unknown function
@@ -102,6 +104,16 @@ method chunkBytesFor SmallRuntime aBlockOrFunction {
 			error 'Instruction must be an Array or String:' item
 		}
 	}
+	return bytes
+}
+
+method chunkBytesFor SmallRuntime aBlockOrFunction {
+    bytes = (compiledBytesFor this aBlockOrFunction)
+    // handle script too large
+    if ((count bytes) > 1000) {
+        // Replace compiled code with a stub that just reports a "Script too large" error.
+        bytes = (compiledBytesFor this (block 'command' (color 255 0 0) '[misc:scriptTooLarge]'))
+    }
 	return bytes
 }
 
@@ -196,9 +208,12 @@ method addWithLineNum SmallRuntime aList instruction items {
 method showCompiledBytes SmallRuntime aBlock {
 	// Display the instruction bytes for the given stack.
 
-	bytes = (chunkBytesFor this (topBlock aBlock))
+	bytes = (compiledBytesFor this (topBlock aBlock))
 	result = (list)
 	add result (join '[' (count bytes) ' bytes]' (newline))
+	if ((count bytes) > 1000) {
+	    add result (join '*** Script too large; over 1000 bytes! ***' (newline) (newline))
+	}
 	for i (count bytes) {
 		add result (toString (at bytes i))
 		if (0 == (i % 2)) {
@@ -2068,6 +2083,8 @@ method errorString SmallRuntime errID {
 #define cannotUseWithBLE		50	// Cannot use this feature when board is connected to IDE via Bluetooth
 #define bad8BitBitmap			51	// Needs an 8-bit bitmap: a list containing the bitmap width and contents (a byte array)
 #define badColorPalette			52	// Needs a color palette: a list of positive 24-bit integers representing RGB values
+#define encoderNotStarted		53	// Encoder not started; pin may not support interrupts
+#define scriptTooLarge			54	// Script too large
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -3277,7 +3294,10 @@ method installESPFirmwareFromURL SmallRuntime {
 	}
 	url = (trim (freshPrompt (global 'page') 'ESP32 firmware URL?' defaultURL))
 	if ('' == url) { return }
+	flashESPFirmwareFromURL this boardName url
+}
 
+method flashESPFirmwareFromURL SmallRuntime boardName url {
 	if ('Browser' == (platform)) {
 		disconnected = true
 		flasherPort = port
@@ -3288,6 +3308,31 @@ method installESPFirmwareFromURL SmallRuntime {
 	}
 	flasher = (newFlasher boardName portName false false)
 	installFromURL flasher flasherPort url
+}
+
+method installESPFirmwareFromRepo SmallRuntime {
+	setCursor 'wait'
+	//if (isPilot (findMicroBlocksEditor)) {
+	//	version = 'pilot'
+	//} else {
+	//	version = ideVersion
+	//}
+	// devCN
+	version = 'pilot'
+	menu = (menu 'Select firmware:' this)
+	html = (basicHTTPGet 'microblocks.fun' (join '/downloads/' version '/vm/'))
+	for line (lines html) {
+		if (beginsWith line '<a href="vm_') {
+			binIndex = (findSubstring '.bin' line)
+			if (binIndex > 0) { // it is an ESP firmware
+				boardName = (substring line 13 (binIndex - 1))
+				url = (join 'http://microblocks.fun/downloads/' version '/vm/vm_' boardName '.bin')
+				addItem menu boardName (action 'flashESPFirmwareFromURL' this boardName url)
+			}
+		}
+	}
+	setCursor 'normal'
+	popUpAtHand menu (global 'page')
 }
 
 // Install ESP firmware from file

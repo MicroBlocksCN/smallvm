@@ -501,7 +501,7 @@ static void runTask(Task *task) {
 		&&jmpOr_op,
 		&&jmpAnd_op,
 		&&waitUntil_op,				// 30 (alias for jmpFalse_op)
-	&&RESERVED_op,
+		&&exitLoop_op,
 		&&waitMicros_op,
 		&&waitMillis_op,
 		&&callFunction_op,
@@ -717,6 +717,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	jmp_op:
 	longJmp_op:
+	exitLoop_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		ip += arg;
 #if USE_TASKS
@@ -738,7 +739,7 @@ static void runTask(Task *task) {
 		if ((arg < 0) && (trueObj != *sp)) goto suspend;
 #endif
 		DISPATCH();
-	 decrementAndJmp_op:
+	decrementAndJmp_op:
 		if (!arg) arg = *ip++; // zero arg means offset is in the next word
 		if (isInt(*(sp - 1))) {
 			tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter (normal case)

@@ -1,19 +1,18 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2024-10-28 15:36+0000\n"
-"Last-Translator: Bernat Romagosa <bernat@romagosa.work>\n"
+"PO-Revision-Date: 2024-11-05 08:57+0000\n"
+"Last-Translator: Filipe Oliveira Gomes\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/microblocks/"
 "ide/pt/>\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: ENCODING\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.8.2\n"
 
 #. Block in Output category
 msgid "set user LED _"
@@ -410,7 +409,7 @@ msgstr "Infravermelhos"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Reset Encoders"
-msgstr "Reinicializar os contadores de voltas do Finch"
+msgstr "reinicializar os contadores de voltas do Finch"
 
 #. Turtle Geometry library block
 msgid "go to x _ y _"
@@ -501,7 +500,7 @@ msgstr "move motor _ _ voltas completas"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Line"
-msgstr "Línha _  do Finch"
+msgstr "línha _ do Finch"
 
 #. 5x5 LED Display library block
 msgid "display _"
@@ -621,7 +620,7 @@ msgstr "recebe código IR"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Move _ _ cm at _ %"
-msgstr "Mover  o Finch _ _ cm  à velocidade _ %"
+msgstr "mover o Finch _ _ cm à velocidade _ %"
 
 #. BirdBrain Technologies Hummingbird kit library block
 msgid "Hummingbird Rotation Servo _ _ %"
@@ -629,7 +628,7 @@ msgstr "Hummingbird Servo de Rotação _ _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Light"
-msgstr "Luz _ do Finch"
+msgstr "luz _ do Finch"
 
 #. Turtle geometry library label
 msgid "Turtle"
@@ -653,11 +652,11 @@ msgstr "volta para casa"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Turn _ _ ° at _ %"
-msgstr "Girar o Finch _ _ ° à velocidade _ %"
+msgstr "girar o Finch _ _ ° à velocidade _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Distance (cm)"
-msgstr "Distancia do Finch (cm)"
+msgstr "distancia do Finch (cm)"
 
 #. File System library block
 msgid "size of file _"
@@ -729,7 +728,7 @@ msgstr "fixa o limite de passos em _ (0-50)"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Stop"
-msgstr "Para o Finch"
+msgstr "para o Finch"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Right"
@@ -745,7 +744,7 @@ msgstr "Dial"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "Cauda de color do Finch R _ % G _ % B _ %"
+msgstr "cauda de color do Finch R _ % G _ % B _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "x"
@@ -753,7 +752,7 @@ msgstr "x"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Encoder"
-msgstr "Contador de voltas _"
+msgstr "contador de voltas _"
 
 #. PN532 RFID reader library block
 msgid "RFID _ = _"
@@ -777,7 +776,7 @@ msgstr "Som"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Accelerometer _"
-msgstr "Acelerómetro do Finch _"
+msgstr "acelerómetro do Finch _"
 
 #. NeoPixel library block
 msgid "PIR at pin _ detected movement"
@@ -821,7 +820,7 @@ msgstr "Distância (cm)"
 
 #. BirdBrain Technologies Finch library label
 msgid "Finch Beak Red _ Green _ Blue _"
-msgstr "Pico de color do Finch R _ % G _ % B _ %"
+msgstr "pico de color do Finch R _ % G _ % B _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Tilt Left"
@@ -1077,11 +1076,11 @@ msgstr "sensor capacitivo _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Wheels L _ % R _ %"
-msgstr "Rodas do Finch à velocidad E _ % D _ %"
+msgstr "rodas do Finch à velocidad E _ % D _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Battery"
-msgstr "Nível de batería do Finch"
+msgstr "nível de batería do Finch"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Forward"

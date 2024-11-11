@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-29 09:24+0200\n"
-"PO-Revision-Date: 2024-10-30 12:57+0000\n"
+"PO-Revision-Date: 2024-11-06 22:40+0000\n"
 "Last-Translator: Peter Mathijssen <pmathijssen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/microblocks/ide/nl/"
 ">\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.8.2\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -5899,3 +5899,19 @@ msgstr "toon geavanceerde blokken, menu-items en editorfuncties"
 #. Settings menu option
 msgid "advanced mode"
 msgstr "geavanceerde modus"
+
+#. Block in Input category
+msgid "version"
+msgstr "versie"
+
+#. Block in Input category
+msgid "seconds"
+msgstr "seconden"
+
+#. Block in Input category
+msgid "BLE id"
+msgstr "BLE id"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "BLE verbonden"

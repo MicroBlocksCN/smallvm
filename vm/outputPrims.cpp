@@ -377,7 +377,7 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 5;
 }
 
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 
 	static void updateNeoPixelDisplay(); // forward reference
 
@@ -407,7 +407,7 @@ void updateMicrobitDisplay() {
 
 OBJ primMBSetColor(int argCount, OBJ *args) {
 	mbDisplayColor = obj2int(args[0]);
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 	displaySnapshot = 0; // update the display on the next cycle
 #else
 	tftSetHugePixelBits(microBitDisplayBits);
@@ -468,6 +468,9 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	#elif defined(DATABOT)
 		const char *msg = "Use 'Light & Gesture' library on Databot.";
 		return newStringFromBytes(msg, strlen(msg));
+	#elif defined(STEAMaker)
+		// log makes the function more linear, 27.684 takes it to a ~0-100 range
+		lightLevel = (int) (log10((float) analogRead(39)) * 27.684);
 	#else
 		lightReadingRequested = true;
 	#endif
@@ -786,7 +789,7 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 			pinNum = 27; // internal NeoPixel pin
 		#elif defined(ARDUINO_M5Atom_Lite_ESP32)
 			pinNum = 27;
-		#elif defined(ARDUINO_Mbits)
+		#elif defined(ARDUINO_Mbits) || defined(STEAMaker)
 			pinNum = 13; // internal NeoPixel pin
 		#elif defined(DATABOT)
 			pinNum = 2; // internal NeoPixel pin
@@ -979,7 +982,7 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 		}
 		sendNeoPixelData(val);
 	}
-
+	taskSleep(1); // NeoPixels latch time
 	return falseObj;
 }
 
@@ -1018,7 +1021,7 @@ void turnOffInternalNeoPixels() {
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 		count = 25;
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
@@ -1037,15 +1040,15 @@ void turnOffInternalNeoPixels() {
 	delay(1); // NeoPixels latch time
 }
 
-// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix and Mbits
+// Simulate the micro:bit 5x5 LED display on 5x5 NeoPixel display
 
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits) || defined(STEAMaker)
 
 	void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
 #if defined(ARDUINO_M5Atom_Matrix_ESP32)
 		initNeoPixelPin(27); // use internal NeoPixels
-#elif defined(ARDUINO_Mbits)
+#elif defined(ARDUINO_Mbits) || defined(STEAMaker)
 		initNeoPixelPin(13); // use internal NeoPixels
 #endif
 		delay(1); // make sure NeoPixels are latched and ready for new data
@@ -1062,6 +1065,7 @@ void turnOffInternalNeoPixels() {
 			sendNeoPixelData(isOn ? pixelValue : 0);
 		}
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
+		delay(1); // NeoPixels latch time
 	}
 
 #endif

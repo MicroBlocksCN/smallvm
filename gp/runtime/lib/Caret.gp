@@ -146,6 +146,9 @@ method textinput Caret evt keyboard {
 }
 
 method moveRight Caret shiftDown {
+	if (and (not shiftDown) (notNil (endMark target))) {
+		slot = ((endMark target) - 1)
+	}
 	updateMarkingMode this shiftDown
 	slot += 1
 	slot = (min slot (+ 1 (count (text target))))
@@ -153,6 +156,9 @@ method moveRight Caret shiftDown {
 }
 
 method moveLeft Caret shiftDown {
+	if (and (not shiftDown) (notNil (startMark target))) {
+		slot = ((startMark target) + 1)
+	}
 	updateMarkingMode this shiftDown
 	slot += -1
 	slot = (max slot 1)

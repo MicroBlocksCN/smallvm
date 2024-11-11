@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-30 07:10+0200\n"
-"PO-Revision-Date: 2024-10-30 10:50+0000\n"
+"PO-Revision-Date: 2024-11-06 13:53+0000\n"
 "Last-Translator: Bernat Romagosa <bernat@romagosa.work>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/microblocks/ide/"
 "ca/>\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.8.2\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -952,55 +952,55 @@ msgstr "Altres"
 
 #. BirdBrain Technologies Finch library label
 msgid "Finch Beak Red _ Green _ Blue _"
-msgstr "Encén el bec de color R _ % G _ % B _ %"
+msgstr "encén el bec de color R _ % G _ % B _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Tail _ Red _ Green _ Blue _"
-msgstr "Encén la cua de color R _ % G _ % B _ %"
+msgstr "encén la cua de color R _ % G _ % B _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Move _ _ cm at _ %"
-msgstr "Mou-te cap _ _ cm a velocitat _ %"
+msgstr "mou-te cap _ _ cm a velocitat _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Turn _ _ ° at _ %"
-msgstr "Gira cap a la _ _ ° a velocitat _ %"
+msgstr "gira cap a la _ _ ° a velocitat _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Wheels L _ % R _ %"
-msgstr "Posa les rodes a velocitat E _ % D _ %"
+msgstr "posa les rodes a velocitat E _ % D _ %"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Stop"
-msgstr "Atura el Finch"
+msgstr "atura el Finch"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Distance (cm)"
-msgstr "Distància (cm)"
+msgstr "distància (cm)"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Light"
-msgstr "Llum _"
+msgstr "llum _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Line"
-msgstr "Línia _"
+msgstr "línia _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Reset Encoders"
-msgstr "Reinicialitza els comptadors de voltes"
+msgstr "reinicialitza els comptadors de voltes"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch _ Encoder"
-msgstr "Recompte de voltes _"
+msgstr "recompte de voltes _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Accelerometer _"
-msgstr "Acceleròmetre _"
+msgstr "acceleròmetre _"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "Finch Battery"
-msgstr "Nivell de bateria"
+msgstr "nivell de bateria"
 
 #. BirdBrain Technologies Finch Robot library block
 msgid "All"
@@ -5891,3 +5891,19 @@ msgstr "mostra blocs, opcions de menú i funcionalitats d'edició avançades"
 #. Language menu item. Takes the user to documentation about adding a missing language
 msgid "Missing language?"
 msgstr "Falta un idioma?"
+
+#. Block in Input category
+msgid "BLE id"
+msgstr "identificador BLE"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "connectat via BLE"
+
+#. Block in Input category
+msgid "seconds"
+msgstr "segons"
+
+#. Block in Input category
+msgid "version"
+msgstr "versió"

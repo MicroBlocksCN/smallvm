@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector libFrame libAddButton libAddIcons lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer gradient
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector categoryFrame categoryPane libAddButton libAddIcons lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries selection cornerIcon trashcanIcon spacer topGradient bottomGradient
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -38,30 +38,39 @@ method initialize MicroBlocksScripter aProjectEditor {
 	setFPS morph 4
 	saveNeeded = false
 
+	categoryPane = (newBox (newMorph) (transparent) 0 0 false false)
+	categoryFrame = (scrollFrame categoryPane (transparent) false 0 0)
+	setVerticalScrollOnly categoryFrame true
+	setHideWhenNotScrolling categoryFrame true
+	setAutoScroll categoryFrame false
+	addPart morph (morph categoryFrame)
 	makeLibraryHeader this
 	lastLibraryFolder = 'Libraries'
 
 	spacer = (newBox (newMorph) (color transparent) 0 0 false false)
-	addPart morph (morph spacer)
+	addPart (morph categoryPane) (morph spacer)
 
 	categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
 	setFont categorySelector fontName fontSize
 	setExtent (morph categorySelector) (190 * scale) 100
 	setMinExtent (morph categorySelector) (65 * scale) (60 * scale)
 	setMaxExtent (morph categorySelector) (300 * scale) 0 // y is ignored
-	addPart morph (morph categorySelector)
+	addPart (morph categoryPane) (morph categorySelector)
 
 	makeAddLibraryButton this
 	libSelector = (newCategorySelector (array) (action 'librarySelected' this))
 	setFont libSelector fontName fontSize
-	libFrame = (scrollFrame libSelector (transparent) false (4 * scale) (4 * scale))
-	setVerticalScrollOnly libFrame true
-	setAutoScroll libFrame false
-	addPart morph (morph libFrame)
-	gradient = (newMorph)
-	setExtent gradient (140 * scale) (30 * scale)
-	setCostume gradient (scaleAndRotate (gradientBitmap this) (140 * scale) 1)
-	addPart morph gradient
+	addPart (morph categoryPane) (morph libSelector)
+
+	topGradient = (newMorph)
+	rotateAndScale topGradient 179
+	bottomGradient = (newMorph)
+	setExtent topGradient (140 * scale) (30 * scale)
+	setExtent bottomGradient (140 * scale) (30 * scale)
+	setCostume topGradient (flipped (scaleAndRotate (gradientBitmap this) (140 * scale) 1))
+	setCostume bottomGradient (scaleAndRotate (gradientBitmap this) (140 * scale) 1)
+	addPart morph topGradient
+	addPart morph bottomGradient
 
 	blocksPane = (newBlocksPalette)
 	setSortingOrder (alignment blocksPane) nil
@@ -69,6 +78,7 @@ method initialize MicroBlocksScripter aProjectEditor {
 	setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
 	blocksFrame = (scrollFrame blocksPane (transparent) false (4 * scale) (4 * scale))
 	setVerticalScrollOnly blocksFrame true
+	setHideWhenNotScrolling blocksFrame true
 	setAutoScroll blocksFrame false
 	setExtent (morph blocksFrame) (260 * scale) (100 * scale)
 	setMinExtent (morph blocksFrame) (90 * scale) (60 * scale)
@@ -79,6 +89,7 @@ method initialize MicroBlocksScripter aProjectEditor {
 
 	scriptsPane = (newScriptEditor 10 10 nil)
 	scriptsFrame = (scrollFrame scriptsPane (transparent) false (4 * scale) (4 * scale))
+	setHideWhenNotScrolling scriptsFrame true
 	addPart morph (morph scriptsFrame)
 
 	// add resizers last so they are in front
@@ -181,7 +192,7 @@ method makeLibraryHeader MicroBlocksScripter {
 	setPosition (morph hLine) (24 * scale) ((bottom (morph label)) + (4 * scale))
 
 	addPart (morph libHeader) (morph hLine)
-	addPart morph (morph libHeader)
+	addPart (morph categoryPane) (morph libHeader)
 	return libHeader
 }
 
@@ -226,7 +237,7 @@ method makeAddLibraryButton MicroBlocksScripter {
 	scale = (global 'scale')
 	libAddButton = (pushButton (localized 'Add Library') (action 'importLibrary' this) nil (25 * scale) false true)
 	setData libAddButton (width (morph libAddButton))
-	addPart morph (morph libAddButton)
+	addPart (morph categoryPane) (morph libAddButton)
 }
 
 // library item menu
@@ -351,24 +362,28 @@ method fixLayout MicroBlocksScripter {
 	setExtent (morph libHeader) catWidth libHeaderHeight
 	setExtent (morph libSelector) catWidth libSelectorHeight
 	setExtent (morph blocksFrame) blocksWidth totalHeight
-	setExtent gradient catWidth (30 * scale)
-	setCostume gradient (scaleAndRotate (gradientBitmap this) catWidth 1)
+	setExtent topGradient catWidth (30 * scale)
+	setExtent bottomGradient catWidth (30 * scale)
+	setCostume topGradient (flipped (scaleAndRotate (gradientBitmap this) catWidth 1))
+	setCostume bottomGradient (scaleAndRotate (gradientBitmap this) catWidth 1)
 	setExtent (morph scriptsFrame) (totalWidth - (catWidth + blocksWidth)) totalHeight
 
 	// position parts
 	leftEdge = (left morph)
 	topEdge = (top morph)
+	fastSetPosition (morph categoryFrame) leftEdge topEdge
 	fastSetPosition (morph categorySelector) leftEdge (topEdge + (24 * scale))
 	fastSetPosition (morph libHeader) leftEdge (bottom (morph categorySelector))
 	fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (8 * scale))
 	fastSetPosition (morph libSelector) leftEdge ((bottom (morph libAddButton)) + (8 * scale))
-	fastSetPosition (morph libFrame) leftEdge (top (morph libSelector))
-	fastSetPosition gradient leftEdge ((bottom (morph libFrame)) - (30 * scale))
+	fastSetPosition topGradient leftEdge topEdge
+	fastSetPosition bottomGradient leftEdge ((bottom morph) - (30 * scale))
 	fastSetPosition (morph blocksFrame) (right (morph categorySelector)) topEdge
 	fastSetPosition (morph scriptsFrame) (right (morph blocksFrame)) topEdge
 
-	// set libFrame extent
-	setExtent (morph libFrame) catWidth (- (bottom morph) (+ (top (morph libSelector)) (12 * scale)))
+	// set categoryFrame extent
+	fixCategoryPaneExtent this
+	setExtent (morph categoryFrame) catWidth ((bottom morph) - (30 * scale))
 
 	changed morph // report damage
 
@@ -381,6 +396,12 @@ method fixLayout MicroBlocksScripter {
 
 	// rounded corner at bottom left of palette
 	setPosition cornerIcon ((left (morph blocksFrame)) - (2 * scale)) ((bottom (morph blocksFrame)) - (8 * scale))
+}
+
+method fixCategoryPaneExtent MicroBlocksScripter {
+	scrollToY categoryFrame 0
+	// 54 is the height of the gradient (30) plus the height of a category button (24)
+	setExtent (morph categoryPane) (width (morph libSelector)) (((bottom (morph libSelector)) - (top (morph spacer))) + (54 * (global 'scale')))
 }
 
 method updateTrashcanPosition MicroBlocksScripter {
@@ -1304,6 +1325,29 @@ method importEmbeddedLibrary MicroBlocksScripter libName {
 	}
 }
 
+method importLocalizedLibraryFromFile MicroBlocksScripter fileName {
+	zip = (read (new 'ZipFile') (readFile fileName true))
+	translations = (dictionary)
+	libName = ''
+	for fileName (fileNames zip) {
+		data = (toString (extractFile zip fileName))
+		if (endsWith fileName '.ubl') {
+			importLibraryFromFile this fileName data
+		} (endsWith fileName '.po') {
+			langCode = (withoutExtension fileName)
+			if (langCode == (languageCode (authoringSpecs))) {
+				updateTranslation (authoringSpecs) data
+			}
+			atPut translations langCode data
+		} else {
+			print 'Library contains unrecognized file format:' fileName
+		}
+	}
+	libName = (withoutExtension (filePart fileName))
+	library = (libraryNamed mbProject libName)
+	setTranslations library translations
+}
+
 method importLibraryFromFile MicroBlocksScripter fileName data updateLastLibFolder {
 	// Import a library with the given file path. If data is not nil, it came from
 	// a browser upload or file drop. Use it rather than attempting to read the file.
@@ -1390,6 +1434,7 @@ method updateLibraryList MicroBlocksScripter {
 	}
 	scale = (global 'scale')
 	fastSetPosition (morph libAddButton) (24 * scale) ((bottom (morph libHeader)) + (8 * scale))
+	fixCategoryPaneExtent this
 }
 
 method justGrabbedPart MicroBlocksScripter part {

@@ -1,0 +1,26 @@
+module 'Motobit' Output
+author MicroBlocks
+version 1 0 
+choices motobit_motor A B
+description 'Control motors with the Sparkfun Moto:bit board.'
+
+  spec ' ' 'motobit_setMotorPower' 'set motor _ power _ (-100 to 100)' 'menu.motobit_motor num' 'A' 50
+  spec ' ' 'motobit_turnOffMotors' 'turnOffMotors'
+
+to motobit_setMotorPower which power {
+  local 'motor' (hexToInt '20')
+  if (which == 'B') {
+    motor += (hexToInt '1')
+  }
+  power = (maximum -100 (minimum power 100))
+  power = ('[misc:rescale]' power -100 100 0 255)
+  i2cSet 89 motor power
+  comment 'Enable motors'
+  i2cSet 89 (hexToInt '70') 1
+}
+
+to motobit_turnOffMotors {
+  motobit_setMotorPower 'A' 0
+  motobit_setMotorPower 'B' 0
+}
+

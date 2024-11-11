@@ -1,4 +1,4 @@
-module Tone 'cat;Output'
+module Tone 'Output'
 author MicroBlocks
 version 1 9 
 tags tone sound music audio note speaker 

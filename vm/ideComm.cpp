@@ -312,8 +312,8 @@ void BLE_resumeAdvertising() {
 	}
 	pAdvertising->addServiceUUID(MB_SERVICE_UUID);
 	pAdvertising->setName(bleDeviceName);
-	pAdvertising->setMinInterval(50);
-	pAdvertising->setMaxInterval(100);
+	pAdvertising->setMinInterval(32); // 20 msecs (minumum allowable interval)
+	pAdvertising->setMaxInterval(40); // 25 msecs
 	pAdvertising->start();
 }
 

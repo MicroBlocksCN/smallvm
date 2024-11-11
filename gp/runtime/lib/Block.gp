@@ -579,10 +579,10 @@ method snap Block {
 method aboutToBeGrabbed Block {
 	page = (global 'page')
 	hand = (hand page)
+	inset = (10 * (blockScale))
 
 	// adjust drag offset
 	if ('reporter' == type) {
-		inset = (10 * (blockScale))
 		setPosition morph ((x hand) - inset) ((y hand) - inset)
 	} else {
 		moveBy morph ((x hand) - (downX hand)) ((y hand) - (downY hand))
@@ -597,7 +597,6 @@ method aboutToBeGrabbed Block {
 	removeSignalPart (morph tb)
 	removeStackPart (morph tb)
 	removeHighlight (morph tb)
-
 
 	if (or
 		(commandKeyDown (keyboard page))
@@ -623,6 +622,7 @@ method aboutToBeGrabbed Block {
 				addPart (morph owner) (morph dup)
 			}
 		}
+		setPosition morph ((x hand) - inset) ((y hand) - inset)
 	}
 
 	// extract block with shift + grab

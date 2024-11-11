@@ -177,6 +177,9 @@ method blockColorForCategory AuthoringSpecs cat {
 	if (and (notNil cat) (endsWith cat '-Advanced')) {
 		cat = (substring cat 1 ((count cat) - 9))
 	}
+	if (and (notNil cat) (beginsWith cat 'cat;')) {
+		cat = (substring cat 5) // remove leading 'cat;' prefix used for translation
+	}
 	pe = (findProjectEditor)
 	if (notNil pe) {
 		lib = (libraryNamed (project pe) cat) // is cat the name of a library?
@@ -185,18 +188,18 @@ method blockColorForCategory AuthoringSpecs cat {
 		}
 	}
 	defaultColor = (colorHSV 205 0.83 0.87)
-	if ('cat;Output' == cat) { return (colorHex '4852BF')
-	} ('cat;Input' == cat) { return (colorHex '9F42A5')
-	} ('cat;Pins' == cat) { return (colorHex '548799')
-	} ('cat;Comm' == cat) { return (colorHex '1E997A')
-	} ('cat;Control' == cat) { return (colorHex 'D18C25')
-	} ('cat;Operators' == cat) { return (colorHex '479D1D')
-	} ('cat;Variables' == cat) { return (colorHex 'D3732A')
-	} ('cat;Data' == cat) { return (colorHex 'C44E6B')
-	} ('cat;Advanced' == cat) { return (colorHSV 30 0.70 0.70)
-	} ('cat;My Blocks' == cat) { return (colorHex '1A8CDD')
-	} ('cat;Library' == cat) { return (colorHSV 165 0.80 0.60)
-	} ('cat;Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
+	if ('Output' == cat) { return (colorHex '4852BF')
+	} ('Input' == cat) { return (colorHex '9F42A5')
+	} ('Pins' == cat) { return (colorHex '548799')
+	} ('Comm' == cat) { return (colorHex '1E997A')
+	} ('Control' == cat) { return (colorHex 'D18C25')
+	} ('Operators' == cat) { return (colorHex '479D1D')
+	} ('Variables' == cat) { return (colorHex 'D3732A')
+	} ('Data' == cat) { return (colorHex 'C44E6B')
+	} ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+	} ('My Blocks' == cat) { return (colorHex '1A8CDD')
+	} ('Library' == cat) { return (colorHSV 165 0.80 0.60)
+	} ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
 	}
 	return defaultColor
 }
@@ -205,18 +208,18 @@ method oldMicroBlocksColor AuthoringSpecs cat {
 	// old Comm color: (colorHSV 195 0.50 0.60)
 	// old default color: (colorHSV 200 0.98 0.86)
 	defaultColor = (colorHSV 205 0.83 0.87)
-	if ('cat;Output' == cat) { return (colorHSV 235 0.62 0.75)
-	} ('cat;Input' == cat) { return (colorHSV 296 0.60 0.65)
-	} ('cat;Pins' == cat) { return (colorHSV 195 0.45 0.60)
-	} ('cat;Comm' == cat) {  return (colorHSV 14 0.75 0.80)
-	} ('cat;Control' == cat) { return (colorHSV 36 0.70 0.87)
-	} ('cat;Operators' == cat) { return (colorHSV 100 0.75 0.65)
-	} ('cat;Variables' == cat) { return (colorHSV 26 0.80 0.83)
-	} ('cat;Data' == cat) { return (colorHSV 345 0.60 0.77)
-	} ('cat;Advanced' == cat) { return (colorHSV 30 0.70 0.70)
-	} ('cat;My Blocks' == cat) { return (colorHSV 205 0.83 0.90)
-	} ('cat;Library' == cat) {  return (colorHSV 165 0.80 0.60)
-	} ('cat;Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
+	if ('Output' == cat) { return (colorHSV 235 0.62 0.75)
+	} ('Input' == cat) { return (colorHSV 296 0.60 0.65)
+	} ('Pins' == cat) { return (colorHSV 195 0.45 0.60)
+	} ('Comm' == cat) {  return (colorHSV 14 0.75 0.80)
+	} ('Control' == cat) { return (colorHSV 36 0.70 0.87)
+	} ('Operators' == cat) { return (colorHSV 100 0.75 0.65)
+	} ('Variables' == cat) { return (colorHSV 26 0.80 0.83)
+	} ('Data' == cat) { return (colorHSV 345 0.60 0.77)
+	} ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+	} ('My Blocks' == cat) { return (colorHSV 205 0.83 0.90)
+	} ('Library' == cat) {  return (colorHSV 165 0.80 0.60)
+	} ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
 	}
 	return defaultColor
 }
@@ -318,6 +321,14 @@ method needsTranslation AuthoringSpecs spec {
 }
 
 method installTranslation AuthoringSpecs translationData langName {
+	translationDictionary = (dictionary)
+	updateTranslation this translationData
+	if (notNil langName) { language = langName }
+}
+
+method updateTranslation AuthoringSpecs translationData {
+	// Append the given translationData to the current language
+	//
 	// Translation data is string consisting of three-line entries:
 	//	msgid "original string"
 	//	msgstr "translated string"
@@ -325,7 +336,6 @@ method installTranslation AuthoringSpecs translationData langName {
 	//	...
 	// Lines starting with # are treated as comments
 
-	translationDictionary = (dictionary)
 	lines = (toList (lines translationData))
 	while ((count lines) >= 2) {
 		from = (removeFirst lines)
@@ -341,7 +351,6 @@ method installTranslation AuthoringSpecs translationData langName {
 			atPut translationDictionary (parseGetText this from true) (parseGetText this to false)
 		}
 	}
-	if (notNil langName) { language = langName }
 }
 
 method parseGetText AuthoringSpecs aString isSource {

@@ -112,6 +112,20 @@ method thumbnail Bitmap w h {
 	return result
 }
 
+method flipped Bitmap {
+	pixelSize = (* width height)
+	byteSize = (* 4 pixelSize)
+	newData = (newBinaryData byteSize)
+	for pixelIndex pixelSize {
+		oldIndex = (4 * (pixelIndex - 1))
+		newIndex = (byteSize - (4 * pixelIndex))
+		for i 4 {
+			byteAtPut newData (newIndex + i) (byteAt pixelData (oldIndex + i))
+		}
+	}
+	return (new 'Bitmap' width height newData name)
+}
+
 method scaleAndRotate Bitmap xScale yScale rotationDegrees dstBitmap {
 	// Return a copy of this bitmap scaled and rotated.
 	// Rotation goes counter-clockwise as the angle increases.

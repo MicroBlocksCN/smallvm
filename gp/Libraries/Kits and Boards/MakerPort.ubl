@@ -1,4 +1,4 @@
-module MakerPort 'cat;Output'
+module MakerPort 'Output'
 author MicroBlocks
 version 2 2 
 depends 'LCD Display' 'MP3 Player' Tone Touch 'IR Remote' 

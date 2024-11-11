@@ -143,7 +143,7 @@ void hardwareInit() {
 		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
 	#endif
-	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(STEAMaker)
 		mbDisplayColor = (190 << 16); // red (not full brightness)
 	#endif
 	#if defined(XRP)
@@ -654,6 +654,21 @@ void hardwareInit() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
 
+#elif defined(ARDUINO_M5Atom_Lite_ESP32_S3)
+
+	#define BOARD_TYPE "M5AtomS3-Lite"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	#define PIN_LED 35
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 41
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 1, 1, 0, 0, 0, 0, 1,
+		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 1, 0, 1, 1, 0, 0};
+
 #elif defined(ARDUINO_M5STACK_Core2)
 	#define BOARD_TYPE "M5StackCore2"
 	#define DIGITAL_PINS 40
@@ -704,6 +719,22 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
+#elif defined(COCUBE_SOCCER)
+	#define BOARD_TYPE "CoCube_Soccer"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 9
+	#define PIN_LED -1
+	#define PIN_BUTTON_A 38
+	#define PIN_BUTTON_B 37
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};		
+
 #elif defined(ARDUINO_ESP32_PICO)
 	#define BOARD_TYPE "ESP32-Pico-D4"
 	#define DIGITAL_PINS 40
@@ -730,7 +761,7 @@ void hardwareInit() {
 	static const char digitalPin[22] = {
 		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
 		14, 39, 15, 18, 19, 23, 2, 255, 255, 21,
-		22, 33}; // edge connector pins 17 & 18 are not used
+		22, 33}; // edge connector pins 17 & 18 are not used (255)
 	#define DEFAULT_TONE_PIN 21
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
@@ -1516,8 +1547,8 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		}
 	#endif
 	#ifdef ARDUINO_ARCH_ESP32
-		#ifdef ARDUINO_Mbits
-			if ((0 <= pinNum) && (pinNum <= 20) && (pinNum != 17) && (pinNum != 18)) {
+		#if defined(ARDUINO_Mbits) || defined(STEAMaker)
+			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS) && (pinNum != 17) && (pinNum != 18)) {
 				pinNum = digitalPin[pinNum]; // map edge connector pin number to ESP32 pin number
 			}
 		#endif
@@ -1602,8 +1633,8 @@ void primAnalogWrite(OBJ *args) {
 				pinNum = ed1DigitalPinMap[pinNum - 1];
 			}
 		#endif
-		#ifdef ARDUINO_Mbits
-			if ((0 <= pinNum) && (pinNum <= 20) && (pinNum != 17) && (pinNum != 18)) {
+		#if defined(ARDUINO_Mbits) || defined(STEAMaker)
+			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS) && (pinNum != 17) && (pinNum != 18)) {
 				pinNum = digitalPin[pinNum]; // map edge connector pin number to ESP32 pin number
 			}
 		#endif
@@ -1832,6 +1863,7 @@ void primSetUserLED(OBJ *args) {
 		#if defined(M5STAMP) || defined(M5_ATOMS3LITE)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
+			taskSleep(1);
 		#else
 			digitalWrite(PIN_LED, (PinStatus) output);
 		#endif

@@ -35,6 +35,10 @@ msgid "reset timer"
 msgstr "reset timer"
 
 #. Block in Input category
+msgid "seconds"
+msgstr "seconds"
+
+#. Block in Input category
 msgid "microseconds"
 msgstr "microseconds"
 
@@ -47,6 +51,10 @@ msgid "board type"
 msgstr "board type"
 
 #. Block in Input category
+msgid "version"
+msgstr "version"
+
+#. Block in Input category
 msgid "milliseconds since _"
 msgstr "milliseconds since _"
 
@@ -57,6 +65,14 @@ msgstr "end time _"
 #. Block in Input category
 msgid "microseconds since _"
 msgstr "microseconds since _"
+
+#. Block in Input category
+msgid "BLE id"
+msgstr "BLE id"
+
+#. Block in Input category
+msgid "BLE connected"
+msgstr "BLE connected"
 
 #. Block in Input category
 msgid "connected to IDE"
@@ -4680,6 +4696,10 @@ msgstr "erase flash and update firmware on ESP board"
 #. Settings menu option
 msgid "install ESP firmware from URL"
 msgstr "install ESP firmware from URL"
+
+#. Settings menu option
+msgid "install ESP firmware from microblocks.fun"
+msgstr ""
 
 #. Firmware install board type confirmation. As in "Use board type micro:bit?"
 msgid "Use board type"

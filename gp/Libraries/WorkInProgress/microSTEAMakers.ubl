@@ -1,31 +1,23 @@
 module microSTEAMakers
 author 'Joan Guillén'
-version 1 4 
+version 1 6 
 depends Tone Color 
 tags keyestudio steam 
-choices ms_led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+choices ms_energyMeter 'ms;start' 'ms;stop' 'ms;reset' 
 choices ms_inclination down x y 
 choices ms_accel x y z 
-choices ms_buttons A B 
 choices ms_energy mA mV mW 
-choices ms_energyMeter 'ms;start' 'ms;stop' 'ms;reset' 
-description 'Provides custom blocks for the micro:STEAMakers, an ESP32 board with WiFi, BLE, 5x5 RGB LED matrix, 2 buttons, touch, light, sound, temperature and humidity sensors, six-axis accelerometer/gyroscope, energy control, and GPIO and I2C pins for additional extensions.'
+choices ms_led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
+description 'Provides custom blocks for the micro:STEAMakers, an ESP32 board with WiFi, BLE, 5x5 RGB LED matrix, 2 buttons, touch, light, sound, temperature and humidity sensors, six-axis accelerometer/gyroscope, energy control, and GPIO and I2C pins for additional extensions.
+'
 variables _ms_neoPixels _ms_neoPixels_scale _ms_scrolling_stopped _ms_energyReading _ms_energySum _ms_aht20_on _ms_aht20_reading _ms_aht20_data _ms_MPU6050_on _ms_MPU6050_add 
 
   spec ' ' 'ms_display' 'ms display #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _ #BR# _ _ _ _ _' 'color color color color color color color color color color color color color color color color color color color color color color color color color'
-  spec ' ' 'ms_displayShape' 'ms display #BR# _ #BR# with color _' 'microbitDisplay color' 15237440
-  spec ' ' 'ms_displayImage' 'ms display image _ with color _' 'menu.ms_led_imageMenu color num num' 'happy'
   spec ' ' 'ms_clear_display' 'ms clear display'
   spec ' ' 'ms_setGlobalBrightnessScale' 'ms scale brightness to _ %' 'num' 100
   spec ' ' 'ms_plot' 'ms plot x _ y _ with _' 'num num color' 3 3
   spec ' ' 'ms_unplot' 'ms unplot x _ y _' 'num num' 3 3
-  spec ' ' 'ms_displayCharacter' 'ms display character _ with _' 'str color' 'A'
-  spec ' ' 'ms_scroll_text' 'ms scroll text _ with color _ : pausing _ ms' 'str color num' 'micro:STEAMakers' nil 100
-  spec ' ' 'ms_stopScrollingText' 'ms stop scrolling'
   space
-  spec ' ' 'ms_setup_audio' 'start micro꞉STEAMakers audio'
-  space
-  spec 'r' 'ms_buttons' 'ms button _ ?' 'menu.ms_buttons' 'A'
   spec 'r' 'ms_touching' 'ms touching ?'
   spec 'r' 'ms_light' 'ms light'
   spec 'r' 'ms_sound' 'ms sound'
@@ -104,13 +96,17 @@ to '_ms_imageNames' {
 }
 
 to '_ms_neoPixels_setup' {
-  if (_ms_neoPixels == 0) {_ms_neoPixels = (newList 25 0)}
+  '[display:mbDisplayOff]'
+  waitMicros 300
+  if (_ms_neoPixels == 0) {
+    _ms_neoPixels = (newList 25 0)
+  }
   _ms_neoPixels_scale = 100
 }
 
 to '_ms_neoPixels_update' {
   comment 'Alway set the NeoPixel pin; may have been changed by another library.'
-  '[display:neoPixelSetPin]' 13 false
+  '[display:neoPixelSetPin]' 3 false
   if (100 == _ms_neoPixels_scale) {
     '[display:neoPixelSend]' _ms_neoPixels
   } else {
@@ -150,74 +146,17 @@ to ms_accel axis {
   return (direction * (((result << 8) | (at lsB reading)) / 1672))
 }
 
-to ms_buttons but {
-  if (but == 'B') {
-    return (not (digitalReadOp 17))
-  } else {
-    return (not (digitalReadOp 0))
-  }
-}
-
 to ms_clear_display {
   '_ms_neoPixels_setup'
   atPut 'all' _ms_neoPixels 0
   '_ms_neoPixels_update'
+  '[display:mbDisplayOff]'
 }
 
 to ms_display c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 {
   '_ms_neoPixels_setup'
-  atPut 1 _ms_neoPixels c1
-  atPut 2 _ms_neoPixels c2
-  atPut 3 _ms_neoPixels c3
-  atPut 4 _ms_neoPixels c4
-  atPut 5 _ms_neoPixels c5
-  atPut 6 _ms_neoPixels c6
-  atPut 7 _ms_neoPixels c7
-  atPut 8 _ms_neoPixels c8
-  atPut 9 _ms_neoPixels c9
-  atPut 10 _ms_neoPixels c10
-  atPut 11 _ms_neoPixels c11
-  atPut 12 _ms_neoPixels c12
-  atPut 13 _ms_neoPixels c13
-  atPut 14 _ms_neoPixels c14
-  atPut 15 _ms_neoPixels c15
-  atPut 16 _ms_neoPixels c16
-  atPut 17 _ms_neoPixels c17
-  atPut 18 _ms_neoPixels c18
-  atPut 19 _ms_neoPixels c19
-  atPut 20 _ms_neoPixels c20
-  atPut 21 _ms_neoPixels c21
-  atPut 22 _ms_neoPixels c22
-  atPut 23 _ms_neoPixels c23
-  atPut 24 _ms_neoPixels c24
-  atPut 25 _ms_neoPixels c25
-  '_ms_neoPixels_update'
-}
-
-to ms_displayCharacter character color {
-  character = ('[data:join]' '' character)
-  if ((size character) == 0) {
-    ms_clear_display
-    return 0
-  } else {
-    ms_displayShape ('[display:mbShapeForLetter]' (at 1 character)) color
-  }
-}
-
-to ms_displayImage imgName color {
-  ms_displayShape ('[misc:jsonGet]' ('_ms_imageNames') imgName) color
-}
-
-to ms_displayShape shape color {
-  '_ms_neoPixels_setup'
-  local 'checker' 1
   for i 25 {
-    if ((checker & shape) > 0) {
-      atPut i _ms_neoPixels color
-    } else {
-      atPut i _ms_neoPixels 0
-    }
-    checker = (checker << 1)
+    atPut i _ms_neoPixels (argOrDefault i 0)
   }
   '_ms_neoPixels_update'
 }
@@ -226,7 +165,7 @@ to ms_energy op {
   if (op == 'mV') {return 3300}
   local 'ampCounter' 0
   for i 500 {
-    ampCounter = (ampCounter + (analogReadOp 36))
+    ampCounter = (ampCounter + (analogReadOp 23))
   }
   ampCounter = (ampCounter * 2)
   ampCounter = ((ampCounter * 428) + 43560611)
@@ -300,7 +239,7 @@ to ms_inclination op {
 }
 
 to ms_light {
-  return (analogReadOp 39)
+  return (analogReadOp 24)
 }
 
 to ms_plot x y color {
@@ -311,60 +250,14 @@ to ms_plot x y color {
   }
 }
 
-to ms_scroll_text label color specificDelay {
-  label = ('[data:join]' '' label)
-  local 'delay' 100
-  if ((pushArgCount) > 2) {
-    delay = specificDelay
-  }
-  _ms_scrolling_stopped = (booleanConstant false)
-  ms_clear_display
-  for position (((size label) * 6) + 5) {
-    for i (minimum (size label) (((absoluteValue (position - 2)) / 6) + 1)) {
-      if (((absoluteValue (position - 5)) / 6) < i) {
-        local 'checker' 1
-        for yy 5 {
-          for xx 5 {
-            if ((checker & ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i label))) > 0) {
-              ms_plot (xx + (((i * 6) + 0) - position)) yy color
-            } else {
-              ms_unplot (xx + (((i * 6) + 0) - position)) yy
-            }
-            checker = (checker << 1)
-          }
-        }
-      }
-    }
-    if ((position % 6) != 0) {
-      for j 5 {
-        ms_unplot (6 - (position % 6)) j
-      }
-    }
-    if _ms_scrolling_stopped {
-      return 0
-    }
-    waitMillis delay
-  }
-}
-
 to ms_setGlobalBrightnessScale scale {
   '_ms_neoPixels_setup'
   _ms_neoPixels_scale = scale
   '_ms_neoPixels_update'
 }
 
-to ms_setup_audio {
-  'attach buzzer to pin' 33
-}
-
 to ms_sound {
-  return (analogReadOp 35)
-}
-
-to ms_stopScrollingText {
-  _ms_scrolling_stopped = (booleanConstant true)
-  waitMillis 10
-  ms_clear_display
+  return (analogReadOp 22)
 }
 
 to ms_temperature {
@@ -380,7 +273,7 @@ to ms_temperature {
 }
 
 to ms_touching {
-  return (digitalReadOp 27)
+  return (('[sensors:touchRead]' 27) < 35)
 }
 
 to ms_unplot x y {

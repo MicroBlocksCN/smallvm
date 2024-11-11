@@ -118,6 +118,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop other tasks')
 	'cat;Control-Advanced'
+		(array ' ' 'exitLoop'			'exit loop')
+		'-'
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
@@ -418,7 +420,7 @@ method initOpcodes SmallCompiler {
 		jmpOr 28
 		jmpAnd 29
 		waitUntil 30
-	RESERVED 31
+		exitLoop 31
 		waitMicros 32
 		waitMillis 33
 		callFunction 34
@@ -699,6 +701,10 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForWaitUntil this args)
 	} ('for' == op) {
 		return (instructionsForForLoop this args)
+	} ('exitLoop' == op) {
+		// exitLoop is always two words (like longJmp)
+		add result (array 'exitLoop' nil)
+		add result (array 'placeholder' 0)
 	} (and ('digitalWriteOp' == op) (isClass (first args) 'Integer') (isClass (last args) 'Boolean')) {
 		pinNum = ((first args) & 255)
 		if (true == (last args)) {
@@ -767,6 +773,7 @@ method instructionsForIf SmallCompiler args {
 method instructionsForForever SmallCompiler args {
 	result = (instructionsForCmdList this (at args 1))
 	addAll result (instructionsForJump this 'jmp' (0 - ((count result) + 1)))
+	fixLoopExits this result
 	return result
 }
 
@@ -776,6 +783,7 @@ method instructionsForRepeat SmallCompiler args {
 	addAll result (instructionsForJump this 'jmp' (count body))
 	addAll result body
 	addAll result (instructionsForJump this 'decrementAndJmp' (0 - ((count body) + 1)))
+	fixLoopExits this result
 	return result
 }
 
@@ -787,6 +795,7 @@ method instructionsForRepeatUntil SmallCompiler args {
 	addAll result body
 	addAll result conditionTest
 	addAll result (instructionsForJump this 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
+	fixLoopExits this result
 	return result
 }
 
@@ -812,7 +821,22 @@ method instructionsForForLoop SmallCompiler args {
 		(array 'longJmp' (0 - (+ (count body) 3)))
 		(array 'placeholder' 0) // two-word longJmp; forLoop skips two words at loop end
 		(array 'pop' 3))
+	fixLoopExits this result
 	return result
+}
+
+method fixLoopExits SmallCompiler loopBody {
+	// Make any uninitialized exitLoop instructions jump to the end of this loop body.
+	// Note: Ignore any exitLoop instructions in nested loops within loopBody.
+	// Those will already be initialized (i.e. they will have non-nil offsets).
+	seqLength = (count loopBody)
+	for i seqLength {
+		instruction = (at loopBody i)
+		if (and ('exitLoop' == (first instruction)) (isNil (at instruction 2))) {
+			// uninitialized exitLoop instruction; make it jump to the end of loopBody
+			atPut instruction 2 ((seqLength - i) - 1)
+		}
+	}
 }
 
 // instruction generation: expressions
@@ -1211,10 +1235,14 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 			add bytes (arg & 255)
 			add bytes ((arg >> 8) & 255)
 		}
-	} (isOneOf op 'longJmp' 'pushLiteral') {
+	} (isOneOf op 'longJmp' 'exitLoop' 'pushLiteral') {
+		// these opcodes are fixed size; they always use a second word for the offset
 		if ('longJmp' == op) {
 			// replace longJmp with jmp opcode but use two words regardless of offset
 			atPut bytes (count bytes) (at opcodes 'jmp')
+		}
+		if (and ('exitLoop' == op) (isNil arg)) {
+			arg = 0 // make exitLoop block outside of a loop jump by zero (i.e. a no-op)
 		}
 		add bytes 0 // zero arg byte
 		// append 16-bit signed offset from instruction pointer (little endian)

@@ -1,4 +1,4 @@
-defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll verticalScrollOnly dragOriginX dragOriginY baseX baseY
+defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll verticalScrollOnly hideWhenNotScrolling lastScrollMSecs dragOriginX dragOriginY baseX baseY
 
 to area aHandler {return (fullBounds (morph aHandler))}
 
@@ -16,6 +16,8 @@ method initialize ScrollFrame newContents aColor noSliderFlag thickness padding 
 	noSliders = noSliderFlag
 	enableAutoScroll = true
 	verticalScrollOnly = false
+	hideWhenNotScrolling = false
+	lastScrollUpdate = 0
 	addPart morph (morph contents)
 	setTransparentTouch morph true
 	setClipping morph true
@@ -34,6 +36,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag thickness padding 
 method contents ScrollFrame {return contents}
 method setAutoScroll ScrollFrame bool {enableAutoScroll = bool}
 method setVerticalScrollOnly ScrollFrame bool {verticalScrollOnly = bool}
+method setHideWhenNotScrolling ScrollFrame bool {hideWhenNotScrolling = bool}
 
 method setColor ScrollFrame aColor {
 	setCostume morph aColor
@@ -59,6 +62,8 @@ method drawOn ScrollFrame ctx {
 	// Fill bounds with my color.
 	drawCostumeOn morph ctx
 }
+
+// hide/show sliders
 
 method hideSliders ScrollFrame {
 	noSliders = true
@@ -149,6 +154,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
 }
 
 method updateSliderPositions ScrollFrame {
+	isScrolling this
 	if (not (or (isVisible (morph vSlider)) (isVisible (morph hSlider)))) {
 		return // neither slider is visible
 	}
@@ -197,6 +203,20 @@ method adjustContents ScrollFrame {
 	changed morph
 }
 
+method isScrolling ScrollFrame {
+	if hideWhenNotScrolling {
+		if ((height (morph contents)) > (height morph)) {
+			show (morph vSlider)
+		}
+		if (and
+			(not verticalScrollOnly)
+			((width (morph contents)) > (width morph))) {
+				show (morph hSlider)
+		}
+		lastScrollMSecs = (msecsSinceStart)
+	}
+}
+
 method scrollToX ScrollFrame x {
 	if verticalScrollOnly { return }
 	if (0 == (ceiling hSlider)) {
@@ -214,6 +234,7 @@ method scrollToX ScrollFrame x {
 		(left morph)
 		(toInteger (* (/ (toFloat x) (ceiling hSlider)) overlap))
 	)
+	isScrolling this
 	changed morph
 }
 
@@ -237,6 +258,7 @@ method scrollToY ScrollFrame y {
 		(top morph)
 		(toInteger (* (/ (toFloat y) (ceiling vSlider)) overlap))
 	)
+	isScrolling this
 	changed morph
 }
 
@@ -365,6 +387,7 @@ method handMoveFocus ScrollFrame aHand {
 	dx = ((x aHand) - dragOriginX)
 	dy = ((y aHand) - dragOriginY)
 	setScrollOffset this (baseX - dx) (baseY - dy)
+	isScrolling this
 }
 
 // auto-scrolling
@@ -379,6 +402,15 @@ method step ScrollFrame {
 		(wantsDropOf (contents this) dragged)
 	) {
 		autoScroll this hand dragged
+	}
+
+	if (and hideWhenNotScrolling (isNil dragged)) {
+		now = (msecsSinceStart)
+		if (now < lastScrollMSecs) { lastScrollMSecs = 0 } // clock wrap
+		if ((now - lastScrollMSecs) > 400) {
+			hide (morph hSlider)
+			hide (morph vSlider)
+		}
 	}
 }
 
