@@ -1931,6 +1931,12 @@ static int readTemperature() { return analogReadTemp(); }
 static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
 static void setAccelRange(int range) { } // RP2040 has no accelerometer
 
+#elif defined(EXTERNAL_ACCELEROMETER)
+// Vendor-specific boards should implement their own versions of these functions.
+extern int readAcceleration(int reg);
+extern int readTemperature();
+extern void setAccelRange(int range);
+
 #else // stubs for non-micro:bit boards
 
 static int readAcceleration(int reg) { return 0; }
