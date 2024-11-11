@@ -12,69 +12,28 @@
 #include <Wire.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "interp.h"
 
 #define DA213ADDR 39
 
 extern int accelStarted;
 
+void boardInit() {
+    // debug serial port
+    // Serial1.begin(115200, SERIAL_8N1, 0, 2); // debug port at pad 1
+    // Serial1.printf("Grapebit board init\n");
+}
 
 static void startDA213() {
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x7f);
-    Wire.write(0x83);
-    Wire.endTransmission();
+    writeI2CReg(DA213ADDR, 0x7f, 0x83);
+    writeI2CReg(DA213ADDR, 0x7f, 0x69);
+    writeI2CReg(DA213ADDR, 0x7f, 0xbd);
+    writeI2CReg(DA213ADDR, 0x8e, 0x00); // Assuming 0x00 is the value to write
 
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x7f);
-    Wire.write(0x69);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x7f);
-    Wire.write(0xbd);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x8e);
-    Wire.endTransmission();
-    Wire.requestFrom(DA213ADDR, 1);
-    uint8_t a = Wire.read();
+    uint8_t a = readI2CReg(DA213ADDR, 0x8e);
     if (a == 0) {
-        Wire.beginTransmission(DA213ADDR);
-        Wire.write(0x8e);
-        Wire.write(0x50);
-        Wire.endTransmission();
+        writeI2CReg(DA213ADDR, 0x8e, 0x00); // Assuming 0x00 is the value to write
     }
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x0f);
-    Wire.write(0x40);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x20);
-    Wire.write(0x00);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x11);
-    Wire.write(0x34);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x10);
-    Wire.write(0x07);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x1a);
-    Wire.write(0x04);
-    Wire.endTransmission();
-
-    Wire.beginTransmission(DA213ADDR);
-    Wire.write(0x15);
-    Wire.write(0x04);
-    Wire.endTransmission();
 
     accelStarted = true;
 }
@@ -86,7 +45,7 @@ int readAcceleration(int registerID) {
 	}
 
     Wire.beginTransmission(DA213ADDR);
-    Wire.write(registerID);
+    Wire.write(0x02);
     Wire.endTransmission();
     Wire.requestFrom(DA213ADDR, 6);
     uint8_t data[6];
@@ -97,8 +56,19 @@ int readAcceleration(int registerID) {
     imu[0] = (data[1] << 8) | data[0];
     imu[1] = (data[3] << 8) | data[2];
     imu[2] = (data[5] << 8) | data[4];
-    int val = imu[registerID];
-	return (100 * val) >> 14;
+    // register from 1, 3, 5
+    // Serial1.printf("IMU %d x: %d, y: %d, z: %d\n", registerID, imu[0], imu[1], imu[2]);
+    int val = 0;
+    // fix orders
+    if (registerID == 1) {
+        val = imu[0] / 16;
+    } else if (registerID == 3) {
+        val = -imu[1] / 16;
+    } else if (registerID == 5) {
+        val = imu[2] / 16;
+    }
+    // Serial1.printf("IMU %d val: %d\n", registerID, val);
+	return val;
 }
 
 void setAccelRange(int range) {

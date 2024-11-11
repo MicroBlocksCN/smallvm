@@ -1078,7 +1078,7 @@ void hardwareInit() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 #elif defined(GRAPEBIT)
-	#define BOARD_TYPE "grapebit_esp32_c3"
+	#define BOARD_TYPE "Grapebit"
 	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS 21
