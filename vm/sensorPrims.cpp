@@ -73,6 +73,9 @@
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 25
+#elif defined(GRAPEBIT)
+	#define PIN_WIRE_SCL 7
+	#define PIN_WIRE_SDA 6
 #elif !defined(PIN_WIRE_SCL)
 	#if defined(PIN_WIRE0_SCL)
 		#define PIN_WIRE_SCL PIN_WIRE0_SCL
