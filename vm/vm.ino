@@ -8,7 +8,14 @@
 #include "interp.h"
 #include "persist.h"
 
+void boardInit() __attribute__((weak));
+
 void setup() {
+	
+	if (boardInit) {
+        boardInit();
+    }
+
 #ifdef ARDUINO_NRF52_PRIMO
 	sd_softdevice_disable();
 #endif
