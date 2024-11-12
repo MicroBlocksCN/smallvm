@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 3 1 
+version 3 2 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -55,6 +55,7 @@ variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _buf
   spec ' ' '机器狗陀螺仪重置' '陀螺仪重置'
   spec ' ' '陀螺仪' '陀螺仪 _' 'bool' false
   spec ' ' '表演模式' '表演模式 _' 'bool' false
+  spec ' ' '群控模式' '群控模式 _' 'bool' false
   spec ' ' '卸载所有舵机' '卸载所有舵机 _' 'bool' false
   spec ' ' '2P' '2Pin接口 5V输出 _' 'bool' false
   spec ' ' '数字IO输出' '数字IO输出 _' 'bool' false
@@ -612,6 +613,18 @@ to '表演模式' mode {
   if (mode == (booleanConstant true)) {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 1))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 1)) % 255))))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
+    '_串口结束'
+  }
+}
+
+to '群控模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 2))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 2)) % 255))))
     '_串口结束'
   } else {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
