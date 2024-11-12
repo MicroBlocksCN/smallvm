@@ -76,6 +76,9 @@
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 25
+#elif defined(GRAPEBIT)
+	#define PIN_WIRE_SCL 7
+	#define PIN_WIRE_SDA 6
 #elif !defined(PIN_WIRE_SCL)
 	#if defined(PIN_WIRE0_SCL)
 		#define PIN_WIRE_SCL PIN_WIRE0_SCL
@@ -2142,6 +2145,12 @@ static int readTemperature() {
 static int readTemperature() { return analogReadTemp(); }
 static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
 static void setAccelRange(int range) { } // RP2040 has no accelerometer
+
+#elif defined(EXTERNAL_ACCELEROMETER)
+// Vendor-specific boards should implement their own versions of these functions.
+extern int readAcceleration(int reg);
+extern int readTemperature();
+extern void setAccelRange(int range);
 
 #else // stubs for non-micro:bit boards
 
