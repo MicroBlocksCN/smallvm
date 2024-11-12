@@ -1092,6 +1092,31 @@ void hardwareInit() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
+#elif defined(GRAPEBIT)
+	#define BOARD_TYPE "Grapebit"
+	#define DIGITAL_PINS 21
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 21
+	// reserved pins
+	#define PAD1 2
+	#define PAD2 0
+	#define PIN_BUTTON_A 21
+	#define PIN_BUTTON_B 9
+	#define MOTOR1 1
+	#define MOTOR2 4
+	#define NEOPIXEL 10
+	#define PIN_LED NEOPIXEL
+	#define DEFAULT_TONE_PIN 3
+
+	#define I2C_SDA 6
+	#define I2C_SCL 7
+	
+ 	static const int analogPin[] = {0, 2};
+
+
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
 #elif defined(ESP32_C3)
 	#define BOARD_TYPE "ESP32-C3"
