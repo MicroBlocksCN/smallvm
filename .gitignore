@@ -34,3 +34,4 @@ JohnWorkInProgress
 *.pem
 .vscode/*
 .DS_Store
+vm.ino.cpp
