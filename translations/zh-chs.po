@@ -4469,6 +4469,36 @@ msgstr "键盘事件"
 msgid "broadcast keyboard event(for debugging only)"
 msgstr "广播键盘事件(仅用于调试)"
 
+msgid "folder;Examples"
+msgstr "案例"
+
+msgid "folder; by board"
+msgstr "按板子分类"
+
+msgid "folder;Art"
+msgstr "艺术"
+
+msgid "folder;Games"
+msgstr "游戏"
+
+msgid "folder;Music"
+msgstr "音乐"
+
+msgid "folder;Web of Things"
+msgstr "物联网"
+
+msgid "folder;Citilab ED1 and M5Stack"
+msgstr "Citilab ED1 and M5Stack"
+
+msgid "folder;CoCube"
+msgstr "CoCube"
+
+msgid "folder;CPX"
+msgstr "CPX"
+
+msgid "folder;microbit and Calliope"
+msgstr "microbit and Calliope"
+
 #### CoCube
 
 msgid "left"
