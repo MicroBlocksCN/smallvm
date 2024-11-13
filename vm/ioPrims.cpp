@@ -854,6 +854,34 @@ void hardwareInit() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 	
+#elif defined(STEAMaker)
+	#define BOARD_TYPE "micro:STEAMakers"
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 17
+	#define DIGITAL_PINS 25
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	#define USE_DIGITAL_PIN_MAP true
+	static const int analogPin[] = {};
+	static const char digitalPin[25] = {
+		12, 14, 32, 13, 27, 0, 2, 25, 4, 16,
+		26, 17, 15, 18, 19, 23, 5, 255, 255, 22,
+		21, 33, 35, 36, 39}; // edge connector pins 17 & 18 are not used (255 in map)
+	#define DEFAULT_TONE_PIN 21
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+	// analog inputs (ESP32=edge pin): 12=0, 14=1, 32=2, 13=3, 27=4, 0=5, 2=6, 25=7, 4=8, 26=10, 15=12
+	// UART: edge connector pins 9 (RX) and 11 (TX)
+	//
+	// Pins not on edge connector:
+	// Buzzer - 21 (was 33)
+	// Microphone - 22 (was 35)
+	// Current - 23 (was 36)
+	// LDR - 24 (was 39)
+	// Unused - 34
 
 #elif defined(ESP32_S2)
 	#define BOARD_TYPE "ESP32-S2"
@@ -1120,9 +1148,9 @@ void hardwareInit() {
 
 #elif defined(ESP32_C3)
 	#define BOARD_TYPE "ESP32-C3"
-	#define DIGITAL_PINS 20
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 20
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 6 // pins 0-5, but pin 5 uses ADC2 may be less reliable
+	#define TOTAL_PINS 22
 	static const int analogPin[] = {};
 	#ifdef LED_BUILTIN
 		#define PIN_LED LED_BUILTIN
@@ -1136,9 +1164,19 @@ void hardwareInit() {
 			#define PIN_BUTTON_A 0
 		#endif
 	#endif
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+	#if defined(ARDUINO_USB_MODE)
+		// USB is used to communicate with IDE, so pins 20, 21 are available
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			0, 0};
+	#else
+		// pins 20, 21 are used for IDE serial connection
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+			1, 1};
+	#endif
 
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 	#define BOARD_TYPE "ESP32-S3"
@@ -1337,6 +1375,7 @@ void hardwareInit() {
 	#define TOTAL_PINS 24
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 	#define PIN_LED LED_BUILTIN
+	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
 
 #else // unknown board
 
@@ -1844,7 +1883,7 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(M5STAMP) || defined(M5_ATOMS3LITE)
+		#if defined(M5STAMP) || defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Lite_ESP32_S3)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 			taskSleep(1);
