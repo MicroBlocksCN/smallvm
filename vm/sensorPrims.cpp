@@ -32,6 +32,9 @@
 #elif defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
+#elif defined(GIZMO_MECHATRONICS)
+       #define PIN_WIRE_SCL 3
+       #define PIN_WIRE_SDA 2
 #elif defined(XESGAME) //学而思游戏机
 	#define PIN_WIRE_SCL 15
 	#define PIN_WIRE_SDA 21
@@ -997,7 +1000,7 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3)
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
  #define Wire1 Wire
@@ -1034,10 +1037,8 @@ static void writeAccelReg(int regID, int value) {
 static char is6886 = false;
 
 static void startAccelerometer() {
-	#if defined(M5Atom_Matrix)
-		Wire1.begin(25, 21);
-	#elif defined(M5Atom_S3_TFT)
-		Wire1.begin(38, 39);
+	#ifdef ARDUINO_M5Atom_Matrix_ESP32
+		Wire1.begin(25, 21); // use internal I2C bus with default pins
 	#else
 		#ifdef ARDUINO_M5Stick_C2
 		Wire1.begin(21, 22);
@@ -1294,7 +1295,13 @@ static int readTemperature() {
 }
 
 
-#elif defined(ARDUINO_Mbits)
+#elif defined(ARDUINO_Mbits) || defined(STEAMaker)
+
+#if defined(ARDUINO_Mbits)
+	#define MPU6050 0x69
+#elif defined(STEAMaker)
+	#define MPU6050 0x68
+#endif
 
 #define MPU6050_ACCEL_XOUT_H 59
 #define MPU6050_PWR_MGMT_1 107
