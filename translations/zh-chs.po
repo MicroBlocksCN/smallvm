@@ -4454,6 +4454,9 @@ msgstr "秒"
 #.######################
 #. CN
 
+msgid "handpy"
+msgstr "掌控板"
+
 msgid "Libraries"
 msgstr "积木库"
 
