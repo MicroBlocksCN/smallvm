@@ -1,23 +1,17 @@
 module TFThanzi
 author 'Patch & Rang'
-version 1 9 
-depends TFT Strings Files NeoPixel NeoPanel 
-description '使用汉字取模数据在TFT屏幕上显示汉字
-v1.9 增加指定字体功能，可以切换字体显示
-v1.8 增加了英文字库，使英文可以和中文混排
-v1.7 drawChar方法去掉了写字前刷固定黑色背景，增加宽度参数和换行功能
-v1.6 增加了neoPanel点阵屏上汉字滚动的方法
-v1.5 增加对neoPanel和OLED的支持
-v1.4 增加二进制字库文件支持
-v1.3 增加了一个大写英文字母字体
-v1.2 增加了通过文件保存和提取字模的功能
-v1.1 增加了颜色设置，增加了几个汉字和数字示例
--------
+version 1 9
+description '汉字字库及其在TFT及各种屏幕上显示方法
+根据不同屏幕需要添加下列相应积木库：
+OLED屏: OLED Graphics, OLED汉字
+掌控板: 掌控板 OLED, OLED汉字
+像素屏: NeoPixel, 像素屏
+--------------
 字库文件下载地址：
-中文：https://www.go2crm.cn/go_static/cn.font
-英文：https://www.go2crm.cn/go_static/en.font
 宋体：https://www.go2crm.cn/go_static/st.font
 仿宋：https://www.go2crm.cn/go_static/fs.font
+扫描中文字库：https://www.go2crm.cn/go_static/cn.font
+自制英文字体：https://www.go2crm.cn/go_static/en.font
 取模工具：
 16X16点阵汉字自动取模 https://create.codelab.club/projects/53070
 16X16点阵设计工具 https://create.codelab.club/projects/66585
@@ -26,23 +20,27 @@ v1.1 增加了颜色设置，增加了几个汉字和数字示例
 介绍视频：
 https://www.bilibili.com/video/BV1R14y1172r/
 
-可以在示例的other分类找到此库的使用示例-chineseDisplay
+可以在示例的other分类找到使用示例
 '
-variables _scrollStop _scrollPause _fontWidth _fontHeight _xx _yy _charFont _chars 
+variables _scrollStop _scrollPause _fontWidth _fontHeight _xx _yy _charFont _chars
 
   spec ' ' 'draw' 'draw _ x _ y _ size _ _ neo _' 'str num num num color auto' '10100042440008E416151454541414F4040000402011011F111115155151311F1101' 0 0 1 nil ''
-  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _ fileName _ width _' 'str num num num color str num' '汉字' 10 10 2 nil 'st.font' 100
-  spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _' 'auto color auto num' '汉字' nil '10' 12
+  spec ' ' 'drawChar' 'drawChar _ x _ y _ size _ _ fontFile _ width _' 'str num num num color str num' '汉字' 10 10 2 nil 'fs.font' 100
+  spec ' ' 'scrollHanzi' 'scrollHanzi _ color _ beginX _ neoPin _ fontFile _' 'auto color auto num str' '汉字' nil '10' 12 'fs.font'
   spec ' ' 'drawSample' 'drawSample _ y _ size _ _' 'auto auto auto color' '0' '0' '1'
   spec ' ' 'saveFile' 'saveFile _ code _' 'str str' 'FileName' 'code'
   spec 'r' 'dec2hex' 'dec2hex _' 'auto' '10'
   space
   spec ' ' '_loadEnFont' '_loadEnFont'
-  spec 'r' '_fromFontFile' '_fromFontFile _ withHeader _ fontFile _' 'auto bool str' '汉' true 'cn.font'
+  spec 'r' '_fromFontFile' '_fromFontFile _ withHeader _ fontFile _' 'auto bool str' '汉' true 'fs.font'
   spec 'r' '_getCodeFromFile' '_getCodeFromFile _' 'str' '海'
   spec 'r' '_sample' '_sample'
 
 to '_fromFontFile' foo withHeader fontFile {
+  if (('[file:fileSize]' fontFile) < 32) {
+    sayIt '字体文件不存在'
+    return '字体文件不存在'
+  }
   if (and (('[data:unicodeAt]' 1 foo) >= 19968) (('[data:unicodeAt]' 1 foo) <= 40959)) {
     local 'f' (((('[data:unicodeAt]' 1 foo) - 19968) * 32) + 0)
     '[file:open]' fontFile
@@ -146,15 +144,18 @@ to draw data x y size color neo {
   }
 }
 
-to drawChar foo x y size color filename width {
-  comment '最后一个参数可以输入字体文件名以改变字体'
+to drawChar foo x y size color fontFile width {
+  if (('[file:fileSize]' fontFile) < 32) {
+    sayIt '字体文件不存在'
+    return '字体文件不存在'
+  }
   foo = ('[data:convertType]' foo 'string')
   local 'var' ''
   _xx = x
   _yy = y
   for i (size foo) {
     if (and (('[data:unicodeAt]' 1 (at i foo)) >= 19968) (('[data:unicodeAt]' 1 (at i foo)) <= 40959)) {
-      var = ('_fromFontFile' (at i foo) true filename)
+      var = ('_fromFontFile' (at i foo) true fontFile)
     } else {
       '_loadEnFont'
       local 'var2' ('[data:find]' (at i foo) _chars)
@@ -191,7 +192,11 @@ to saveFile fileName code {
   '[file:close]' fileName
 }
 
-to scrollHanzi hanzi color x neoPin {
+to scrollHanzi hanzi color x neoPin fontFile {
+  if (('[file:fileSize]' fontFile) < 32) {
+    sayIt '字体文件不存在'
+    return '字体文件不存在'
+  }
   _scrollStop = 0
   _scrollPause = 0
   neoPanel_attach 16 16 neoPin
@@ -205,9 +210,9 @@ to scrollHanzi hanzi color x neoPin {
       }
       _np_pixels = (newList 256 0)
       sayIt id
-      draw ('_fromFontFile' (at id hanzi) true) x 0 1 color 1
+      draw ('_fromFontFile' (at id hanzi) true fontFile) x 0 1 color 1
       if (id < (size hanzi)) {
-        draw ('_fromFontFile' (at (id + 1) hanzi) true) (x + 16) 0 1 color 1
+        draw ('_fromFontFile' (at (id + 1) hanzi) true fontFile) (x + 16) 0 1 color 1
       }
       '_NeoPixel_update'
       x += -1
