@@ -1069,6 +1069,34 @@ void hardwareInit() {
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
+#elif defined(ADAFRUIT_FER_TFT)
+	#define BOARD_TYPE "Adafruit-ESP32S3-TFT"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#ifdef LED_BUILTIN
+		#define PIN_LED LED_BUILTIN
+	#elif !defined(PIN_LED)
+		#define PIN_LED 33 //neopixel
+	#endif
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 1
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+
+	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
+	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// USB pins: 19 (USB D-), 20 (USB D+)
+	// also possibly: 39-42 (JTAG pins)
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 0, 0, 0, 0};
+
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
