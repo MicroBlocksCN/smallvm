@@ -1,0 +1,30 @@
+module 'M5 DLight BH1750FVI' 'cat;Input'
+author '作者 邵悦'
+version 1 0 
+description 'DLight Unit is a Digital Ambient Light Sensor. 
+Adopts BH1750FVI sensor (I2C interface),
+https://docs.m5stack.com/en/unit/dlight#related-link'
+variables _BH1750_DLight_addr 
+
+  spec 'r' 'DLight get Light Level' 'DLight get Light Level'
+  spec ' ' '_BH1750_init' '_BH1750_init'
+
+to 'DLight get Light Level' {
+  '_BH1750_init'
+  local 'var' (newList 2)
+  '[sensors:i2cRead]' _BH1750_DLight_addr var
+  return ((10 * (((at 1 var) << 8) | (at 2 var))) / 12)
+}
+
+to '_BH1750_init' {
+  if (_BH1750_DLight_addr == 0) {
+    _BH1750_DLight_addr = (hexToInt '23')
+    comment 'power on'
+    '[sensors:i2cWrite]' _BH1750_DLight_addr (hexToInt '01')
+    waitMillis 5
+    comment 'CONTINUOUSLY_H_RESOLUTION_MODE'
+    '[sensors:i2cWrite]' _BH1750_DLight_addr (hexToInt '10')
+    waitMillis 5
+  }
+}
+
