@@ -29,7 +29,7 @@ static int deferUpdates = false;
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(XESGAME)//学而思游戏机
+	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || defined(XESGAME)//学而思游戏机
 
 	#if !defined(COCUBE) && !defined(COCUBE_SOCCER)
 	#define BLACK 0
@@ -842,6 +842,30 @@ static int deferUpdates = false;
 		#define TFT_WIDTH 240
 		#define TFT_HEIGHT 135
 		#define TFT_PWR 22
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, 1);
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setRotation(1);
+			tftClear();
+			useTFT = true;
+		}
+
+	#elif defined(ADAFRUIT_FER_TFT)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_MOSI 35
+		#define TFT_SCLK 36
+		#define TFT_CS 42 //
+		#define TFT_DC 40 //
+		#define TFT_RST 41 //
+		#define TFT_BL 45 
+		#define TFT_WIDTH 240
+		#define TFT_HEIGHT 135
+		#define TFT_I2C_PWR 7
 		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
 		void tftInit() {
