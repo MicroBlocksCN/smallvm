@@ -649,7 +649,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
 		1, 1, 0, 0, 1, 1, 0, 0, 1, 0};
 
