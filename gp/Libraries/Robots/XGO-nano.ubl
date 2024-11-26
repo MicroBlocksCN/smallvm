@@ -1,6 +1,6 @@
 module 'XGO-nano' Control
 author luwudynamics
-version 3 2 
+version 3 3 
 choices leg_Menu '左前' '右前' '右后' '左后' 
 choices arm_Menu '上（-65°-65°）' '中（-115°-70°）' '下（-90°-105°）' 
 choices move_direction_Menu X Y 
@@ -9,13 +9,13 @@ choices transmove_Menu 'X(-25mm-25mm)' 'Y(-18mm-18mm)' 'Z(60mm-110mm)'
 choices direction_Menu '逆时针' '顺时针' 
 choices speed_Menu '正常' '慢速' '快速' 
 choices translation_Menu X Y Z 
-choices transrotate_Menu 'X(-20°-20°)' 'Y(-20°-20°)' 'Z(-12°-12°)' 
+choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' '爬双层楼梯' 
 choices gait_Menu '对角' '行走' '高抬腿' '微调' 
 choices button_Menu A B 
 choices attitude_Menu R P Y 
 choices move_Menu '前平移（0mm~25mm）' '后平移（-25mm~0mm）' '左平移（0mm~18mm）' '右平移（-18mm~0mm）' 
 choices angle_Menu roll pitch yaw 
-choices action_Menu '趴下' '站起' '匍匐前进' '转圈' '踏步' '蹲起' '转动ROLL' '转动PITCH' '转动YAW' '三轴转动' '撒尿' '坐下' '招手' '伸懒腰' '波浪' '摇摆' '乞讨' '找食物' '握手' '鸡头' '俯卧撑' '张望' '跳舞' '调皮' '上抓' '中抓' '下抓' '爬楼梯' '爬双层楼梯' 
+choices transrotate_Menu 'X(-20°-20°)' 'Y(-20°-20°)' 'Z(-12°-12°)' 
 description 'XGO-nano is a desktop-level robotic dog with 15 degrees of freedom and a mechanical arm. The building block library includes the xyz-axis translational motion of the robotic dog, xyz-axis rotational motion, and various states of motion overlay, motion parameter settings, and reading the status of the robotic dog.
 '
 variables _serialMode _buffer HL_I2C_address _cmd_list data cmd steps arm_z _bufferdata '动作列表' _buttons 
@@ -443,43 +443,27 @@ to '机器狗平移' move_direction steps times {
   if (move_direction == '前平移（0mm~25mm）') {
     '_移动机器狗' 'X' steps
     waitMillis times
-    '_移动机器狗' 'X' 0
-    waitMillis 50
-    '_移动机器狗' 'Y' 0
   } (move_direction == '后平移（-25mm~0mm）') {
     '_移动机器狗' 'X' (0 - steps)
     waitMillis times
-    '_移动机器狗' 'X' 0
-    waitMillis 50
-    '_移动机器狗' 'Y' 0
   } (move_direction == '左平移（0mm~18mm）') {
     '_移动机器狗' 'Y' steps
     waitMillis times
-    '_移动机器狗' 'Y' 0
-    waitMillis 50
-    '_移动机器狗' 'X' 0
   } (move_direction == '右平移（-18mm~0mm）') {
     '_移动机器狗' 'Y' (0 - steps)
     waitMillis times
-    '_移动机器狗' 'Y' 0
-    waitMillis 50
-    '_移动机器狗' 'X' 0
   }
 }
 
 to '机器狗平移无时间' move_direction steps times {
   if (move_direction == '前平移（0mm~25mm）') {
     '_移动机器狗' 'X' steps
-    '_移动机器狗' 'Y' 0
   } (move_direction == '后平移（-25mm~0mm）') {
     '_移动机器狗' 'X' (0 - steps)
-    '_移动机器狗' 'Y' 0
   } (move_direction == '左平移（0mm~18mm）') {
     '_移动机器狗' 'Y' steps
-    '_移动机器狗' 'X' 0
   } (move_direction == '右平移（-18mm~0mm）') {
     '_移动机器狗' 'Y' (0 - steps)
-    '_移动机器狗' 'X' 0
   }
 }
 
@@ -598,6 +582,18 @@ to '机械臂运动' arm degree {
   }
 }
 
+to '群控模式' mode {
+  if (mode == (booleanConstant true)) {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 2))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 2)) % 255))))
+    '_串口结束'
+  } else {
+    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
+    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
+    '_串口结束'
+  }
+}
+
 to '获取机器狗版本' {
   _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 2 80 15 149))
   '_串口结束'
@@ -613,18 +609,6 @@ to '表演模式' mode {
   if (mode == (booleanConstant true)) {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 1))
     _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 1)) % 255))))
-    '_串口结束'
-  } else {
-    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
-    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 0)) % 255))))
-    '_串口结束'
-  }
-}
-
-to '群控模式' mode {
-  if (mode == (booleanConstant true)) {
-    _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 2))
-    _buffer = ('[data:join]' _buffer ('[data:asByteArray]' ('[data:makeList]' ((255 - (13 + 2)) % 255))))
     '_串口结束'
   } else {
     _buffer = ('[data:asByteArray]' ('[data:makeList]' 85 0 9 1 3 0))
