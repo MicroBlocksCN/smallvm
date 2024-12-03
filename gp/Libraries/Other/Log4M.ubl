@@ -1,6 +1,6 @@
 module Log4M
-author '邵悦'
-version 1 2 
+author '作者 邵悦'
+version 1 3 
 description '简单的调试信息记录和显示功能
 可以正序或者逆序显示
 日志记录的时候可以选择是否添加时间戳
@@ -17,6 +17,7 @@ to XGO_logClear {
 }
 
 to XGO_logReplay {
+  local 'var' 0
   for i (size XGO_loginfo) {
     var = ('[data:join]' var '：' (at i XGO_loginfo))
     sayIt ('[data:join]' i '：' (at i XGO_loginfo))
