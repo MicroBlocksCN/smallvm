@@ -1234,7 +1234,7 @@ method versionReceived SmallRuntime versionString {
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
 		boardType = (extractBoardType this versionString)
-		// checkVmVersion this
+		checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
 		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
@@ -3330,13 +3330,11 @@ method flashESPFirmwareFromURL SmallRuntime boardName url {
 
 method installESPFirmwareFromRepo SmallRuntime {
 	setCursor 'wait'
-	//if (isPilot (findMicroBlocksEditor)) {
-	//	version = 'pilot'
-	//} else {
-	//	version = ideVersion
-	//}
-	// devCN
-	version = 'pilot'
+	if (isPilot (findMicroBlocksEditor)) {
+		version = 'pilot'
+	} else {
+		version = ideVersion
+	}
 	menu = (menu 'Select firmware:' this)
 	html = (basicHTTPGet 'microblocks.fun' (join '/downloads/' version '/vm/'))
 	for line (lines html) {
