@@ -1263,6 +1263,8 @@ static int hasTFT() {
 	return useTFT;
 }
 
+uint16_t bufferPixels[TFT_WIDTH * 8]; // used by primPixelRow and primDrawBuffer
+
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
 	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
