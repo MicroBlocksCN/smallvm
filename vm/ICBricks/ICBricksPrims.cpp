@@ -9,7 +9,7 @@
 
 #include "ICBricksI2cEquipment.h"
 #include "ICBricks.h"
-#include "ICBricks\MusicPlayer\playTone.h"
+#include "ICBricks/MusicPlayer/playTone.h"
 
 /*恢复主控器
  * 作用：

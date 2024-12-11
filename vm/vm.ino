@@ -9,7 +9,7 @@
 #include "persist.h"
 
 #if defined(ICBRICKS)
-#include "ICBricks\ICBricks.h"
+#include "ICBricks/ICBricks.h"
 #endif
 
 void setup()

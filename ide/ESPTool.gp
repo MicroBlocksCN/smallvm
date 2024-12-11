@@ -67,6 +67,7 @@ method baudForBoard ESPTool boardName {
 	} ('D1-Mini' == boardName) { return 921600
 	} ('ESP32' == boardName) { return 230400
 	} ('handpy' == boardName) { return 230400
+	} ('ICBricksVM' == boardName) { return 230400
 	} ('未来科技盒' == boardName) { return 230400
 	} ('未来科技盒v2.0' == boardName) { return 230400
 	} ('COCUBE' == boardName) { return 230400
@@ -438,6 +439,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('D1-Mini' == boardName) { return 'vm_nodemcu.bin'
 	} ('ESP32' == boardName) { return 'vm_esp32.bin'
 	} ('handpy' == boardName) { return 'vm_mpython.bin'
+	} ('ICBricksVM' == boardName) { return 'vm_ICBricksVM.bin'
 	} ('未来科技盒' == boardName) { return 'vm_cocorobo.bin'
 	} ('未来科技盒v2.0' == boardName) { return 'vm_tx_ft_box.bin'
 	} ('COCUBE' == boardName) { return 'vm_COCUBE.bin'

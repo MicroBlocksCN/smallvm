@@ -1080,7 +1080,7 @@ void hardwareInit() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 #elif defined(ICBRICKS)   //注意 bricks 基于esp32 所以一定要放在esp32之前！
-	#include "ICBricks\ICBricks.h"
+	#include "ICBricks/ICBricks.h"
 	#define BOARD_TYPE ICBRICKS_BOARD_TYPE
 	
 	#define DIGITAL_PINS 40
@@ -1795,7 +1795,7 @@ void primSetUserLED(OBJ *args) {
 		defined(FUTURE_LITE) || defined(COCUBE) || defined(XESGAME)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#elif defined(ICBRICKS)
-		#include "ICBricks\ICBricks.h"
+		#include "ICBricks/ICBricks.h"
 		
 		if (trueObj == args[0]) 
 		{
