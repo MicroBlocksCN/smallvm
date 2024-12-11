@@ -1,0 +1,45 @@
+module 'LIS3DHTR Accelerometer'
+author '邵悦'
+version 1 0 
+description 'https://wiki.seeedstudio.com/Grove-3-Axis-Digital-Accelerometer-LIS3DHTR/'
+variables _LIS3DHTR_addr 
+
+  spec ' ' '_LIS3DHTR_init' '_LIS3DHTR_init'
+  spec 'r' '_LIS3DHTR_get_data' '_LIS3DHTR_get_data'
+  spec 'r' 'LIS3DHTR tilt X' 'LIS3DHTR tilt X'
+  spec 'r' 'LIS3DHTR tilt Y' 'LIS3DHTR tilt Y'
+  spec 'r' 'LIS3DHTR tilt Z' 'LIS3DHTR tilt Z'
+  spec 'r' '_fix16bitSign' '_fix16bitSign _' 'auto' '10'
+
+to 'LIS3DHTR tilt X' {
+  return (at 1 ('_LIS3DHTR_get_data'))
+}
+
+to 'LIS3DHTR tilt Y' {
+  return (at 2 ('_LIS3DHTR_get_data'))
+}
+
+to 'LIS3DHTR tilt Z' {
+  return (at 3 ('_LIS3DHTR_get_data'))
+}
+
+to '_LIS3DHTR_get_data' {
+  '_LIS3DHTR_init'
+  '[sensors:i2cWrite]' _LIS3DHTR_addr ('[data:makeList]' ((hexToInt '28') | (hexToInt '80')))
+  local 'var' (newList 6)
+  '[sensors:i2cRead]' _LIS3DHTR_addr var
+  return ('[data:makeList]' (0 - ('_fix16bitSign' ((at 1 var) | ((at 2 var) << 8)))) ('_fix16bitSign' ((at 3 var) | ((at 4 var) << 8))) ('_fix16bitSign' ((at 5 var) | ((at 6 var) << 8))))
+}
+
+to '_LIS3DHTR_init' {
+  if (_LIS3DHTR_addr != 0) {return 0}
+  _LIS3DHTR_addr = (hexToInt '19')
+  comment '50 Hz sampling rate, 16-bit resolution, enable x/y/z.'
+  '[sensors:i2cWrite]' _LIS3DHTR_addr ('[data:makeList]' (hexToInt '20') (hexToInt '47'))
+  waitMillis 10
+}
+
+to '_fix16bitSign' foo {
+  return ((100 * (ifExpression (foo > 32768) (foo - 65536) foo)) >> 14)
+}
+
