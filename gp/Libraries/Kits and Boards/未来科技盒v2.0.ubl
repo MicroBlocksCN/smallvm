@@ -1,6 +1,6 @@
 module '未来科技盒v2.0'
 author '邵悦'
-version 1 6 
+version 1 7 
 depends Tone Servo 'Temperature Humidity (DHT11, DHT22)' 
 choices PosMenu left right 
 choices ServoMenu s1 s2 
@@ -14,7 +14,7 @@ grove 端口映射
 超声波，巡线，舵机
 yue.shao@gmail.com
 '
-variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_last zeroCount _tx_line_pins _veml6040_addr 
+variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_last zeroCount _tx_line_pins _veml6040_addr _LIS3DHTR_addr
 
   spec ' ' '点亮所有LED' '点亮所有LED'
   spec ' ' '熄灭所有LED' '熄灭所有LED'
@@ -38,11 +38,17 @@ variables _leds_status _led_x_col _led_y_row _tx_pins_list _tx_init_flag _sr04_l
   spec 'r' '声音传感器连接到端口grove' '声音传感器连接到端口grove _' 'auto' 3
   spec 'r' '温度传感器连接到端口grove' '温度传感器连接到端口grove _' 'auto' 3
   spec 'r' '湿度传感器连接到端口grove' '湿度传感器连接到端口grove _' 'auto' 3
-  spec 'r' 'veml6040_get_white' 'veml6040_get_white'
+  spec 'r' 'veml6040_get_white' '颜色灰度'
   spec 'r' '_vem6040_read2bytes' '_veml6040_read2bytes _' 'auto' '10'
-  spec 'r' 'veml6040_get_RGB_color' 'veml6040_get_RGB_color'
-  spec 'r' 'veml6040_get_color_data' 'veml6040_get_color_data'
+  spec 'r' 'veml6040_get_RGB_color' 'RGB颜色'
+  spec 'r' 'veml6040_get_color_data' '色彩数据'
   spec ' ' '_veml6040_init' '_veml6040_init'
+  spec ' ' '_LIS3DHTR_init' '_LIS3DHTR_init'
+  spec 'r' '_LIS3DHTR_get_data' '_LIS3DHTR_get_data'
+  spec 'r' 'LIS3DHTR tilt X' '倾角 X'
+  spec 'r' 'LIS3DHTR tilt Y' '倾角 Y'
+  spec 'r' 'LIS3DHTR tilt Z' '倾角 Z'
+  spec 'r' '_fix16bitSign' '_fix16bitSign _' 'auto' '10'
 
 to '_get_grove_port_pin' pin foo {
   '_tx_box_init'
@@ -272,5 +278,37 @@ to '设置舵机' foo angle {
 
 to '麦轮小车停止' {
   tx_mcar_move 0 0 0
+}
+
+to 'LIS3DHTR tilt X' {
+  return (at 1 ('_LIS3DHTR_get_data'))
+}
+
+to 'LIS3DHTR tilt Y' {
+  return (at 2 ('_LIS3DHTR_get_data'))
+}
+
+to 'LIS3DHTR tilt Z' {
+  return (at 3 ('_LIS3DHTR_get_data'))
+}
+
+to '_LIS3DHTR_get_data' {
+  '_LIS3DHTR_init'
+  '[sensors:i2cWrite]' _LIS3DHTR_addr ('[data:makeList]' ((hexToInt '28') | (hexToInt '80')))
+  local 'var' (newList 6)
+  '[sensors:i2cRead]' _LIS3DHTR_addr var
+  return ('[data:makeList]' (0 - ('_fix16bitSign' ((at 1 var) | ((at 2 var) << 8)))) ('_fix16bitSign' ((at 3 var) | ((at 4 var) << 8))) ('_fix16bitSign' ((at 5 var) | ((at 6 var) << 8))))
+}
+
+to '_LIS3DHTR_init' {
+  if (_LIS3DHTR_addr != 0) {return 0}
+  _LIS3DHTR_addr = (hexToInt '19')
+  comment '50 Hz sampling rate, 16-bit resolution, enable x/y/z.'
+  '[sensors:i2cWrite]' _LIS3DHTR_addr ('[data:makeList]' (hexToInt '20') (hexToInt '47'))
+  waitMillis 10
+}
+
+to '_fix16bitSign' foo {
+  return ((100 * (ifExpression (foo > 32768) (foo - 65536) foo)) >> 14)
 }
 
