@@ -1497,7 +1497,11 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 			OBJ pixelObj = FIELD(pixelDataObj, (i + 1));
 			bufferPixels[i] = (isInt(pixelObj)) ? color24to16b(obj2int(pixelObj)) : 0;
 		}
-		tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
+		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3)
+        	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
+		#else
+			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
+		#endif
 	} else if (IS_TYPE(pixelDataObj, ByteArrayType)) {
 		int pixelCount = BYTES(pixelDataObj) / bytesPerPixel;
 		if (pixelCount > (TFT_WIDTH - x)) pixelCount = TFT_WIDTH - x;
@@ -1517,7 +1521,11 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 				byte += bytesPerPixel;
 			}
 		}
-		tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
+		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3)
+        	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
+		#else
+			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
+		#endif
 	}
 	UPDATE_DISPLAY();
 	return falseObj;
