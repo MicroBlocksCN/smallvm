@@ -4454,6 +4454,10 @@ msgstr "秒"
 #.######################
 #. CN
 
+#. Library folder
+msgid "folder;Work In Progress"
+msgstr "正在开发中"
+
 msgid "handpy"
 msgstr "掌控板"
 
