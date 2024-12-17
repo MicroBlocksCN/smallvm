@@ -46,7 +46,7 @@
 #elif defined(NRF52)
 	#define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
-  #define OBJSTORE_BYTES 14000
+	#define OBJSTORE_BYTES 12000
 #elif defined(ARDUINO_M5Stick_C2)
   #define OBJSTORE_BYTES 160000
 #elif defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(HALOCODE) || defined(XESGAME)
