@@ -958,7 +958,7 @@ void hardwareInit() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 0, 0, 0, 0};
+		0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(M5_ATOMS3LITE)
 	#define BOARD_TYPE "M5-AtomS3Lite"
