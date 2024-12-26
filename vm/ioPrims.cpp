@@ -681,11 +681,11 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define DEFAULT_TONE_PIN 2
 	#define PIN_LED 10
 	#define INVERT_USER_LED true
-	static char reservedPin[TOTAL_PINS] = {
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(M5Atom_Matrix)
 
