@@ -1,0 +1,180 @@
+module '8x8点阵'
+author bingo
+version 0 3 
+depends NeoPixel 'LED Display' 
+choices directions '向左' '向右' '向上' '向下' 
+description '基于Neopixel库的二维点阵'
+variables _row _col _charColor 
+
+  spec ' ' 'InitLedMatrix' '初始化点阵        : 引脚 _' 'num' 13
+  spec ' ' 'pixelSet' '设置点阵 行 _ 列 _ 颜色 _' 'num num color' 0 0
+  spec ' ' 'setCharColor' '设置字符颜色 _' 'color'
+  spec ' ' 'display' '显示 _' 'microbitDisplay' 15237440
+  spec ' ' 'charSet' '显示字符 _' 'str' 'A'
+  spec ' ' 'imageSet' '显示图像 _        : x _ y _' 'menu.led_imageMenu num num' 'happy' 0 0
+  spec ' ' 'textScroll' '滚动显示 _        : 延时 _' 'str num' 'HELLO' 150
+  space
+  spec ' ' 'columnMove' '前 _ 行，左移一列 _' 'num bool' 8 true
+  spec ' ' 'rowMove' '前 _ 列，上移一行 _' 'num bool' 8 true
+  spec ' ' 'animateLoop' '一直滚动 方向 _       : 延时 _' 'menu.directions num' '向左' 150
+  space
+  spec 'r' '_ArrayPos' '行 _ 列 _ 的灯带位置' 'num num' 0 0
+  space
+  spec ' ' '_initVar' '_initVar'
+  spec ' ' '_setPixel' '_setPixel _ _ _ _' 'num num color bool' 0 0 nil true
+  spec ' ' '_drawImage' '_drawImage _ x _ y _' 'num num num' 9747750 0 0
+
+to InitLedMatrix optional_pin {
+  neoPixelAttach 64 (argOrDefault 1 13)
+  clearNeoPixels
+  '_initVar'
+}
+
+to '_ArrayPos' row col {
+  '_initVar'
+  if (and (and (0 <= row) (row < _row)) (and (0 <= col) (col < _col))) {
+    return (((row * _row) + col) + 1)
+  } else {
+    return 0
+  }
+}
+
+to '_drawImage' img x y {
+  for i ('[data:range]' 0 24) {
+    if ((img % 2) == 1) {
+      '_setPixel' ((i / 5) + y) ((i % 5) + x) _charColor false
+    } else {
+      '_setPixel' ((i / 5) + y) ((i % 5) + x) (colorSwatch 0 0 0 255) false
+    }
+    img = (img >> 1)
+  }
+  '_NeoPixel_update'
+}
+
+to '_initVar' {
+  if (_np_pixels == 0) {sayIt '彩灯点阵没有初始化'}
+  if (and (_row == 0) (_col == 0)) {
+    _row = 8
+    _col = 8
+    _charColor = 2342430
+  }
+}
+
+to '_setPixel' row col color update {
+  local 'i' ('_ArrayPos' row col)
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    if update {
+      '_NeoPixel_update'
+    }
+  }
+}
+
+to animateLoop direction optionalDelay {
+  _stop_scrolling_text = (booleanConstant false)
+  repeatUntil _stop_scrolling_text {
+    if (direction == '向左') {
+      columnMove 8 true
+    } (direction == '向右') {
+      columnMove 8 false
+    } (direction == '向上') {
+      rowMove 8 true
+    } (direction == '向下') {
+      rowMove 8 false
+    }
+    waitMillis (argOrDefault 2 150)
+  }
+}
+
+to charSet s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    clearNeoPixels
+    return 0
+  }
+  '_drawImage' ('[display:mbShapeForLetter]' (at 1 s)) 0 0
+}
+
+to columnMove rows right {
+  '_initVar'
+  if right {
+    for row (minimum rows _row) {
+      local 'p' (((row - 1) * _col) + 1)
+      local 'c' (at p _np_pixels)
+      for col (_col - 1) {
+        atPut p _np_pixels (at (p + 1) _np_pixels)
+        p += 1
+      }
+      atPut p _np_pixels c
+    }
+  } else {
+    for row (minimum rows _row) {
+      local 'p' (row * _col)
+      local 'c' (at p _np_pixels)
+      for col (_col - 1) {
+        atPut p _np_pixels (at (p - 1) _np_pixels)
+        p += -1
+      }
+      atPut p _np_pixels c
+    }
+  }
+  '_NeoPixel_update'
+}
+
+to display twentyFiveBitInt {
+  '_drawImage' twentyFiveBitInt 0 0
+}
+
+to imageSet img optional_x optional_y {
+  if (isType img 'string') {'_drawImage' ('_led_namedImage' img) (argOrDefault 2 0) (argOrDefault 3 0)}
+}
+
+to pixelSet row col color {
+  '_setPixel' row col color true
+}
+
+to rowMove cols up {
+  '_initVar'
+  cols = (minimum _col cols)
+  if up {
+    local 'np' ('[data:copyFromTo]' _np_pixels 1 cols)
+    for i (_row - 1) {
+      for j cols {
+        atPut ('_ArrayPos' (i - 1) (j - 1)) _np_pixels (at ('_ArrayPos' i (j - 1)) _np_pixels)
+      }
+    }
+    for i cols {
+      atPut ('_ArrayPos' (_row - 1) (i - 1)) _np_pixels (at i np)
+    }
+  } else {
+    local 'np' ('[data:copyFromTo]' _np_pixels ('_ArrayPos' (_row - 1) 0) ('_ArrayPos' (_row - 1) (cols - 1)))
+    for i (_row - 1) {
+      for j cols {
+        atPut ('_ArrayPos' (_row - i) (j - 1)) _np_pixels (at ('_ArrayPos' (_row - (i + 1)) (j - 1)) _np_pixels)
+      }
+    }
+    for i cols {
+      atPut ('_ArrayPos' 0 (i - 1)) _np_pixels (at i np)
+    }
+  }
+  '_NeoPixel_update'
+}
+
+to setCharColor color {
+  _charColor = color
+}
+
+to textScroll text optionalDelay {
+  text = ('[data:join]' '' text)
+  _stop_scrolling_text = (booleanConstant false)
+  for c text {
+    '_drawImage' ('[display:mbShapeForLetter]' c) 0 0
+    for i _col {
+      if _stop_scrolling_text {return 0}
+      columnMove 5 true
+      waitMillis (argOrDefault 2 150)
+    }
+  }
+  _stop_scrolling_text = (booleanConstant false)
+}
+
