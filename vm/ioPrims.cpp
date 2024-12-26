@@ -656,10 +656,10 @@ void hardwareInit() {
 	#define PIN_LED 10
 	#define INVERT_USER_LED true
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(M5Atom_Matrix)
 
