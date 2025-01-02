@@ -1,6 +1,6 @@
 module 'Sentry2 AI camera' Input
 author '作者 邵悦'
-version 1 5 
+version 1 6 
 choices st2colorMenu red green blue yellow black white 
 choices st2normalpropMenu X Y width heigh label 
 choices st2cardMenu Forward Left Right TurnAround Park GreenLight RedLight Speed40 Speed60 Speed80 Check Cross Circle Square Triangle Plus Minus Divide Equal 
@@ -149,7 +149,7 @@ to '_sentry2_reset_kpu_modes' {
 }
 
 to '_st2_get_label' label_list foo {
-  if (isType label_list 'list') {if (and (foo > 0) (foo < (size label_list))) {
+  if (isType label_list 'list') {if (and (foo > 0) (foo <= (size label_list))) {
     return (at foo label_list)
   }}
   return ''
