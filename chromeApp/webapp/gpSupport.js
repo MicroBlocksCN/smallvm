@@ -763,7 +763,7 @@ function GP_openBoardie() {
 			} else {
 				// Not the end of the world, but the UI will interfere with
 				// time-sensitive threads, such as when making music
-				boardie.iframe.src = 'boardie/vm.html';
+				boardie.iframe.src = 'boardie/vm.html?version=2-0-21-1';
 			}
 
 			boardie.element.onclick = function (evt) {
