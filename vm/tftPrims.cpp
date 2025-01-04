@@ -31,9 +31,7 @@ static int deferUpdates = false;
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
 	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || defined(XESGAME) || defined(ARDUINO_M5CoreInk)
 
-	#if !defined(COCUBE) && !defined(COCUBE_SOCCER)
 	#define BLACK 0
-	#endif // !COCUBE && !COCUBE_SOCCER
 
 	#if defined(ARDUINO_CITILAB_ED1)
 		#include "Adafruit_GFX.h"
@@ -1126,7 +1124,9 @@ static int deferUpdates = false;
 		}
 
 	#elif defined(COCUBE)
-		#include <Arduino_GFX_Library.h>
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
 		#define TFT_MOSI 19
 		#define TFT_SCLK 27
 		#define TFT_CS -1
@@ -1137,11 +1137,10 @@ static int deferUpdates = false;
 		#define TFT_HEIGHT 240
 		#define DEFAULT_BATTERY_PIN 34
 
-		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
-		Arduino_ST7789 tft = Arduino_ST7789(&bus, TFT_RST, 3, false, TFT_WIDTH, TFT_HEIGHT, 0, 0, 0, 80);
+		SPIClass CoCubeSPI(VSPI);
+		Adafruit_ST7789 tft = Adafruit_ST7789(&CoCubeSPI, TFT_CS, TFT_DC, TFT_RST);
 
-		// ArUco Marker, 4x4, 0-white, 1-black
-        const uint16_t aruco_tags[100] = {
+		const uint16_t aruco_tags[100] = {
             0X4ACD, 0XF065, 0XCCD2, 0X66B9, 0XAB61, 0X8632, 0X61D1, 0X3B0D, 0X0125, 0X30A9, 0X066E, 0XEE58, 0XF148,
             0XD5F0, 0XDB4E, 0XD9C1, 0XB99A, 0X99FF, 0X93A1, 0X8950, 0X7974, 0X4FD4, 0X332A, 0X227D, 0X01B8, 0X6B8E,
             0X531B, 0X5AAB, 0XDEDC, 0XCB90, 0XBBEA, 0XA84D, 0X6130, 0X0F34, 0XF751, 0XF6D6, 0XE78A, 0XFB00, 0XF209,
@@ -1178,13 +1177,13 @@ static int deferUpdates = false;
         const int april_bit_y[52] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 8, 3, 4, 5, 4,
                                9, 9, 9, 9, 9, 9, 9, 9, 9, 6, 6, 6, 5, 9, 8, 7, 6, 5, 4, 3, 2, 1, 6, 5, 4, 5};
 
-        void tftInit() {
-			pinMode(TFT_BL, OUTPUT);
-			digitalWrite(TFT_BL, LOW);
-			tft.begin();
-			tft.invertDisplay(1);
-			tft.fillScreen(RGB565_BLACK);
+		void tftInit() {
+			CoCubeSPI.begin(TFT_SCLK, -1, TFT_MOSI, -1);  // SCLK, MISO, MOSI, SS
+			tft.init(TFT_HEIGHT, TFT_WIDTH, SPI_MODE3);
+			tft.setRotation(1);
+			tft.fillScreen(ST77XX_BLACK);
 			delay(35);
+			pinMode(TFT_BL, OUTPUT);
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
 
@@ -1196,22 +1195,22 @@ static int deferUpdates = false;
 			battery_percentage = constrain(((44 * battery_percentage / 105.0   - 6800) / 16.0), 0, 99);
 			char battery_percentage_char[4];
 			itoa(battery_percentage, battery_percentage_char, 10);
-			uint16_t battery_color = RGB565_GREEN;
+			uint16_t battery_color = ST77XX_GREEN;
 			if (battery_percentage < 67){
-				battery_color = RGB565_ORANGE;
+				battery_color = ST77XX_ORANGE;
 				if (battery_percentage < 34){
-					battery_color = RGB565_RED;
+					battery_color = ST77XX_RED;
 				}
 			}
 			tft.fillRoundRect(45, 72, 145, 96, 5, battery_color);
 			tft.fillRoundRect(185, 95, 25, 50, 3, battery_color);
 			tft.setTextSize(10);
-			tft.setTextColor(RGB565_BLACK);
+			tft.setTextColor(ST77XX_BLACK);
 			tft.setCursor(65, 86);
 			tft.println(battery_percentage_char);
 			delay(800);
 		}
-	
+
 	#elif defined(ARDUINO_M5CoreInk)
 	  #define LGFX_AUTODETECT 
 		#include <LovyanGFX.hpp>
@@ -1503,7 +1502,7 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 			OBJ pixelObj = FIELD(pixelDataObj, (i + 1));
 			bufferPixels[i] = (isInt(pixelObj)) ? color24to16b(obj2int(pixelObj)) : 0;
 		}
-		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
         	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
 		#else
 			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
@@ -1539,7 +1538,7 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 				byte += bytesPerPixel;
 			}
 		}
-		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
         	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
 		#else
 			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
@@ -1687,7 +1686,7 @@ static OBJ primAruco(int argCount, OBJ *args) {
 	if (aruco_id >= 100) {
         return falseObj;
     }
-    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, BLACK);
+    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, ST77XX_BLACK);
     const int cellSize = TFT_HEIGHT/8;
 	const int startX = TFT_WIDTH/2 - (4 * cellSize);
     uint16_t tag = aruco_tags[aruco_id];
@@ -1707,14 +1706,14 @@ static OBJ primAruco(int argCount, OBJ *args) {
                 isBlack = tag & (1 << (15 - bitIndex));
             }
             if (isBlack) {
-                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, BLACK);
+                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, ST77XX_BLACK);
             } else {
-                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, WHITE);
+                tft.fillRect(startX + j * cellSize, i * cellSize, cellSize, cellSize, ST77XX_WHITE);
             }
         }
     }
     tft.setCursor(startX + 2, 2);
-    tft.setTextColor(BLACK);
+    tft.setTextColor(ST77XX_BLACK);
     tft.setTextSize(2);
     tft.print(aruco_id);
 	UPDATE_DISPLAY();
@@ -1728,25 +1727,25 @@ static OBJ primAprilTag(int argCount, OBJ *args) {
     if (tag_id >= 100) {
         return falseObj;
     }
-    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, BLACK);
+    tft.drawRect(0, 0, TFT_HEIGHT, TFT_HEIGHT, ST77XX_BLACK);
     const int cellSize = TFT_HEIGHT/10;
 	const int startX = TFT_WIDTH/2 - (5 * cellSize);
     uint64_t codedata = april_tags[tag_id];
 
     // 绘制外圈的黑色方块
     for (int i = 1; i < 9; i++) {
-        tft.fillRect(startX + i * cellSize, 1 * cellSize, cellSize, cellSize, BLACK);  // 左边界
-        tft.fillRect(startX + i * cellSize, 8 * cellSize, cellSize, cellSize, BLACK);  // 右边界
-        tft.fillRect(startX + 1 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 上边界
-        tft.fillRect(startX + 8 * cellSize, i * cellSize, cellSize, cellSize, BLACK);  // 下边界
+        tft.fillRect(startX + i * cellSize, 1 * cellSize, cellSize, cellSize, ST77XX_BLACK);  // 左边界
+        tft.fillRect(startX + i * cellSize, 8 * cellSize, cellSize, cellSize, ST77XX_BLACK);  // 右边界
+        tft.fillRect(startX + 1 * cellSize, i * cellSize, cellSize, cellSize, ST77XX_BLACK);  // 上边界
+        tft.fillRect(startX + 8 * cellSize, i * cellSize, cellSize, cellSize, ST77XX_BLACK);  // 下边界
     }
 
     // 绘制内圈的白色方块
     for (int i = 2; i < 8; i++) {
-        tft.fillRect(startX + i * cellSize, 2 * cellSize, cellSize, cellSize, WHITE);  // 左边界
-        tft.fillRect(startX + i * cellSize, 7 * cellSize, cellSize, cellSize, WHITE);  // 右边界
-        tft.fillRect(startX + 2 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 上边界
-        tft.fillRect(startX + 7 * cellSize, i * cellSize, cellSize, cellSize, WHITE);  // 下边界
+        tft.fillRect(startX + i * cellSize, 2 * cellSize, cellSize, cellSize, ST77XX_WHITE);  // 左边界
+        tft.fillRect(startX + i * cellSize, 7 * cellSize, cellSize, cellSize, ST77XX_WHITE);  // 右边界
+        tft.fillRect(startX + 2 * cellSize, i * cellSize, cellSize, cellSize, ST77XX_WHITE);  // 上边界
+        tft.fillRect(startX + 7 * cellSize, i * cellSize, cellSize, cellSize, ST77XX_WHITE);  // 下边界
     }
 
     // 绘制编码的标签图像
@@ -1754,7 +1753,7 @@ static OBJ primAprilTag(int argCount, OBJ *args) {
         int x = april_bit_x[i];
         int y = april_bit_y[i];
         bool bit = (codedata >> (51 - i)) & 1;
-        uint16_t color = bit ? WHITE : BLACK;
+        uint16_t color = bit ? ST77XX_WHITE : ST77XX_BLACK;
         tft.fillRect(startX + x * cellSize, y * cellSize, cellSize, cellSize, color);
     }
     UPDATE_DISPLAY();
@@ -1850,7 +1849,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				}
 			}
 		}
-		#if defined(COCUBE) || defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
 			tft.fillRect(
 			originX * scale,
 			(originY + y) * scale,
