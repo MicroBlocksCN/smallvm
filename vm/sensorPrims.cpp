@@ -30,8 +30,8 @@
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
 #elif defined(GIZMO_MECHATRONICS)
-       #define PIN_WIRE_SCL 3
-       #define PIN_WIRE_SDA 2
+	#define PIN_WIRE_SCL 3
+	#define PIN_WIRE_SDA 2
 #elif defined(XESGAME) //学而思游戏机
 	#define PIN_WIRE_SCL 15
 	#define PIN_WIRE_SDA 21
@@ -72,6 +72,9 @@
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 22
+#elif defined(COCUBE)
+	#define PIN_WIRE_SCL 22
+	#define PIN_WIRE_SDA 21
 #elif defined(ARDUINO_M5Atom_Matrix_ESP32)
 	// Note: SDA and SCL are reversed from most other ESP32 boards!
 	#define PIN_WIRE_SCL 21
@@ -897,7 +900,7 @@ static int readTemperature() {
 	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
- #define Wire1 Wire
+	#define Wire1 Wire
 #endif
 #ifdef ARDUINO_M5STACK_FIRE
  #define Wire1 Wire
@@ -2728,48 +2731,48 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 #if defined (COCUBE)
 	#include <CoCubeSensor.h>
 	CoCubeSensor cocube;
-	void cocubeSensorInit(){
+	void cocubeSensorInit() {
 		cocube.Init();
 	}
 
-	void cocubeSensorUpdate(){
+	void cocubeSensorUpdate() {
 		cocube.Update();
 		cocube.EncoderUpdate();
 	}
 
-	static OBJ primPositionX(int argCount, OBJ *args){
+	static OBJ primPositionX(int argCount, OBJ *args) {
 		int result = cocube.GetX();
 		return int2obj(result);
 	}
 
-	static OBJ primPositionY(int argCount, OBJ *args){
+	static OBJ primPositionY(int argCount, OBJ *args) {
 			int result = cocube.GetY();
 			return int2obj(result);
 		}
 
-	static OBJ primPositionYaw(int argCount, OBJ *args){
+	static OBJ primPositionYaw(int argCount, OBJ *args) {
 			int result = cocube.GetAngle();
 			return int2obj(result);
 	}
 
-	static OBJ primIndex(int argCount, OBJ *args){
-            int result = cocube.GetIndex();
-            return int2obj(result);
-    }
+	static OBJ primIndex(int argCount, OBJ *args) {
+			int result = cocube.GetIndex();
+			return int2obj(result);
+	}
 
-    static OBJ primCubeStatus(int argCount, OBJ *args) {
-        if (cocube.GetState())
-            return trueObj;
-        else
-            return falseObj;
-    }
+	static OBJ primCubeStatus(int argCount, OBJ *args) {
+		if (cocube.GetState())
+			return trueObj;
+		else
+			return falseObj;
+	}
 
-    static OBJ primPositionSpeedLeft(int argCount, OBJ *args){
+	static OBJ primPositionSpeedLeft(int argCount, OBJ *args) {
 			int result = cocube.GetSpeedLeft();
 			return int2obj(result);
 	}
 
-	static OBJ primPositionSpeedRight(int argCount, OBJ *args){
+	static OBJ primPositionSpeedRight(int argCount, OBJ *args) {
 			int result = cocube.GetSpeedRight();
 			return int2obj(result);
 	}
