@@ -753,7 +753,7 @@ function GP_openBoardie() {
 	GP_closeSerialPort(); // close serial port if open
 	GP.boardie.files = {}; // reset file cache
 
-	req.open('GET', 'boardie/boardie.html');
+	req.open('GET', 'boardie/boardie.html?version=2-0-27-1');
 	req.onreadystatechange = function () {
 		if (req.readyState == 4 && req.status == 200) {
 			boardie.element = document.createElement('div');
@@ -784,7 +784,7 @@ function GP_openBoardie() {
 				// (e.g. when running as a stand-alone progressive web app).
 				// Not the end of the world, but the UI will interfere with
 				// time-sensitive threads, such as when making music
-				boardie.iframe.src = 'boardie/vm.html?version=2-0-21-1';
+				boardie.iframe.src = 'boardie/vm.html?version=2-0-27-1';
 			}
 
 			boardie.element.onclick = function (evt) {
