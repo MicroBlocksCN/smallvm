@@ -168,4 +168,3 @@ to 'ccmodule_set all NeoPixels color' color {
   digitalWriteOp 13 true
   neoPixelSetAllToColor color
 }
-
