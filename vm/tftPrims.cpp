@@ -1188,7 +1188,8 @@ static int hasTFT() {
 	return useTFT;
 }
 
-uint16_t bufferPixels[TFT_WIDTH * 8]; // used by primPixelRow and primDrawBuffer
+#define BUFFER_PIXELS_SIZE (TFT_WIDTH * 8)
+uint16_t bufferPixels[BUFFER_PIXELS_SIZE]; // used by primPixelRow and primDrawBuffer
 
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
