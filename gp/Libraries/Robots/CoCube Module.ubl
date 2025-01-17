@@ -1,6 +1,6 @@
 module 'CoCube Module'
 author 'Liang Shuai'
-version 1 8 
+version 1 9 
 depends Servo NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Gesture (PAJ7620)' 
 description 'External modules of CoCube.
 

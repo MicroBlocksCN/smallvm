@@ -1,178 +1,203 @@
 module main
-author unknown
-version 1 0 
-description ''
+author Shuai
+version 1 1 
+description '键盘控制CoCube机器人的示例程序
+https://www.cocubefun.com/code/BLE_Broadcast/
+'
 
-script 702 40 {
-whenBroadcastReceived '1_up'
-stopTone
+script 90 30 {
+comment '键盘控制CoCube机器人的示例程序
+https://www.cocubefun.com/code/BLE_Broadcast/'
 }
 
-script 510 44 {
-whenBroadcastReceived '1_down'
+script 90 100 {
+whenBroadcastReceived 'w'
+'CoCube move' 'cocube;forward' 50
+}
+
+script 450 100 {
+whenBroadcastReceived 'w-up'
+'CoCube wheels stop'
+}
+
+script 700 100 {
+whenBroadcastReceived '1'
 startTone 262
 }
 
-script 305 51 {
-whenBroadcastReceived 'w_up'
-'CoCube wheels stop'
-}
-
-script 40 54 {
-whenBroadcastReceived 'w_down'
-'CoCube move' 'forward' 50
-}
-
-script 697 132 {
-whenBroadcastReceived '2_up'
+script 900 100 {
+whenBroadcastReceived '1-up'
 stopTone
 }
 
-script 514 134 {
-whenBroadcastReceived '2_down'
+script 90 200 {
+whenBroadcastReceived 's'
+'CoCube move' 'cocube;backward' 50
+}
+
+script 450 200 {
+whenBroadcastReceived 's-up'
+'CoCube wheels stop'
+}
+
+script 700 200 {
+whenBroadcastReceived '2'
 startTone 294
 }
 
-script 305 136 {
-whenBroadcastReceived 'a_up'
+script 900 200 {
+whenBroadcastReceived '2-up'
+stopTone
+}
+
+script 90 300 {
+whenBroadcastReceived 'a'
+'CoCube rotate' 'cocube;left' 50
+}
+
+script 450 300 {
+whenBroadcastReceived 'a-up'
 'CoCube wheels stop'
 }
 
-script 40 137 {
-whenBroadcastReceived 'a_down'
-'CoCube rotate' 'left' 50
-}
-
-script 515 224 {
-whenBroadcastReceived '3_down'
+script 700 300 {
+whenBroadcastReceived '3'
 startTone 330
 }
 
-script 696 224 {
-whenBroadcastReceived '3_up'
+script 900 300 {
+whenBroadcastReceived '3-up'
 stopTone
 }
 
-script 306 225 {
-whenBroadcastReceived 's_up'
+script 90 400 {
+whenBroadcastReceived 'd'
+'CoCube rotate' 'cocube;right' 50
+}
+
+script 450 400 {
+whenBroadcastReceived 'd-up'
 'CoCube wheels stop'
 }
 
-script 41 228 {
-whenBroadcastReceived 's_down'
-'CoCube move' 'backward' 50
-}
-
-script 512 316 {
-whenBroadcastReceived '4_down'
+script 700 400 {
+whenBroadcastReceived '4'
 startTone 349
 }
 
-script 299 318 {
-whenBroadcastReceived 'd_up'
-'CoCube wheels stop'
-}
-
-script 704 318 {
-whenBroadcastReceived '4_up'
+script 900 400 {
+whenBroadcastReceived '4-up'
 stopTone
 }
 
-script 40 321 {
-whenBroadcastReceived 'd_down'
-'CoCube rotate' 'right' 50
-}
-
-script 514 397 {
-whenBroadcastReceived '5_down'
-startTone 392
-}
-
-script 698 404 {
-whenBroadcastReceived '5_up'
-stopTone
-}
-
-script 42 435 {
-whenBroadcastReceived 'j_down'
-'set display color' (makeColor 0 255 0)
-'[display:mbDisplay]' 15237440
-'play ringtone' 'Reward:d=16,o=6,b=180: e6,g6,a6,b6,e7,d7,c7,b6,a6'
-}
-
-script 705 495 {
-whenBroadcastReceived '6_up'
-stopTone
-}
-
-script 515 497 {
-whenBroadcastReceived '6_down'
-startTone 440
-}
-
-script 516 603 {
-whenBroadcastReceived '7_down'
-startTone 494
-}
-
-script 705 608 {
-whenBroadcastReceived '7_up'
-stopTone
-}
-
-script 40 680 {
-whenBroadcastReceived 'k_down'
+script 90 500 {
+whenBroadcastReceived 'q'
 'set display color' (makeColor 255 0 0)
 led_displayImage 'sad'
 'play ringtone' 'Punish:d=16,o=5,b=150: g5,e5,c5,d5,c5,b4,a4,g4'
 }
 
+script 700 500 {
+whenBroadcastReceived '5'
+startTone 392
+}
+
+script 900 500 {
+whenBroadcastReceived '5-up'
+stopTone
+}
+
+script 700 600 {
+whenBroadcastReceived '6'
+startTone 440
+}
+
+script 900 600 {
+whenBroadcastReceived '6-up'
+stopTone
+}
+
+script 90 650 {
+whenBroadcastReceived 'e'
+'set display color' (makeColor 0 255 0)
+led_displayImage 'happy'
+'play ringtone' 'Reward:d=16,o=6,b=180: e6,g6,a6,b6,e7,d7,c7,b6,a6'
+}
+
+script 700 700 {
+whenBroadcastReceived '7'
+startTone 494
+}
+
+script 900 700 {
+whenBroadcastReceived '7-up'
+stopTone
+}
+
+script 90 800 {
+whenBroadcastReceived 'j'
+'ccmodule_gripper close'
+}
+
+script 300 800 {
+whenBroadcastReceived 'k'
+'ccmodule_gripper open'
+}
+
 
 module CoCube
 author 'Liang Shuai'
-version 2 1 
-depends Tone Ringtone TFT Display 'Motors/PID' 
-tags 'cocube机器人' 
-choices rotate_Menu left right 
-choices move_Menu forward backward 
-description 'CoCube的控制库
-v1.0 基本功能
-v2.0 全面增加编码器控制电机的功能
-v2.1 修复一些广播造成的bug
-v2.2 提高定位精度为1/128
+version 2 10 
+depends Tone Display TFT 'Motors/PID' 
+tags 'cocube robot' 
+choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
+choices cocube_move_Menu 'cocube;forward' 'cocube;backward' 
+description 'CoCube Robot library
+
+CoCube is a tabletop modular multi-robot platform for education and research.
+https://www.cocubefun.com/
+sliang23@m.fudan.edu.cn
+
+v1.0 Basic functions
+v2.0 Comprehensively add encoder control motor function
+v2.1 Fix some bugs caused by broadcasting
+v2.2 Improve positioning accuracy to 1/128
+v2.3 Add blocks prompts
+v2.4 Unify positioning accuracy to 1/64
+v2.5 Adjust blocks order and delete RingTone
+v2.6 Adjust blocks order, name and default parameters
 '
 variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
 
-  spec 'r' 'CoCube Battery Percentage' 'Battery Percentage'
+  spec ' ' 'CoCube move for msecs' 'move _ at _ speed (0-50) for _ msecs' 'menu.cocube_move_Menu num num' 'cocube;forward' 40 1000
+  spec ' ' 'CoCube rotate for msecs' 'rotate _ at _ speed (0-50) for _ msecs' 'menu.cocube_rotate_Menu num num' 'cocube;left' 30 1000
   space
-  spec 'r' 'CoCube On The Mat' 'On The Mat'
-  spec 'r' 'CoCube Card ID' 'Card ID'
-  space
-  spec 'r' 'CoCube position_X' 'X position'
-  spec 'r' 'CoCube position_Y' 'Y position'
-  spec 'r' 'CoCube position_Direction' 'Direction'
-  space
-  spec ' ' 'CoCube set TFT backlight' 'set TFT backlight _' 'bool' false
-  spec ' ' 'CoCube draw Aruco Marker on TFT' 'draw Aruco Marker on TFT _' 'num' 0
-  spec ' ' 'CoCube draw AprilTag on TFT' 'draw AprilTag on TFT _' 'num' 0
-  space
-  spec ' ' 'CoCube move' 'move _ at _ speed (0-50)' 'menu.move_Menu num' 'forward' 40
-  spec ' ' 'CoCube rotate' 'rotate _ at _ speed (0-50)' 'menu.rotate_Menu num' 'left' 30
-  space
-  spec ' ' 'CoCube move for millisecs' 'move _ at _ speed (0-50) for _ millisecs' 'menu.move_Menu num num' 'forward' 40 1000
-  spec ' ' 'CoCube rotate for millisecs' 'rotate _ at _ speed (0-50) for _ millisecs' 'menu.rotate_Menu num num' 'left' 30 1000
-  space
-  spec ' ' 'CoCube move by step' 'move _ at _ speed (0-50) by _ steps' 'menu.move_Menu num num' 'forward' 40 50
-  spec ' ' 'CoCube rotate by degree' 'rotate _ at _ speed (0-50) by _ degrees' 'menu.rotate_Menu num num' 'left' 30 90
-  space
-  spec ' ' 'CoCube set wheel' 'set wheel left _ right _ (-50 to 50)' 'num num' 40 40
+  spec ' ' 'CoCube move' 'move _ at _ speed (0-50)' 'menu.cocube_move_Menu num' 'cocube;forward' 40
+  spec ' ' 'CoCube rotate' 'rotate _ at _ speed (0-50)' 'menu.cocube_rotate_Menu num' 'cocube;left' 30
+  spec ' ' 'CoCube set wheel' 'set wheel left _ right _ (-50 to 50)' 'num num' 40 20
   space
   spec ' ' 'CoCube wheels stop' 'wheels stop'
   spec ' ' 'CoCube wheels break' 'wheels break'
   space
+  spec 'r' 'CoCube position_X' 'X position'
+  spec 'r' 'CoCube position_Y' 'Y position'
+  spec 'r' 'CoCube direction' 'direction'
+  space
+  spec ' ' 'CoCube move by step' 'move _ at _ speed (0-50) by _ steps' 'menu.cocube_move_Menu num num' 'cocube;forward' 40 50
+  spec ' ' 'CoCube rotate by degree' 'rotate _ at _ speed (0-50) by _ degrees' 'menu.cocube_rotate_Menu num num' 'cocube;left' 30 90
+  space
   spec ' ' 'CoCube rotate to angle' 'rotate to angle _ at _ speed (0-50)' 'num num' 0 30
-  spec ' ' 'CoCube rotate to target' 'rotate to target X _ Y _ at _ speed (0-50)' 'num num num' 0 0 30
-  spec ' ' 'CoCube move to target' 'move to target X _ Y _ at _ speed (0-50)' 'num num num' 0 0 50
+  spec ' ' 'CoCube point towards' 'point towards X _ Y _ at _ speed (0-50)' 'num num num' 0 0 30
+  spec ' ' 'CoCube move to' 'move to X _ Y _ at _ speed (0-50)' 'num num num' 0 0 40
+  space
+  spec 'r' 'CoCube on the mat' 'on the mat'
+  spec 'r' 'CoCube card ID' 'card ID'
+  space
+  spec ' ' 'CoCube draw ArUco marker on TFT' 'draw ArUco marker on TFT _' 'num' 0
+  spec ' ' 'CoCube draw AprilTag on TFT' 'draw AprilTag on TFT _' 'num' 0
+  spec ' ' 'CoCube set TFT backlight' 'set TFT backlight _' 'bool' false
+  space
+  spec 'r' 'CoCube battery percentage' 'battery percentage'
   space
   spec ' ' '_cocube_motors_speed' '_cocube_motors_speed left _ right _' 'num num' 10 10
   spec ' ' '_cocube_pid_init' '_cocube_pid_init'
@@ -181,16 +206,16 @@ variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _co
   spec ' ' '_cocube_calculate_angle_error_' '_cocube_calculate_angle_error angle _' 'num' 0
   spec ' ' '_cocube_calculate_distance_error target_x _ target_y _' '_cocube_calculate_distance_error Target_X _ Target_Y _' 'num num' 0 0
 
-to 'CoCube Battery Percentage' {
+to 'CoCube battery percentage' {
   return (minimum (((254 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 680000) / 1600) 100)
 }
 
-to 'CoCube Card ID' {
+to 'CoCube card ID' {
   return (callCustomReporter '[sensors:cube_index]')
 }
 
-to 'CoCube On The Mat' {
-  return (callCustomReporter '[sensors:cube_status]')
+to 'CoCube direction' {
+  return (callCustomReporter '[sensors:position_yaw]')
 }
 
 to 'CoCube draw AprilTag on TFT' id {
@@ -202,7 +227,7 @@ to 'CoCube draw AprilTag on TFT' id {
   }
 }
 
-to 'CoCube draw Aruco Marker on TFT' id {
+to 'CoCube draw ArUco marker on TFT' id {
   comment '0 <= id < 100'
   if (id >= 100) {
     sayIt '0 <= id < 100'
@@ -212,7 +237,7 @@ to 'CoCube draw Aruco Marker on TFT' id {
 }
 
 to 'CoCube move' direction speed {
-  if (direction == 'forward') {
+  if (direction == 'cocube;forward') {
     'CoCube set wheel' speed speed
   } else {
     'CoCube set wheel' (0 - speed) (0 - speed)
@@ -220,60 +245,73 @@ to 'CoCube move' direction speed {
 }
 
 to 'CoCube move by step' direction speed steps {
-  local 'begin_x' ('CoCube position_X')
-  local 'begin_y' ('CoCube position_Y')
-  'CoCube move' direction speed
-  forever {
-    '_cocube_calculate_distance_error target_x _ target_y _' begin_x begin_y
-    if ((steps - _cocube_error_distance) < 2) {
-      'CoCube wheels break'
-      comment 'wait for break function 200ms'
-      waitMillis 210
-      return 0
+  if ('CoCube on the mat') {
+    local 'begin_x' ('CoCube position_X')
+    local 'begin_y' ('CoCube position_Y')
+    'CoCube move' direction speed
+    forever {
+      '_cocube_calculate_distance_error target_x _ target_y _' begin_x begin_y
+      if ((steps - _cocube_error_distance) < 2) {
+        'CoCube wheels break'
+        comment 'wait for break function 200ms'
+        waitMillis 210
+        return 0
+      }
     }
+  } else {
+    sayIt 'Please put CoCube on Mat'
   }
 }
 
-to 'CoCube move for millisecs' direction speed time {
+to 'CoCube move for msecs' direction speed time {
   'CoCube move' direction speed
   waitMillis time
   'CoCube wheels break'
 }
 
-to 'CoCube move to target' target_x target_y speed {
-  _cocube_target_x = target_x
-  _cocube_target_y = target_y
-  _cocube_target_speed = speed
-  forever {
-    comment 'calculate error'
-    '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
-    _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
-    '_cocube_calculate_angle_error_' _cocube_target_angle
-    if (_cocube_error_distance < 7) {
-      comment 'Arrived'
-      'CoCube wheels stop'
-      return 0
-    } else {
-      'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
-      waitMillis 10
+to 'CoCube move to' target_x target_y speed {
+  if ('CoCube on the mat') {
+    _cocube_target_x = target_x
+    _cocube_target_y = target_y
+    _cocube_target_speed = speed
+    forever {
+      comment 'calculate error'
+      '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
+      _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
+      '_cocube_calculate_angle_error_' _cocube_target_angle
+      if (_cocube_error_distance < 7) {
+        comment 'Arrived'
+        'CoCube wheels stop'
+        return 0
+      } else {
+        'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
+        waitMillis 10
+      }
     }
+  } else {
+    sayIt 'Please put CoCube on Mat'
   }
 }
 
-to 'CoCube position_Direction' {
-  return (callCustomReporter '[sensors:position_yaw]')
+to 'CoCube on the mat' {
+  return (callCustomReporter '[sensors:cube_status]')
+}
+
+to 'CoCube point towards' target_x target_y speed {
+  _cocube_target_angle = (('[misc:atan2]' (target_y - ('CoCube position_Y')) (target_x - ('CoCube position_X'))) / 100)
+  'CoCube rotate to angle' _cocube_target_angle speed
 }
 
 to 'CoCube position_X' {
-  return ((callCustomReporter '[sensors:position_x]') / 128)
+  return ((callCustomReporter '[sensors:position_x]') / 64)
 }
 
 to 'CoCube position_Y' {
-  return ((callCustomReporter '[sensors:position_y]') / 128)
+  return ((callCustomReporter '[sensors:position_y]') / 64)
 }
 
 to 'CoCube rotate' direction speed {
-  if (direction == 'left') {
+  if (direction == 'cocube;left') {
     'CoCube set wheel' (0 - speed) speed
   } else {
     'CoCube set wheel' speed (0 - speed)
@@ -281,54 +319,57 @@ to 'CoCube rotate' direction speed {
 }
 
 to 'CoCube rotate by degree' direction speed degree {
-  local 'begin_degree' ('CoCube position_Direction')
-  forever {
-    if (direction == 'left') {
-      '_cocube_calculate_angle_error_' (begin_degree + degree)
-    } else {
-      '_cocube_calculate_angle_error_' (begin_degree - degree)
+  if ('CoCube on the mat') {
+    local 'begin_degree' ('CoCube direction')
+    forever {
+      if (direction == 'cocube;left') {
+        '_cocube_calculate_angle_error_' (begin_degree + degree)
+      } else {
+        '_cocube_calculate_angle_error_' (begin_degree - degree)
+      }
+      if (_cocube_error_angle > 1) {
+        comment 'turn left'
+        '_cocube_motors_speed' (0 - speed) speed
+      } (_cocube_error_angle < -1) {
+        comment 'turn right'
+        '_cocube_motors_speed' speed (0 - speed)
+      } else {
+        comment 'motors break'
+        '_cocube_motors_speed' -99 -99
+        return 0
+      }
     }
-    if (_cocube_error_angle > 1) {
-      comment 'turn left'
-      '_cocube_motors_speed' (0 - speed) speed
-    } (_cocube_error_angle < -1) {
-      comment 'turn right'
-      '_cocube_motors_speed' speed (0 - speed)
-    } else {
-      comment 'motors break'
-      '_cocube_motors_speed' -99 -99
-      return 0
-    }
+  } else {
+    sayIt 'Please put CoCube on Mat'
   }
 }
 
-to 'CoCube rotate for millisecs' direction speed time {
+to 'CoCube rotate for msecs' direction speed time {
   'CoCube rotate' direction speed
   waitMillis time
   'CoCube wheels break'
 }
 
 to 'CoCube rotate to angle' angle speed {
-  local 'abs_speed' (absoluteValue speed)
-  forever {
-    '_cocube_calculate_angle_error_' angle
-    if (_cocube_error_angle > 1) {
-      comment 'turn left'
-      '_cocube_motors_speed' (0 - abs_speed) abs_speed
-    } (_cocube_error_angle < -1) {
-      comment 'turn right'
-      '_cocube_motors_speed' abs_speed (0 - abs_speed)
-    } else {
-      comment 'motors break'
-      '_cocube_motors_speed' -99 -99
-      return 0
+  if ('CoCube on the mat') {
+    local 'abs_speed' (absoluteValue speed)
+    forever {
+      '_cocube_calculate_angle_error_' angle
+      if (_cocube_error_angle > 1) {
+        comment 'turn left'
+        '_cocube_motors_speed' (0 - abs_speed) abs_speed
+      } (_cocube_error_angle < -1) {
+        comment 'turn right'
+        '_cocube_motors_speed' abs_speed (0 - abs_speed)
+      } else {
+        comment 'motors break'
+        '_cocube_motors_speed' -99 -99
+        return 0
+      }
     }
+  } else {
+    sayIt 'Please put CoCube on Mat'
   }
-}
-
-to 'CoCube rotate to target' target_x target_y speed {
-  _cocube_target_angle = (('[misc:atan2]' (target_y - ('CoCube position_Y')) (target_x - ('CoCube position_X'))) / 100)
-  'CoCube rotate to angle' _cocube_target_angle speed
 }
 
 to 'CoCube set TFT backlight' state {
@@ -355,7 +396,7 @@ to 'CoCube wheels stop' {
 }
 
 to '_cocube_calculate_angle_error_' angle {
-  _cocube_error_angle = ((angle % 360) - ('CoCube position_Direction'))
+  _cocube_error_angle = ((angle % 360) - ('CoCube direction'))
   if (_cocube_error_angle > 180) {
     _cocube_error_angle += -360
   } (_cocube_error_angle < -180) {
@@ -479,9 +520,476 @@ to '_cocube_pid_right_motor' {
 }
 
 
+module 'CoCube Module'
+author 'Liang Shuai'
+version 1 8 
+depends Servo NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Gesture (PAJ7620)' 
+description 'External modules of CoCube.
+
+CoCube is a tabletop modular multi-robot platform for education and research.
+https://www.cocubefun.com/
+sliang23@m.fudan.edu.cn
+
+Note: All functions start by turning on pin 13 to power the module.
+The power pin is off by default and is also turned off by the IDE stop button.'
+variables ccmodule_lastDistance 
+
+  spec ' ' 'ccmodule_gripper open' 'gripper open'
+  spec ' ' 'ccmodule_gripper close' 'gripper close'
+  spec ' ' 'ccmodule_gripper degree' 'gripper degrees _ (0 to 70)' 'num' 0
+  space
+  spec ' ' 'ccmodule_attach NeoPixels' 'attach NeoPixels'
+  spec ' ' 'ccmodule_set all NeoPixels color' 'set all NeoPixels color _' 'color'
+  spec ' ' 'ccmodule_clear NeoPixels' 'clear NeoPixels'
+  space
+  spec 'r' 'ccmodule_ToF connected' 'ToF connected'
+  spec 'r' 'ccmodule_ToF distance' 'ToF distance (mm)'
+  space
+  spec 'r' 'ccmodule_gesture connected' '3D gesture connected'
+  spec 'r' 'ccmodule_gesture read' '3D gesture read'
+  space
+  spec ' ' 'ccmodule_power on module' 'power on module'
+  space
+  spec 'r' '_ccmodule_ultrasonic distance' 'ultrasonic distance (mm)'
+
+to '_ccmodule_ultrasonic distance' {
+  local 'trig' 21
+  local 'echo' 22
+  comment 'Reset pulse capture system.'
+  local 'ignore' ('[sensors:captureEnd]')
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  comment 'Wait for a low-to-high edge on the echo pin.
+Timeout if an edge is not detected. '
+  local 'start' (millisOp)
+  waitUntil (or (not (digitalReadOp echo)) ((millisSince start) > 2))
+  waitUntil (or (digitalReadOp echo) ((millisSince start) > 2))
+  if ((millisSince start) > 2) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return ccmodule_lastDistance
+  }
+  comment 'Starting pulse was sent. Measure time until echo is detected.'
+  '[sensors:captureStart]' echo
+  start = (millisOp)
+  waitUntil (or (('[sensors:captureCount]') > 0) ((millisSince start) > 25))
+  comment 'Default value of 23320 usecs reports 4000 mm
+when no echo is detected.'
+  local 'echoMicrosecs' 23320
+  if (('[sensors:captureCount]') > 0) {
+    echoMicrosecs = (absoluteValue (at 1 ('[sensors:captureEnd]')))
+  }
+  ccmodule_lastDistance = ((100 * echoMicrosecs) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  return ccmodule_lastDistance
+}
+
+to 'ccmodule_ToF connected' {
+  stopServo 22
+  digitalWriteOp 13 true
+  return ('VL53L0X connected')
+}
+
+to 'ccmodule_ToF distance' {
+  stopServo 22
+  digitalWriteOp 13 true
+  return ('VL53L0X distance (mm)')
+}
+
+to 'ccmodule_attach NeoPixels' {
+  stopServo 22
+  digitalWriteOp 13 true
+  waitMillis 10
+  neoPixelAttach 48 22
+}
+
+to 'ccmodule_clear NeoPixels' {
+  digitalWriteOp 13 true
+  clearNeoPixels
+}
+
+to 'ccmodule_gesture connected' {
+  stopServo 22
+  digitalWriteOp 13 true
+  return ('paj7620 connected')
+}
+
+to 'ccmodule_gesture read' {
+  stopServo 22
+  digitalWriteOp 13 true
+  return ('paj7620 read')
+}
+
+to 'ccmodule_gripper close' {
+  digitalWriteOp 13 true
+  setServoAngle 22 -70
+}
+
+to 'ccmodule_gripper degree' degree {
+  digitalWriteOp 13 true
+  local 'var' (degree - 70)
+  if (var < -70) {
+    setServoAngle 22 -70
+  } (var > 0) {
+    setServoAngle 22 0
+  } else {
+    setServoAngle 22 var
+  }
+}
+
+to 'ccmodule_gripper open' {
+  digitalWriteOp 13 true
+  setServoAngle 22 0
+}
+
+to 'ccmodule_power on module' {
+  digitalWriteOp 13 true
+}
+
+to 'ccmodule_set all NeoPixels color' color {
+  digitalWriteOp 13 true
+  neoPixelSetAllToColor color
+}
+
+
+module 'Distance (VL53L0X)' Input
+author 'José García Yeste'
+version 1 2 
+tags sensor distance 
+description 'Support for VL53L0X distance sensor.
+TOF laser based.
+Range 3-200mm.
+
+Tested on:
+https://shop.m5stack.com/products/tof-sensor-unit (take Kapton tape on sensor!)
+'
+
+  spec 'r' 'VL53L0X connected' 'VL53L0X connected'
+  spec 'r' 'VL53L0X distance (mm)' 'VL53L0X distance (mm)'
+
+to 'VL53L0X connected' {
+  return ((i2cGet 41 (hexToInt 'C0')) == (hexToInt 'EE'))
+}
+
+to 'VL53L0X distance (mm)' {
+  i2cSet 41 0 1
+  waitMillis 70
+  if (((i2cGet 41 (hexToInt '14')) & 1) == 1) {
+    '[sensors:i2cWrite]' 41 ('[data:makeList]' (hexToInt '14'))
+    local 'buf' (newList 12)
+    '[sensors:i2cRead]' 41 buf
+    if ((at 1 buf) == 95) {
+      return (((at 11 buf) << 8) | (at 12 buf))
+    } else {
+      return -1
+    }
+  } else {
+    return -2
+  }
+}
+
+
+module 'Gesture (PAJ7620)' Input
+author 'José García'
+version 1 0 
+tags sensor gesture 
+description 'Support for PAJ7620 gesture sensor.
+The "read" block returns the name of the detected gesture.
+Based on github.com/Seeed-Studio/Gesture_PAJ7620'
+variables '_paj7620 initialized' 
+
+  spec 'r' 'paj7620 read' 'paj7620 read'
+  spec ' ' '_paj7620 setup' '_paj7620 setup'
+  spec 'r' 'paj7620 connected' 'paj7620 connected'
+  spec ' ' '_paj7620 setup bank0' '_paj7620 setup bank0'
+  spec ' ' '_paj7620 setup bank1' '_paj7620 setup bank1'
+
+to '_paj7620 setup' {
+  if ('paj7620 connected') {
+    '_paj7620 setup bank0'
+    '_paj7620 setup bank1'
+    i2cSet (hexToInt '73') (hexToInt '65') (hexToInt '12')
+    i2cSet (hexToInt '73') (hexToInt 'EF') 0
+    '_paj7620 initialized' = 1
+  }
+}
+
+to '_paj7620 setup bank0' {
+  i2cSet (hexToInt '73') (hexToInt 'EF') 0
+  local 'i' 1
+  local 'list' '3229
+3301
+3400
+3501
+3600
+3707
+3817
+3906
+3A12
+3F00
+4002
+41FF
+4201
+462D
+470F
+483C
+4900
+4A1E
+4B00
+4C20
+4D00
+4E1A
+4F14
+5000
+5110
+5200
+5C02
+5D00
+5E10
+5F3F
+6027
+6128
+6200
+6303
+64F7
+6503
+66D9
+6703
+6801
+69C8
+6A40
+6D04
+6E00
+6F00
+7080
+7100
+7200
+7300
+74F0
+7500
+8042
+8144
+8204
+8320
+8420
+8500
+8610
+8700
+8805
+8918
+8A10
+8B01
+8C37
+8D00
+8EF0
+8F81
+9006
+9106
+921E
+930D
+940A
+950A
+960C
+9705
+980A
+9941
+9A14
+9B0A
+9C3F
+9D33
+9EAE
+9FF9
+A048
+A113
+A210
+A308
+A430
+A519
+A610
+A708
+A824
+A904
+AA1E
+AB1E
+CC19
+CD0B
+CE13
+CF64
+D021
+D10F
+D288
+E001
+E104
+E241
+E3D6
+E400
+E50C
+E60A
+E700
+E800
+E900
+EE07'
+  repeatUntil (i > (size list)) {
+    local 'reg' ('[data:copyFromTo]' list i (i + 1))
+    local 'val' ('[data:copyFromTo]' list (i + 2) (i + 4))
+    i2cSet (hexToInt '73') (hexToInt reg) (hexToInt val)
+    i += 5
+    waitMicros 10
+  }
+}
+
+to '_paj7620 setup bank1' {
+  i2cSet (hexToInt '73') (hexToInt 'EF') 1
+  local 'i' 1
+  local 'list' '001E
+011E
+020F
+0310
+0402
+0500
+06B0
+0704
+080D
+090E
+0A9C
+0B04
+0C05
+0D0F
+0E02
+0F12
+1002
+1102
+1200
+1301
+1405
+1507
+1605
+1707
+1801
+1904
+1A05
+1B0C
+1C2A
+1D01
+1E00
+2100
+2200
+2300
+2501
+2600
+2739
+287F
+2908
+3003
+3100
+321A
+331A
+3407
+3507
+3601
+37FF
+3836
+3907
+3A00
+3EFF
+3F00
+4077
+4140
+4200
+4330
+44A0
+455C
+4600
+4700
+4858
+4A1E
+4B1E
+4C00
+4D00
+4EA0
+4F80
+5000
+5100
+5200
+5300
+5400
+5780
+5910
+5A08
+5B94
+5CE8
+5D08
+5E3D
+5F99
+6045
+6140
+632D
+6402
+6596
+6600
+6797
+6801
+69CD
+6A01
+6BB0
+6C04
+6D2C
+6E01
+6F32
+7100
+7201
+7335
+7400
+7533
+7631
+7701
+7C84
+7D03
+7E01'
+  repeatUntil (i > (size list)) {
+    local 'reg' ('[data:copyFromTo]' list i (i + 1))
+    local 'val' ('[data:copyFromTo]' list (i + 2) (i + 4))
+    i2cSet (hexToInt '73') (hexToInt reg) (hexToInt val)
+    i += 5
+    waitMicros 10
+  }
+}
+
+to 'paj7620 connected' {
+  return (and ((i2cGet (hexToInt '73') 0) == 32) ((i2cGet (hexToInt '73') 1) == 118))
+}
+
+to 'paj7620 read' {
+  if ((v '_paj7620 initialized') == 0) {'_paj7620 setup'}
+  local 'msg' '?'
+  local 'g' (i2cGet (hexToInt '73') (hexToInt '43'))
+  if ((g & 1) != 0) {
+    msg = 'right'
+  } ((g & 2) != 0) {
+    msg = 'left'
+  } ((g & 4) != 0) {
+    msg = 'up'
+  } ((g & 8) != 0) {
+    msg = 'down'
+  } ((g & 16) != 0) {
+    msg = 'forward'
+  } ((g & 32) != 0) {
+    msg = 'backward'
+  } ((g & 64) != 0) {
+    msg = 'clockwise'
+  } ((g & 128) != 0) {
+    msg = 'anti-clockwise'
+  }
+  return msg
+}
+
+
 module 'LED Display' Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 choices led_imageMenu heart 'small heart' yes no happy sad confused angry asleep surprised silly fabulous meh 't-shirt' 'roller skate' duck house tortoise butterfly 'stick figure' ghost sword giraffe skull umbrella snake rabbit cow 'quarter note' 'eight note' pitchfork target triangle 'left triangle' 'chess board' diamond 'small diamond' square 'small square' scissors 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -497,11 +1005,11 @@ variables _stop_scrolling_text
   spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
   spec ' ' 'stopScrollingText' 'stop scrolling'
   space
-  spec ' ' 'set display color' 'set display color _' 'color'
-  space
   spec 'r' '_led_image' 'led image _' 'microbitDisplay' 15237440
   spec 'r' '_led_namedImage' '_led_namedImage _' 'menu.led_imageMenu' 'happy'
   spec 'r' '_led_imageData' '_led_imageData'
+  space
+  spec ' ' 'set display color' 'set display color _' 'color'
 
 to '_led_image' twentyFiveBitInt {
   comment 'An LED image is a 25-bit integer'
@@ -574,6 +1082,216 @@ to stopScrollingText {
   _stop_scrolling_text = (booleanConstant true)
   waitMillis 10
   '[display:mbDisplayOff]'
+}
+
+
+module NeoPixel Output
+author MicroBlocks
+version 1 11 
+description 'Control NeoPixel (WS2812) RGB LED strips and rings.
+'
+variables _np_pixels 
+
+  spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
+  spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+  space
+  spec 'r' 'neoPixel_colorSwatch' '_' 'color'
+  spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  space
+  spec ' ' 'NeoPixel_brighten' 'brighten NeoPixel _ by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
+  spec ' ' 'NeoPixel_shift_color' 'shift NeoPixel _ color by _' 'num num' 1 10
+  spec ' ' 'NeoPixel_shift_all_colors' 'shift all NeoPixel colors by _' 'num' 10
+  space
+  spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
+  spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+  spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' '_NeoPixel_shift_hue' '_NeoPixel_shift_hue of _ by _' 'auto auto' '10' '10'
+
+to NeoPixel_brighten i delta {
+  '_NeoPixel_increaseRGB' i delta
+  '_NeoPixel_update'
+}
+
+to NeoPixel_brighten_all delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_increaseRGB' i delta
+  }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_all_colors delta {
+  for i (size _np_pixels) {
+    '_NeoPixel_shift_hue' i delta
+  }
+  '_NeoPixel_update'
+}
+
+to NeoPixel_shift_color i delta {
+  '_NeoPixel_shift_hue' i delta
+  '_NeoPixel_update'
+}
+
+to '_NeoPixel_ensureInitialized' {
+  if (_np_pixels == 0) {if (or ((boardType) == 'M5Atom-Matrix') (or ((boardType) == 'Mbits') ((boardType) == 'micro:STEAMakers'))) {
+    neoPixelAttach 25 '' false
+  } ((boardType) == 'D1-Mini') {
+    comment 'D1 mini kit'
+    neoPixelAttach 7 15 false
+  } else {
+    neoPixelAttach 10 '' false
+  }}
+}
+
+to '_NeoPixel_increaseRGB' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'h' ('[misc:hue]' rgb)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' (('[misc:brightness]' rgb) + delta)
+    v = (maximum 20 (minimum v 100))
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
+  }
+}
+
+to '_NeoPixel_rotate' left {
+  '_NeoPixel_ensureInitialized'
+  local 'length' (size _np_pixels)
+  if left {
+    local 'first' (at 1 _np_pixels)
+    for i (length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut length _np_pixels first
+  } else {
+    local 'last' (at length _np_pixels)
+    for i (length - 1) {
+      atPut ((length - i) + 1) _np_pixels (at (length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels last
+  }
+}
+
+to '_NeoPixel_shift_hue' i delta {
+  if (or (i < 1) (i > (size _np_pixels))) {return}
+  local 'rgb' (at i _np_pixels)
+  if (rgb != 0) {
+    local 'h' ((('[misc:hue]' rgb) + delta) % 360)
+    local 's' ('[misc:saturation]' rgb)
+    local 'v' ('[misc:brightness]' rgb)
+    atPut i _np_pixels ('[misc:hsvColor]' h s v)
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 300
+}
+
+to clearNeoPixels {
+  '_NeoPixel_ensureInitialized'
+  atPut 'all' _np_pixels 0
+  '_NeoPixel_update'
+}
+
+to colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to neoPixelAttach number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
+  atPut 'all' _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to neoPixelSetAllToColor color {
+  '_NeoPixel_ensureInitialized'
+  atPut 'all' _np_pixels color
+  '_NeoPixel_update'
+}
+
+to neoPixel_colorSwatch color {
+  return color
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to rotateNeoPixelsBy n {
+  '_NeoPixel_ensureInitialized'
+  repeat (absoluteValue n) {
+    '_NeoPixel_rotate' (n > 0)
+  }
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColor i color {
+  '_NeoPixel_ensureInitialized'
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    '_NeoPixel_update'
+  }
+}
+
+to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
+  '_NeoPixel_ensureInitialized'
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
+  '_NeoPixel_update'
 }
 
 
@@ -793,9 +1511,114 @@ to 'play ringtone' RTTTL {
 }
 
 
+module Servo Output
+author MicroBlocks
+version 1 3 
+tags servo motor angle rotation position 
+description 'Control both positional (angle) and rotational servo motors.
+'
+variables _servoPin _servoPulseWidth 
+
+  spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
+  spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'num num' 1 100
+  spec ' ' 'stopServo' 'stop servo _' 'num' 1
+  spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+  spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
+  spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
+
+to '_servoIndex' which {
+  if (_servoPin == 0) {
+    _servoPin = ('[data:makeList]')
+    _servoPulseWidth = ('[data:makeList]')
+    sendBroadcast '_servoUpdateLoop'
+  }
+  local 'i' ('[data:find]' which _servoPin)
+  if (i < 0) {
+    comment 'Add new pin'
+    '[data:addLast]' which _servoPin
+    '[data:addLast]' '1500' _servoPulseWidth
+    i = (size _servoPin)
+  }
+  return i
+}
+
+to '_servoPulse' pin usecs {
+  if (usecs == 0) {
+    comment 'Servo stopped; do nothing'
+    return 0
+  }
+  usecs = (maximum 850 (minimum usecs 2150))
+  comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
+  local 'endTime' ((microsOp) + usecs)
+  digitalWriteOp pin true
+  waitMicros (usecs - 30)
+  waitMicros (endTime - (microsOp))
+  digitalWriteOp pin false
+}
+
+to '_servoUpdateLoop' {
+  forever {
+    if (_servoPin != 0) {
+      comment 'If the _servoPin list is not 0, update the servos'
+      for i (size _servoPin) {
+        local 'pin' (at i _servoPin)
+        local 'usecs' (at i _servoPulseWidth)
+        if (and (pin >= 0) (usecs != 0)) {
+          '_servoPulse' pin usecs
+        }
+      }
+      waitMillis 15
+    }
+  }
+}
+
+to setServoAngle which degrees optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    degrees = (0 - degrees)
+  }
+  local 'pulseWidth' (1500 - (10 * degrees))
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
+to setServoSpeed which speed optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    speed = (0 - speed)
+  }
+  local 'pulseWidth' (1500 - (10 * speed))
+  if ((absoluteValue speed) < 2) {
+    pulseWidth = 0
+  }
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
+to stopServo which {
+  if ('[io:hasServo]') {
+    '[io:setServo]' which 0
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth 0
+  }
+}
+
+
 module TFT Output
 author MicroBlocks
-version 1 9 
+version 1 11 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[tft:clear]' 'clear TFT display'
@@ -812,6 +1635,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 Line 2' 50 20 nil 2
   space
   spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec ' ' '[tft:pixelRow]' 'draw pixel row _ x _ y _ : bytesPerPixel _ : palette _' 'auto num num num str' 'aList' 0 0 4
   spec ' ' '[tft:drawBitmap]' 'draw bitmap _ palette _ on TFT at x _ y _' 'str str num num' 'aBitmap' 'a list of colors' 10 10
   space
   spec 'r' 'tft_colorSwatch' '_' 'color'
@@ -848,18 +1672,6 @@ to makeGray percent {
   return ((gray << 16) | ((gray << 8) | gray))
 }
 
-to randomColor {
-  local 'n1' (random 100 200)
-  local 'n2' (random 0 100)
-  if (1 == (random 1 3)) {
-    return ((n1 << 16) | (n2 << 8))
-  } (1 == (random 1 2)) {
-    return ((n2 << 16) | n1)
-  } else {
-    return ((n1 << 8) | n2)
-  }
-}
-
 to tft_colorSwatch color {
   return color
 }
@@ -887,13 +1699,14 @@ to tft_drawVector x y angle length color {
 
 module Tone Output
 author MicroBlocks
-version 1 8 
+version 1 9 
 tags tone sound music audio note speaker 
-choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
-description 'Audio tone generation. Make music with MicroBlocks!'
+choices tone_NoteName 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'nt;c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
   space
@@ -907,6 +1720,7 @@ variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoN
   spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
   spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' '_tone init note names' '_tone init note names'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
@@ -914,10 +1728,8 @@ scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
   local 'normalized note' ('_trimmedLowercase' note)
-  if (_toneNoteNames == 0) {
-    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
-    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
-  }
+  'normalized note' = (ifExpression ((at 1 (v 'normalized note')) == 'n') (v 'normalized note') ('[data:join]' 'nt;' (v 'normalized note')))
+  '_tone init note names'
   if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
     return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
   } else {
@@ -947,6 +1759,13 @@ to '_measureLoopOverhead' {
   }
   local 'usecs' ((microsOp) - startT)
   return ((usecs - 20000) / 200)
+}
+
+to '_tone init note names' {
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'nt;c' 'nt;c#' 'nt;d' 'nt;d#' 'nt;e' 'nt;f' 'nt;f#' 'nt;g' 'nt;g#' 'nt;a' 'nt;a#' 'nt;b' 'nt;c_' 'nt;db' 'nt;d_' 'nt;eb' 'nt;e_' 'nt;e#' 'nt;f_' 'nt;gb' 'nt;g_' 'nt;ab' 'nt;a_' 'nt;bb' 'nt;b_' 'nt;b#')
+    _toneArezzoNotes = ('[data:makeList]' 'nt;do' 'nt;do#' 'nt;re' 'nt;re#' 'nt;mi' 'nt;fa' 'nt;fa#' 'nt;sol' 'nt;sol#' 'nt;la' 'nt;la#' 'nt;si' 'nt;do_' 'nt;dob' 'nt;re_' 'nt;reb' 'nt;mi_' 'nt;mi#' 'nt;fa_' 'nt;solb' 'nt;sol_' 'nt;lab' 'nt;la_' 'nt;sib' 'nt;si_' 'nt;si#')
+  }
 }
 
 to '_toneLoop' scaledFreq ms {
