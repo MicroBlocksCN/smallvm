@@ -4632,9 +4632,6 @@ msgstr "夹爪张开"
 msgid "ToF distance (mm)"
 msgstr "ToF 距离(mm)"
 
-#. Block in Input category
-msgid "BLE id"
-msgstr "cocube"
 
 #. CoCube library block
 msgid "point towards X _ Y _ at _ speed (0-50)"
