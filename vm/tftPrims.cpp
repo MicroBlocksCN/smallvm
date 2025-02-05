@@ -53,28 +53,15 @@ static int deferUpdates = false;
 			useTFT = true;
 		}
 #elif defined(DF_K10)
-		#include <ESP_IOExpander_Library.h>	
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"
 
-		ESP_IOExpander *expander = new ESP_IOExpander_TCA95xx_16bit(I2C_NUM_0, ESP_IO_EXPANDER_I2C_TCA9554_ADDRESS_000, I2C_SCL_PIN, I2C_SDA_PIN);
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
 
 		void tftInit() {
-			expander->init();
-			expander->begin();
-			expander->printStatus();
-			expander->pinMode(0, OUTPUT);
-			expander->pinMode(1, OUTPUT);
-			expander->digitalWrite(0, HIGH);
-      expander->digitalWrite(1, HIGH);
+			tft.begin(80000000); 
+			tft.setRotation(2);
 
-			tft.begin(40000000); 
-			tft.setRotation(0);
-			// tft.invertDisplay(invertFlag);
-
-			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
-			tft.sendCommand(ILI9341_MADCTL, &m, 1);
 			tftClear();
 			useTFT = true;
 		}
