@@ -68,7 +68,8 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || defined(XESGAME) || defined(ARDUINO_M5CoreInk)
+	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || \
+	defined(XESGAME) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
 
 	#define BLACK 0
 	#define WHITE 65535
@@ -81,17 +82,53 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		#define TFT_HEIGHT 128
 
 		void tftInit() {
-			Arduino_DataBus *bus = new Arduino_ESP32SPI(TFT_DC, TFT_CS);
- 			tft = new Arduino_ST7735(bus, TFT_RST, 0, false,
- 					TFT_WIDTH, TFT_HEIGHT, 2, 3, 2, 3);
-			if (!tft->begin()) {
-				outputString("tftInit() failed!");
-			} else {
-				tftWidth = TFT_WIDTH;
-				tftHeight = TFT_HEIGHT;
-				tftClear();
-				useTFT = true;
-			}
+			tft.initR(INITR_144GREENTAB);
+			tft.setRotation(0);
+			tftClear();
+			useTFT = true;
+		}
+#elif defined(DF_K10)
+		#include <ESP_IOExpander_Library.h>	
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h"
+
+		ESP_IOExpander *expander = new ESP_IOExpander_TCA95xx_16bit(I2C_NUM_0, ESP_IO_EXPANDER_I2C_TCA9554_ADDRESS_000, I2C_SCL_PIN, I2C_SDA_PIN);
+		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
+
+		void tftInit() {
+			expander->init();
+			expander->begin();
+			expander->printStatus();
+			expander->pinMode(0, OUTPUT);
+			expander->pinMode(1, OUTPUT);
+			expander->digitalWrite(0, HIGH);
+      expander->digitalWrite(1, HIGH);
+
+			tft.begin(40000000); 
+			tft.setRotation(0);
+			// tft.invertDisplay(invertFlag);
+
+			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
+			tft.sendCommand(ILI9341_MADCTL, &m, 1);
+			tftClear();
+			useTFT = true;
+		}
+	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_CS	D4
+		#define TFT_DC	D3
+		#define TFT_RST	-1
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_144GREENTAB);
+			tft.setRotation(1);
+			tftClear();
+			useTFT = true;
 		}
 
 	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE)
