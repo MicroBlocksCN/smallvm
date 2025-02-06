@@ -29,7 +29,8 @@ static int deferUpdates = false;
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
-	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || defined(XESGAME) || defined(ARDUINO_M5CoreInk)
+	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || \
+	defined(XESGAME) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
 
 	#define BLACK 0
 	#define WHITE 65535
@@ -51,7 +52,19 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
+#elif defined(DF_K10)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h"
 
+		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
+
+		void tftInit() {
+			tft.begin(80000000); 
+			tft.setRotation(2);
+
+			tftClear();
+			useTFT = true;
+		}
 	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
