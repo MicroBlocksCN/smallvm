@@ -99,7 +99,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		tftClear();
 		useTFT = true;
 	}
-	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
 
