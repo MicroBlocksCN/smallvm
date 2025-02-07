@@ -55,18 +55,17 @@ static int deferUpdates = false;
 			useTFT = true;
 		}
 #elif defined(DF_K10)
-		#include "Adafruit_GFX.h"
-		#include "Adafruit_ILI9341.h"
+	#include <TFT_eSPI.h>
 
-		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
+	TFT_eSPI tft = TFT_eSPI();
 
-		void tftInit() {
-			tft.begin(80000000); 
-			tft.setRotation(2);
-
-			tftClear();
-			useTFT = true;
-		}
+	void tftInit() {
+		tft.init();
+		tft.setRotation(2);
+		
+		tftClear();
+		useTFT = true;
+	}
 	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
@@ -1454,8 +1453,8 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 			OBJ pixelObj = FIELD(pixelDataObj, (i + 1));
 			bufferPixels[i] = (isInt(pixelObj)) ? color24to16b(obj2int(pixelObj)) : 0;
 		}
-		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
-        	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
+    	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
 		#else
 			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
 		#endif
@@ -1490,8 +1489,8 @@ static OBJ primPixelRow(int argCount, OBJ *args) {
 				byte += bytesPerPixel;
 			}
 		}
-		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
-        	tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
+      tft.fillRect(x, y, pixelCount, 1, bufferPixels[0]);
 		#else
 			tft.drawRGBBitmap(x, y, bufferPixels, pixelCount, 1);
 		#endif
@@ -1842,7 +1841,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				}
 			}
 		}
-		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk)
+		#if defined(COCUBE_SOCCER) ||  defined(M5_ATOMS3) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
 			tft.fillRect(
 			originX * scale,
 			(originY + y) * scale,
