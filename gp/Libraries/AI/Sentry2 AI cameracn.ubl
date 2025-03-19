@@ -1,10 +1,10 @@
 module 'Sentry2 AI camera' Input
-author '作者 邵悦'
+author '邵悦'
 version 1 6 
 choices st2colorMenu red green blue yellow black white 
 choices st2normalpropMenu X Y width heigh label 
 choices st2cardMenu Forward Left Right TurnAround Park GreenLight RedLight Speed40 Speed60 Speed80 Check Cross Circle Square Triangle Plus Minus Divide Equal 
-choices st2modeMenu color blob apriltag line learning card face '20classes' 
+choices st2modeMenu color blob apriltag line learning card face '20class' 
 choices st2linepropMenu topX topY bottomX bottomY angle 
 description 'Sentry2 is a vision sensor which is designed by K210  
 https://tosee.readthedocs.io/zh/latest/Sentry2/Vision/index.html
@@ -30,7 +30,9 @@ variables _st2_init_flag _st2_i2c_address _sentry2_card_label _st2_result_data _
   spec 'r' 'Sentry2 get mode settings' 'Sentry2 get mode settings'
   spec ' ' '_sentry2_reset_kpu_modes' '_sentry2_reset_kpu_modes'
   spec 'r' 'Sentry2_detect_result' 'Sentry2 检测结果 模式编号 _ (0 跟随初始设置)' 'auto' 0
-  spec 'r' 'Sentry get obj' 'Sentry 检测对象 _ 属性 _' 'auto auto' 1 5
+  spec 'r' 'Sentry get obj' 'Sentry2 检测对象 _ 属性 _' 'auto auto' 1 5
+  spec ' ' 'set check blob color' '设置可检测颜色 red _ green _ blue _' 'bool bool bool' true true true
+  spec 'r' 'get dectect color obj ID' '获取检测到的颜色块 ID _' 'menu.st2colorMenu' 'red'
 
 to 'Sentry detect normalobj' objid foo {
   local 'var' ('[data:find]' foo _st2_normal_prop_label)
@@ -100,7 +102,7 @@ to 'Sentry2 init' foo {
   comment 'default i2c address 0x60 96'
   _st2_i2c_address = (minimum 99 (maximum 96 foo))
   _st2_mode_settings = (newList 8 (booleanConstant false))
-  _st2_mode_list = ('[data:makeList]' 'color' 'blob' 'apriltag' 'line' 'learning' 'card' 'face' '20classes')
+  _st2_mode_list = ('[data:makeList]' 'color' 'blob' 'apriltag' 'line' 'learning' 'card' 'face' '20class')
   _st2_color_tags = ('[data:makeList]' 'black' 'white' 'red' 'green' 'blue' 'yellow')
   _sentry2_card_label = ('[data:split]' 'Forward,Left,Right,TurnAround,Park,GreenLight,RedLight,Speed40,Speed60,Speed80,Check,Cross,Circle,Square,Triangle,Plus,Minus,Divide,Equal,' ',')
   _st2_normal_prop_label = ('[data:makeList]' 'X' 'Y' 'width' 'heigh' 'label')
@@ -156,7 +158,7 @@ to '_st2_get_label' label_list foo {
 }
 
 to '_st2_get_modeid' foo {
-  comment 'color,blob,apriltag,learning,card,face,20classes,'
+  comment 'color,blob,apriltag,learning,card,face,20class,'
   local 'var' ('[data:find]' foo _st2_mode_list)
   return (ifExpression (var > 0) var 0)
 }
@@ -180,7 +182,47 @@ to '_st2_sensor_reg_lock' foo {
   i2cSet _st2_i2c_address (hexToInt '05') (ifExpression foo 1 0)
 }
 
+to 'get dectect color obj ID' color {
+  comment '获取识别到第一个对应颜色的ID'
+  local 'var' ('Sentry2 获取' 'blob')
+  if (var >= 0) {
+    for i var {
+      if (('Sentry detect normalobj' i 'label') == ('[data:find]' color _st2_color_tags)) {return i}
+    }
+  }
+  return 0
+}
+
 to sentry2_get_cardlabel foo {
   return ('_st2_get_label' _sentry2_card_label foo)
+}
+
+to 'set check blob color' red green blue {
+  i2cSet _st2_i2c_address (hexToInt '20') ('_st2_get_modeid' 'blob')
+  for i 6 {
+    i2cSet _st2_i2c_address (hexToInt '24') i
+    i2cSet _st2_i2c_address (hexToInt '79') 0
+  }
+  local 'var' 0
+  if red {
+    var += 1
+    i2cSet _st2_i2c_address (hexToInt '24') var
+    i2cSet _st2_i2c_address (hexToInt '79') 3
+  }
+  if green {
+    var += 1
+    i2cSet _st2_i2c_address (hexToInt '24') var
+    i2cSet _st2_i2c_address (hexToInt '79') 4
+  }
+  if blue {
+    var += 1
+    i2cSet _st2_i2c_address (hexToInt '24') var
+    i2cSet _st2_i2c_address (hexToInt '79') 5
+  }
+  if (var == 0) {
+    var += 1
+    i2cSet _st2_i2c_address (hexToInt '24') var
+    i2cSet _st2_i2c_address (hexToInt '79') 3
+  }
 }
 
