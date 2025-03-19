@@ -1,0 +1,50 @@
+module 'M5 ASR'
+author '邵悦'
+version 1 1 
+description 'https://docs.m5stack.com/en/unit/Unit%20ASR
+使用接受对应的广播消息做行为绑定，
+比如响应stop指令就写当接收到 asr_stop 然后接对应的操作。
+'
+variables _asr_init _ASR_CMD_EN_LIST _ASR_CMD_RAW 
+
+  spec ' ' 'ASR_init' 'ASR_init'
+  spec ' ' '_asr_loop' '_asr_loop'
+  spec ' ' 'ASR_test' 'ASR_test'
+  spec 'r' 'ASR_LAST_CMD' 'ASR_LAST_CMD'
+
+to ASR_LAST_CMD {
+  if (and (_ASR_CMD_RAW != 0) ((size _ASR_CMD_RAW) == 5)) {if ((at 3 _ASR_CMD_RAW) == 255) {
+    return 'M5ASR'
+  } else {
+    return (at (at 3 _ASR_CMD_RAW) _ASR_CMD_EN_LIST)
+  }}
+  return (booleanConstant false)
+}
+
+to ASR_init {
+  if (_asr_init == 0) {
+    _ASR_CMD_EN_LIST = ('[data:join]' ('[data:split]' 'up,down,left,turn left,right,turn right,forward,front,backward,backward' ',') (newList 5 'o-') ('[data:split]' 'open,close,start,stop,turn on,turn off,play,pause,turn on the lights,turn off the lights,previous,next' ',') (newList 4 'o-') ('[data:split]' 'zero,one,two,three,four,five,six,seven,eight,nine' ',') (newList 6 'o-') ('[data:split]' 'ok,hi ASR,hello' ',') (newList 13 'o-') ('[data:split]' 'increase volume,decrease volume,maximum volume,medium volume,minimum volume' ','))
+    '[serial:open]' 115200
+    _asr_init = 1
+    sendBroadcast '_asr_loop'
+  }
+}
+
+to ASR_test {
+  ASR_init
+  '[serial:write]' ('[data:asByteArray]' ('[data:makeList]' 170 85 254 85 170))
+}
+
+to '_asr_loop' {
+  forever {
+    local 'var' ('[serial:read]')
+    if ((size var) == 5) {
+      _ASR_CMD_RAW = var
+      if (and ((at 1 _ASR_CMD_RAW) == (hexToInt 'AA')) ((hexToInt 'AA') == (at 'last' _ASR_CMD_RAW))) {
+        if ((at 3 _ASR_CMD_RAW) <= (size _ASR_CMD_EN_LIST)) {sendBroadcast ('[data:join]' 'asr_' (at (at 3 _ASR_CMD_RAW) _ASR_CMD_EN_LIST))}
+      }
+    }
+    waitMillis 10
+  }
+}
+
