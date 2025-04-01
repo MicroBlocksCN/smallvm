@@ -1,15 +1,17 @@
 module 'Sentry2 AI camera' Input
 author '邵悦'
-version 1 7 
+version 1 8 
 choices st2colorMenu red green blue yellow black white 
 choices st2normalpropMenu X Y width heigh label 
 choices st2cardMenu Forward Left Right TurnAround Park GreenLight RedLight Speed40 Speed60 Speed80 Check Cross Circle Square Triangle Plus Minus Divide Equal 
 choices st2modeMenu color blob apriltag line learning card face '20class' 
 choices st2linepropMenu topX topY bottomX bottomY angle 
+choices st2modeMenu2 learning face
+choices st2opMenu save del
 description 'Sentry2 is a vision sensor which is designed by K210  
 https://tosee.readthedocs.io/zh/latest/Sentry2/Vision/index.html
 '
-variables _st2_init_flag _st2_i2c_address _sentry2_card_label _st2_result_data _result_data _st2_mode_list _st2_color_tags _st2_current_mode _st2_normal_prop_label _st2_line_prop_label _st2_mode_settings 
+variables _st2_init_flag _st2_i2c_address _sentry2_card_label _st2_result_data _st2_mode_list _st2_color_tags _st2_current_mode _st2_normal_prop_label _st2_line_prop_label _st2_mode_settings 
 
   spec ' ' 'Sentry2 init' 'Sentry2 初始化 _' 'num' 96
   spec ' ' 'Sentry turn' 'Sentry2 设置模式 _ _' 'menu.st2modeMenu bool' 'card' true
@@ -33,6 +35,7 @@ variables _st2_init_flag _st2_i2c_address _sentry2_card_label _st2_result_data _
   spec 'r' 'Sentry get obj' 'Sentry2 检测对象 _ 属性 _' 'auto auto' 1 5
   spec ' ' 'set check blob color' '设置可检测颜色 red _ green _ blue _' 'bool bool bool' true true true
   spec 'r' 'get dectect color obj ID' '获取检测到的颜色块 ID _' 'menu.st2colorMenu' 'red'
+  spec ' ' 'Sentry2' 'Sentry2 _ 数据 _ 编号 _' 'menu.st2modeMenu2 menu.st2opMenu auto' 'learning' 'save' 1
 
 to 'Sentry detect normalobj' objid foo {
   local 'var' ('[data:find]' foo _st2_normal_prop_label)
@@ -65,6 +68,16 @@ to 'Sentry turn' mode foo {
     _st2_current_mode = mode
   } else {
     _st2_current_mode = 0
+  }
+}
+
+to Sentry2 mode op id {
+  if (or ('face' == mode) ('learning' == mode)) {
+    'Sentry turn' mode true
+    if (and (id >= 1) (id <= 25)) {
+      i2cSet _st2_i2c_address (hexToInt '24') id
+      i2cSet _st2_i2c_address (hexToInt '79') (ifExpression ('save' == op) 100 0)
+    }
   }
 }
 
