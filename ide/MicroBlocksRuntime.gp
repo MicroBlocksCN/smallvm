@@ -1327,8 +1327,6 @@ method installBoardSpecificBlocks SmallRuntime {
 	} ('handpy' == boardType) {
 		importEmbeddedLibrary scripter '掌控板 OLED'
 		importEmbeddedLibrary scripter '掌控板mPython'
-	} ('CoCube' == boardType) {
-		importEmbeddedLibrary scripter 'CoCube'
 	} ('TTGO RP2040' == boardType) {
 		importEmbeddedLibrary scripter 'LED Display'
 	} ('Pico:ed' == boardType) {
