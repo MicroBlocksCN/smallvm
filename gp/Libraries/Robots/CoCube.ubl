@@ -1,6 +1,6 @@
 module CoCube
 author 'Liang Shuai'
-version 2 10 
+version 2 11 
 depends Tone Display TFT 'Motors/PID' 
 tags 'cocube robot' 
 choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
@@ -19,8 +19,9 @@ v2.3 Add blocks prompts
 v2.4 Unify positioning accuracy to 1/64
 v2.5 Adjust blocks order and delete RingTone
 v2.6 Adjust blocks order, name and default parameters
+v2.11 Improve the "CoCube move to" function logic
 '
-variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_rotate_mode_ _cocube_target_speed _cocube_target_x _cocube_target_y 
+variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle 
 
   spec ' ' 'CoCube move for msecs' 'move _ at _ speed (0-50) for _ msecs' 'menu.cocube_move_Menu num num' 'cocube;forward' 40 1000
   spec ' ' 'CoCube rotate for msecs' 'rotate _ at _ speed (0-50) for _ msecs' 'menu.cocube_rotate_Menu num num' 'cocube;left' 30 1000
@@ -124,22 +125,19 @@ to 'CoCube move for msecs' direction speed time {
 
 to 'CoCube move to' target_x target_y speed {
   if ('CoCube on the mat') {
-    _cocube_target_x = target_x
-    _cocube_target_y = target_y
-    _cocube_target_speed = speed
-    forever {
-      comment 'calculate error'
-      '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
-      _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
-      '_cocube_calculate_angle_error_' _cocube_target_angle
-      if (_cocube_error_distance < 7) {
-        comment 'Arrived'
-        'CoCube wheels stop'
-        return 0
-      } else {
-        'CoCube set wheel' (_cocube_target_speed - ((_cocube_target_speed * _cocube_error_angle) / 20)) (_cocube_target_speed + ((_cocube_target_speed * _cocube_error_angle) / 20))
+    speed = speed
+    '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y
+    if (_cocube_error_distance > 7) {
+      'CoCube point towards' target_x target_y speed
+      repeatUntil (_cocube_error_distance < 7) {
+        '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y
+        _cocube_target_angle = (('[misc:atan2]' _cocube_error_y _cocube_error_x) / 100)
+        '_cocube_calculate_angle_error_' _cocube_target_angle
+        'CoCube set wheel' (speed - ((speed * _cocube_error_angle) / 20)) (speed + ((speed * _cocube_error_angle) / 20))
         waitMillis 10
       }
+      'CoCube wheels break'
+      return 0
     }
   } else {
     sayIt 'Please put CoCube on Mat'
