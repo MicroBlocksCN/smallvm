@@ -476,27 +476,72 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
-		// touch screen
-		#define HAS_TFT_TOUCH
-		#define TOUCH_CS_PIN 39
+		// M5 Core2 touchscreen support
 
-		void touchInit() {
-			pinMode(TOUCH_CS_PIN, INPUT);	
-			Wire1.begin(21, 22);
-			Wire1.beginTransmission(0x38);
-			Wire1.write(0xA4);
-			Wire1.write(0);
-			Wire1.endTransmission();
+		#define HAS_TOUCH_SCREEN 1
+		#define CORE2_TOUCH_SCREEN_ADDR 0x38
+		#define CORE2_SCREEN_TOUCHED_PIN 39
 
-			Wire1.beginTransmission(0x38);
-			Wire1.write(0x88);
-			Wire1.write(13);
+		static void setCore2TouchScreenReg(int regID, int value) {
+			Wire1.beginTransmission(CORE2_TOUCH_SCREEN_ADDR);
+			Wire1.write(regID);
+			Wire1.write(value);
 			Wire1.endTransmission();
+		}
+
+		static void touchInit() {
+			setCore2TouchScreenReg(0xA4, 0); // hold TOUCHED_PIN low while screen touched
+			pinMode(CORE2_SCREEN_TOUCHED_PIN, INPUT);
 			touchEnabled = true;
 		}
-		bool ispressed(){
-			return (digitalRead(TOUCH_CS_PIN) == LOW);
+
+		static uint32 lastTouchUpdate = 0;
+		static int touchScreenX = -1;
+		static int touchScreenY = -1;
+
+		static int screenTouched() {
+			if (!touchEnabled) touchInit();
+			return !digitalRead(CORE2_SCREEN_TOUCHED_PIN);
 		}
+
+		static void touchUpdate() {
+			if (!touchEnabled) touchInit();
+			uint32 now = millisecs();
+			if ((now - lastTouchUpdate) < 10) return;
+			if (screenTouched()) {
+				uint8 data[4];
+				Wire1.beginTransmission(CORE2_TOUCH_SCREEN_ADDR);
+				Wire1.write(3);
+				Wire1.endTransmission();
+				Wire1.requestFrom(CORE2_TOUCH_SCREEN_ADDR, sizeof(data));
+				for (int i = 0; i < sizeof(data); i++) {
+					data[i] = Wire1.read();
+				}
+				touchScreenX = ((data[0] & 0xF) << 8) | data[1];
+				touchScreenY = ((data[2] & 0xF) << 8) | data[3];
+			} else {
+				touchScreenX = -1;
+				touchScreenY = -1;
+			}
+			lastTouchUpdate = now;
+		}
+
+		static int screenTouchX() {
+			touchUpdate();
+			return touchScreenX;
+		}
+
+		static int screenTouchY() {
+			touchUpdate();
+			return touchScreenY;
+		}
+
+		static int screenTouchPressure() {
+			// pressure not supported; return a constant value if screen is touched, -1 if not
+			if (!touchEnabled) touchInit();
+			return screenTouched() ? 10 : -1;
+		}
+
 
 		static uint8 touchData[11];
 		static int readFT6336Data(int index){
@@ -1934,6 +1979,7 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+/*
 // touchscreen ops
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
@@ -1962,6 +2008,7 @@ static OBJ primTftTouchX(int argCount, OBJ *args) {
 	#endif
 	return int2obj(-1);
 }
+
 
 static OBJ primTftTouchY(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
@@ -1992,6 +2039,7 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) {
 	#endif
 	return int2obj(-1);
 }
+*/
 
 #else // stubs
 
@@ -2020,10 +2068,10 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
 
-static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
+// static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
+// static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
+// static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
+// static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primAruco(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAprilTag(int argCount, OBJ *args) { return falseObj; }
