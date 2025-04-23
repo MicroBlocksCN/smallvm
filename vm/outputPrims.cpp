@@ -571,7 +571,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(1, &analogPin));
 	#elif defined(ARDUINO_CITILAB_ED1)
-		lightLevel = analogRead(34) * 1000 / 4095;
+		lightLevel = analogRead(34) * 1000 / 4095; // output range 0-1000
 	#elif defined(XESGAME)//学而思游戏机
 		lightLevel = analogRead(36) * 1000 / 4095;
 	#elif defined(ARDUINO_Labplus_mPython) || defined(COCOROBO) || \

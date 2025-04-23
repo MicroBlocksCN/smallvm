@@ -646,7 +646,7 @@ void hardwareInit() {
 	
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
 		1, 1, 0, 0, 1, 1, 0, 0, 1, 0};
 
@@ -679,10 +679,10 @@ void hardwareInit() {
 	#define PIN_LED 10
 	#define INVERT_USER_LED true
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
-		0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
 
 #elif defined(M5Atom_Matrix)
 
@@ -748,7 +748,7 @@ void hardwareInit() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(COCUBE)
@@ -1560,6 +1560,32 @@ void hardwareInit() {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 	#endif
+
+#elif defined(DUELink)
+
+	#define BOARD_TYPE "DUELink"
+	#define DIGITAL_PINS 30
+	#define ANALOG_PINS 5
+	#define TOTAL_PINS 60
+	#define PIN_LED 15 // PA_6 (unmapped)
+	#define PIN_BUTTON_A 28 // (unmapped) edge pin 5
+	#define PIN_BUTTON_B 27 // (unmapped) edge pin 11
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+	#define DEFAULT_TONE_PIN 21
+	static const char cincoEdgePin[DIGITAL_PINS] = {
+		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
+		 2, 27, 32,  9,  5,  4, 33, 255, 255, 0,
+		 1, 13, 12, 15,  7, 11,  54, 42,  47, 52};
+	static const char pixoEdgePin[DIGITAL_PINS] = {
+		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
+		 2, 27,  7,  9,  5,  4, 33, 255, 255, 0,
+		 1, 13, 12, 15, 14, 29,  32, 42,  47, 52};
+	static const char dueStandardPin[DIGITAL_PINS] = {
+		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
+		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
+		28,  8,  2, 27, 32, 52, 47, 42, 255, 255};
+	static const int analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
 
 #elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
 	#define BOARD_TYPE "BeagleConnect Freedom"
