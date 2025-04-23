@@ -26,7 +26,7 @@ to uload fileName {
 	return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer connectionWidget progressIndicator httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode keyboardEvent
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons scriptingActionsContainer connectionWidget progressIndicator httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading isPilot darkMode keyboardEvent versionCheckOnStartup
 
 method scriptingActionsContainer MicroBlocksEditor { return scriptingActionsContainer }
 method fileName MicroBlocksEditor { return fileName }
@@ -556,8 +556,10 @@ method step MicroBlocksEditor {
 		launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
 		newerVersion = nil
 	} (notNil newerVersion) {
-		reportNewerVersion this
-		newerVersion = nil
+		if versionCheckOnStartup {
+			reportNewerVersion this
+			newerVersion = nil
+		}
 	}
 	if (notNil frameRate) {
 		updateFPS this
@@ -1052,6 +1054,11 @@ method toggleDarkMode MicroBlocksEditor {
 
 method darkModeEnabled MicroBlocksEditor {
 	return (darkMode == true)
+}
+
+method toggleVersionCheck MicroBlocksEditor {
+	versionCheckOnStartup = (not versionCheckOnStartup)
+	saveToUserPreferences this 'versionCheckOnStartup' versionCheckOnStartup
 }
 
 method toggleKeyboardEvent MicroBlocksEditor {
