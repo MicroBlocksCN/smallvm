@@ -1,7 +1,7 @@
 module CoCube
 author 'Liang Shuai'
 version 2 11 
-depends Tone Display TFT 'Motors/PID' 
+depends Tone Display TFT '_Motors/PID' 
 tags 'cocube robot' 
 choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
 choices cocube_move_Menu 'cocube;forward' 'cocube;backward' 
