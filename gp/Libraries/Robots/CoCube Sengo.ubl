@@ -1,0 +1,462 @@
+module 'CoCube Sengo2' Input
+author 'You Zhongrui, Liang Shuai'
+version 1 0 
+depends 'Robots/CoCube' 
+tags 'cocube robot' 
+choices sg2_result_Menu x y w h 
+choices sg2_rgb_Menu R G B 
+choices sg2AprilTagMenu '16H5' '25H9' '36H11' 
+choices sg2_algo_Menu 'Color Recog' 'Blob Detect' AprilTag 'Line Detect' 'Deep Learning' 'Card Recog' 'Face Recog' Obj20Class QRcode 'Motion Detect' 
+choices sg2_color_Menu black white red green blue yellow 
+choices sg2_line_menu x1 y1 x2 y2 degree 
+description 'Sengo2 AI Camera Module for CoCube robot
+
+CoCube is a tabletop modular multi-robot platform for education and research.
+https://www.cocubefun.com/
+https://wiki.cocube.fun/
+sliang23@m.fudan.edu.cn
+
+v1.0 Basic functions 2025.04.27
+'
+variables _sg2_i2c_address _sg2_algo_list _sg2_current_algo _sg2_init_flag _sg2_color_classes _sg2_card_classes _sg2_20class_classes  
+
+  spec ' ' 'Sengo2 init' 'Sengo2 init'
+  spec ' ' 'Sengo2 change algorithm' 'Sengo2 change algorithm _' 'menu.sg2_algo_Menu' 'Color Recog'
+  spec ' ' 'Sengo2 reset' 'Sengo2 reset'
+  space
+  spec ' ' 'Sengo2 set color recog area' 'Sengo2 set color recog area x _ y _ width _ height _ (0-100)' 'num num num num' 50 50 3 4
+  spec 'r' 'Sengo2 read color' 'Sengo2 read color'
+  spec 'r' 'Sengo2 get color RGB' 'Sengo2 get color _' 'menu.sg2_rgb_Menu' 'R'
+  space
+  spec ' ' 'Sengo2 set blob detect property' 'Sengo2 set blob detect property color _ width _ height _' 'menu.sg2_color_Menu num num' 'red' 3 4
+  spec 'r' 'Sengo2 read blob' 'Sengo2 read blob'
+  spec 'r' 'Sengo2 get blob' 'Sengo2 get blob _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec ' ' 'Sengo2 set AprilTag type' 'Sengo2 set AprilTag type _' 'menu.sg2AprilTagMenu' '36H11'
+  spec 'r' 'Sengo2 read AprilTag' 'Sengo2 read AprilTag'
+  spec 'r' 'Sengo2 get AprilTag' 'Sengo2 get AprilTag _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec 'r' 'Sengo2 get line' 'Sengo2 get line _' 'menu.sg2_line_menu' 'degree'
+  space
+  spec ' ' 'Sengo2 record learning ID' 'Sengo2 record learning ID _ (1-15)' 'num' 1
+  spec ' ' 'Sengo2 delete learning ID' 'Sengo2 delete learning ID _ (1-15)' 'num' 1
+  spec 'r' 'Sengo2 get learning ID' 'Sengo2 get learning ID'
+  space
+  spec 'r' 'Sengo2 read card' 'Sengo2 read card'
+  spec 'r' 'Sengo2 get card' 'Sengo2 get card _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec ' ' 'Sengo2 record face ID' 'Sengo2 record face ID _ (1-10)' 'num' 1
+  spec ' ' 'Sengo2 delete face ID' 'Sengo2 delete face ID _ (1-10)' 'num' 1
+  spec 'r' 'Sengo2 get face ID' 'Sengo2 get face ID'
+  space
+  spec 'r' 'Sengo2 read Obj20Class' 'Sengo2 read Obj20Class'
+  spec 'r' 'Sengo2 get Obj20Class' 'Sengo2 get Obj20Class _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec 'r' 'Sengo2 QRcode' 'Sengo2 read QRcode'
+  spec 'r' 'Sengo2 get QRcode' 'Sengo2 get QRcode _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec 'r' 'Sengo2 get motion' 'Sengo2 get motion _' 'menu.sg2_result_Menu' 'x'
+  space
+  spec ' ' 'csg2_gripper open' 'Sengo2+gripper open'
+  spec ' ' 'csg2_gripper close' 'Sengo2+gripper close'
+  spec ' ' 'csg2_gripper degree' 'Sengo2+gripper degrees _ (0 to 70)' 'num' 0
+  spec ' ' 'csg2_gripper stop' 'Sengo2+gripper stop'
+  space
+  spec 'r' 'csg2_ToF connected' 'Sengo2+ToF connected'
+  spec 'r' 'csg2_ToF distance' 'Sengo2+ToF distance (mm)'
+  space
+  spec ' ' '_sg2_init' '_sg2_init'
+  spec 'r' '_sg2_read_reg_byte' '_sg2_read_reg_byte _' 'num' 0
+  spec ' ' '_sg2_reset_current_algo' '_sg2_reset_current_algo'
+
+
+to 'Sengo2 QRcode' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 9
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    local 'qr_length' ('_sg2_read_reg_byte' (hexToInt '88'))
+    local 'ret' ''
+    for i qr_length {
+      local 'result_id' (((i - 1) / 5) + 2)
+      local 'offset' ((i - 1) % 5)
+      if (((i - 1) % 5) == 0) {
+        i2cSet _sg2_i2c_address (hexToInt '35') result_id
+      }
+      ret = ('[data:join]' ret ('[data:unicodeString]' (i2cGet _sg2_i2c_address ((hexToInt '81') + (offset * 2)))))
+    }
+    return ret
+  }
+}
+
+to 'Sengo2 change algorithm' mode {
+  if (_sg2_init_flag == 0) {'Sengo2 init'}
+  '_sg2_reset_current_algo'
+  _sg2_current_algo = ('[data:find]' mode _sg2_algo_list)
+  i2cSet _sg2_i2c_address (hexToInt '20') _sg2_current_algo
+  i2cSet _sg2_i2c_address (hexToInt '21') 1
+  waitMillis 5
+}
+
+to 'Sengo2 delete face ID' id {
+  i2cSet _sg2_i2c_address (hexToInt '20') 7
+  i2cSet _sg2_i2c_address (hexToInt '24') id
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '79') (0 & (hexToInt 'FF'))
+}
+
+to 'Sengo2 delete learning ID' id {
+  i2cSet _sg2_i2c_address (hexToInt '20') 5
+  i2cSet _sg2_i2c_address (hexToInt '24') id
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '79') (0 & (hexToInt 'FF'))
+}
+
+to 'Sengo2 get AprilTag' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 3
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'y') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'w') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+    if (tag == 'h') {
+      return ('_sg2_read_reg_byte' (hexToInt '86'))
+    }
+  }
+}
+
+to 'Sengo2 get Obj20Class' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 8
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'y') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'w') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+    if (tag == 'h') {
+      return ('_sg2_read_reg_byte' (hexToInt '86'))
+    }
+  }
+}
+
+to 'Sengo2 get QRcode' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 9
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '80'))
+      return ret
+    }
+    if (tag == 'y') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '82'))
+      return ret
+    }
+    if (tag == 'w') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '84'))
+      return ret
+    }
+    if (tag == 'h') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '86'))
+      return ret
+    }
+  }
+}
+
+to 'Sengo2 get blob' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 2
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'y') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'w') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+    if (tag == 'h') {
+      return ('_sg2_read_reg_byte' (hexToInt '86'))
+    }
+  }
+}
+
+to 'Sengo2 get card' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 6
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'y') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'w') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+    if (tag == 'h') {
+      return ('_sg2_read_reg_byte' (hexToInt '86'))
+    }
+  }
+}
+
+to 'Sengo2 get color RGB' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 1
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'R') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'G') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'B') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+  }
+}
+
+to 'Sengo2 get face ID' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 7
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    return ('_sg2_read_reg_byte' (hexToInt '88'))
+  }
+}
+
+to 'Sengo2 get learning ID' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 5
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    return ('_sg2_read_reg_byte' (hexToInt '88'))
+  }
+}
+
+to 'Sengo2 get line' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 4
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x1') {
+      return ('_sg2_read_reg_byte' (hexToInt '80'))
+    }
+    if (tag == 'y1') {
+      return ('_sg2_read_reg_byte' (hexToInt '82'))
+    }
+    if (tag == 'x2') {
+      return ('_sg2_read_reg_byte' (hexToInt '84'))
+    }
+    if (tag == 'y2') {
+      return ('_sg2_read_reg_byte' (hexToInt '86'))
+    }
+    if (tag == 'degree') {
+      return ('_sg2_read_reg_byte' (hexToInt '88'))
+    }
+  }
+}
+
+to 'Sengo2 get motion' tag {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 11
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    if (tag == 'x') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '80'))
+      return ret
+    }
+    if (tag == 'y') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '82'))
+      return ret
+    }
+    if (tag == 'w') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '84'))
+      return ret
+    }
+    if (tag == 'h') {
+      local 'ret' ('_sg2_read_reg_byte' (hexToInt '86'))
+      return ret
+    }
+  }
+}
+
+to 'Sengo2 init' {
+  digitalWriteOp 13 true
+  if (_sg2_init_flag != 1) {
+    waitMillis 3500
+  }
+  '_sg2_init'
+  if ((i2cGet _sg2_i2c_address 1) == 7) {
+    i2cSet _sg2_i2c_address (hexToInt '04') 0
+    _sg2_init_flag = 1
+  } else {
+    _sg2_init_flag = 0
+  }
+}
+
+to 'Sengo2 read AprilTag' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 3
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    return ('_sg2_read_reg_byte' (hexToInt '88'))
+  }
+}
+
+to 'Sengo2 read Obj20Class' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 8
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    return (at ('_sg2_read_reg_byte' (hexToInt '88')) _sg2_20class_classes)
+  }
+}
+
+to 'Sengo2 read blob' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 2
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    local 'var' ('_sg2_read_reg_byte' (hexToInt '88'))
+    if (var <= 6) {
+      return (at var _sg2_color_classes)
+    } else {
+      return (booleanConstant false)
+    }
+  }
+}
+
+to 'Sengo2 read card' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 6
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    return (at ('_sg2_read_reg_byte' (hexToInt '88')) _sg2_card_classes)
+  }
+}
+
+to 'Sengo2 read color' {
+  if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
+    i2cSet _sg2_i2c_address (hexToInt '20') 1
+    i2cSet _sg2_i2c_address (hexToInt '35') 1
+    local 'var' ('_sg2_read_reg_byte' (hexToInt '88'))
+    if (var == 0) {
+      return (at 'last' _sg2_color_classes)
+    } else {
+      return (at var _sg2_color_classes)
+    }
+  }
+}
+
+to 'Sengo2 record face ID' id {
+  i2cSet _sg2_i2c_address (hexToInt '20') 7
+  i2cSet _sg2_i2c_address (hexToInt '24') id
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '79') (100 & (hexToInt 'FF'))
+}
+
+to 'Sengo2 record learning ID' id {
+  i2cSet _sg2_i2c_address (hexToInt '20') 5
+  i2cSet _sg2_i2c_address (hexToInt '24') id
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '79') (100 & (hexToInt 'FF'))
+}
+
+to 'Sengo2 reset' {
+  for i 11 {
+    i2cSet _sg2_i2c_address (hexToInt '20') i
+    i2cSet _sg2_i2c_address (hexToInt '21') 0
+    waitMillis 10
+  }
+  waitMillis 100
+}
+
+to 'Sengo2 set AprilTag type' type {
+  'Sengo2 reset'
+  i2cSet _sg2_i2c_address (hexToInt '20') 3
+  waitMillis 5
+  if (type == '16H5') {
+    i2cSet _sg2_i2c_address (hexToInt '22') 0
+  } (type == '25H9') {
+    i2cSet _sg2_i2c_address (hexToInt '22') 1
+  } (type == '36H11') {
+    i2cSet _sg2_i2c_address (hexToInt '22') 2
+  }
+  i2cSet _sg2_i2c_address (hexToInt '21') 1
+  waitMillis 5
+  _sg2_current_algo = 3
+}
+
+to 'Sengo2 set blob detect property' color w h {
+  i2cSet _sg2_i2c_address (hexToInt '20') 2
+  i2cSet _sg2_i2c_address (hexToInt '24') 1
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '75') (w & (hexToInt 'FF'))
+  i2cSet _sg2_i2c_address (hexToInt '77') (h & (hexToInt 'FF'))
+  i2cSet _sg2_i2c_address (hexToInt '79') (('[data:find]' color _sg2_color_classes) & (hexToInt 'FF'))
+}
+
+to 'Sengo2 set color recog area' x y w h {
+  i2cSet _sg2_i2c_address (hexToInt '20') 1
+  i2cSet _sg2_i2c_address (hexToInt '24') 1
+  waitMillis 5
+  i2cSet _sg2_i2c_address (hexToInt '71') (x & (hexToInt 'FF'))
+  i2cSet _sg2_i2c_address (hexToInt '73') (y & (hexToInt 'FF'))
+  i2cSet _sg2_i2c_address (hexToInt '75') (w & (hexToInt 'FF'))
+  i2cSet _sg2_i2c_address (hexToInt '77') (h & (hexToInt 'FF'))
+}
+
+to '_sg2_init' {
+  _sg2_i2c_address = 96
+  _sg2_algo_list = ('[data:makeList]' 'Color Recog' 'Blob Detect' 'AprilTag' 'Line Detect' 'Deep Learning' 'Card Recog' 'Face Recog' 'Obj20Class' 'QRcode' '' 'Motion Detect')
+  _sg2_color_classes = ('[data:makeList]' 'black' 'white' 'red' 'green' 'blue' 'yellow' 'unknown')
+  _sg2_card_classes = ('[data:makeList]' 'forward' 'turn_left' 'turn_right' 'turn_around' 'park' 'green_light' 'red_light' 'speed_40' 'speed_60' 'speed_80')
+  _sg2_20class_classes = ('[data:makeList]' 'airplane' 'bicycle' 'bird' 'boat' 'bottle' 'bus' 'car' 'cat' 'chair' 'cow' 'dinning_table' 'dog' 'horse' 'motorbike' 'person' 'pottedplant' 'sheep' 'sofa' 'train' 'tvmonitor')
+}
+
+to '_sg2_read_reg_byte' reg {
+  local 'LOW' (i2cGet _sg2_i2c_address (reg + 1))
+  local 'HIGH' (i2cGet _sg2_i2c_address reg)
+  local 'ret' ((HIGH << 4) | LOW)
+  return ret
+}
+
+to '_sg2_reset_current_algo' {
+  i2cSet _sg2_i2c_address (hexToInt '20') _sg2_current_algo
+  i2cSet _sg2_i2c_address (hexToInt '21') 0
+  waitMillis 5
+}
+
+to 'csg2_ToF connected' {
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  return ('VL53L0X connected')
+}
+
+to 'csg2_ToF distance' {
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  stopServo 22
+  digitalWriteOp 13 true
+  return ('VL53L0X distance (mm)')
+}
+
+to 'csg2_gripper close' {
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 28))
+}
+
+to 'csg2_gripper degree' degree {
+  stopServo 22
+  local 'hex' (7168 - ((degree * 2048) / 70))
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') (hex & (hexToInt 'FF')) (hex >> 8)))
+}
+
+to 'csg2_gripper open' {
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 20))
+}
+
+to 'csg2_gripper stop' {
+  '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 0))
+}
+
