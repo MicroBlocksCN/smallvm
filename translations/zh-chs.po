@@ -4512,8 +4512,24 @@ msgid "folder;microbit and Calliope"
 msgstr "microbit and Calliope"
 
 #. CoCube library block
-msgid "rotate _ at _ speed (0-50)"
-msgstr "向 _ 以 _ 速度 (0-50) 旋转"
+msgid "cocube;forward"
+msgstr "前"
+
+#. CoCube library block
+msgid "cocube;left"
+msgstr "左"
+
+#. CoCube library block
+msgid "cocube;right"
+msgstr "右"
+
+#. CoCube library block
+msgid "cocube;backward"
+msgstr "后"
+
+#. CoCube library block
+msgid "move _ at _ speed (0-50) for _ msecs"
+msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 毫秒"
 
 #. CoCube library block
 msgid "rotate _ at _ speed (0-50) for _ msecs"
@@ -4524,8 +4540,8 @@ msgid "move _ at _ speed (0-50)"
 msgstr "向 _ 以 _ 速度 (0-50) 移动"
 
 #. CoCube library block
-msgid "move _ at _ speed (0-50) for _ msecs"
-msgstr "向 _ 以 _ 速度 (0-50) 移动 _ 毫秒"
+msgid "rotate _ at _ speed (0-50)"
+msgstr "向 _ 以 _ 速度 (0-50) 旋转"
 
 #. CoCube library block
 msgid "set wheel left _ right _ (-50 to 50)"
@@ -4535,9 +4551,9 @@ msgstr "左轮以 _ 速度、右轮以 _ 速度移动"
 msgid "wheels stop"
 msgstr "电机停转"
 
-#. CoCube Module library block
-msgid "power on module"
-msgstr "开启外接模块电源"
+#. CoCube library block
+msgid "wheels break"
+msgstr "电机刹车"
 
 #. CoCube library block
 msgid "X position"
@@ -4562,6 +4578,10 @@ msgstr "向 _ 以 _ 速度 (0-50) 旋转 _ 度"
 #. CoCube library block
 msgid "rotate to angle _ at _ speed (0-50)"
 msgstr "转向角度 _ 速度 _ (0-50)"
+
+#. CoCube library block
+msgid "point towards X _ Y _ at _ speed (0-50)"
+msgstr "转向目标点 X _ Y _ 速度 _ (0-50)"
 
 #. CoCube library block
 msgid "move to X _ Y _ at _ speed (0-50)"
@@ -4592,69 +4612,244 @@ msgid "battery percentage"
 msgstr "电量百分比"
 
 #. CoCube Module library block
-msgid "gripper stop"
-msgstr "夹爪停止"
-
-#. CoCube Module library block
-msgid "gripper degrees _ (0 to 70)"
-msgstr "夹爪角度 _ (0 to 70)"
-
-#. CoCube Module library block
-msgid "attach NeoPixels"
-msgstr "连接 NeoPixels"
-
-#. CoCube Module library block
-msgid "ultrasonic distance (mm)"
-msgstr "超声波 距离(mm)"
-
-#. CoCube library block
-msgid "wheels break"
-msgstr "电机刹车"
-
-#. CoCube Module library block
-msgid "3D gesture read"
-msgstr "3D 手势传感器读取数据"
-
-#. CoCube Module library block
-msgid "3D gesture connected"
-msgstr "3D 手势传感器已连接"
-
-#. CoCube Module library block
-msgid "ToF connected"
-msgstr "ToF 已连接"
+msgid "gripper open"
+msgstr "夹爪张开"
 
 #. CoCube Module library block
 msgid "gripper close"
 msgstr "夹爪闭合"
 
 #. CoCube Module library block
-msgid "gripper open"
-msgstr "夹爪张开"
+msgid "gripper degrees _ (0 to 70)"
+msgstr "夹爪角度 _ (0 to 70)"
+
+#. CoCube Module library block
+msgid "gripper stop"
+msgstr "夹爪停止"
+
+#. CoCube Module library block
+msgid "attach NeoPixels"
+msgstr "连接 NeoPixels"
+
+#. CoCube Module library block
+msgid "ToF connected"
+msgstr "ToF 已连接"
 
 #. CoCube Module library block
 msgid "ToF distance (mm)"
 msgstr "ToF 距离(mm)"
 
+#. CoCube Module library block
+msgid "3D gesture connected"
+msgstr "3D 手势传感器已连接"
 
-#. CoCube library block
-msgid "point towards X _ Y _ at _ speed (0-50)"
-msgstr "转向目标点 X _ Y _ 速度 _ (0-50)"
+#. CoCube Module library block
+msgid "3D gesture read"
+msgstr "3D 手势传感器读取数据"
 
-#. CoCube library block
-msgid "cocube;forward"
-msgstr "前"
+#. CoCube Module library block
+msgid "power on module"
+msgstr "开启外接模块电源"
 
-#. CoCube library block
-msgid "cocube;left"
-msgstr "左"
+#. CoCube Module library block
+msgid "ultrasonic distance (mm)"
+msgstr "超声波 距离(mm)"
 
-#. CoCube library block
-msgid "cocube;right"
-msgstr "右"
+#. CoCube Sengo2 block
+msgid "Sengo2 init"
+msgstr "Sengo2 初始化"
 
-#. CoCube library block
-msgid "cocube;backward"
-msgstr "后"
+#. CoCube Sengo2 block
+msgid "Sengo2 change algorithm _"
+msgstr "Sengo2 设置算法为 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 reset"
+msgstr "Sengo2 重置算法"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr "Sengo2 设置颜色检测区域 x _ y _ 宽度 _ 高度 _ (0-100)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read color"
+msgstr "Sengo2 读取颜色"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get color _"
+msgstr "Sengo2 获取颜色分量 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set blob detect property color _ width _ height _"
+msgstr "Sengo2 设置色块检测颜色 _ 宽度 _ 高度 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read blob"
+msgstr "Sengo2 读取色块"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get blob _"
+msgstr "Sengo2 获取色块的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set AprilTag type _"
+msgstr "Sengo2 设置AprilTag类型 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read AprilTag"
+msgstr "Sengo2 读取AprilTag"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get AprilTag _"
+msgstr "Sengo2 获取AprilTag的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get line _"
+msgstr "Sengo2 获取线条的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 record learning ID _ (1-15)"
+msgstr "Sengo2 记录学习ID _ (0-15)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 delete learning ID _ (1-15)"
+msgstr "Sengo2 删除学习ID _ (0-15)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get learning ID"
+msgstr "Sengo2 获取学习ID"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read card"
+msgstr "Sengo2 读取卡片"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get card _"
+msgstr "Sengo2 获取卡片的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 record face ID _ (1-10)"
+msgstr "Sengo2 记录人脸ID _ (1-10)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 delete face ID _ (1-10)"
+msgstr "Sengo2 删除人脸ID _ (1-10)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get face ID"
+msgstr "Sengo2 获取人脸ID"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read Obj20Class"
+msgstr "Sengo2 读取20种分类"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get Obj20Class _"
+msgstr "Sengo2 获取20种分类的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read QRcode"
+msgstr "Sengo2 读取二维码"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get QRcode _"
+msgstr "Sengo2 获取二维码的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get motion _"
+msgstr "Sengo2 获取运动物体的 _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper open"
+msgstr "Sengo2+夹爪张开"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper close"
+msgstr "Sengo2+夹爪闭合"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper degrees _ (0 to 70)"
+msgstr "Sengo2+夹爪角度 _ (0-70)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper stop"
+msgstr "Sengo2+夹爪停止"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+ToF connected"
+msgstr "Sengo2+ToF 已连接"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+ToF distance (mm)"
+msgstr "Sengo2+ToF 距离(mm)"
+
+#. CoCube Sengo2 block
+msgid "Color Recog"
+msgstr "颜色识别"
+
+#. CoCube Sengo2 block
+msgid "Blob Detect"
+msgstr "色块检测"
+
+#. CoCube Sengo2 block
+msgid "AprilTag"
+msgstr "AprilTag标签识别"
+
+#. CoCube Sengo2 block
+msgid "Line Detect"
+msgstr "线条检测"
+
+#. CoCube Sengo2 block
+msgid "Deep Learning"
+msgstr "深度学习"
+
+#. CoCube Sengo2 block
+msgid "Card Recog"
+msgstr "卡片识别"
+
+#. CoCube Sengo2 block
+msgid "Face Recog"
+msgstr "人脸识别"
+
+#. CoCube Sengo2 block
+msgid "Obj20Class"
+msgstr "20类物体识别"
+
+#. CoCube Sengo2 block
+msgid "QRcode"
+msgstr "二维码识别"
+
+#. CoCube Sengo2 block
+msgid "Motion Detect"
+msgstr "运动物体检测"
+
+#. CoCube Sengo2 block
+msgid "degree"
+msgstr "角度"
+
+#. CoCube Sengo2 block
+msgid "black"
+msgstr "黑色"
+
+#. CoCube Sengo2 block
+msgid "white"
+msgstr "白色"
+
+#. CoCube Sengo2 block
+msgid "red"
+msgstr "红色"
+
+#. CoCube Sengo2 block
+msgid "green"
+msgstr "绿色"
+
+#. CoCube Sengo2 block
+msgid "blue"
+msgstr "蓝色"
+
+#. CoCube Sengo2 block
+msgid "yellow"
+msgstr "黄色"
 
 #. Settings menu option
 msgid "inform of new versions"
