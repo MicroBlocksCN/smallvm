@@ -1,7 +1,7 @@
 module 'CoCube Module'
 author 'Liang Shuai'
 version 1 9 
-depends Servo NeoPixel 'Robots/CoCube' 'Sensing/Distance (VL53L0X)' 'Sensing/Gesture (PAJ7620)' 
+depends _Servo NeoPixel 'Robots/CoCube' '_Sensing/Distance (VL53L0X)' '_Sensing/Gesture (PAJ7620)' 
 description 'External modules of CoCube.
 
 CoCube is a tabletop modular multi-robot platform for education and research.
