@@ -4709,11 +4709,11 @@ msgstr "Sengo2 获取线条的 _"
 
 #. CoCube Sengo2 block
 msgid "Sengo2 record learning ID _ (1-15)"
-msgstr "Sengo2 记录学习ID _ (0-15)"
+msgstr "Sengo2 记录学习ID _ (1-15)"
 
 #. CoCube Sengo2 block
 msgid "Sengo2 delete learning ID _ (1-15)"
-msgstr "Sengo2 删除学习ID _ (0-15)"
+msgstr "Sengo2 删除学习ID _ (1-15)"
 
 #. CoCube Sengo2 block
 msgid "Sengo2 get learning ID"
@@ -4850,6 +4850,90 @@ msgstr "蓝色"
 #. CoCube Sengo2 block
 msgid "yellow"
 msgstr "黄色"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Move CoCube at unit/s speed for milliseconds."
+msgstr "控制CoCube移动一段时间"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Rotate CoCube at unit/s speed for milliseconds."
+msgstr "控制CoCube旋转一段时间"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Move CoCube at unit/s speed."
+msgstr "控制CoCube以单位/秒的速度移动"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Rotate CoCube at unit/s speed."
+msgstr "控制CoCube以单位/秒的速度旋转"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Control the speed of the left and right wheels of CoCube separately to achieve a circular trajectory."
+msgstr "分别控制左右轮速度，以实现曲线轨迹"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Control CoCube stop."
+msgstr "控制CoCube停止"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Control CoCube stop immediately."
+msgstr "控制CoCube刹车"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns the X coordinate of CoCube."
+msgstr "返回CoCube的X坐标"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns the Y coordinate of CoCube."
+msgstr "返回CoCube的Y坐标"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns the rotation angle of CoCube (0~359°)."
+msgstr "返回CoCube的旋转角度，沿着Y方向是0度，逆时针旋转角度增大 (0~359°)"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Move CoCube at unit/s speed for a specific distance."
+msgstr "控制CoCube移动特定距离"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Rotate CoCube at unit/s speed for a specific degree."
+msgstr "控制CoCube旋转特定角度"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Turn to a specific angle."
+msgstr "转向特定角度"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Point to a specific target."
+msgstr "旋转朝向目标点"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Move to a specific target."
+msgstr "移动到目标点"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns (-o) if CoCube on CoMaps or CoTags."
+msgstr "如果CoCube在CoMaps或CoTags上时，返回 (-o) "
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns the Index value of CoTags."
+msgstr "返回CoTags的ID值"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Display an ArUco Marker on the TFT screen."
+msgstr "在TFT上绘制ArUco标签"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Display an AprilTag Marker on the TFT screen."
+msgstr "在TFT上绘制AprilTag标签"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Turn on/off the TFT backlight."
+msgstr "开启/关闭TFT背光灯"
+
+#. Tip Bar text for a block in CoCube library
+msgid "Returns the battery percentage of CoCube."
+msgstr "返回CoCube电池电量百分比"
 
 #. Settings menu option
 msgid "inform of new versions"
