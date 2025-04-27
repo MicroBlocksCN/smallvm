@@ -6,6 +6,7 @@ description 'External modules of CoCube.
 
 CoCube is a tabletop modular multi-robot platform for education and research.
 https://www.cocubefun.com/
+https://wiki.cocube.fun/
 sliang23@m.fudan.edu.cn
 
 Note: All functions start by turning on pin 13 to power the module.

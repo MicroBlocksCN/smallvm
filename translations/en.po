@@ -4790,6 +4790,202 @@ msgstr "power on module"
 msgid "ultrasonic distance (mm)"
 msgstr "ultrasonic distance (mm)"
 
+#. CoCube Sengo2 block
+msgid "Sengo2 init"
+msgstr "Sengo2 init"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 change algorithm _"
+msgstr "Sengo2 change algorithm _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 reset"
+msgstr "Sengo2 reset"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr "Sengo2 set color recog area x _ y _ width _ height _ (0-100)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read color"
+msgstr "Sengo2 read color"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get color _"
+msgstr "Sengo2 get color _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set blob detect property color _ width _ height _"
+msgstr "Sengo2 set blob detect property color _ width _ height _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read blob"
+msgstr "Sengo2 read blob"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get blob _"
+msgstr "Sengo2 get blob _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 set AprilTag type _"
+msgstr "Sengo2 set AprilTag type _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read AprilTag"
+msgstr "Sengo2 read AprilTag"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get AprilTag _"
+msgstr "Sengo2 get AprilTag _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get line _"
+msgstr "Sengo2 get line _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 record learning ID _ (1-15)"
+msgstr "Sengo2 record learning ID _ (1-15)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 delete learning ID _ (1-15)"
+msgstr "Sengo2 delete learning ID _ (1-15)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get learning ID"
+msgstr "Sengo2 get learning ID"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read card"
+msgstr "Sengo2 read card"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get card _"
+msgstr "Sengo2 get card _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 record face ID _ (1-10)"
+msgstr "Sengo2 record face ID _ (1-10)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 delete face ID _ (1-10)"
+msgstr "Sengo2 delete face ID _ (1-10)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get face ID"
+msgstr "Sengo2 get face ID"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read Obj20Class"
+msgstr "Sengo2 read Obj20Class"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get Obj20Class _"
+msgstr "Sengo2 get Obj20Class _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 read QRcode"
+msgstr "Sengo2 read QRcode"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get QRcode _"
+msgstr "Sengo2 get QRcode _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2 get motion _"
+msgstr "Sengo2 get motion _"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper open"
+msgstr "Sengo2+gripper open"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper close"
+msgstr "Sengo2+gripper close"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper degrees _ (0 to 70)"
+msgstr "Sengo2+gripper degrees _ (0 to 70)"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+gripper stop"
+msgstr "Sengo2+gripper stop"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+ToF connected"
+msgstr "Sengo2+ToF connected"
+
+#. CoCube Sengo2 block
+msgid "Sengo2+ToF distance (mm)"
+msgstr "Sengo2+ToF distance (mm)"
+
+#. CoCube Sengo2 block
+msgid "Color Recog"
+msgstr "Color Recog"
+
+#. CoCube Sengo2 block
+msgid "Blob Detect"
+msgstr "Blob Detect"
+
+#. CoCube Sengo2 block
+msgid "AprilTag"
+msgstr "AprilTag"
+
+#. CoCube Sengo2 block
+msgid "Line Detect"
+msgstr "Line Detect"
+
+#. CoCube Sengo2 block
+msgid "Deep Learning"
+msgstr "Deep Learning"
+
+#. CoCube Sengo2 block
+msgid "Card Recog"
+msgstr "Card Recog"
+
+#. CoCube Sengo2 block
+msgid "Face Recog"
+msgstr "Face Recog"
+
+#. CoCube Sengo2 block
+msgid "Obj20Class"
+msgstr "Obj20Class"
+
+#. CoCube Sengo2 block
+msgid "QRcode"
+msgstr "QRcode"
+
+#. CoCube Sengo2 block
+msgid "Motion Detect"
+msgstr "Motion Detect"
+
+#. CoCube Sengo2 block
+msgid "degree"
+msgstr "degree"
+
+#. CoCube Sengo2 block
+msgid "black"
+msgstr "black"
+
+#. CoCube Sengo2 block
+msgid "white"
+msgstr "white"
+
+#. CoCube Sengo2 block
+msgid "red"
+msgstr "red"
+
+#. CoCube Sengo2 block
+msgid "green"
+msgstr "green"
+
+#. CoCube Sengo2 block
+msgid "blue"
+msgstr "blue"
+
+#. CoCube Sengo2 block
+msgid "yellow"
+msgstr "yellow"
+
 #. Calliope NeoPixel library block
 msgid "Calliope set all NeoPixels to _"
 msgstr "Calliope set all NeoPixels to _"
