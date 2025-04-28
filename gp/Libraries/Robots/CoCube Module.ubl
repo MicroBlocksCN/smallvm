@@ -1,6 +1,6 @@
 module 'CoCube Module'
 author 'Liang Shuai'
-version 1 9 
+version 1 10 
 depends _Servo NeoPixel 'Robots/CoCube' '_Sensing/Distance (VL53L0X)' '_Sensing/Gesture (PAJ7620)' 
 description 'External modules of CoCube.
 
@@ -11,7 +11,7 @@ sliang23@m.fudan.edu.cn
 
 Note: All functions start by turning on pin 13 to power the module.
 The power pin is off by default and is also turned off by the IDE stop button.'
-variables _cc_cam_init_flag _cc_asr_snc 
+variables _cc_cam_init_flag 
 
   spec ' ' 'ccmodule_gripper open' 'gripper open'
   spec ' ' 'ccmodule_gripper close' 'gripper close'
@@ -31,72 +31,27 @@ variables _cc_cam_init_flag _cc_asr_snc
   spec ' ' 'ccmodule_ASR play command' 'ASR play command _' 'num' 19
   space
   spec ' ' 'ccmodule_power on module' 'power on module'
-  space
-  spec ' ' '_ccmodule_check_camera' 'check_camera'
-
-to '_ccmodule_check_camera' {
-  if (_cc_cam_init_flag == 1) {
-    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
-  } else {
-    stopServo 22
-    digitalWriteOp 13 true
-  }
-}
-
-to 'ccmodule_ASR get command' {
-  '_ccmodule_check_camera'
-  waitMillis 30
-  '[sensors:i2cWrite]' (hexToInt '64') (hexToInt '2') false
-  local 'data' (newList 2)
-  '[sensors:i2cRead]' (hexToInt '64') data
-  local 'new_asr_snc' (at 1 data)
-  if (_cc_asr_snc != new_asr_snc) {
-    _cc_asr_snc = new_asr_snc
-    return (at 2 data)
-  } else {
-    return 0
-  }
-}
-
-to 'ccmodule_ASR play command' id {
-  '_ccmodule_check_camera'
-  '[sensors:i2cWrite]' (hexToInt '64') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') id (id + 3) (hexToInt '5A')))
-}
-
-to 'ccmodule_DLight level' {
-  if (_cc_cam_init_flag == 1) {
-    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
-  } else {
-    stopServo 22
-    digitalWriteOp 13 true
-  }
-  i2cSet (hexToInt '23') 23 (hexToInt '21')
-  read = (newList 2)
-  '[sensors:i2cRead]' (hexToInt '23') read
-  return (((at 1 read) << 8) | (at 2 read))
-}
 
 to 'ccmodule_ToF connected' {
-  '_ccmodule_check_camera'
-  return ((i2cGet 41 (hexToInt 'C0')) == (hexToInt 'EE'))
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
+  return ('VL53L0X connected')
 }
 
 to 'ccmodule_ToF distance' {
-  '_ccmodule_check_camera'
-  i2cSet 41 0 1
-  waitMillis 70
-  if (((i2cGet 41 (hexToInt '14')) & 1) == 1) {
-    '[sensors:i2cWrite]' 41 ('[data:makeList]' (hexToInt '14'))
-    local 'buf' (newList 12)
-    '[sensors:i2cRead]' 41 buf
-    if ((at 1 buf) == 95) {
-      return (((at 11 buf) << 8) | (at 12 buf))
-    } else {
-      return -1
-    }
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+    stopServo 22
+    digitalWriteOp 13 true
   } else {
-    return -2
+    stopServo 22
+    digitalWriteOp 13 true
   }
+  return ('VL53L0X distance (mm)')
 }
 
 to 'ccmodule_attach NeoPixels' {
@@ -113,6 +68,26 @@ to 'ccmodule_attach NeoPixels' {
 to 'ccmodule_clear NeoPixels' {
   digitalWriteOp 13 true
   clearNeoPixels
+}
+
+to 'ccmodule_gesture connected' {
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
+  return ('paj7620 connected')
+}
+
+to 'ccmodule_gesture read' {
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
+  return ('paj7620 read')
 }
 
 to 'ccmodule_gripper close' {
