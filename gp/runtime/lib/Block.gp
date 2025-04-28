@@ -1214,7 +1214,7 @@ method copyToClipboard Block {
 
 method copyToClipboardAsURL Block {
 	setClipboard (join
-		'https://microblocks.fun/run/microblocks.html#scripts='
+		'https://microblocksfun.cn/run/microblocks.html#scripts='
 		(urlEncode (scriptText this) true)
 	)
 }
