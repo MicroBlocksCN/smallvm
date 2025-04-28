@@ -1,6 +1,6 @@
 module 'CoCube Sengo2' Input
 author 'You Zhongrui, Liang Shuai'
-version 1 0 
+version 1 1 
 depends 'Robots/CoCube' 
 tags 'cocube robot' 
 choices sg2_result_Menu x y w h 
@@ -17,8 +17,9 @@ https://wiki.cocube.fun/
 sliang23@m.fudan.edu.cn
 
 v1.0 Basic functions 2025.04.27
+v1.1 Delete Sengo2 + CoCube Module function 2025.04.28
 '
-variables _sg2_i2c_address _sg2_algo_list _sg2_current_algo _sg2_init_flag _sg2_color_classes _sg2_card_classes _sg2_20class_classes  
+variables _sg2_i2c_address _sg2_algo_list _sg2_current_algo _cc_cam_init_flag _sg2_color_classes _sg2_card_classes _sg2_20class_classes 
 
   spec ' ' 'Sengo2 init' 'Sengo2 init'
   spec ' ' 'Sengo2 change algorithm' 'Sengo2 change algorithm _' 'menu.sg2_algo_Menu' 'Color Recog'
@@ -57,18 +58,9 @@ variables _sg2_i2c_address _sg2_algo_list _sg2_current_algo _sg2_init_flag _sg2_
   space
   spec 'r' 'Sengo2 get motion' 'Sengo2 get motion _' 'menu.sg2_result_Menu' 'x'
   space
-  spec ' ' 'csg2_gripper open' 'Sengo2+gripper open'
-  spec ' ' 'csg2_gripper close' 'Sengo2+gripper close'
-  spec ' ' 'csg2_gripper degree' 'Sengo2+gripper degrees _ (0 to 70)' 'num' 0
-  spec ' ' 'csg2_gripper stop' 'Sengo2+gripper stop'
-  space
-  spec 'r' 'csg2_ToF connected' 'Sengo2+ToF connected'
-  spec 'r' 'csg2_ToF distance' 'Sengo2+ToF distance (mm)'
-  space
   spec ' ' '_sg2_init' '_sg2_init'
   spec 'r' '_sg2_read_reg_byte' '_sg2_read_reg_byte _' 'num' 0
   spec ' ' '_sg2_reset_current_algo' '_sg2_reset_current_algo'
-
 
 to 'Sengo2 QRcode' {
   if ((i2cGet _sg2_i2c_address (hexToInt '34')) != 0) {
@@ -89,7 +81,7 @@ to 'Sengo2 QRcode' {
 }
 
 to 'Sengo2 change algorithm' mode {
-  if (_sg2_init_flag == 0) {'Sengo2 init'}
+  if (_cc_cam_init_flag == 0) {'Sengo2 init'}
   '_sg2_reset_current_algo'
   _sg2_current_algo = ('[data:find]' mode _sg2_algo_list)
   i2cSet _sg2_i2c_address (hexToInt '20') _sg2_current_algo
@@ -288,16 +280,11 @@ to 'Sengo2 get motion' tag {
 }
 
 to 'Sengo2 init' {
+  stopServo 22
   digitalWriteOp 13 true
-  if (_sg2_init_flag != 1) {
-    waitMillis 3500
-  }
   '_sg2_init'
-  if ((i2cGet _sg2_i2c_address 1) == 7) {
-    i2cSet _sg2_i2c_address (hexToInt '04') 0
-    _sg2_init_flag = 1
-  } else {
-    _sg2_init_flag = 0
+  repeatUntil ((i2cGet _sg2_i2c_address 1) == 7) {
+    _cc_cam_init_flag = 1
   }
 }
 
