@@ -4991,30 +4991,6 @@ msgid "Sengo2 get motion _"
 msgstr "Sengo2 get motion _"
 
 #. CoCube Sengo2 block
-msgid "Sengo2+gripper open"
-msgstr "Sengo2+gripper open"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper close"
-msgstr "Sengo2+gripper close"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper degrees _ (0 to 70)"
-msgstr "Sengo2+gripper degrees _ (0 to 70)"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper stop"
-msgstr "Sengo2+gripper stop"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+ToF connected"
-msgstr "Sengo2+ToF connected"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+ToF distance (mm)"
-msgstr "Sengo2+ToF distance (mm)"
-
-#. CoCube Sengo2 block
 msgid "Color Recog"
 msgstr "Color Recog"
 
