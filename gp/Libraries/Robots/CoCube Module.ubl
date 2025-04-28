@@ -1,6 +1,6 @@
 module 'CoCube Module'
 author 'Liang Shuai'
-version 1 9 
+version 1 10 
 depends _Servo NeoPixel 'Robots/CoCube' '_Sensing/Distance (VL53L0X)' '_Sensing/Gesture (PAJ7620)' 
 description 'External modules of CoCube.
 
@@ -11,11 +11,12 @@ sliang23@m.fudan.edu.cn
 
 Note: All functions start by turning on pin 13 to power the module.
 The power pin is off by default and is also turned off by the IDE stop button.'
-variables ccmodule_lastDistance 
+variables _cc_cam_init_flag 
 
   spec ' ' 'ccmodule_gripper open' 'gripper open'
   spec ' ' 'ccmodule_gripper close' 'gripper close'
   spec ' ' 'ccmodule_gripper degree' 'gripper degrees _ (0 to 70)' 'num' 0
+  spec ' ' 'ccmodule_gripper stop' 'gripper stop'
   space
   spec ' ' 'ccmodule_attach NeoPixels' 'attach NeoPixels'
   spec ' ' 'ccmodule_set all NeoPixels color' 'set all NeoPixels color _' 'color'
@@ -28,61 +29,38 @@ variables ccmodule_lastDistance
   spec 'r' 'ccmodule_gesture read' '3D gesture read'
   space
   spec ' ' 'ccmodule_power on module' 'power on module'
-  space
-  spec 'r' '_ccmodule_ultrasonic distance' 'ultrasonic distance (mm)'
-
-to '_ccmodule_ultrasonic distance' {
-  local 'trig' 21
-  local 'echo' 22
-  comment 'Reset pulse capture system.'
-  local 'ignore' ('[sensors:captureEnd]')
-  digitalWriteOp trig false
-  waitMicros 2
-  digitalWriteOp trig true
-  waitMicros 50
-  digitalWriteOp trig false
-  comment 'Wait for a low-to-high edge on the echo pin.
-Timeout if an edge is not detected. '
-  local 'start' (millisOp)
-  waitUntil (or (not (digitalReadOp echo)) ((millisSince start) > 2))
-  waitUntil (or (digitalReadOp echo) ((millisSince start) > 2))
-  if ((millisSince start) > 2) {
-    comment 'Distance sensor not ready; return the last distance reading'
-    return ccmodule_lastDistance
-  }
-  comment 'Starting pulse was sent. Measure time until echo is detected.'
-  '[sensors:captureStart]' echo
-  start = (millisOp)
-  waitUntil (or (('[sensors:captureCount]') > 0) ((millisSince start) > 25))
-  comment 'Default value of 23320 usecs reports 4000 mm
-when no echo is detected.'
-  local 'echoMicrosecs' 23320
-  if (('[sensors:captureCount]') > 0) {
-    echoMicrosecs = (absoluteValue (at 1 ('[sensors:captureEnd]')))
-  }
-  ccmodule_lastDistance = ((100 * echoMicrosecs) / 583)
-  comment 'Leave some time for reverberations to die away.'
-  waitMillis 10
-  return ccmodule_lastDistance
-}
 
 to 'ccmodule_ToF connected' {
-  stopServo 22
-  digitalWriteOp 13 true
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
   return ('VL53L0X connected')
 }
 
 to 'ccmodule_ToF distance' {
-  stopServo 22
-  digitalWriteOp 13 true
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+    stopServo 22
+    digitalWriteOp 13 true
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
   return ('VL53L0X distance (mm)')
 }
 
 to 'ccmodule_attach NeoPixels' {
-  stopServo 22
-  digitalWriteOp 13 true
-  waitMillis 10
-  neoPixelAttach 48 22
+  if (_cc_cam_init_flag == 1) {
+    sayIt 'AI camera doesn''t support this module. Please connect directly.'
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+    waitMillis 10
+    neoPixelAttach 48 22
+  }
 }
 
 to 'ccmodule_clear NeoPixels' {
@@ -91,37 +69,68 @@ to 'ccmodule_clear NeoPixels' {
 }
 
 to 'ccmodule_gesture connected' {
-  stopServo 22
-  digitalWriteOp 13 true
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
   return ('paj7620 connected')
 }
 
 to 'ccmodule_gesture read' {
-  stopServo 22
-  digitalWriteOp 13 true
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
   return ('paj7620 read')
 }
 
 to 'ccmodule_gripper close' {
-  digitalWriteOp 13 true
-  setServoAngle 22 -70
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 28))
+  } else {
+    digitalWriteOp 13 true
+    setServoAngle 22 -70
+  }
 }
 
 to 'ccmodule_gripper degree' degree {
-  digitalWriteOp 13 true
-  local 'var' (degree - 70)
-  if (var < -70) {
-    setServoAngle 22 -70
-  } (var > 0) {
-    setServoAngle 22 0
+  if (_cc_cam_init_flag == 1) {
+    stopServo 22
+    local 'hex' (7168 - ((degree * 2048) / 70))
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') (hex & (hexToInt 'FF')) (hex >> 8)))
   } else {
-    setServoAngle 22 var
+    digitalWriteOp 13 true
+    local 'var' (degree - 70)
+    if (var < -70) {
+      setServoAngle 22 -70
+    } (var > 0) {
+      setServoAngle 22 0
+    } else {
+      setServoAngle 22 var
+    }
   }
 }
 
 to 'ccmodule_gripper open' {
-  digitalWriteOp 13 true
-  setServoAngle 22 0
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 20))
+  } else {
+    digitalWriteOp 13 true
+    setServoAngle 22 0
+  }
+}
+
+to 'ccmodule_gripper stop' {
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '2') 0 0))
+  } else {
+    digitalWriteOp 13 true
+    stopServo 22
+  }
 }
 
 to 'ccmodule_power on module' {
