@@ -4757,30 +4757,6 @@ msgid "Sengo2 get motion _"
 msgstr "Sengo2 获取运动物体的 _"
 
 #. CoCube Sengo2 block
-msgid "Sengo2+gripper open"
-msgstr "Sengo2+夹爪张开"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper close"
-msgstr "Sengo2+夹爪闭合"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper degrees _ (0 to 70)"
-msgstr "Sengo2+夹爪角度 _ (0-70)"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+gripper stop"
-msgstr "Sengo2+夹爪停止"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+ToF connected"
-msgstr "Sengo2+ToF 已连接"
-
-#. CoCube Sengo2 block
-msgid "Sengo2+ToF distance (mm)"
-msgstr "Sengo2+ToF 距离(mm)"
-
-#. CoCube Sengo2 block
 msgid "Color Recog"
 msgstr "颜色识别"
 
