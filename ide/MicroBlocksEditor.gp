@@ -429,9 +429,9 @@ method urlPrefix MicroBlocksEditor {
 	}
 
 	// stand-alone app
-	urlPrefix = 'https://microblocks.fun/run/microblocks.html'
+	urlPrefix = 'https://microblocksfun.cn/run/microblocks.html'
 	if (isPilot this) {
-		urlPrefix = 'https://microblocks.fun/run-pilot/microblocks.html'
+		urlPrefix = 'https://microblocksfun.cn/dev/microblocks.html'
 	}
 	return urlPrefix
 }
