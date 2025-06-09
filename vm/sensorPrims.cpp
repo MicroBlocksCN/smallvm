@@ -1742,43 +1742,79 @@ static void setAccelRange(int range) {
 	return;
 }
 
-#elif defined(ARDUINO_Labplus_mPython) //not finish yet
-static uint8 accelData[6];
+#elif defined(ARDUINO_Labplus_mPython) 
 
-#if defined(MATRIXBIT) //QMI8658
-#define QMI8658_I2C_ADDR 107
+typedef enum {
+	accel_unknown = -1,
+	accel_none = 0,
+	accel_QMI8658 = 1,
+	accel_MSA300 = 2,
+} AccelerometerType_t;
+
+static AccelerometerType_t accelType = accel_unknown;
+
+static uint8 accelData[6];
+#define MSA300_I2C_ADDR 38
+#define QMI8658_ADDR 107
+#define QMI8658_CTRL2 3
+#define QMI8658_CTRL3 4
+#define QMI8658_CTRL7 8
+#define QMI8658_TEMP 51
+#define QMI8658_ACCEL_XOUT 53
+
 
 static void startAccelerometer() {
-	writeI2CReg(QMI8658_I2C_ADDR, 0x60, 0x01);
-	delayMicroseconds(20);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x02, 0x60);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x08, 0x03);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x03, 0x1c);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x04, 0x40);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x06, 0x55);
-	readI2CReg(QMI8658_I2C_ADDR, 0x00);
-	writeI2CReg(QMI8658_I2C_ADDR, 0x03, (readI2CReg(QMI8658_I2C_ADDR, 0x03) & 0x8f));
-	delay(100);
-	accelStarted = true;
+	if (!wireStarted) startWire();
+	if (!wireStarted) return;
+	if (readI2CReg(QMI8658_ADDR, 0) == 5) {
+		accelType = accel_QMI8658;
+		writeI2CReg(QMI8658_ADDR, QMI8658_CTRL2, (0 << 4) | 3);	// accel range +/- 2G, ODR = 1000
+		writeI2CReg(QMI8658_ADDR, QMI8658_CTRL3, (5 << 4) | 3);	// gyro range = 512 deg/sec, ODR = 1000
+		writeI2CReg(QMI8658_ADDR, QMI8658_CTRL7, 3);	// enable accel + gyro
+		taskSleep(150); // wait for accelerometer to start up
+		accelStarted = true;
+	} else {
+		accelType = accel_MSA300;
+		writeI2CReg(MSA300_I2C_ADDR, 0x0F, 0x08);
+		writeI2CReg(MSA300_I2C_ADDR, 0x11, 0x00);
+		taskSleep(150);
+		accelStarted = true;
+	}
 }
 static void accelreadData() {
 	if (!accelStarted) {
 		startAccelerometer();
 	}
-	// Request accelerometer data
-	Wire.beginTransmission(QMI8658_I2C_ADDR);
-	Wire.write(0x35);
-	Wire.endTransmission();
+	if (accelType == accel_QMI8658) {
+			// Request accelerometer data
+		Wire.beginTransmission(QMI8658_ADDR);
+		Wire.write(0x35);
+		Wire.endTransmission();
 
-	// Read data
-	int count = sizeof(accelData);
-	Wire.requestFrom(QMI8658_I2C_ADDR, count);
+		// Read data
+		int count = sizeof(accelData);
+		Wire.requestFrom(QMI8658_ADDR, count);
 
-	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) break; /* no more data */;
-		accelData[i] = Wire.read();
+		for (int i = 0; i < count; i++) {
+			if (!Wire.available()) break; /* no more data */;
+			accelData[i] = Wire.read();
+		}
+	} 
+	if (accelType == accel_MSA300) {
+		// Request accelerometer data
+		Wire.beginTransmission(MSA300_I2C_ADDR);
+		Wire.write(0x02);
+		Wire.endTransmission();
+
+		// Read data
+		int count = sizeof(accelData);
+		Wire.requestFrom(MSA300_I2C_ADDR, count);
+
+		for (int i = 0; i < count; i++) {
+			if (!Wire.available()) break; /* no more data */;
+			accelData[i] = Wire.read();
+		}
 	}
-
 }
 
 static int readAcceleration(int registerID) {
@@ -1792,67 +1828,46 @@ static int readAcceleration(int registerID) {
 	return (100 * val) >> 14;
 }
 
-#else //MSA300
-#define MSA300_I2C_ADDR 38
-static void startAccelerometer() {
-	writeI2CReg(MSA300_I2C_ADDR, 0x0F, 0x08);
-	writeI2CReg(MSA300_I2C_ADDR, 0x11, 0x00);
-	delay(100);
-	accelStarted = true;
-}
-
-static void accelreadData() {
+static int readTemperature() {
 	if (!accelStarted) {
 		startAccelerometer();
 	}
 
-	// Request accelerometer data
-	Wire.beginTransmission(MSA300_I2C_ADDR);
-	Wire.write(0x02);
-	Wire.endTransmission();
-
-	// Read data
-	int count = sizeof(accelData);
-	Wire.requestFrom(MSA300_I2C_ADDR, count);
-
-	for (int i = 0; i < count; i++) {
-		if (!Wire.available()) break; /* no more data */;
-		accelData[i] = Wire.read();
+	if (accelType == accel_QMI8658) {
+		// Read temperature
+		Wire.beginTransmission(QMI8658_ADDR);
+		Wire.write(QMI8658_TEMP);
+		Wire.endTransmission();
+		Wire.requestFrom(QMI8658_ADDR, 2);
+		int temp = Wire.available() ? Wire.read() : 0;
+		temp <<= 8;
+		temp |= Wire.available() ? Wire.read() : 0;
+		return (temp >> 4) - 50; // convert to Celsius
+	} else if (accelType == accel_MSA300) {
+		return 0; // MSA300 does not support temperature reading
 	}
-
-}
-
-#if defined(QIANKUN)
-static int readAcceleration(int registerID) {
-	accelreadData();
-
-	int val = 0;
-	if (1 == registerID) val =  fix16bitSign((accelData[3] << 8) | accelData[2]); // x-axis
-	if (3 == registerID) val =  - fix16bitSign((accelData[1] << 8) | accelData[0]); // y-axis
-	if (5 == registerID) val =  - fix16bitSign((accelData[5] << 8) | accelData[4]); // z-axis
-
-	return (100 * val) >> 14;
-}
-
-#else
-static int readAcceleration(int registerID) {
-	accelreadData();
-
-	int val = 0;
-	if (1 == registerID) val =  - fix16bitSign((accelData[3] << 8) | accelData[2]); // x-axis
-	if (3 == registerID) val =  fix16bitSign((accelData[1] << 8) | accelData[0]); // y-axis
-	if (5 == registerID) val =  - fix16bitSign((accelData[5] << 8) | accelData[4]); // z-axis
-
-	return (100 * val) >> 14;
-}
-#endif
-
-#endif
-
-static int readTemperature() {
 	return 0;
 }
+
 static void setAccelRange(int range) {
+	if (!accelStarted) {
+		startAccelerometer();
+	}
+	if (accelType == accel_QMI8658) {
+		// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+		// See QMI8658 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+
+		if ((range < 0) || (range > 3)) return; // out of range
+		writeI2CReg(QMI8658_ADDR, QMI8658_CTRL2, (range << 4) | 3); // set range and ODR
+	} 
+	if (accelType == accel_MSA300) {
+		// MSA300 supports only +/- 2g, so no need to set range
+		// but we can set the ODR (Output Data Rate)
+		if (range < 0 || range > 3) return; // out of range
+		uint8_t odr = (range == 0) ? 0x00 : (range == 1) ? 0x01 : (range == 2) ? 0x02 : 0x03;
+		writeI2CReg(MSA300_I2C_ADDR, 0x10, odr); // set ODR
+	}
+
 	return;
 }
 
