@@ -1,11 +1,12 @@
 module SHT30
 author Patch
-version 1 0
-description 'read temperature and humidity data from BTC Standing Base for M5 Core with SHT30'
-variables '_SHT30 data'
+version 2 0
+description 'read temperature and humidity data from SHT30/STH40'
+variables '_SHT30 data' '_SHT40 data'
 
   spec 'r' 'SHT30 humidity' 'SHT30 humidity'
   spec 'r' 'SHT30 temperature' 'SHT30 temperature'
+  spec 'r' 'SHT40' 'SHT40'
   spec ' ' '_SHT30 read data' '_SHT30 read data'
 
 to 'SHT30 humidity' {
@@ -26,4 +27,15 @@ to '_SHT30 read data' {
   waitMillis 100
   comment 'Read all data into _SHT30 data'
   '[sensors:i2cRead]' (hexToInt '44') (v '_SHT30 data')
+}
+
+to SHT40 {
+  comment 'SHT40默认地址 0x44，不加热高精度读取指令是 0xFD'
+  '[sensors:i2cWrite]' (hexToInt '44') ('[data:makeList]' (hexToInt 'FD'))
+  '_SHT40 data' = (newList 6)
+  waitMillis 100
+  comment 'Read all data into _SHT40 data'
+  '[sensors:i2cRead]' (hexToInt '44') (v '_SHT40 data')
+  comment '返回列表第一项是温度，第二项湿度。返回数据放大了100倍'
+  return ('[data:makeList]' ((((((at 1 (v '_SHT40 data')) * 256) + (at 2 (v '_SHT40 data'))) * 17500) / 65535) - 4500) ((((((at 4 (v '_SHT40 data')) * 256) + (at 5 (v '_SHT40 data'))) * 12500) / 65535) - 600))
 }
