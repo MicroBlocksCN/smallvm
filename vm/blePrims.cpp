@@ -730,18 +730,24 @@ static OBJ primStartBLEKeyboard(int argCount, OBJ *args) {
 
 #include <WifiEspNowBroadcast.h>
 
-#define ESP_NOW_MAX 1000
-static char receiveBuffer[ESP_NOW_MAX];
-static uint16 espNowByteCount = 0;
 static bool espNowInitialized = false;
+static bool espNowUnicastInitialized = false;
+// The recipient MAC address
+static uint8_t destMacAddr[]{0,0,0,0,0,0};
 
-static void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
-	if ((espNowByteCount + count + 1) < ESP_NOW_MAX) {
-		memcpy(&receiveBuffer[espNowByteCount], buf, count);
-		espNowByteCount += count;
-		receiveBuffer[espNowByteCount] = '\n';
-		espNowByteCount++;
-	}
+// A single secure buffer that is not directly used by the VM and does not conflict with the VM memory model
+static uint8_t espNowRawMessage[256];
+static uint16_t espNowRawLength = 0;
+static volatile bool espNowNewMessageReady = false;
+
+static void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t *buf, size_t count, void *arg)
+{
+	if (count >= sizeof(espNowRawMessage))
+		return;
+
+	memcpy(espNowRawMessage, buf, count);
+	espNowRawLength = count;
+	espNowNewMessageReady = true;
 }
 
 static void initializeEspNow() {
@@ -754,18 +760,48 @@ static void initializeEspNow() {
 	WifiEspNowBroadcast.onReceive(processRx, nullptr);
 	espNowInitialized = true;
 }
+static void initializeEspNowUnicast() {
+	if (espNowUnicastInitialized) return;
+
+	WiFi.persistent(false);
+	WiFi.mode(WIFI_AP);
+	WiFi.disconnect();
+
+	WiFi.softAP("ESPNOW", nullptr, 3);
+	WiFi.softAPdisconnect(false);
+
+	bool ok = WifiEspNow.begin();
+	if (!ok) 
+	{
+		outputString("WifiEspNow.begin() failed");
+		return;
+	}
+
+	WifiEspNow.onReceive(processRx, nullptr);
+	espNowUnicastInitialized = true;
+}
 
 static OBJ primEspNowReceive(int argCount, OBJ *args) {
 	initializeEspNow();
 
 	WifiEspNowBroadcast.loop();
 	taskSleep(10);
+//
+	if (espNowNewMessageReady)
+	{
+		uint16_t len = espNowRawLength;
+		if (len >= 250)
+			len = 250;
 
-	if (espNowByteCount > 0) {
-		OBJ result = newStringFromBytes(receiveBuffer, espNowByteCount);
-		espNowByteCount = 0;
+		char localBuf[256];
+		memcpy(localBuf, espNowRawMessage, len);
+		localBuf[len] = '\0';
+
+		OBJ result = newStringFromBytes(localBuf, len);
 		return result;
-	} else {
+	}
+	else
+	{
 		return (OBJ) &emptyMBString;
 	}
 }
@@ -776,17 +812,52 @@ static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
 	WifiEspNowBroadcast.loop();
 	taskSleep(10);
 
-	if (espNowByteCount > 0) {
+	if (espNowNewMessageReady)
+	{
+		uint16_t len = espNowRawLength;
+		if (len >= 250)
+			len = 250;
+
+		char localBuf[256];
+		memcpy(localBuf, espNowRawMessage, len);
+		localBuf[len] = '\0';
+
 		OBJ event = newObj(ListType, 2, zeroObj);
 		FIELD(event, 0) = int2obj(1); //list size
-		FIELD(event, 1) = newStringFromBytes(receiveBuffer, espNowByteCount);
-		espNowByteCount = 0;
+		FIELD(event, 1) = newStringFromBytes(localBuf, len);
 		return event;
-	} else {
+	}
+	else
+	{
 		return falseObj;
 	}
 }
+static OBJ primEspNowUnicastLastEvent(int argCount,OBJ *args)
+{
+	if (!espNowUnicastInitialized)
+	{
+		initializeEspNowUnicast();
+	}
 
+	if (espNowNewMessageReady)
+	{
+		uint16_t len = espNowRawLength;
+		if (len >= 250)
+			len = 250;
+
+		char localBuf[256];
+		memcpy(localBuf, espNowRawMessage, len);
+		localBuf[len] = '\0';
+
+		OBJ event = newObj(ListType, 2, zeroObj);
+		FIELD(event, 0) = int2obj(1); //list size
+		FIELD(event, 1) = newStringFromBytes(localBuf, len);
+		return event;
+	}else
+	{
+		return falseObj;
+	}
+}
 static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 	initializeEspNow();
 
@@ -795,7 +866,54 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 	WifiEspNowBroadcast.loop();
 	return falseObj;
 }
+static OBJ primEspNowUnicastSetup(int argCount, OBJ *args)
+{
+	if (!espNowUnicastInitialized)
+	{
+		initializeEspNowUnicast();
+	}
 
+	int values[6];
+	if (sscanf(obj2str(args[0]), "%x:%x:%x:%x:%x:%x",
+			   &values[0], &values[1], &values[2],
+			   &values[3], &values[4], &values[5]) != 6)
+	{
+		outputString("Invalid MAC address format");
+		return falseObj;
+	}
+	for (int i = 0; i < 6; i++)
+		destMacAddr[i] = (uint8_t)values[i];
+
+	if (!WifiEspNow.addPeer(destMacAddr))
+	{
+		outputString("WifiEspNow.addPeer() failed");
+		return falseObj;
+	}
+	return trueObj;
+}
+
+static OBJ primEspNowUnicastSend(int argCount,OBJ *args)
+{
+	if (!espNowUnicastInitialized)
+	{
+		initializeEspNowUnicast();
+	}
+	// Verify we have a valid peer
+	if (!WifiEspNow.hasPeer(destMacAddr))
+	{
+		outputString("No peer configured");
+		return falseObj;
+	}
+	char* message = obj2str(args[0]);
+	
+	if(!WifiEspNow.send(destMacAddr, reinterpret_cast<const uint8_t *>(message), strlen(message)))
+	{
+		outputString("WifiEspNow.send() failed");
+		return falseObj;
+	}
+	taskSleep(20);
+	return trueObj;
+}
 #endif // ESP_NOW_PRIMS
 
 static PrimEntry entries[] = {
@@ -832,6 +950,9 @@ static PrimEntry entries[] = {
 		{"EspNowBroadcast", primEspNowBroadcast},
 		{"EspNowReceive", primEspNowReceive},
 		{"EspNowLastEvent", primEspNowLastEvent},
+		{"EspNowUnicastSetup", primEspNowUnicastSetup},
+		{"EspNowUnicastSend", primEspNowUnicastSend},
+		{"EspNowUnicastLastEvent", primEspNowUnicastLastEvent},
 	#endif
 
 };
