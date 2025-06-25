@@ -882,13 +882,29 @@ static OBJ primEspNowUnicastSetup(int argCount, OBJ *args)
 		return falseObj;
 	}
 	for (int i = 0; i < 6; i++)
+	{
 		destMacAddr[i] = (uint8_t)values[i];
+	}
+
+	// +1 to get softAP mac address
+	for (int i = 5; i >= 0; i--)
+	{
+		if (++destMacAddr[i] != 0)
+			break;
+	}
+
+	char buf[64];
+	sprintf(buf, "Peer MAC: %02X:%02X:%02X:%02X:%02X:%02X",
+			destMacAddr[0], destMacAddr[1], destMacAddr[2],
+			destMacAddr[3], destMacAddr[4], destMacAddr[5]);
+	outputString(buf);
 
 	if (!WifiEspNow.addPeer(destMacAddr))
 	{
 		outputString("WifiEspNow.addPeer() failed");
 		return falseObj;
 	}
+
 	return trueObj;
 }
 
