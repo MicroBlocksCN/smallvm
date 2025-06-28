@@ -1271,9 +1271,13 @@ method extractBoardType SmallRuntime versionString {
 
 method versionReceived SmallRuntime versionString {
 	if (isNil versionString) { return } // bad version message
-	if (isNil vmVersion) { // first time: record and check the version number
-		vmVersion = (extractVersionNumber this versionString)
-		boardType = (extractBoardType this versionString)
+
+	// update vmVersion and boardType
+	justConnected = (isNil vmVersion)
+	vmVersion = (extractVersionNumber this versionString)
+	boardType = (extractBoardType this versionString)
+
+	if justConnected { // check the version number and load board libraries
 		checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
@@ -1424,11 +1428,11 @@ method boardIsBLECapable SmallRuntime {
 	status = (updateConnection this)
 	if ('connected' != status) { return false }
 	if (isNil boardType) { getVersion this }
-    if (isOneOf boardType
-        'Citilab ED1' 'Databot' 'M5Stack-Core' 'ESP32' 'Mbits' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube') {
-        return true
-    }
-    return false
+	if (isOneOf boardType
+		'Citilab ED1' 'CoCube' 'Databot' 'M5Stack-Core' 'ESP32' 'Mbits' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'micro:STEAMakers' 'CodingBox' 'Foxbit' 'KidsIOT' '未来科技盒' '未来科技盒v2.0' 'handpy') {
+		return true
+	}
+	return false
 }
 
 method setBLEFlag SmallRuntime {
@@ -2530,7 +2534,14 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (not (connectedToBoard this)) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube' 'ESP32' 'ESP8266' 'Mbits' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits')
+	return (isOneOf boardType
+		'Citilab ED1' 'CoCube' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix'
+		'ESP32' 'ESP8266' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040'
+		'Boardie' 'Databot' 'Mbits' 'micro:STEAMakers' 'RP2040 XRP'
+		'CodingBox' 'Foxbit' 'KidsIOT'
+		'M5AtomS3-Lite' 'M5Atom-Lite'
+		'未来科技盒' '未来科技盒v2.0' 'handpy'
+		)
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -3008,7 +3019,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} (notNil boardType) {
-		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube' 'Databot') boardType)
+		if (and (contains (array 'Citilab ED1' 'CoCube' 'micro:STEAMakers' 'M5Stack-Core' 'ESP8266' 'ESP32' 'Databot' 'CodingBox' 'Foxbit' 'KidsIOT' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'MakerPort') {
@@ -3026,7 +3037,23 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			}
 			addLine menu
 		}
-		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube' 'ESP32' 'ESP8266' 'Databot') {
+		for boardName (array
+				'Citilab ED1'
+				'micro:STEAMakers'
+				'KidsBits'
+				'Foxbit'
+				'CoCube'
+				'Databot'
+				'M5Stack-Core'
+				'ESP32'
+				'ESP8266'
+				'M5StickC+'
+				'M5StickC'
+				'M5Atom-Matrix'
+				'未来科技盒'
+				'未来科技盒v2.0'
+				'handpy' 
+		) {
 			addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 		}
 		if (not eraseFlashFlag) {
@@ -3182,34 +3209,45 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
-		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube' 'ESP32' 'ESP8266' 'Databot')
+		(isOneOf boardType 'Citilab ED1' 'CoCube' 'micro:STEAMakers' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot' 'CodingBox' 'Foxbit' 'KidsIOT' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
 		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this eraseFlashFlag downloadLatestFlag) true)
 		if eraseFlashFlag {
 			// addItem menu 'Citilab ED1'
+			// addItem menu 'micro:STEAMakers'
+			// addItem menu 'KidsBits'
+			// addItem menu 'Foxbit'
+			addItem menu 'CoCube'
+			// addItem menu 'Databot'
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 			addItem menu '未来科技盒'
 			addItem menu '未来科技盒v2.0'
 			addItem menu 'handpy'
-			addItem menu 'CoCube'
 			addItem menu 'M5StickC+'
-			// addItem menu 'Mbits'
 		} else {
 			addItem menu 'micro:bit'
 			// addItem menu 'Calliope mini'
+			// addLine menu
+			// addItem menu 'Citilab ED1'
+			// addItem menu 'micro:STEAMakers'
+			// addItem menu 'KidsBits'
+			// addItem menu 'Foxbit'
+			addItem menu 'CoCube'
+			// addItem menu 'Databot'
 			addLine menu
 //			addItem menu 'ELECFREAKS Pico:ed'
 			addItem menu 'ELECFREAKS Wukong2040'
 			addItem menu 'RP2040 (Pico or Pico W)'
 			addLine menu
-			//addItem menu 'Circuit Playground Express'
-			//addItem menu 'Circuit Playground Bluefruit'
-			//addItem menu 'Clue'
-			//addItem menu 'Metro M0'
+			// addItem menu 'MakerPort'
+			// addLine menu
+			// addItem menu 'Circuit Playground Express'
+			// addItem menu 'Circuit Playground Bluefruit'
+			// addItem menu 'Clue'
 			//addLine menu
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
@@ -3244,7 +3282,7 @@ method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag
 }
 
 method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
-	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy' 'CoCube' 'ESP32' 'ESP8266' 'Databot') {
+	if (isOneOf boardName 'Citilab ED1' 'CoCube' 'micro:STEAMakers' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot' 'CodingBox' 'Foxbit' 'KidsIOT' 'KidsBits' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' '未来科技盒' '未来科技盒v2.0' 'handpy') {
 		flashVM this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
