@@ -222,7 +222,9 @@ static void serialOpen(int baudRate) {
 		int rxPin = mapDigitalPinNum(2);
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	#elif defined(COCUBE)
-		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 22, 21);
+	#elif defined(C3_SUPERMINI)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 20, 21);
 	#elif defined(M5CORE2)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 33);
 	#elif defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)

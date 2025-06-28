@@ -78,13 +78,13 @@
 #elif defined(COCUBE)
 	#define PIN_WIRE_SCL 22
 	#define PIN_WIRE_SDA 21
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
-	// Note: SDA and SCL are reversed from most other ESP32 boards!
+#elif defined(M5Atom_Matrix) || defined(M5Atom_Lite)
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 25
-#elif defined(GRAPEBIT)
-	#define PIN_WIRE_SCL 7
-	#define PIN_WIRE_SDA 6
+#elif defined(DUELink)
+	// 0 and 1 are edge connector pins 19 and 20 or DUELink standard pins 16 and 15
+	#define PIN_WIRE_SCL 1
+	#define PIN_WIRE_SDA 0
 #elif !defined(PIN_WIRE_SCL)
 	#if defined(PIN_WIRE0_SCL)
 		#define PIN_WIRE_SCL PIN_WIRE0_SCL
@@ -1253,7 +1253,6 @@ static int readTemperature() {
 	}
 	return val;
 }
-
 
 #elif defined(ARDUINO_Mbits) || defined(STEAMaker)
 
@@ -2875,9 +2874,11 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 }
 
 // CoCube Position Sensor
+
 #if defined (COCUBE)
 	#include <CoCubeSensor.h>
 	CoCubeSensor cocube;
+
 	void cocubeSensorInit() {
 		cocube.Init();
 	}
@@ -3007,6 +3008,7 @@ static PrimEntry entries[] = {
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
+
 	{"captureStart", captureStartPrim},
 	{"captureCount", primCaptureCount},
 	{"captureEnd", primCaptureEnd},

@@ -54,19 +54,8 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
-#elif defined(DF_K10)
-	#include <TFT_eSPI.h>
 
-	TFT_eSPI tft = TFT_eSPI();
-
-	void tftInit() {
-		tft.init();
-		tft.setRotation(2);
-		
-		tftClear();
-		useTFT = true;
-	}
-#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
 
@@ -92,7 +81,6 @@ static int deferUpdates = false;
 		#define TFT_RST	33
 		#define TFT_WIDTH 320
 		#define TFT_HEIGHT 240
-
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 		void tftInit() {
 			// test TFT_RST to see if we need to invert the display
@@ -112,8 +100,6 @@ static int deferUpdates = false;
 			// Turn on backlight:
 			pinMode(32, OUTPUT);
 			digitalWrite(32, HIGH);
-			pinMode(12, OUTPUT); // fix xingjixiaofang  buzz
-			digitalWrite(12, HIGH);
 			useTFT = true;
 		}
 	#elif defined(ARDUINO_M5STACK_CORES3)
@@ -423,7 +409,6 @@ static int deferUpdates = false;
 			}
 		}
 
-
 		void AXP192_begin() {
 			// derived from AXP192.cpp from https://github.com/m5stack/M5Core2
 			Wire1.begin(21, 22);
@@ -476,6 +461,7 @@ static int deferUpdates = false;
 			tftClear();
 			useTFT = true;
 		}
+
 		// M5 Core2 touchscreen support
 
 		#define HAS_TOUCH_SCREEN 1
@@ -634,6 +620,44 @@ static int deferUpdates = false;
 			touchEnabled = true;
 		}
 
+		static int screenTouched() {
+			if (!touchEnabled) touchInit();
+			return ts.touched();
+		}
+
+		static int screenTouchX() {
+			if (!touchEnabled) touchInit();
+			if (!ts.touched()) { return -1; }
+			uint16_t x, y;
+			uint8_t pressure;
+			ts.readData(&x, &y, &pressure);
+// 			x = (320 * (x - 256)) / 10;
+// 			if (x < 0) x = 0;
+// 			if (x > 320) x = 320;
+			return x;
+		}
+
+		static int screenTouchY() {
+			if (!touchEnabled) touchInit();
+			if (!ts.touched()) { return -1; }
+			uint16_t x, y;
+			uint8_t pressure;
+			ts.readData(&x, &y, &pressure);
+// 			y = (240 * (y - 274)) / 14;
+// 			if (y < 0) y = 0;
+// 			if (y > 240) y = 240;
+			return y;
+		}
+
+		static int screenTouchPressure() {
+			if (!touchEnabled) touchInit();
+			if (!ts.touched()) { return -1; }
+			uint16_t x, y;
+			uint8_t pressure;
+			ts.readData(&x, &y, &pressure);
+			return pressure;
+		}
+	
 	#elif defined(OLED_1106)
 		// #undef BLACK // defined in SSD1306 header
 		#include "Adafruit_GFX.h"
@@ -653,6 +677,7 @@ static int deferUpdates = false;
 			useTFT = true;
 			tftClear();
 		}
+
 	#elif defined(SCOUT_MAKES_AZUL)
 		#undef BLACK // defined in SSD1306 header
 		#include "Adafruit_GFX.h"
@@ -1233,13 +1258,37 @@ static int deferUpdates = false;
 		Arduino_ESP32SPI bus = Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
         Arduino_GC9107 tft = Arduino_GC9107(&bus, TFT_RST, 0, false, TFT_WIDTH, TFT_HEIGHT, 0, 13, 2, 1);
 
+
+	#elif defined(M5Atom_S3_TFT)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+		#define TFT_MOSI 21
+		#define TFT_SCLK 17
+		#define TFT_CS   15
+		#define TFT_DC   33
+		#define TFT_RST  34
+		#define TFT_BL   16
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		// make a subclass so we can adjust the x/y offsets
+		class AtomS3LCD : public Adafruit_ST7789 {
+		public:
+			AtomS3LCD(int8_t cs, int8_t dc, int8_t mosi, int8_t sclk, int8_t rst) : Adafruit_ST7789(cs, dc, mosi, sclk, rst) {}
+			void setOffsets(int colOffset, int rowOffset) {
+				_xstart = _colstart = colOffset;
+				_ystart = _rowstart = rowOffset;
+			}
+		};
+		AtomS3LCD tft = AtomS3LCD(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
         void tftInit() {
+			//tft.init(TFT_HEIGHT, TFT_WIDTH, SPI_MODE2);
+			//tft.setSPISpeed(40000000);
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setOffsets(2, 1);
+			tft.setRotation(0);
+			tftClear();
 			pinMode(TFT_BL, OUTPUT);
-			digitalWrite(TFT_BL, LOW);
-			tft.begin();
-			tft.invertDisplay(1);
-			tft.fillScreen(RGB565_BLACK);
-			delay(35);
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
 		}
@@ -1673,7 +1722,6 @@ static OBJ primClear(int argCount, OBJ *args) {
 	tftClear();
 	return falseObj;
 }
-
 
 // Aruco and April tags
 
