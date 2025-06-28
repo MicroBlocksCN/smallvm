@@ -182,9 +182,6 @@ void hardwareInit() {
 	#if defined(HAS_LED_MATRIX) && !defined(GNUBLOCKS)
 		mbDisplayColor = (150 << 16); // red (not full brightness)
 	#endif
-	#if defined(XRP)
-		delay(20); // allow ButtonA pin to settle before starting interpreter loop
-	#endif
 	#if defined(COCUBE)
 		#include "soc/rtc_cntl_reg.h" // for brownout control
 		WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
@@ -1556,7 +1553,7 @@ void hardwareInit() {
 #elif defined(DUELink)
 
 	#define BOARD_TYPE "DUELink"
-	#define DIGITAL_PINS 30
+	#define DIGITAL_PINS 27
 	#define ANALOG_PINS 5
 	#define TOTAL_PINS 60
 	#define PIN_LED 15 // PA_6 (unmapped)
@@ -1565,21 +1562,117 @@ void hardwareInit() {
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 	#define DEFAULT_TONE_PIN 21
+	static const int8_t analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
+
+	// Reserved C071R pins:
+	// 42 (PF_2) - reset
+	// 49 (PA_12) - USB P
+	// 50 (PA_11) - USB N
+	// 47 (PA_3) - Downlink RX
+	// 52 (PA_2) - Downlink TX
 	static const char cincoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
-		 2, 27, 32,  9,  5,  4, 33, 255, 255, 0,
-		 1, 13, 12, 15,  7, 11,  54, 42,  47, 52};
+		 2, 27, 32,  9,  5,  4, 33, 255, 255,  0,
+		 1, 13,  7, 12, 15, 54, 11}; // row pins: 7, 12, 15, 54, 11
+
 	static const char pixoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
-		 2, 27,  7,  9,  5,  4, 33, 255, 255, 0,
-		 1, 13, 12, 15, 14, 29,  32, 42,  47, 52};
+		 2, 27,  7,  9,  5,  4, 33, 255, 255,  0,
+		 1, 13, 12, 14, 15, 29, 32}; // unused pins: 12, 14, 15, 29, 32
+
+	// Pin 13 is repeated at index 21 (DEFAULT_TONE_PIN)
 	static const char dueStandardPin[DIGITAL_PINS] = {
 		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
 		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
-		28,  8,  2, 27, 32, 52, 47, 42, 255, 255};
-	static const int analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
+		28, 13,  8,  2, 27, 32, 32}; // unused pins: 8, 2, 27, 32
+
+	// Analog pin names for DUELink boards
+	// Note: CincoBit edge pins 3, 4, and 12 are not analog capable
+	#define DUE_ANALOG_PIN_COUNT 18
+	static const int16_t dueEdgeAnalog[DUE_ANALOG_PIN_COUNT] = {
+		PA_0, PA_1, PA_4, PA_7, PB_1, PA_14, -1, -1, PB_2, PB_0, -1, PA_13, PA_8, -1, -1, -1, -1, -1};
+	static const int16_t dueStandardAnalog[DUE_ANALOG_PIN_COUNT] = {
+		-1, PA_0, PA_1, PA_4, PA_5, PA_6, PA_7, PA_8, PB_1, PB_0, -1, -1, -1, -1, -1,  -1,  -1, PB_2};
+
+	static int dueAnalogPin(int pinNum) {
+		int result = -1; // default - no pin
+		if ((0 <= pinNum) && (pinNum < DUE_ANALOG_PIN_COUNT)) {
+			if (DUE_HAS_EDGE_CONNECTOR) {
+				result = dueEdgeAnalog[pinNum];
+				if (IS_DUE_CINCO) {
+					// CincoBit edge pins 3, 4, and 12 are not analog capable
+					if ((pinNum == 3) || (pinNum == 4) || (pinNum == 12)) result = -1;
+				}
+			} else {
+				result = dueStandardAnalog[pinNum];
+			}
+		}
+		return result;
+	}
+
+	// PWM pins for CincoBit and PixoBit edge pins 0 to 16
+	// Note: TIM14 is used by Tone library. TIM16 is used by Servo library
+	#define DUE_PWM_PIN_COUNT 17
+	static const int16 dueEdgePWM[DUE_PWM_PIN_COUNT] = {
+		PA_0_ALT1,		// TIM1_CH1, *TIM2_CH1, TIM16_CH1
+		PA_1_ALT1,		// TIM1_CH2, TIM2_CH2, TIM17_CH1
+		PA_4_ALT2,		// TIM1_CH2N, TIM14_CH1, *TIM17_CH1N
+		-1, // PB_9,	// TIM3_CH2, TIM17_CH1
+		-1, // PC_6,	// TIM2_CH3, TIM3_CH1
+		PA_14,			// TIM1_CH1
+		-1,	// PA_9		// TIM1_CH2
+		-1, // PA_15,	// TIM1_CH1, TIM2_CH1
+		-1,	// PB_2		// (no PWM)
+		-1,	// PB_0		// TIM1_CH2N, TIM3_CH3
+		PA_10,			// TIM1_CH3
+		-1,	// PA_13	// (no PWM)
+		PC_14,			// *TIM3_CH2, TIM17_CH1
+		PB_3,			// TIM1_CH2, *TIM2_CH2, TIM3_CH2
+		PB_4,			// *TIM3_CH1
+		PB_5_ALT1,		// TIM3_CH2, *TIM3_CH3
+		-1, // PC_15,	// TIM3_CH3
+	};
+
+	// PWM pins for standard DUEBoards 0 to 16 (pin 17 does not have a timer)
+	// Note: TIM14 is used by Tone library. TIM16 is used by Servo library
+	static const int16 dueStandardPWM[DUE_PWM_PIN_COUNT] {
+		-1,
+		PA_0,		// *TIM1_CH1*, TIM2_CH1, TIM16_CH1
+		PA_1_ALT1,	// TIM1_CH2, *TIM2_CH2*, TIM17_CH1
+		PA_4_ALT2,	// TIM1_CH2N, TIM14_CH1, *TIM17_CH1N* (buzzer on Ghizzy)
+		PA_5_ALT2,	// TIM1_CH1, TIM1_CH3N, *TIM2_CH1
+		PA_6_ALT1,	// TIM3_CH1, *TIM16_CH1*
+		PA_7_ALT1,	// TIM1_CH1N, *TIM3_CH2*, TIM14_CH1, TIM17_CH1
+		PA_8_ALT2,	// TIM1_CH1, TIM1_CH2N, *TIM1_CH3N, TIM3_CH3, TIM3_CH4, TIM14_CH1
+		PB_1_ALT2,	// TIM1_CH2N, TIM1_CH3N, *TIM3_CH4*, TIM14_CH1
+		PB_0, 		// *TIM1_CH2N*, TIM3_CH3
+		PC_15, 		// *TIM3_CH3*
+		PC_6, 		// *TIM2_CH3*, TIM3_CH1
+		-1,			// xxx TIM1_CH2, TIM2_CH2, TIM3_CH2
+		-1, 		// xxx TIM3_CH1
+		-1, 		// xxx TIM3_CH2, TIM3_CH3
+		-1,			// xxx TIM16_CH1N
+		PB_7,		// TIM1_CH4, TIM3_CH1, TIM3_CH4, TIM16_CH1, TIM17_CH1N
+	};
+
+	static int duePWMPin(int pinNum) {
+		int result = -1; // default - no pin
+		if ((0 <= pinNum) && (pinNum < DUE_PWM_PIN_COUNT)) {
+			if (DUE_HAS_EDGE_CONNECTOR) {
+				result = dueEdgePWM[pinNum];
+				if (!IS_DUE_CINCO) {
+					// on PixoBit, pin 4 is PB_1_ALT2 (TIM3_CH4)
+					if (pinNum == 4) result = PB_1_ALT2;
+				}
+			} else {
+				result = dueStandardPWM[pinNum];
+			}
+		}
+		return result;
+	}
 
 #elif defined(CONFIG_BOARD_BEAGLECONNECT_FREEDOM)
+
 	#define BOARD_TYPE "BeagleConnect Freedom"
 	#define DIGITAL_PINS 24
 	#define ANALOG_PINS 6
@@ -1587,6 +1680,14 @@ void hardwareInit() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 	#define PIN_LED LED_BUILTIN
 	#define DEFAULT_TONE_PIN 6 // buzzer on backpack board
+
+#elif defined(ARDUINO_WEACT)
+	#define BOARD_TYPE "WeAct STM32H743"
+	#define DIGITAL_PINS 82
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 82
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
+	#define PIN_LED LED_BUILTIN
 
 #else // unknown board
 
@@ -2176,9 +2277,10 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(2, coords);
 		}
-	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || \
-		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY) || defined(M5_CARDPUTER) || \
-		defined(FUTURE_LITE) || defined(COCUBE) || defined(COCUBE_SOCCER) || defined(XESGAME)
+	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
+		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)|| defined(COCUBE) || \
+		defined(BUILT_IN_DISPLAY) || \
+		defined(ARDUINO_M5STACK_FIRE) || defined(M5_CARDPUTER) || defined(FUTURE_LITE) || defined(COCUBE_SOCCER) || defined(XESGAME)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (PIN_LED < 0) return; // board does not have a user LED
@@ -2191,7 +2293,7 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		#if defined(M5STAMP) || defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Lite_ESP32_S3)
+		#if defined(NEOPIXEL_PIN_LED) || defined(M5STAMP) || defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Lite_ESP32_S3)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
 			setAllNeoPixels(PIN_LED, 1, color);
 			taskSleep(1);
@@ -2226,7 +2328,9 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(HALOCODE)
+		#elif defined(FOXBIT)
+			setPinMode(PIN_BUTTON_A, INPUT_PULLUP); // ESP32 pin number not edge pin
+			#elif defined(HALOCODE)
 			SET_MODE(PIN_BUTTON_A, INPUT);			
 		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_ARCH_ESP32) || \
 			  defined(ESP8266) || defined(M5STAMP)
@@ -2250,6 +2354,8 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
+		#elif defined(FOXBIT)
+			setPinMode(PIN_BUTTON_B, INPUT_PULLUP); // ESP32 pin number not edge pin
 		#elif defined(ARDUINO_NRF52840_CLUE)|| defined(FUTURE_LITE) || defined(XESGAME)//学而思游戏机
 			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#elif defined(DUELink)
