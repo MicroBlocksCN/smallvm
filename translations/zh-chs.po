@@ -4915,3 +4915,7 @@ msgstr "通知新版本"
 #. Settings menu option
 msgid "when opening the IDE, show a notification if a new version of MicroBlocks has been released"
 msgstr "打开 IDE 时，如果发布了新版本的 MicroBlocks，则显示通知"
+
+# 
+msgid "Do not switch browser tabs!"
+msgstr "不要切换浏览器标签!"
