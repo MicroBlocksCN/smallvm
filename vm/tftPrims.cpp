@@ -55,6 +55,19 @@ static int deferUpdates = false;
 			useTFT = true;
 		}
 
+	#elif defined(DF_K10)
+		#include <TFT_eSPI.h>
+
+		TFT_eSPI tft = TFT_eSPI();
+
+		void tftInit() {
+			tft.init();
+			tft.setRotation(2);
+			
+			tftClear();
+			useTFT = true;
+		}
+
 	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
