@@ -27,8 +27,8 @@ variables _cc_cam_init_flag
   space
   spec 'r' 'ccmodule_DLight level' 'DLight level'
   space
-  spec 'r' 'ccmodule_ASR get command' 'ASR get command'
-  spec ' ' 'ccmodule_ASR play command' 'ASR play command _' 'num' 19
+  spec 'r' 'ccmodule_gesture connected' '3D gesture connected'
+  spec 'r' 'ccmodule_gesture read' '3D gesture read'
   space
   spec ' ' 'ccmodule_power on module' 'power on module'
 
@@ -68,6 +68,19 @@ to 'ccmodule_attach NeoPixels' {
 to 'ccmodule_clear NeoPixels' {
   digitalWriteOp 13 true
   clearNeoPixels
+}
+
+to 'ccmodule_DLight level' {
+  if (_cc_cam_init_flag == 1) {
+    '[sensors:i2cWrite]' (hexToInt '58') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '3') 255))
+  } else {
+    stopServo 22
+    digitalWriteOp 13 true
+  }
+  i2cSet (hexToInt '23') 23 (hexToInt '21')
+  read = (newList 2)
+  '[sensors:i2cRead]' (hexToInt '23') read
+  return (((at 1 read) << 8) | (at 2 read))
 }
 
 to 'ccmodule_gesture connected' {
