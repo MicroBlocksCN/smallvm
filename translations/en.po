@@ -5112,6 +5112,38 @@ msgid "battery percentage"
 msgstr "battery percentage"
 
 #. CoCube Module library block
+msgid "gripper open"
+msgstr "gripper open"
+
+#. CoCube Module library block
+msgid "gripper close"
+msgstr "gripper close"
+
+#. CoCube Module library block
+msgid "gripper stop"
+msgstr "gripper stop"
+
+#. CoCube Module library block
+msgid "gripper degrees _ (0 to 70)"
+msgstr "gripper degrees _ (0 to 70)"
+
+#. CoCube Module library block
+msgid "attach NeoPixels"
+msgstr "attach NeoPixels"
+
+#. CoCube Module library block
+msgid "ToF connected"
+msgstr "ToF connected"
+
+#. CoCube Module library block
+msgid "ToF distance (mm)"
+msgstr "ToF distance (mm)"
+
+#. CoCube Module library block
+msgid "DLight level"
+msgstr "DLight level"
+
+#. CoCube Module library block
 msgid "3D gesture connected"
 msgstr "3D gesture connected"
 
