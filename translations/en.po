@@ -4979,6 +4979,106 @@ msgstr "blue"
 msgid "yellow"
 msgstr "yellow"
 
+#. CoCube Sengo1 block
+msgid "Sengo1 init"
+msgstr "Sengo1 init"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 change algorithm _"
+msgstr "Sengo1 change algorithm _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 reset"
+msgstr "Sengo1 reset"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr "Sengo1 set color recog area x _ y _ width _ height _ (0-100)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read color"
+msgstr "Sengo1 read color"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get color _"
+msgstr "Sengo1 get color _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 set blob detect property color _ width _ height _"
+msgstr "Sengo1 set blob detect property color _ width _ height _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read blob"
+msgstr "Sengo1 read blob"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get blob _"
+msgstr "Sengo1 get blob _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 detect ball (ping pong or tennis)"
+msgstr "Sengo1 detect ball (ping pong or tennis)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get ball _"
+msgstr "Sengo1 get ball _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get line _"
+msgstr "Sengo1 get line _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read card"
+msgstr "Sengo1 read card"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get card _"
+msgstr "Sengo1 get card _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 record face ID _ (1-10)"
+msgstr "Sengo1 record face ID _ (1-10)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 delete face ID _ (1-10)"
+msgstr "Sengo1 delete face ID _ (1-10)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get face ID"
+msgstr "Sengo1 get face ID"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get face _"
+msgstr "Sengo1 get face _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read QRcode"
+msgstr "Sengo1 read QRcode"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get QRcode _"
+msgstr "Sengo1 get QRcode _"
+
+#. CoCube Sengo1 block
+msgid "_sg1_init"
+msgstr "_sg1_init"
+
+#. CoCube Sengo1 block
+msgid "_sg1_reset_current_algo"
+msgstr "_sg1_reset_current_algo"
+
+#. CoCube Sengo1 block
+msgid "_sg1_read_reg_byte"
+msgstr "_sg1_read_reg_byte"
+
+#. CoCube Sengo1 block
+msgid "_sg1_get_param algo _ tag _"
+msgstr "_sg1_get_param algo _ tag _"
+
+#. CoCube Sengo1 block
+msgid "Ball Detect"
+msgstr "Ball Detect"
+
 #. Calliope NeoPixel library block
 msgid "Calliope set all NeoPixels to _"
 msgstr "Calliope set all NeoPixels to _"
