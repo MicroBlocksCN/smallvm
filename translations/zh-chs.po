@@ -4827,6 +4827,106 @@ msgstr "蓝色"
 msgid "yellow"
 msgstr "黄色"
 
+#. CoCube Sengo1 block
+msgid "Sengo1 init"
+msgstr "Sengo1 初始化"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 change algorithm _"
+msgstr "Sengo1 设置算法为 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 reset"
+msgstr "Sengo1 重置算法"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 set color recog area x _ y _ width _ height _ (0-100)"
+msgstr "Sengo1 设置颜色检测区域 x _ y _ 宽度 _ 高度 _ (0-100)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read color"
+msgstr "Sengo1 读取颜色"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get color _"
+msgstr "Sengo1 获取颜色分量 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 set blob detect property color _ width _ height _"
+msgstr "Sengo1 设置色块检测颜色 _ 宽度 _ 高度 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read blob"
+msgstr "Sengo1 读取色块"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get blob _"
+msgstr "Sengo1 获取色块的 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 detect ball (ping pong or tennis)"
+msgstr "Sengo1 球类检测（乒乓球或网球）"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get ball _"
+msgstr "Sengo1 获取球的 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get line _"
+msgstr "Sengo1 获取线条的 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read card"
+msgstr "Sengo1 读取卡片"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get card _"
+msgstr "Sengo1 获取卡片的 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 record face ID _ (1-10)"
+msgstr "Sengo1 记录人脸ID _ (1-10)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 delete face ID _ (1-10)"
+msgstr "Sengo1 删除人脸ID _ (1-10)"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get face ID"
+msgstr "Sengo1 获取人脸ID"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get face _"
+msgstr "Sengo1 获取人脸的 _"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 read QRcode"
+msgstr "Sengo1 读取二维码"
+
+#. CoCube Sengo1 block
+msgid "Sengo1 get QRcode _"
+msgstr "Sengo1 获取二维码的 _"
+
+#. CoCube Sengo1 block
+msgid "_sg1_init"
+msgstr "_sg1_初始化"
+
+#. CoCube Sengo1 block
+msgid "_sg1_reset_current_algo"
+msgstr "_sg1_重置当前算法"
+
+#. CoCube Sengo1 block
+msgid "_sg1_read_reg_byte"
+msgstr "_sg1_读取寄存器字节"
+
+#. CoCube Sengo1 block
+msgid "_sg1_get_param algo _ tag _"
+msgstr "_sg1_获取参数 算法 _ 标签 _"
+
+#. CoCube Sengo1 block
+msgid "Ball Detect"
+msgstr "球类检测"
+
 #. Tip Bar text for a block in CoCube library
 msgid "Move CoCube at unit/s speed for milliseconds."
 msgstr "控制CoCube移动一段时间"
