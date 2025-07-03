@@ -4871,6 +4871,10 @@ msgid "ToF distance (mm)"
 msgstr "ToF distance (mm)"
 
 #. CoCube Module library block
+msgid "DLight level"
+msgstr "DLight level"
+
+#. CoCube Module library block
 msgid "3D gesture connected"
 msgstr "3D gesture connected"
 
