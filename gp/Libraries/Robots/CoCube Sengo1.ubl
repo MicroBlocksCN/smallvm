@@ -1,13 +1,13 @@
 module 'CoCube Sengo1' Input
 author 'You Zhongrui, Liang Shuai'
 version 1 0 
-depends 'Robots/CoCube' _Servo 
+depends 'Robots/CoCube' _Servo
 tags 'cocube robot' 
 choices sg1_result_Menu x y w h 
-choices sg1_line_menu x1 y1 x2 y2 degree 
 choices sg1_color_Menu black white red green blue yellow 
 choices sg1_rgb_Menu R G B 
 choices sg1_algo_Menu 'Color Recog' 'Blob Detect' 'Ball Detect' 'Line Detect' 'Card Recog' 'Face Recog' QRcode 
+choices sg2_line_menu x1 y1 x2 y2 degree 
 description 'Sengo1 AI Camera Module for CoCube robot
 
 CoCube is a tabletop modular multi-robot platform for education and research.
@@ -33,7 +33,7 @@ variables _cc_cam_init_flag _sg1_i2c_address _sg1_color_classes _sg1_algo_list _
   spec 'r' 'Sengo1 detect ball' 'Sengo1 detect ball (ping pong or tennis)'
   spec 'r' 'Sengo1 get ball' 'Sengo1 get ball _' 'menu.sg1_result_Menu' 'x'
   space
-  spec 'r' 'Sengo1 get line' 'Sengo1 get line _' 'menu.sg1_line_menu' 'degree'
+  spec 'r' 'Sengo1 get line' 'Sengo1 get line _' 'menu.sg2_line_menu' 'degree'
   space
   spec 'r' 'Sengo1 read card' 'Sengo1 read card'
   spec 'r' 'Sengo1 get card' 'Sengo1 get card _' 'menu.sg1_result_Menu' 'x'
@@ -123,6 +123,10 @@ to 'Sengo1 get card' tag {
   return ('_sg1_get_param' 6 tag)
 }
 
+to 'Sengo1 get face' tag {
+  return ('_sg1_get_param' 8 tag)
+}
+
 to 'Sengo1 get color RGB' tag {
   if (_sg1_current_algo != 1) {
     return 'Mode Error'
@@ -140,10 +144,6 @@ to 'Sengo1 get color RGB' tag {
     }
   } else {
   }
-}
-
-to 'Sengo1 get face' tag {
-  return ('_sg1_get_param' 8 tag)
 }
 
 to 'Sengo1 get face ID' {
