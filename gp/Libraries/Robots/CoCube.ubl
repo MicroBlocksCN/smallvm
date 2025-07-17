@@ -1,6 +1,6 @@
 module CoCube
 author 'Liang Shuai'
-version 2 11 
+version 2 12 
 depends Tone Display TFT '_Motors/PID' 
 tags 'cocube robot' 
 choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
@@ -21,8 +21,9 @@ v2.4 Unify positioning accuracy to 1/64
 v2.5 Adjust blocks order and delete RingTone
 v2.6 Adjust blocks order, name and default parameters
 v2.11 Improve the "CoCube move to" function logic
+v2.12 Optimize PID implementation
 '
-variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle 
+variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_flag _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle 
 
   spec ' ' 'CoCube move for msecs' 'move _ at _ speed (0-50) for _ msecs' 'menu.cocube_move_Menu num num' 'cocube;forward' 40 1000
   spec ' ' 'CoCube rotate for msecs' 'rotate _ at _ speed (0-50) for _ msecs' 'menu.cocube_rotate_Menu num num' 'cocube;left' 30 1000
@@ -56,10 +57,10 @@ variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _co
   space
   spec ' ' '_cocube_motors_speed' '_cocube_motors_speed left _ right _' 'num num' 10 10
   spec ' ' '_cocube_pid_init' '_cocube_pid_init'
-  spec ' ' '_cocube_pid_left_motor' '_cocube_pid_left_motor'
-  spec ' ' '_cocube_pid_right_motor' '_cocube_pid_right_motor'
+  spec ' ' '_cocube_pid_control' '_cocube_pid_control'
   spec ' ' '_cocube_calculate_angle_error_' '_cocube_calculate_angle_error angle _' 'num' 0
   spec ' ' '_cocube_calculate_distance_error target_x _ target_y _' '_cocube_calculate_distance_error Target_X _ Target_Y _' 'num num' 0 0
+
 
 to 'CoCube battery percentage' {
   return (minimum (((254 * ('[misc:rescale]' (analogReadOp 34) 0 1023 0 3300)) - 680000) / 1600) 100)
@@ -108,8 +109,6 @@ to 'CoCube move by step' direction speed steps {
       '_cocube_calculate_distance_error target_x _ target_y _' begin_x begin_y
       if ((steps - _cocube_error_distance) < 2) {
         'CoCube wheels break'
-        comment 'wait for break function 200ms'
-        waitMillis 210
         return 0
       }
     }
@@ -187,7 +186,7 @@ to 'CoCube rotate by degree' direction speed degree {
         '_cocube_motors_speed' speed (0 - speed)
       } else {
         comment 'motors break'
-        '_cocube_motors_speed' -99 -99
+        'CoCube wheels break'
         return 0
       }
     }
@@ -215,7 +214,7 @@ to 'CoCube rotate to angle' angle speed {
         '_cocube_motors_speed' abs_speed (0 - abs_speed)
       } else {
         comment 'motors break'
-        '_cocube_motors_speed' -99 -99
+        'CoCube wheels break'
         return 0
       }
     }
@@ -233,18 +232,32 @@ to 'CoCube set TFT backlight' state {
 }
 
 to 'CoCube set wheel' speed_left speed_right {
+  _cocube_pid_flag = (booleanConstant true)
   _cocube_set_left_speed = speed_left
   _cocube_set_right_speed = speed_right
-  sendBroadcast '_cocube_pid_left_motor'
-  sendBroadcast '_cocube_pid_right_motor'
+  sendBroadcast '_cocube_pid_control'
 }
 
 to 'CoCube wheels break' {
-  'CoCube set wheel' -99 -99
+  _cocube_pid_flag = (booleanConstant false)
+  waitMillis 1
+  digitalWriteOp 9 true
+  digitalWriteOp 10 true
+  digitalWriteOp 26 true
+  digitalWriteOp 25 true
+  waitMillis 99
+  digitalWriteOp 9 false
+  digitalWriteOp 10 false
+  digitalWriteOp 26 false
+  digitalWriteOp 25 false
 }
 
 to 'CoCube wheels stop' {
-  'CoCube set wheel' 0 0
+  _cocube_pid_flag = (booleanConstant false)
+  digitalWriteOp 9 false
+  digitalWriteOp 10 false
+  digitalWriteOp 26 false
+  digitalWriteOp 25 false
 }
 
 to '_cocube_calculate_angle_error_' angle {
@@ -265,34 +278,54 @@ to '_cocube_calculate_distance_error target_x _ target_y _' target_x target_y {
 to '_cocube_motors_speed' left_speed right_speed {
   comment 'without pid control'
   if (and (left_speed == 0) (right_speed == 0)) {
-    digitalWriteOp 9 false
-    digitalWriteOp 10 false
-    digitalWriteOp 26 false
-    digitalWriteOp 25 false
-  } (and (left_speed == -99) (right_speed == -99)) {
-    digitalWriteOp 9 true
-    digitalWriteOp 10 true
-    digitalWriteOp 26 true
-    digitalWriteOp 25 true
-    waitMillis 200
-    digitalWriteOp 9 false
-    digitalWriteOp 10 false
-    digitalWriteOp 26 false
-    digitalWriteOp 25 false
+    'CoCube wheels stop'
   } else {
+    local 'var_left' ((4 * (absoluteValue left_speed)) + 36)
+    local 'var_right' ((4 * (absoluteValue right_speed)) + 36)
     if (left_speed > 0) {
-      analogWriteOp 9 ((4 * (absoluteValue left_speed)) + 36)
+      analogWriteOp 9 var_left
       digitalWriteOp 10 false
     } else {
       digitalWriteOp 9 false
-      analogWriteOp 10 ((4 * (absoluteValue left_speed)) + 36)
+      analogWriteOp 10 var_left
     }
     if (right_speed > 0) {
-      analogWriteOp 26 ((4 * (absoluteValue right_speed)) + 36)
+      analogWriteOp 26 var_right
       digitalWriteOp 25 false
     } else {
       digitalWriteOp 26 false
-      analogWriteOp 25 ((4 * (absoluteValue right_speed)) + 36)
+      analogWriteOp 25 var_right
+    }
+  }
+}
+
+to '_cocube_pid_control' {
+  '_cocube_pid_init'
+  pid_resetPID 1
+  pid_resetPID 2
+  local 'var_right' 0
+  local 'var_left' 0
+  forever {
+    if _cocube_pid_flag {
+      comment 'PID control'
+      var_left = ((((4 * (absoluteValue _cocube_set_left_speed)) + 36) + (pid_computePID 1 ((18 * (absoluteValue _cocube_set_left_speed)) - (callCustomReporter '[sensors:speed_left]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
+      var_right = ((((4 * (absoluteValue _cocube_set_right_speed)) + 36) + (pid_computePID 2 ((18 * (absoluteValue _cocube_set_right_speed)) - (callCustomReporter '[sensors:speed_right]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
+      if (_cocube_set_left_speed > 0) {
+        analogWriteOp 9 var_left
+        digitalWriteOp 10 false
+      } else {
+        analogWriteOp 10 var_left
+        digitalWriteOp 9 false
+      }
+      if (_cocube_set_right_speed > 0) {
+        analogWriteOp 26 var_right
+        digitalWriteOp 25 false
+      } else {
+        analogWriteOp 25 var_right
+        digitalWriteOp 26 false
+      }
+    } else {
+      return 0
     }
   }
 }
@@ -303,71 +336,7 @@ to '_cocube_pid_init' {
     _cocube_pid_i = 1
     _cocube_pid_d = 3
     _cocube_pid_ratio = 1000
-    _cocube_pid_initialized = 1
-  }
-}
-
-to '_cocube_pid_left_motor' {
-  '_cocube_pid_init'
-  pid_resetPID 1
-  local 'var' 0
-  forever {
-    if (_cocube_set_left_speed == 0) {
-      comment 'speed = 0 :motor stop'
-      digitalWriteOp 9 false
-      digitalWriteOp 10 false
-      return 0
-    } (_cocube_set_left_speed == -99) {
-      comment 'speed = -99 : motor break'
-      digitalWriteOp 9 true
-      digitalWriteOp 10 true
-      waitMillis 200
-      digitalWriteOp 9 false
-      digitalWriteOp 10 false
-      return 0
-    } else {
-      comment 'PID control'
-      var = ((((4 * (absoluteValue _cocube_set_left_speed)) + 36) + (pid_computePID 1 ((18 * (absoluteValue _cocube_set_left_speed)) - (callCustomReporter '[sensors:speed_left]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
-      if (_cocube_set_left_speed > 0) {
-        analogWriteOp 9 var
-        digitalWriteOp 10 false
-      } else {
-        analogWriteOp 10 var
-        digitalWriteOp 9 false
-      }
-    }
-  }
-}
-
-to '_cocube_pid_right_motor' {
-  '_cocube_pid_init'
-  pid_resetPID 2
-  local 'var' 0
-  forever {
-    if (_cocube_set_right_speed == 0) {
-      comment 'speed = 0 :motor stop'
-      digitalWriteOp 26 false
-      digitalWriteOp 25 false
-      return 0
-    } (_cocube_set_right_speed == -99) {
-      comment 'speed = -99 : motor break'
-      digitalWriteOp 26 true
-      digitalWriteOp 25 true
-      waitMillis 200
-      digitalWriteOp 26 false
-      digitalWriteOp 25 false
-      return 0
-    } else {
-      comment 'PID control'
-      var = ((((4 * (absoluteValue _cocube_set_right_speed)) + 36) + (pid_computePID 2 ((18 * (absoluteValue _cocube_set_right_speed)) - (callCustomReporter '[sensors:speed_right]')) _cocube_pid_p _cocube_pid_i _cocube_pid_d 0)) / _cocube_pid_ratio)
-      if (_cocube_set_right_speed > 0) {
-        analogWriteOp 26 var
-        digitalWriteOp 25 false
-      } else {
-        analogWriteOp 25 var
-        digitalWriteOp 26 false
-      }
-    }
+    _cocube_pid_initialized = (booleanConstant true)
   }
 }
 
