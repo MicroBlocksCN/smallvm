@@ -1,36 +1,33 @@
 module 'Temperature Humidity (AHT20)' Input
-author '邵悦'
+author MicroBlocks
 version 1 0 
-description 'Support for the AHT20 environmental sensor.
-Reads relative humidity (%) and temperature (°C).
-'
-variables _AHT20_Data 
+description 'Support for AHT20 temperature and relative humidity sensor.
 
-  spec ' ' '_AHT20_readdata' '_AHT20_readdata'
-  spec 'r' 'AHT20_humidity' 'AHT20 humidity'
-  spec 'r' 'AHT20 temperature' 'AHT20 temperature'
+https://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf'
 
-to 'AHT20 temperature' {
-  '_AHT20_readdata'
-  return ((((((((at 4 _AHT20_Data) & (hexToInt '0F')) << 16) | ((at 5 _AHT20_Data) << 8)) | (at 6 _AHT20_Data)) * 191) / 1000000) - 50)
+  spec 'r' 'aht20_temperature' 'aht20 temperature (°C)'
+  spec 'r' 'aht20_humidity' 'aht20 humidity (%)'
+  space
+  spec 'r' '_aht20_read_data' '_aht20_read_data'
+
+to '_aht20_read_data' {
+  '[sensors:i2cWrite]' 56 ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') 0)
+  comment 'Wait for sensor reading to complete (see datasheet).'
+  waitMillis 80
+  local 'data' ('[data:newByteArray]' 6)
+  '[sensors:i2cRead]' 56 data
+  return data
 }
 
-to AHT20_humidity {
-  '_AHT20_readdata'
-  return (((((((at 2 _AHT20_Data) << 16) | ((at 3 _AHT20_Data) << 8)) | (at 4 _AHT20_Data)) >> 4) * 100) / 1048576)
+to aht20_humidity {
+  local 'data' ('_aht20_read_data')
+  local 'raw' (((at 2 data) << 12) | (((at 3 data) << 4) | ((at 4 data) >> 4)))
+  return ((100 * raw) >> 20)
 }
 
-to '_AHT20_readdata' {
-  local 'var' (newList 1)
-  '[sensors:i2cRead]' (hexToInt '38') var
-  if (((at 1 var) & (1 << 3)) == 1) {
-    comment 'init'
-    '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt 'BE') (hexToInt '08') (hexToInt '00'))
-  }
-  comment 'triggerMeasurement'
-  _AHT20_Data = (newList 6 0)
-  '[sensors:i2cWrite]' (hexToInt '38') ('[data:makeList]' (hexToInt 'AC') (hexToInt '33') (hexToInt '00'))
-  waitMillis 50
-  '[sensors:i2cRead]' (hexToInt '38') _AHT20_Data
+to aht20_temperature {
+  local 'data' ('_aht20_read_data')
+  local 'raw' ((((at 4 data) & 15) << 16) | (((at 5 data) << 8) | (at 6 data)))
+  return (((200 * raw) >> 20) - 50)
 }
 
