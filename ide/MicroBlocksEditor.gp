@@ -958,8 +958,10 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'locale')) {
 		setLanguage this (at prefs 'locale')
 	} (isChineseWebapp this) {
-		setLanguage this 'zh_chs'
+		print 'ChineseWebapp'
+		setLanguage this 'zh-chs'
 	} else {
+		print 'not ChineseWebapp'
 		setLanguage this 'en'
 	}
 	if (notNil (at prefs 'versionCheckOnStartup')) {
