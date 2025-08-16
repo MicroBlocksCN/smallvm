@@ -22,6 +22,7 @@ v2.5 Adjust blocks order and delete RingTone
 v2.6 Adjust blocks order, name and default parameters
 v2.11 Improve the "CoCube move to" function logic
 v2.12 Optimize PID implementation
+v2.13 Optimize "set wheel" function
 '
 variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_i _cocube_pid_ratio _cocube_pid_initialized _cocube_pid_flag _cocube_pid_d _cocube_pid_p _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle 
 
@@ -232,10 +233,16 @@ to 'CoCube set TFT backlight' state {
 }
 
 to 'CoCube set wheel' speed_left speed_right {
-  _cocube_pid_flag = (booleanConstant true)
-  _cocube_set_left_speed = speed_left
-  _cocube_set_right_speed = speed_right
-  sendBroadcast '_cocube_pid_control'
+  if (and (speed_left == 0) (speed_right == 0)) {
+    'CoCube wheels stop'
+  } (and (speed_left == -99) (speed_right == -99)) {
+    'CoCube wheels break'
+  } else {
+    _cocube_pid_flag = (booleanConstant true)
+    _cocube_set_left_speed = speed_left
+    _cocube_set_right_speed = speed_right
+    sendBroadcast '_cocube_pid_control'
+  }
 }
 
 to 'CoCube wheels break' {
