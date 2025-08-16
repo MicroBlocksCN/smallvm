@@ -1202,6 +1202,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	#elif defined(COCUBE)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7789.h"
+		#include <LittleFS.h>
 
 		#define TFT_MOSI 19
 		#define TFT_SCLK 27
@@ -1212,42 +1213,97 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		#define TFT_WIDTH 240
 		#define TFT_HEIGHT 240
 		#define DEFAULT_BATTERY_PIN 34
+		#define LOGO_PATH "/logo.raw"
 
 		SPIClass CoCubeSPI(VSPI);
 		Adafruit_ST7789 tft = Adafruit_ST7789(&CoCubeSPI, TFT_CS, TFT_DC, TFT_RST);
 
+		void drawRawImage(const char* filename, int x0, int y0, int width, int height) {
+			if (!LittleFS.begin()) {
+				return;
+				}
+				
+			File file = LittleFS.open(filename, "r");
+			if (!file) {
+				return;
+			}
+
+			uint16_t lineBuf[width];
+
+			for (int y = 0; y < height; y++) {
+				size_t read = file.read((uint8_t*)lineBuf, width * 2);
+				if (read != width * 2) {
+					break;
+				}
+
+				tft.drawRGBBitmap(x0, y0 + y, lineBuf, width, 1);
+			}
+
+			file.close();
+			}
+
+		void drawBatteryStatus(int percentage, int x, int y, int width, int height, int textSize) {
+			uint16_t fillColor = 0x07E0; // GREEN
+			if (percentage < 67) fillColor = 0xFD20; // YELLOW
+			if (percentage < 34) fillColor = 0xF800; // RED
+
+			uint16_t borderColor = 0x0000; // BLACK
+			uint16_t textColor = 0x0000;   // BLACK by default
+
+			int level = map(percentage, 0, 100, 0, width - 4);
+			tft.drawRoundRect(x, y, width, height, 3, borderColor);
+			int headW = width / 10;
+			tft.fillRect(x + width, y + height / 4, headW, height / 2, 0x4208);
+			tft.fillRect(x + 2, y + 2, level, height - 4, fillColor);
+
+			char buf[6];
+			sprintf(buf, "%d%%", percentage);
+
+			int charW = 6 * textSize;
+			int charH = 8 * textSize;
+			int textLen = strlen(buf);
+
+			int textX = x + (width - textLen * charW) / 2;
+			int textY = y + (height - charH) / 2;
+
+			tft.setTextColor(textColor);
+			tft.setTextSize(textSize);
+			tft.setCursor(textX, textY);
+			tft.print(buf);
+		}
+
 		void tftInit() {
-			CoCubeSPI.begin(TFT_SCLK, -1, TFT_MOSI, -1); // SCLK, MISO, MOSI, SS
+			CoCubeSPI.begin(TFT_SCLK, -1, TFT_MOSI, -1);
 			tft.init(TFT_HEIGHT, TFT_WIDTH, SPI_MODE3);
 			tft.setRotation(1);
-			tft.fillScreen(BLACK);
-			delay(35);
 			pinMode(TFT_BL, OUTPUT);
 			digitalWrite(TFT_BL, HIGH);
 			useTFT = true;
 
-			int battery_percentage;
+			int batteryRaw = 0;
 			for (int i = 0; i < 5; i++) {
-				battery_percentage += analogRead(DEFAULT_BATTERY_PIN);
+				batteryRaw += analogRead(DEFAULT_BATTERY_PIN);
 				delay(5);
 			}
-			battery_percentage = constrain(((44 * battery_percentage / 105.0 - 6800) / 16.0), 0, 99);
-			char battery_percentage_char[4];
-			itoa(battery_percentage, battery_percentage_char, 10);
-			uint16_t battery_color = ST77XX_GREEN;
-			if (battery_percentage < 67){
-				battery_color = ST77XX_ORANGE;
-				if (battery_percentage < 34){
-					battery_color = ST77XX_RED;
-				}
+			int battery_percentage = constrain(((44 * batteryRaw / 105.0 - 6800) / 16.0), 0, 99);
+
+			bool logoDisplayed = false;
+			LittleFS.begin();
+			File logo = LittleFS.open(LOGO_PATH, "r");
+			if (logo) {
+				logo.close();
+				drawRawImage(LOGO_PATH, 0, 0, 240, 240);
+				drawBatteryStatus(battery_percentage, 85, 150, 70, 40, 3);
+				logoDisplayed = true;
+				delay(1000);
 			}
-			tft.fillRoundRect(45, 72, 145, 96, 5, battery_color);
-			tft.fillRoundRect(185, 95, 25, 50, 3, battery_color);
-			tft.setTextSize(10);
-			tft.setTextColor(BLACK);
-			tft.setCursor(65, 86);
-			tft.println(battery_percentage_char);
-			delay(800);
+
+			if (!logoDisplayed) {
+				tft.fillScreen(WHITE);
+				drawBatteryStatus(battery_percentage, 85, 100, 70, 40, 3);
+				delay(1000);
+			}
+			tft.fillScreen(BLACK);
 		}
 
 	#elif defined(ARDUINO_M5CoreInk)
