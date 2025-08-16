@@ -974,6 +974,37 @@ void hardwareInit() {
 	// LDR - 24 (was 39)
 	// Unused - 34
 
+#elif defined(ARDUINO_XIAO_ESP32S3)
+	#define BOARD_TYPE "Xiao ESP32S3"
+	#define DIGITAL_PINS 14
+	#define ANALOG_PINS 14
+	#define TOTAL_PINS 49
+	#define PIN_LED 21
+	#define INVERT_USER_LED true
+	#define USE_DIGITAL_PIN_MAP true
+	static const int analogPin[] = {};
+	static const char digitalPin[DIGITAL_PINS] = {1, 2, 3, 4, 5, 6, 43, 44, 7, 8, 9, 42, 41, 21};
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+		0, 0, 0, 0, 0, 1, 1, 0, 0};
+
+#elif defined(ARDUINO_XIAO_ESP32C3)
+	#define BOARD_TYPE "Xiao ESP32C3"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 4
+	#define TOTAL_PINS 22
+	#define PIN_LED 10 // there is no user LED; use pin 10
+	#define USE_DIGITAL_PIN_MAP true
+	static const int analogPin[] = {};
+	static const char digitalPin[DIGITAL_PINS] = {2, 3, 4, 5, 6, 7, 21, 20, 8, 9, 10};
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			0, 0};
+
 #elif defined(ESP32_S2)
 	#define BOARD_TYPE "ESP32-S2"
 	#define DIGITAL_PINS 48
@@ -1576,23 +1607,28 @@ void hardwareInit() {
 	// 42 (PF_2) - reset
 	// 49 (PA_12) - USB P
 	// 50 (PA_11) - USB N
-	// 47 (PA_3) - Downlink RX
-	// 52 (PA_2) - Downlink TX
+	// 47 (PA_3) - Downlink RX (serial)
+	// 52 (PA_2) - Downlink TX (serial)
+
+	// 13 (PA_5, edge pin 21) is the buzzer
+	// 19 (PB_0, edge pin 8) is the light sensor
 	static const char cincoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
 		 2, 27, 32,  9,  5,  4, 33, 255, 255,  0,
 		 1, 13,  7, 12, 15, 54, 11}; // row pins: 7, 12, 15, 54, 11
 
+	// 13 (PA_5, edge pin 21) is the buzzer
+	// 12 (PA_6, edge pin 23) is the light sensor
+	// 29 (PA_10, edge pin 22) is the display reset pin
 	static const char pixoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
 		 2, 27,  7,  9,  5,  4, 33, 255, 255,  0,
-		 1, 13, 12, 14, 15, 29, 32}; // unused pins: 12, 14, 15, 29, 32
+		 1, 13, 29, 12, 15, 14, 32}; // unused pins: 12, 15, 14, 32
 
-	// Pin 13 is repeated at index 21 (DEFAULT_TONE_PIN)
 	static const char dueStandardPin[DIGITAL_PINS] = {
 		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
 		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
-		28, 13,  8,  2, 27, 32, 32}; // unused pins: 8, 2, 27, 32
+		28,  8,  2, 27, 32, 255, 255};
 
 	// Analog pin names for DUELink boards
 	// Note: CincoBit edge pins 3, 4, and 12 are not analog capable
@@ -1827,6 +1863,18 @@ static void initPins(void) {
 		pinMode(DEFAULT_R2_PIN, OUTPUT); // L4 PIN
 		pinMode(PIN_BUTTON_A, INPUT_PULLUP); // BUTTON A
 		pinMode(PIN_BUTTON_B, INPUT_PULLUP); // BUTTON B
+	#endif
+
+	#ifdef ARDUINO_SEEED_XIAO_M0
+		// put TX/RX LED into input mode to suppress flashing
+		SET_MODE(PIN_LED_RXL, INPUT);
+		SET_MODE(PIN_LED_TXL, INPUT);
+	#endif
+
+	#ifdef ARDUINO_SEEED_XIAO_RP2040
+		SET_MODE(PIN_LED_R, INPUT);
+		SET_MODE(PIN_LED_G, INPUT);
+		SET_MODE(PIN_LED_B, INPUT);
 	#endif
 }
 

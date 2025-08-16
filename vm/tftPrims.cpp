@@ -32,7 +32,7 @@ static int deferUpdates = false;
 	defined(GAMEPAD_DISPLAY) || defined(PICO_ED) || defined(OLED_128_64) || defined(FUTURE_LITE) || \
 	defined(TFT_TOUCH_SHIELD) || defined(OLED_1106) || defined(MINGBAI) || defined(M5_CARDPUTER) || defined(M5_DIN_METER) || \
 	defined(COCUBE) || defined(COCUBE_SOCCER) || defined(M5_ATOMS3) || defined(ADAFRUIT_FER_TFT) || \
-	defined(XESGAME) || defined(ARDUINO_M5CoreInk) || defined(DF_K10)
+	defined(XESGAME) || defined(ARDUINO_M5CoreInk) || defined(DF_K10) || defined(M5Atom_S3_TFT)
 
 	#define BLACK 0
 	#define WHITE 65535
@@ -1346,7 +1346,7 @@ static int color24to16b(int color24b) {
 	r = (color24b >> 19) & 0x1F; // 5 bits
 	g = (color24b >> 10) & 0x3F; // 6 bits
 	b = (color24b >> 3) & 0x1F; // 5 bits
-	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus) && !defined(ARDUINO_M5Stick_C2) 
+	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus) && !defined(ARDUINO_M5Stick_C2) || defined(M5Atom_S3_TFT)
 		return (b << 11) | (g << 5) | r; // color order: BGR
 	#else
 		return (r << 11) | (g << 5) | b; // color order: RGB

@@ -81,6 +81,9 @@
 #elif defined(M5Atom_Matrix) || defined(M5Atom_Lite)
 	#define PIN_WIRE_SCL 21
 	#define PIN_WIRE_SDA 25
+#elif defined(ARDUINO_M5Stack_ATOMS3)
+	#define PIN_WIRE_SCL 1
+	#define PIN_WIRE_SDA 2
 #elif defined(DUELink)
 	// 0 and 1 are edge connector pins 19 and 20 or DUELink standard pins 16 and 15
 	#define PIN_WIRE_SCL 1
@@ -1010,13 +1013,10 @@ static int readTemperature() {
 	return 25 + (temp >> shift);
 }
 
-#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
+#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) || defined(M5Atom_S3_TFT) || \
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
 
-#ifdef ARDUINO_M5Stack_Core_ESP32
-	#define Wire1 Wire
-#endif
-#ifdef ARDUINO_M5STACK_FIRE
+#ifdef ARDUINO_M5Stack_Core_ESP32 || defined(M5Atom_Matrix) || ARDUINO_M5STACK_FIRE
  #define Wire1 Wire
 #endif
 
@@ -1048,6 +1048,10 @@ static void writeAccelReg(int regID, int value) {
 static char is6886 = false;
 
 static void startAccelerometer() {
+	#if defined(M5Atom_Matrix)
+		Wire1.begin(25, 21);
+	#endif
+	
 	#ifdef ARDUINO_M5Atom_Matrix_ESP32
 		Wire1.begin(25, 21); // use internal I2C bus with default pins
 	#else
@@ -2339,8 +2343,8 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		deviceID = LIS3DH_ID;
 		reg = 0x29 | 0x80; // address + auto-increment flag
-	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
-		deviceID = MPU6886_ID;
+	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Stick_C) || defined(M5Atom_Matrix) || defined(M5Atom_S3_TFT) || defined(ARDUINO_M5STACK_FIRE) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+		deviceID = MPU6886_ID; 
 		reg = 0x3B;
 	#endif
 
@@ -2740,7 +2744,7 @@ static int readDigitalMicrophone() {
 }
 
 #elif defined(M5_CARDPUTER)  || defined(FUTURE_LITE) || defined(ARDUINO_M5Stick_C) \
-|| defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+|| defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_XIAO_ESP32S3)
 
 #define USE_DIGITAL_MICROPHONE 1
 
