@@ -4644,6 +4644,14 @@ msgid "DLight level"
 msgstr "Dlight 环境光强"
 
 #. CoCube Module library block
+msgid "ASR get command"
+msgstr "ASR 获取指令"
+
+#. CoCube Module library block
+msgid "ASR play command _"
+msgstr "ASR 播报指令 _"
+
+#. CoCube Module library block
 msgid "3D gesture connected"
 msgstr "3D 手势传感器已连接"
 

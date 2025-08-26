@@ -4883,6 +4883,14 @@ msgid "DLight level"
 msgstr "DLight level"
 
 #. CoCube Module library block
+msgid "ASR get command"
+msgstr "ASR get command"
+
+#. CoCube Module library block
+msgid "ASR play command _"
+msgstr "ASR play command _"
+
+#. CoCube Module library block
 msgid "3D gesture connected"
 msgstr "3D gesture connected"
 
