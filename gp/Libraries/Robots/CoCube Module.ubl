@@ -11,7 +11,7 @@ sliang23@m.fudan.edu.cn
 
 Note: All functions start by turning on pin 13 to power the module.
 The power pin is off by default and is also turned off by the IDE stop button.'
-variables _cc_cam_init_flag 
+variables _cc_cam_init_flag _cc_asr_snc
 
   spec ' ' 'ccmodule_gripper open' 'gripper open'
   spec ' ' 'ccmodule_gripper close' 'gripper close'
@@ -53,8 +53,8 @@ to 'ccmodule_ASR get command' {
   local 'data' (newList 2)
   '[sensors:i2cRead]' (hexToInt '64') data
   local 'new_asr_snc' (at 1 data)
-  if (_ccmodule_asr_snc != new_asr_snc) {
-    _ccmodule_asr_snc = new_asr_snc
+  if (_cc_asr_snc != new_asr_snc) {
+    _cc_asr_snc = new_asr_snc
     return (at 2 data)
   } else {
     return 0
