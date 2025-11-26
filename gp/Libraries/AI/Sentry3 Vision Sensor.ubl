@@ -1,6 +1,6 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 0 2 
+version 0 3 
 choices sentryVisionParamNumMenu Color Blob 
 choices sentryObjInfoMenu 'x-coord' 'y-coord' width height label 
 choices sentryObjInfoQrMenu 'x-coord' 'y-coord' width height 
@@ -232,6 +232,7 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
   local 'currentFrame' ('_sentry get' _sentry_index 31)
   local 'cache_frame' ('_sentry cache get byte' _sentry_index_val 3)
   local 'detectCount' 0
+  local 'tryCount' 0
   repeatUntil (detectCount != 0) {
     if (or (cache_frame == 0) (cache_frame == currentFrame)) {
       comment 'Unlock sensor first to read frame'
@@ -251,11 +252,15 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
     detectCount = ('_sentry get' _sentry_index 52)
     if (detectCount == 0) {
       comment 'No detection'
-      waitMillis 80
+      tryCount = (tryCount + 1)
+      if (3 < tryCount) {
+        return -1
+      }
+      waitMillis 40
     }
   }
   '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
-  UdpLog 'detectCount' currentFrame detectCount
+  // UdpLog 'detectCount' currentFrame detectCount
   return detectCount
 }
 
@@ -494,7 +499,7 @@ to '_sentry cache get word' entryIndex dataOffset {
     return 0
   }
   local 'byteOffset' (6 + (dataOffset * 2))
-  UdpLog 'cache get word' _sentry_cache_entry byteOffset
+  // UdpLog 'cache get word' _sentry_cache_entry byteOffset
   return (((at byteOffset _sentry_cache_entry) << 8) | (at (byteOffset + 1) _sentry_cache_entry))
 }
 
@@ -1017,7 +1022,7 @@ to '_sentry_get_obj_info_index' property {
 to '_sentry_i2c_get' address reg_address {
   comment 'I2C Get operation - read value from register'
   local 'value' (i2cGet address reg_address)
-  UdpLog 'reg_r' reg_address value
+  // UdpLog 'reg_r' reg_address value
   return value
 }
 
@@ -1081,7 +1086,7 @@ to '_sentry_i2c_read_string' address visionId obj_id {
 
 to '_sentry_i2c_set' address reg_address value {
   comment 'I2C Set operation - write value to register'
-  UdpLog 'reg_w' reg_address value
+  // UdpLog 'reg_w' reg_address value
   i2cSet address reg_address value
   comment 'SENTRY_OK'
   return 0
@@ -1218,7 +1223,7 @@ to '_sentry_uart_read_response' {
   repeatUntil (timeoutCount > 10) {
     newData = ('[serial:read]')
     newDataSize = (size newData)
-    UdpLog 'read' newDataSize newData
+    // UdpLog 'read' newDataSize newData
     if (newDataSize > 0) {
       comment 'Append new data to buffer'
       for i newDataSize {
@@ -1254,7 +1259,7 @@ to '_sentry_uart_read_response' {
                   }
                 }
                 _sentry_buffer_size = (_sentry_buffer_size - datalen)
-                UdpLog 'response' responseLength ('[data:copyFromTo]' _sentry_uart_response_buffer 1 responseLength)
+                // UdpLog 'response' responseLength ('[data:copyFromTo]' _sentry_uart_response_buffer 1 responseLength)
                 comment 'Return response length (response data is in _sentry_uart_response_buffer)'
                 return responseLength
               }
@@ -1379,7 +1384,7 @@ to '_sentry_uart_send_packet' dataLength {
   comment '清空接收缓冲区'
   '_sentry_uart_clear_buffer'
   comment '发送数据包（从位置1到totalLength）'
-  UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_uart_packet_buffer 1 totalLength)
+  // UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_uart_packet_buffer 1 totalLength)
   for i totalLength {
     '[serial:write]' (at i _sentry_uart_packet_buffer)
   }

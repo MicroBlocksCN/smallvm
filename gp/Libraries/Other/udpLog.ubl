@@ -1,0 +1,37 @@
+module udpLog
+author '作者 AITosee'
+version 1 1 
+depends UDP WIFI 
+description ''
+variables _LogCnt _UDPlogIp _UDPlogPort 
+
+  spec ' ' 'UdpLogInit' 'UdpLog connect server _ port _' 'str str' '192.168.1.16' 5000
+  spec ' ' 'UdpLog' 'UdpLog _ _ _' 'str auto auto' ' tag' '' ''
+
+to UdpLog foo bar baz {
+  local 'var' ('_log_any_to_string' bar)
+  var = ('[data:join]' var '  ' ('_log_any_to_string' baz))
+  _LogCnt += 1
+  '[net:udpSendPacket]' ('[data:join]' ('[data:convertType]' _LogCnt 'string') ':' ('[data:convertType]' (millisOp) 'string') ':' ('[data:convertType]' ('[data:freeMemory]') 'string') ':' ('[data:convertType]' foo 'string') ':' var) _UDPlogIp _UDPlogPort
+}
+
+to UdpLogInit bar baz {
+  '[net:udpStart]' baz
+  _UDPlogIp = bar
+  _UDPlogPort = baz
+}
+
+to '_log_any_to_string' foo {
+  local 'var' '  '
+  if (or (isType foo 'list') (isType foo 'byte array')) {
+    local 'var' '[ '
+    for i (size foo) {
+      var = ('[data:join]' var ('_log_any_to_string' (at i foo)) ' ')
+    }
+    var = ('[data:join]' var ']')
+  } else {
+    var = ('[data:convertType]' foo 'string')
+  }
+  return var
+}
+
