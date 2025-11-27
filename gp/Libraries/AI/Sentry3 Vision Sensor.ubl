@@ -1,6 +1,6 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 0 3 
+version 0 3
 choices sentryVisionParamNumMenu Color Blob 
 choices sentryObjInfoMenu 'x-coord' 'y-coord' width height label 
 choices sentryObjInfoQrMenu 'x-coord' 'y-coord' width height 
@@ -231,10 +231,11 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
   }
   local 'currentFrame' ('_sentry get' _sentry_index 31)
   local 'cache_frame' ('_sentry cache get byte' _sentry_index_val 3)
+  local 'cache_count' ('_sentry cache get byte' _sentry_index_val 4)
   local 'detectCount' 0
   local 'tryCount' 0
   repeatUntil (detectCount != 0) {
-    if (or (cache_frame == 0) (cache_frame == currentFrame)) {
+    if (or (cache_frame == 0) (cache_count == 0) (cache_frame == currentFrame)) {
       comment 'Unlock sensor first to read frame'
       '_sentry sensor lock' _sentry_index false
       repeatUntil (currentFrame != ('_sentry get' _sentry_index 31)) {
@@ -254,6 +255,7 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
       comment 'No detection'
       tryCount = (tryCount + 1)
       if (3 < tryCount) {
+        '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
         return -1
       }
       waitMillis 40
