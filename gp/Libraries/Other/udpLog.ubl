@@ -5,11 +5,10 @@ depends UDP WIFI
 description ''
 variables _LogCnt _UDPlogIp _UDPlogPort 
 
-  spec ' ' 'UdpLogInit' 'UdpLog connect server _ port _' 'str str' '192.168.1.16' 5000
+  spec ' ' 'UdpLogInit' 'UdpLog connect server _ port _' 'str str' '112.125.89.8' 32063
   spec ' ' 'UdpLog' 'UdpLog _ _ _' 'str auto auto' ' tag' '' ''
 
 to UdpLog tags val1 val2 {
-  sayIt ('_any_to_string' val2)
   local 'var' ('[data:join]' ('[data:convertType]' tags 'string') ':' ('_any_to_string' val1) ' ' ('_any_to_string' val2))
   _LogCnt += 1
   '[net:udpSendPacket]' ('[data:join]' ('[data:convertType]' _LogCnt 'string') ':' ('[data:convertType]' (millisOp) 'string') ':' ('[data:convertType]' ('[data:freeMemory]') 'string') ':' var) _UDPlogIp _UDPlogPort
