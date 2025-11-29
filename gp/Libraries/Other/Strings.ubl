@@ -122,18 +122,17 @@ to withoutWhiteSpace aString {
 }
 
 to 'anyTypeToString' fooval {
-  local 'var' '  '
   if (or (isType fooval 'list') (isType fooval 'byte array')) {
     local 'var' '[ '
     for i (size fooval) {
-      var = ('[data:join]' var ('_any_to_string' (at i fooval)) ' ')
+      var = ('[data:join]' var ('anyTypeToString' (at i fooval)) ' ')
     }
-    var = ('[data:join]' var ']')
+    return ('[data:join]' var ']')
   } else {
-    var = ('[data:convertType]' fooval 'string')
+    return ('[data:convertType]' fooval 'string')
   }
-  return var
 }
+
 
 
 to 'byteArrayToString' byteArray {
