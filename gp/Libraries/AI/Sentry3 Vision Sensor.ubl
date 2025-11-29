@@ -1030,6 +1030,12 @@ to '_sentry_i2c_get' address reg_address {
   comment 'I2C Get operation - read value from register'
   local 'value' (i2cGet address reg_address)
   // UdpLog 'reg_r' reg_address value
+  if (value < 0) {
+    comment 'SENTRY_I2C_ERROR'
+    sayIt 'SENTRY_I2C_ERROR'
+    waitMillis 2000
+    return 0
+  }
   return value
 }
 
