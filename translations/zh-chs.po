@@ -5034,3 +5034,632 @@ msgstr "打开 IDE 时，如果发布了新版本的 MicroBlocks，则显示通�
 # 
 msgid "Do not switch browser tabs!"
 msgstr "不要切换浏览器标签!"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Initialize  Sentry3 _  port _ addr _"
+msgstr "初始化  Sentry3 _  端口 _ 地址 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-15) _"
+msgstr "设置  Sentry3 _  检测到目标时LED发光 _ 否则 _ 亮度(1~15) _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  _  algo _"
+msgstr "设置  Sentry3 _   _  算法 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo _  _ sets of params"
+msgstr "设置  Sentry3 _   _  _ 组参数"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _"
+msgstr "设置  Sentry3 _  颜色识别  中心横坐标 _ 中心纵坐标 _ 宽度 _ 高度 _ 参数组 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo Blob  min-width _ min-height _ color _ paramset _"
+msgstr "设置  Sentry3 _  色块检测  最小宽度 _ 最小高度 _ 颜色 _ 参数组 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo Blob  max num of blobs for each color(1-5) _"
+msgstr "设置  Sentry3 _  色块检测  每种颜色最大可检测数量(1-5) _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo AprilTag  format _"
+msgstr "设置  Sentry3 _  标签识别  编码格式 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo Line  max num of lines(1-5) _"
+msgstr "设置  Sentry3 _  线条检测  最大可检测数量(1-5) _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo _  _  ID _"
+msgstr "设置  Sentry3 _   _  _ 编号 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Set  Sentry3 _  algo BarCode  format _"
+msgstr "设置  Sentry3 _  条形码 编码格式 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo _  num of results"
+msgstr "Sentry3 _   _  返回的结果数量"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo Color  _ of result _"
+msgstr "Sentry3 _  颜色识别  返回值 _ 结果 _ 的"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo _  _ of result _"
+msgstr "Sentry3 _   _  返回值 _ 结果 _ 的"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo Line   _ of result _"
+msgstr "Sentry3 _  线条检测  返回值 _ 结果 _ 的"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo _  string of decoding result _"
+msgstr "Sentry3 _   _  返回字符串 结果 _ 的"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo Color  recognized _ result _"
+msgstr "Sentry3 _  颜色识别  识别到 _ 结果 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo Blob  detected _ blob result _"
+msgstr "Sentry3 _  色块检测  检测到 _ 块 结果 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo Yolo  recognized _ result _"
+msgstr "Sentry3 _  物体识别  识别到 _ 结果 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo HandGesture  detected custom handpose  thumb _ index _ middle _ ring _ pinky _ result _"
+msgstr "Sentry3 _  手势姿态  识别到 大拇指 _ 食指 _ 中指 _ 无名指 _ 小拇指 _ 结果 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo HandGesture  detected preset handpose _ result _"
+msgstr "Sentry3 _  手势姿态  识别到 _ 结果 _"
+
+#. Tip Bar text for a block in Sentry3 Vision Sensor library
+msgid "Sentry3 _  algo LicensePlate  recognized _ result _"
+msgstr "Sentry3 _  车牌识别  识别到 _ 结果 _"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Color"
+msgstr "颜色识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Blob"
+msgstr "色块检测"
+
+#. Sentry3  Vision Sensor menu choices
+# msgid "AprilTag"
+# msgstr "标签识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Line"
+msgstr "线条检测"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Learning"
+msgstr "深度学习"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Face"
+msgstr "人脸识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Yolo"
+msgstr "物体识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "QrCode"
+msgstr "二维码"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "BarCode"
+msgstr "条形码"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "OCR"
+msgstr "文字识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "HandGesture"
+msgstr "手势姿态"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "bent"
+msgstr "弯曲"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "extended"
+msgstr "张开"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "ignore"
+msgstr "忽略"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "LicensePlate"
+msgstr "车牌识别"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "x-coord"
+msgstr "横坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "y-coord"
+msgstr "纵坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "width"
+msgstr "宽度"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "height"
+msgstr "高度"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "label"
+msgstr "标签"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "red CH value"
+msgstr "红色分量值"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "green CH value"
+msgstr "绿色分量值"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "blue CH value"
+msgstr "蓝色分量值"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "x-coord of ending point"
+msgstr "终点横坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "y-coord of ending point"
+msgstr "终点纵坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "x-coord of starting point"
+msgstr "起点横坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "y-coord of starting point"
+msgstr "起点纵坐标"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "inclination angle"
+msgstr "倾斜角度"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Black"
+msgstr "黑色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "White"
+msgstr "白色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Red"
+msgstr "红色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Green"
+msgstr "绿色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Blue"
+msgstr "蓝色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Yellow"
+msgstr "黄色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Purple"
+msgstr "紫色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Cyan"
+msgstr "青色"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "I2C"
+msgstr "I2C"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "Serial"
+msgstr "串口"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "ON"
+msgstr "开启"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "OFF"
+msgstr "关闭"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "learn and assign"
+msgstr "学习并指定"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "delete data"
+msgstr "删除数据"
+
+#. Sentry3  Vision Sensor menu choices
+msgid "All"
+msgstr "全部"
+
+#. Sentry 3 YOLO object classes
+msgid "0  person"
+msgstr "0  人"
+
+#. Sentry 3 YOLO object classes
+msgid "1  bicycle"
+msgstr "1  自行车"
+
+#. Sentry 3 YOLO object classes
+msgid "2  car"
+msgstr "2  汽车"
+
+#. Sentry 3 YOLO object classes
+msgid "3  motorcycle"
+msgstr "3  摩托车"
+
+#. Sentry 3 YOLO object classes
+msgid "4  airplane"
+msgstr "4  飞机"
+
+#. Sentry 3 YOLO object classes
+msgid "5  bus"
+msgstr "5  公交车"
+
+#. Sentry 3 YOLO object classes
+msgid "6  train"
+msgstr "6  火车"
+
+#. Sentry 3 YOLO object classes
+msgid "7  truck"
+msgstr "7  卡车"
+
+#. Sentry 3 YOLO object classes
+msgid "8  boat"
+msgstr "8  船"
+
+#. Sentry 3 YOLO object classes
+msgid "9  traffic light"
+msgstr "9  信号灯"
+
+#. Sentry 3 YOLO object classes
+msgid "10 fire hydrant"
+msgstr "10 消防栓"
+
+#. Sentry 3 YOLO object classes
+msgid "11 stop sign"
+msgstr "11 停车标志"
+
+#. Sentry 3 YOLO object classes
+msgid "12 parking meter"
+msgstr "12 计费器"
+
+#. Sentry 3 YOLO object classes
+msgid "13 bench"
+msgstr "13 长椅"
+
+#. Sentry 3 YOLO object classes
+msgid "14 bird"
+msgstr "14 鸟"
+
+#. Sentry 3 YOLO object classes
+msgid "15 cat"
+msgstr "15 猫"
+
+#. Sentry 3 YOLO object classes
+msgid "16 dog"
+msgstr "16 狗"
+
+#. Sentry 3 YOLO object classes
+msgid "17 horse"
+msgstr "17 马"
+
+#. Sentry 3 YOLO object classes
+msgid "18 sheep"
+msgstr "18 羊"
+
+#. Sentry 3 YOLO object classes
+msgid "19 cow"
+msgstr "19 牛"
+
+#. Sentry 3 YOLO object classes
+msgid "20 elephant"
+msgstr "20 大象"
+
+#. Sentry 3 YOLO object classes
+msgid "21 bear"
+msgstr "21 熊"
+
+#. Sentry 3 YOLO object classes
+msgid "22 zebra"
+msgstr "22 斑马"
+
+#. Sentry 3 YOLO object classes
+msgid "23 giraffe"
+msgstr "23 长颈鹿"
+
+#. Sentry 3 YOLO object classes
+msgid "24 backpack"
+msgstr "24 背包"
+
+#. Sentry 3 YOLO object classes
+msgid "25 umbrella"
+msgstr "25 雨伞"
+
+#. Sentry 3 YOLO object classes
+msgid "26 handbag"
+msgstr "26 手提包"
+
+#. Sentry 3 YOLO object classes
+msgid "27 tie"
+msgstr "27 领带"
+
+#. Sentry 3 YOLO object classes
+msgid "28 suitcase"
+msgstr "28 行李箱"
+
+#. Sentry 3 YOLO object classes
+msgid "29 frisbee"
+msgstr "29 飞盘"
+
+#. Sentry 3 YOLO object classes
+msgid "30 skis"
+msgstr "30 双滑雪板"
+
+#. Sentry 3 YOLO object classes
+msgid "31 snowboard"
+msgstr "31 单滑雪板"
+
+#. Sentry 3 YOLO object classes
+msgid "32 sports ball"
+msgstr "32 运动球类"
+
+#. Sentry 3 YOLO object classes
+msgid "33 kite"
+msgstr "33 风筝"
+
+#. Sentry 3 YOLO object classes
+msgid "34 baseball bat"
+msgstr "34 棒球棒"
+
+#. Sentry 3 YOLO object classes
+msgid "35 baseball glove"
+msgstr "35 棒球手套"
+
+#. Sentry 3 YOLO object classes
+msgid "36 skateboard"
+msgstr "36 滑板"
+
+#. Sentry 3 YOLO object classes
+msgid "37 surfboard"
+msgstr "37 冲浪板"
+
+#. Sentry 3 YOLO object classes
+msgid "38 tennis racket"
+msgstr "38 网球拍"
+
+#. Sentry 3 YOLO object classes
+msgid "39 bottle"
+msgstr "39 瓶子"
+
+#. Sentry 3 YOLO object classes
+msgid "40 wine glass"
+msgstr "40 红酒杯"
+
+#. Sentry 3 YOLO object classes
+msgid "41 cup"
+msgstr "41 杯子"
+
+#. Sentry 3 YOLO object classes
+msgid "42 fork"
+msgstr "42 叉子"
+
+#. Sentry 3 YOLO object classes
+msgid "43 knife"
+msgstr "43 刀"
+
+#. Sentry 3 YOLO object classes
+msgid "44 spoon"
+msgstr "44 勺子"
+
+#. Sentry 3 YOLO object classes
+msgid "45 bowl"
+msgstr "45 碗"
+
+#. Sentry 3 YOLO object classes
+msgid "46 banana"
+msgstr "46 香蕉"
+
+#. Sentry 3 YOLO object classes
+msgid "47 apple"
+msgstr "47 苹果"
+
+#. Sentry 3 YOLO object classes
+msgid "48 sandwich"
+msgstr "48 三明治"
+
+#. Sentry 3 YOLO object classes
+msgid "49 orange"
+msgstr "49 橙子"
+
+#. Sentry 3 YOLO object classes
+msgid "50 broccoli"
+msgstr "50 西兰花"
+
+#. Sentry 3 YOLO object classes
+msgid "51 carrot"
+msgstr "51 胡萝卜"
+
+#. Sentry 3 YOLO object classes
+msgid "52 hot dog"
+msgstr "52 热狗"
+
+#. Sentry 3 YOLO object classes
+msgid "53 pizza"
+msgstr "53 披萨"
+
+#. Sentry 3 YOLO object classes
+msgid "54 donut"
+msgstr "54 甜甜圈"
+
+#. Sentry 3 YOLO object classes
+msgid "55 cake"
+msgstr "55 蛋糕"
+
+#. Sentry 3 YOLO object classes
+msgid "56 chair"
+msgstr "56 椅子"
+
+#. Sentry 3 YOLO object classes
+msgid "57 couch"
+msgstr "57 沙发"
+
+#. Sentry 3 YOLO object classes
+msgid "58 potted plant"
+msgstr "58 盆栽植物"
+
+#. Sentry 3 YOLO object classes
+msgid "59 bed"
+msgstr "59 床"
+
+#. Sentry 3 YOLO object classes
+msgid "60 dining table"
+msgstr "60 餐桌"
+
+#. Sentry 3 YOLO object classes
+msgid "61 toilet"
+msgstr "61 马桶"
+
+#. Sentry 3 YOLO object classes
+msgid "62 tv"
+msgstr "62 显示器"
+
+#. Sentry 3 YOLO object classes
+msgid "63 laptop"
+msgstr "63 便携电脑"
+
+#. Sentry 3 YOLO object classes
+msgid "64 mouse"
+msgstr "64 鼠标"
+
+#. Sentry 3 YOLO object classes
+msgid "65 remote"
+msgstr "65 遥控器"
+
+#. Sentry 3 YOLO object classes
+msgid "66 keyboard"
+msgstr "66 键盘"
+
+#. Sentry 3 YOLO object classes
+msgid "67 cell phone"
+msgstr "67 手机"
+
+#. Sentry 3 YOLO object classes
+msgid "68 microwave"
+msgstr "68 微波炉"
+
+#. Sentry 3 YOLO object classes
+msgid "69 oven"
+msgstr "69 烤箱"
+
+#. Sentry 3 YOLO object classes
+msgid "70 toaster"
+msgstr "70 烤面包机"
+
+#. Sentry 3 YOLO object classes
+msgid "71 sink"
+msgstr "71 水槽"
+
+#. Sentry 3 YOLO object classes
+msgid "72 refrigerator"
+msgstr "72 冰箱"
+
+#. Sentry 3 YOLO object classes
+msgid "73 book"
+msgstr "73 书"
+
+#. Sentry 3 YOLO object classes
+msgid "74 clock"
+msgstr "74 钟表"
+
+#. Sentry 3 YOLO object classes
+msgid "75 vase"
+msgstr "75 花瓶"
+
+#. Sentry 3 YOLO object classes
+msgid "76 scissors"
+msgstr "76 剪刀"
+
+#. Sentry 3 YOLO object classes
+msgid "77 teddy bear"
+msgstr "77 泰迪熊"
+
+#. Sentry 3 YOLO object classes
+msgid "78 hair drier"
+msgstr "78 吹风机"
+
+#. Sentry 3 YOLO object classes
+msgid "79 toothbrush"
+msgstr "79 牙刷"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "One"
+msgstr "一"
+
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Two"
+msgstr "二"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Three"
+msgstr "三"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Four"
+msgstr "四"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Five"
+msgstr "五"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Six"
+msgstr "六"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Eight"
+msgstr "八"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Ten"
+msgstr "十"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Rock"
+msgstr "石头"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Scissors"
+msgstr "剪刀"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Paper"
+msgstr "布"
+
+#. Sentry3 HandPose Preset menu choices
+msgid "Like"
+msgstr "点赞"
