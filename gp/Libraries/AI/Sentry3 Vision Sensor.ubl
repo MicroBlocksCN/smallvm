@@ -1,11 +1,11 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 0 2 
+version 0 3
 choices sentryVisionParamNumMenu Color Blob 
 choices sentryObjInfoMenu 'x-coord' 'y-coord' width height label 
 choices sentryObjInfoQrMenu 'x-coord' 'y-coord' width height 
 choices sentryAprilTagModeMenu '16H5' '25H9' '36H11' Circle21H7 Standard41H12 
-choices sentryYoloClassMenu '1  person' '2  bicycle' '3  car' '4  motorcycle' '5  airplane' '6  bus' '7  train' '8  truck' '9  boat' '10 traffic light' '11 fire hydrant' '12 stop sign' '13 parking meter' '14 bench' '15 bird' '16 cat' '17 dog' '18 horse' '19 sheep' '20 cow' '21 elephant' '22 bear' '23 zebra' '24 giraffe' '25 backpack' '26 umbrella' '27 handbag' '28 tie' '29 suitcase' '30 frisbee' '31 skis' '32 snowboard' '33 sports ball' '34 kite' '35 baseball bat' '36 baseball glove' '37 skateboard' '38 surfboard' '39 tennis racket' '40 bottle' '41 wine glass' '42 cup' '43 fork' '44 knife' '45 spoon' '46 bowl' '47 banana' '48 apple' '49 sandwich' '50 orange' '51 broccoli' '52 carrot' '53 hot dog' '54 pizza' '55 donut' '56 cake' '57 chair' '58 couch' '59 potted plant' '60 bed' '61 dining table' '62 toilet' '63 tv' '64 laptop' '65 mouse' '66 remote' '67 keyboard' '68 cell phone' '69 microwave' '70 oven' '71 toaster' '72 sink' '73 refrigerator' '74 book' '75 clock' '76 vase' '77 scissors' '78 teddy bear' '79 hair drier' '80 toothbrush' 
+choices sentryYoloClassMenu '0  person' '1  bicycle' '2  car' '3  motorcycle' '4  airplane' '5  bus' '6  train' '7  truck' '8  boat' '9  traffic light' '10 fire hydrant' '11 stop sign' '12 parking meter' '13 bench' '14 bird' '15 cat' '16 dog' '17 horse' '18 sheep' '19 cow' '20 elephant' '21 bear' '22 zebra' '23 giraffe' '24 backpack' '25 umbrella' '26 handbag' '27 tie' '28 suitcase' '29 frisbee' '30 skis' '31 snowboard' '32 sports ball' '33 kite' '34 baseball bat' '35 baseball glove' '36 skateboard' '37 surfboard' '38 tennis racket' '39 bottle' '40 wine glass' '41 cup' '42 fork' '43 knife' '44 spoon' '45 bowl' '46 banana' '47 apple' '48 sandwich' '49 orange' '50 broccoli' '51 carrot' '52 hot dog' '53 pizza' '54 donut' '55 cake' '56 chair' '57 couch' '58 potted plant' '59 bed' '60 dining table' '61 toilet' '62 tv' '63 laptop' '64 mouse' '65 remote' '66 keyboard' '67 cell phone' '68 microwave' '69 oven' '70 toaster' '71 sink' '72 refrigerator' '73 book' '74 clock' '75 vase' '76 scissors' '77 teddy bear' '78 hair drier' '79 toothbrush' 
 choices sentryVisionStringMenu QrCode BarCode OCR LicensePlate 
 choices sentryObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
 choices sentryOperaVisionMenu Learning Face 
@@ -21,13 +21,14 @@ choices sentryObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point
 choices sentryCommModeMenu I2C Serial 
 choices sentryOperaParamMenu 'learn and assign' 'delete data' 
 choices sentryBarcodeModeMenu All ENA13 Code128 Code39 
+choices sentryAddrMenu '0x60' '0x61' '0x62' '0x63' 
 choices sentryLedColorMenu Black Red Green Yellow Blue Purple Cyan White 
 description 'Sentry3 vision sensor library with I2C/UART support
 Supports color detection, blob detection, AprilTag, line detection, learning mode, qr，ocr, face detection, and yolo object detection
 '
 variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config_list _sentry_cache_validation _sentry_uart_packet_buffer _sentry_uart_response_buffer _sentry_buffer_size _sentry_params_buffer _sentry_cache_entry _sentry_err _sentry_vision_id _sentry_index_val 
 
-  spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu num' '#1' 'I2C' 96
+  spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu menu.sentryAddrMenu' '#1' 'I2C' '0x60'
   spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-15) _' 'menu.sentryIndexMenu menu.sentryLedColorMenu menu.sentryLedColorMenu num' '#1' 'Red' 'Blue' 1
   spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentryIndexMenu menu.sentryVisionStaMenu menu.sentryVisionMenu' '#1' 'ON' 'Color'
   spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentryIndexMenu menu.sentryVisionParamNumMenu num' '#1' 'Color' 1
@@ -46,7 +47,7 @@ variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config
   spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu num' '#1' 'QrCode' 1
   spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Black' 1
   spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Red' 1
-  spec 'r' 'Sentry3 VisionDetectedYolo' 'Sentry3 _  algo Yolo  recognized _ result _' 'menu.sentryIndexMenu menu.sentryYoloClassMenu num' '#1' '1  person' 1
+  spec 'r' 'Sentry3 VisionDetectedYolo' 'Sentry3 _  algo Yolo  recognized _ result _' 'menu.sentryIndexMenu menu.sentryYoloClassMenu num' '#1' '0  person' 1
   spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandGesture  detected custom handpose  thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentryIndexMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu num' '#1' 'extended' 'extended' 'extended' 'extended' 'extended' 1
   spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandGesture  detected preset handpose _ result _' 'menu.sentryIndexMenu menu.sentryHandPosePresetMenu num' '#1' 'One' 1
 
@@ -60,7 +61,7 @@ to 'Sentry3 Begin' index_menu comm_mode address {
   '_sentry init config lists'
   comment 'Save config for this device index'
   comment 'Pack mode (bit 7: 1=Serial, 0=I2C) and address (bits 0-6: 0-127) into single byte'
-  local 'addr' (minimum 127 (maximum 1 address))
+  local 'addr' (minimum 127 (maximum 1 (hexToInt address)))
   local 'deviceConfig' addr
   if (comm_mode == 'Serial') {
     deviceConfig = (128 | addr)
@@ -231,31 +232,42 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
   }
   local 'currentFrame' ('_sentry get' _sentry_index 31)
   local 'cache_frame' ('_sentry cache get byte' _sentry_index_val 3)
+  local 'cache_count' ('_sentry cache get byte' _sentry_index_val 4)
   local 'detectCount' 0
+  local 'tryCount' 0
   repeatUntil (detectCount != 0) {
-    if (or (cache_frame == 0) (cache_frame == currentFrame)) {
+    if (or (cache_frame == 0) (cache_count == 0) (cache_frame == currentFrame)) {
       comment 'Unlock sensor first to read frame'
       '_sentry sensor lock' _sentry_index false
-      repeatUntil (currentFrame != ('_sentry get' _sentry_index 31)) {
+      cache_frame = currentFrame
+      repeatUntil (currentFrame != cache_frame) {
         comment 'Wait Frame Update'
-        waitMillis 40
+        waitMillis 10
+        currentFrame = ('_sentry get' _sentry_index 31)
       }
-      '_sentry sensor lock' _sentry_index true
-      comment 'Get current frame number'
-      currentFrame = ('_sentry get' _sentry_index 31)
+      
       cache_frame = currentFrame
     }
+    
     comment 'Set vision ID register (0x20)'
     '_sentry set' _sentry_index 32 _sentry_vision_id
     comment 'Read detection count from register 0x34'
     detectCount = ('_sentry get' _sentry_index 52)
+    comment 'Get current frame number'
     if (detectCount == 0) {
       comment 'No detection'
-      waitMillis 80
+      tryCount = (tryCount + 1)
+      if (3 < tryCount) {
+        '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
+        return 0
+      }
+    }
+    else {
+    '_sentry sensor lock' _sentry_index true
     }
   }
   '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
-  UdpLog 'detectCount' currentFrame detectCount
+  // UdpLog 'detectCount' currentFrame detectCount
   return detectCount
 }
 
@@ -337,7 +349,7 @@ to 'Sentry3 VisionDetectedYolo' index_menu yolo_class obj_id {
     return 0
   }
   comment 'Extract number part (from start to before first space) and convert to number'
-  return (('_sentry getValue' _sentry_index 'Yolo' 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' yolo_class 1 (spacePos - 1)) 'number') - 1))
+  return (('_sentry getValue' _sentry_index 'Yolo' 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' yolo_class 1 (spacePos - 1)) 'number')))
 }
 
 to 'Sentry3 VisionSetAprilTagMode' index_menu apriltag_mode {
@@ -494,7 +506,7 @@ to '_sentry cache get word' entryIndex dataOffset {
     return 0
   }
   local 'byteOffset' (6 + (dataOffset * 2))
-  UdpLog 'cache get word' _sentry_cache_entry byteOffset
+  // UdpLog 'cache get word' _sentry_cache_entry byteOffset
   return (((at byteOffset _sentry_cache_entry) << 8) | (at (byteOffset + 1) _sentry_cache_entry))
 }
 
@@ -1017,7 +1029,13 @@ to '_sentry_get_obj_info_index' property {
 to '_sentry_i2c_get' address reg_address {
   comment 'I2C Get operation - read value from register'
   local 'value' (i2cGet address reg_address)
-  UdpLog 'reg_r' reg_address value
+  // UdpLog 'reg_r' reg_address value
+  if (value < 0) {
+    comment 'SENTRY_I2C_ERROR'
+    sayIt 'SENTRY_I2C_ERROR'
+    waitMillis 2000
+    return 0
+  }
   return value
 }
 
@@ -1081,7 +1099,7 @@ to '_sentry_i2c_read_string' address visionId obj_id {
 
 to '_sentry_i2c_set' address reg_address value {
   comment 'I2C Set operation - write value to register'
-  UdpLog 'reg_w' reg_address value
+  // UdpLog 'reg_w' reg_address value
   i2cSet address reg_address value
   comment 'SENTRY_OK'
   return 0
@@ -1218,7 +1236,7 @@ to '_sentry_uart_read_response' {
   repeatUntil (timeoutCount > 10) {
     newData = ('[serial:read]')
     newDataSize = (size newData)
-    UdpLog 'read' newDataSize newData
+    // UdpLog 'read' newDataSize newData
     if (newDataSize > 0) {
       comment 'Append new data to buffer'
       for i newDataSize {
@@ -1254,7 +1272,7 @@ to '_sentry_uart_read_response' {
                   }
                 }
                 _sentry_buffer_size = (_sentry_buffer_size - datalen)
-                UdpLog 'response' responseLength ('[data:copyFromTo]' _sentry_uart_response_buffer 1 responseLength)
+                // UdpLog 'response' responseLength ('[data:copyFromTo]' _sentry_uart_response_buffer 1 responseLength)
                 comment 'Return response length (response data is in _sentry_uart_response_buffer)'
                 return responseLength
               }
@@ -1379,7 +1397,7 @@ to '_sentry_uart_send_packet' dataLength {
   comment '清空接收缓冲区'
   '_sentry_uart_clear_buffer'
   comment '发送数据包（从位置1到totalLength）'
-  UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_uart_packet_buffer 1 totalLength)
+  // UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_uart_packet_buffer 1 totalLength)
   for i totalLength {
     '[serial:write]' (at i _sentry_uart_packet_buffer)
   }

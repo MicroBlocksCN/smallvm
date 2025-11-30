@@ -19,6 +19,8 @@ description 'String operations.'
 	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '
 	spec 'r' 'stringToUnicodes' 'unicodes _' 'auto' 'aString'
 	spec 'r' 'unicodesToString' 'string from unicodes _' 'auto' 'aList'
+  spec 'r' 'byteArrayToString' 'string from byteArray _' 'auto' 'abyteArray'
+  spec 'r' 'anyTypeToString' 'string from AnyType _' 'auto' 'any'
 	space
 	spec 'r' 'num2str' 'num2str _' 'auto' 42
 	spec 'r' 'str2num' 'str2num _' 'str' '123'
@@ -119,3 +121,80 @@ to withoutWhiteSpace aString {
   return ('[data:unicodeString]' result)
 }
 
+to 'anyTypeToString' fooval {
+  if (or (isType fooval 'list') (isType fooval 'byte array')) {
+    local 'var' '[ '
+    for i (size fooval) {
+      var = ('[data:join]' var ('anyTypeToString' (at i fooval)) ' ')
+    }
+    return ('[data:join]' var ']')
+  } else {
+    return ('[data:convertType]' fooval 'string')
+  }
+}
+
+
+
+to 'byteArrayToString' byteArray {
+  comment 'Decode UTF-8 ByteArray to Unicode string using streaming parse'
+  local 'len' (size byteArray)
+  if (len <= 0) {
+    return ''
+  }
+  local 'unicodeList' (newList 0)
+  local 'i' 1
+  local 'b' 0
+  local 'bytes' 0
+  local 'mask' 0
+  local 'cp' 0
+  local 'j' 0
+  local 'nextByte' 0
+  repeatUntil (i > len) {
+    b = (at i byteArray)
+    if ((b & 128) == 0) {
+      '[data:addLast]' b unicodeList
+      i = (i + 1)
+    } else {
+      if ((b & 224) == 192) {
+        bytes = 2
+        mask = 31
+      } else {
+        if ((b & 240) == 224) {
+          bytes = 3
+          mask = 15
+        } else {
+          if ((b & 248) == 240) {
+            bytes = 4
+            mask = 7
+          } else {
+            i = (i + 1)
+          }
+        }
+      }
+      if (bytes > 0) {
+        if (((i + bytes) - 1) > len) {
+          i = (i + 1)
+        } else {
+          cp = (b & mask)
+          j = 1
+          repeatUntil (j >= bytes) {
+            nextByte = (at (i + j) byteArray)
+            if ((nextByte & 192) != 128) {
+              break
+            }
+            cp = ((cp << 6) | (nextByte & 63))
+            j = (j + 1)
+          }
+          if (j == bytes) {
+            '[data:addLast]' cp unicodeList
+            i = (i + bytes)
+          } else {
+            i = (i + 1)
+          }
+          bytes = 0
+        }
+      }
+    }
+  }
+  return ('[data:unicodeString]' unicodeList)
+}
