@@ -1,22 +1,21 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 0 3
-choices sentryVisionParamNumMenu Color Blob 
+version 0 4
+choices sentryVisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Yolo ' ' QrCode ' ' BarCode ' ' OCR ' ' HandGesture ' ' LicensePlate ' 
+choices sentryVisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Yolo ' ' BarCode ' ' OCR ' ' HandGesture ' ' LicensePlate ' 
+choices sentryOperaVisionMenu ' Learning ' ' Face ' 
+choices sentryVisionParamNumMenu ' Color ' ' Blob ' 
+choices sentryVisionStringMenu ' QrCode ' ' BarCode ' ' OCR ' ' LicensePlate ' 
 choices sentryObjInfoMenu 'x-coord' 'y-coord' width height label 
 choices sentryObjInfoQrMenu 'x-coord' 'y-coord' width height 
 choices sentryAprilTagModeMenu '16H5' '25H9' '36H11' Circle21H7 Standard41H12 
 choices sentryYoloClassMenu '0  person' '1  bicycle' '2  car' '3  motorcycle' '4  airplane' '5  bus' '6  train' '7  truck' '8  boat' '9  traffic light' '10 fire hydrant' '11 stop sign' '12 parking meter' '13 bench' '14 bird' '15 cat' '16 dog' '17 horse' '18 sheep' '19 cow' '20 elephant' '21 bear' '22 zebra' '23 giraffe' '24 backpack' '25 umbrella' '26 handbag' '27 tie' '28 suitcase' '29 frisbee' '30 skis' '31 snowboard' '32 sports ball' '33 kite' '34 baseball bat' '35 baseball glove' '36 skateboard' '37 surfboard' '38 tennis racket' '39 bottle' '40 wine glass' '41 cup' '42 fork' '43 knife' '44 spoon' '45 bowl' '46 banana' '47 apple' '48 sandwich' '49 orange' '50 broccoli' '51 carrot' '52 hot dog' '53 pizza' '54 donut' '55 cake' '56 chair' '57 couch' '58 potted plant' '59 bed' '60 dining table' '61 toilet' '62 tv' '63 laptop' '64 mouse' '65 remote' '66 keyboard' '67 cell phone' '68 microwave' '69 oven' '70 toaster' '71 sink' '72 refrigerator' '73 book' '74 clock' '75 vase' '76 scissors' '77 teddy bear' '78 hair drier' '79 toothbrush' 
-choices sentryVisionStringMenu QrCode BarCode OCR LicensePlate 
 choices sentryObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
-choices sentryOperaVisionMenu Learning Face 
 choices sentryColorMenu Black White Red Green Blue Yellow 
-choices sentryVisionValueMenu Blob AprilTag Learning Face Yolo BarCode OCR HandGesture LicensePlate 
-choices sentryVisionMenu Color Blob AprilTag Line Learning Face Yolo QrCode BarCode OCR HandGesture LicensePlate 
-choices sentryWhiteBalanceMenu auto lock whiteLight yellowLight calibrating 
-choices sentryVisionStaMenu ON OFF 
+choices sentryVisionStaMenu run stop 
 choices sentryIndexMenu '#1' '#2' '#3' '#4' '#5' 
 choices sentryHandPoseFingerStateMenu bent extended ignore 
-choices sentryHandPosePresetMenu One Two Three Four Five Six Eight Ten Yean Rock Scissors Paper Like OK 
+choices sentryHandPosePresetMenu One Two Three Four Five Six Eight Ten yeah Rock Scissors Paper Like OK 
 choices sentryObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
 choices sentryCommModeMenu I2C Serial 
 choices sentryOperaParamMenu 'learn and assign' 'delete data' 
@@ -28,23 +27,23 @@ Supports color detection, blob detection, AprilTag, line detection, learning mod
 '
 variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config_list _sentry_cache_validation _sentry_uart_packet_buffer _sentry_uart_response_buffer _sentry_buffer_size _sentry_params_buffer _sentry_cache_entry _sentry_err _sentry_vision_id _sentry_index_val 
 
-  spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu menu.sentryAddrMenu' '#1' 'I2C' '0x60'
+  spec ' ' 'Sentry3 Begin' 'Initialize    Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu menu.sentryAddrMenu' '#1' 'I2C' '0x60'
   spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-15) _' 'menu.sentryIndexMenu menu.sentryLedColorMenu menu.sentryLedColorMenu num' '#1' 'Red' 'Blue' 1
-  spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentryIndexMenu menu.sentryVisionStaMenu menu.sentryVisionMenu' '#1' 'ON' 'Color'
-  spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentryIndexMenu menu.sentryVisionParamNumMenu num' '#1' 'Color' 1
+  spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentryIndexMenu menu.sentryVisionStaMenu menu.sentryVisionMenu' '#1' 'run' ' Color '
+  spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentryIndexMenu menu.sentryVisionParamNumMenu num' '#1' ' Color ' 1
   spec ' ' 'Sentry3 VisionColorSetParam' 'Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentryIndexMenu num num num num num' '#1' 50 50 3 4 1
   spec ' ' 'Sentry3 VisionBlobSetParam' 'Set  Sentry3 _  algo Blob  min-width _ min-height _ color _ paramset _' 'menu.sentryIndexMenu num num menu.sentryColorMenu num' '#1' 3 4 'Red' 1
   spec ' ' 'Sentry3 VisionSetBlobNum' 'Set  Sentry3 _  algo Blob  max num of blobs for each color(1-5) _' 'menu.sentryIndexMenu num' '#1' 1
   spec ' ' 'Sentry3 VisionSetAprilTagMode' 'Set  Sentry3 _  algo AprilTag  format _' 'menu.sentryIndexMenu menu.sentryAprilTagModeMenu' '#1' '36H11'
   spec ' ' 'Sentry3 VisionSetLineNum' 'Set  Sentry3 _  algo Line  max num of lines(1-5) _' 'menu.sentryIndexMenu num' '#1' 1
-  spec ' ' 'Sentry3 VisionSetParam' 'Set  Sentry3 _  algo _  _  ID _' 'menu.sentryIndexMenu menu.sentryOperaVisionMenu menu.sentryOperaParamMenu num' '#1' 'Learning' 'learn and assign' 1
+  spec ' ' 'Sentry3 VisionSetParam' 'Set  Sentry3 _  algo _  _  ID _' 'menu.sentryIndexMenu menu.sentryOperaVisionMenu menu.sentryOperaParamMenu num' '#1' ' Learning ' 'learn and assign' 1
   spec ' ' 'Sentry3 VisionSetBarCodeMode' 'Set  Sentry3 _  algo BarCode  format _' 'menu.sentryIndexMenu menu.sentryBarcodeModeMenu' '#1' 'All'
-  spec 'r' 'Sentry3 VisionDetectedCount' 'Sentry3 _  algo _  num of results' 'menu.sentryIndexMenu menu.sentryVisionMenu' '#1' 'Color'
+  spec 'r' 'Sentry3 VisionDetectedCount' 'Sentry3 _  algo _  num of results' 'menu.sentryIndexMenu menu.sentryVisionMenu' '#1' ' Color '
   spec 'r' 'Sentry3 GetVisionObjColorValue' 'Sentry3 _  algo Color  _ of result _' 'menu.sentryIndexMenu menu.sentryObjInfoColorMenu num' '#1' 'label' 1
-  spec 'r' 'Sentry3 GetVisionObjValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionValueMenu menu.sentryObjInfoMenu num' '#1' 'Blob' 'x-coord' 1
+  spec 'r' 'Sentry3 GetVisionObjValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionValueMenu menu.sentryObjInfoMenu num' '#1' ' Blob ' 'x-coord' 1
   spec 'r' 'Sentry3 GetVisionObjLineValue' 'Sentry3 _  algo Line   _ of result _' 'menu.sentryIndexMenu menu.sentryObjInfoLineMenu num' '#1' 'x-coord of ending point' 1
-  spec 'r' 'Sentry3 GetVisionObjStringValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu menu.sentryObjInfoQrMenu num' '#1' 'QrCode' 'x-coord' 1
-  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu num' '#1' 'QrCode' 1
+  spec 'r' 'Sentry3 GetVisionObjStringValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu menu.sentryObjInfoQrMenu num' '#1' ' QrCode ' 'x-coord' 1
+  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu num' '#1' ' QrCode ' 1
   spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Black' 1
   spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Red' 1
   spec 'r' 'Sentry3 VisionDetectedYolo' 'Sentry3 _  algo Yolo  recognized _ result _' 'menu.sentryIndexMenu menu.sentryYoloClassMenu num' '#1' '0  person' 1
@@ -109,7 +108,7 @@ to 'Sentry3 GetVisionObjColorValue' index_menu obj_info obj_id {
   if (_sentry_index == 0) {
     return 0
   }
-  return ('_sentry getValue' _sentry_index 'Color' obj_info obj_id)
+  return ('_sentry getValue' _sentry_index ' Color ' obj_info obj_id)
 }
 
 to 'Sentry3 GetVisionObjLineValue' index_menu obj_info obj_id {
@@ -204,7 +203,7 @@ to 'Sentry3 VisionDetectedBlob' index_menu color_label obj_id {
   if (_sentry_index == 0) {
     return false
   }
-  return (('_sentry getValue' _sentry_index 'Blob' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
+  return (('_sentry getValue' _sentry_index ' Blob ' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
 }
 
 to 'Sentry3 VisionDetectedColor' index_menu color_label obj_id {
@@ -213,7 +212,7 @@ to 'Sentry3 VisionDetectedColor' index_menu color_label obj_id {
   if (_sentry_index == 0) {
     return false
   }
-  return (('_sentry getValue' _sentry_index 'Color' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
+  return (('_sentry getValue' _sentry_index ' Color ' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
 }
 
 to 'Sentry3 VisionDetectedCount' index_menu vision_type {
@@ -463,7 +462,7 @@ to 'Sentry3 VisionSetStatus' index_menu vision_sta vision_type {
   comment 'Read current config (0x21)'
   local 'visionConfig' ('_sentry get' _sentry_index 33)
   comment 'Check if status bit needs to change'
-  local 'newStatus' (ifExpression (vision_sta == 'ON') 1 0)
+  local 'newStatus' (ifExpression (vision_sta == 'run') 1 0)
   if ((visionConfig & 1) != newStatus) {
     comment 'Clear bit 0 and set new status'
     visionConfig = ((visionConfig & 254) | newStatus)
@@ -474,7 +473,7 @@ to 'Sentry3 VisionSetStatus' index_menu vision_sta vision_type {
     }
   }
   _sentry_index_val = ('_sentry find cache entry' _sentry_index _sentry_vision_id)
-  if (vision_sta == 'ON') {
+  if (vision_sta == 'run') {
     if (_sentry_index_val == 0) {
       comment 'Add new cache entry'
       '_sentry update cache entry' _sentry_index _sentry_vision_id 0 0
@@ -680,7 +679,7 @@ to '_sentry initialize base' index {
 
 to '_sentry initialize label lists' {
   comment 'Initialize label lists for better property mapping'
-  _sentry_vision_list = ('[data:makeList]' 'Color' 'Blob' 'AprilTag' 'Line' 'Learning' 'n' 'Face' 'Yolo' 'QrCode' 'BarCode' 'n' 'OCR' 'HandGesture' 'LicensePlate')
+  _sentry_vision_list = ('[data:makeList]' ' Color ' ' Blob ' 'AprilTag' 'Line' ' Learning ' 'n' 'Face' 'Yolo' ' QrCode ' 'BarCode' 'n' 'OCR' 'HandGesture' 'LicensePlate')
   local 'obj_info_group1' ('[data:makeList]' 'status' 'x-coord' 'y-coord' 'width' 'height')
   local 'obj_info_group2' ('[data:makeList]' 'label' 'red CH value' 'green CH value' 'blue CH value')
   local 'obj_info_group3' ('[data:makeList]' 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle')
@@ -985,7 +984,7 @@ to '_sentry_get_handpose_preset_value' handpose_preset {
   comment 'Return preset value directly based on preset name'
   if (handpose_preset == 'One') {
     return 2
-  } (or (handpose_preset == 'Two') (handpose_preset == 'Yean')) {
+  } (or (handpose_preset == 'Two') (handpose_preset == 'yeah')) {
     return 6
   } (or (handpose_preset == 'Three') (handpose_preset == 'OK')) {
     return 28
