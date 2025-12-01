@@ -976,9 +976,10 @@ void hardwareInit() {
 
 #elif defined(ARDUINO_XIAO_ESP32S3)
 	#define BOARD_TYPE "Xiao ESP32S3"
+	#define IS_XIAO 1
 	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 14
-	#define TOTAL_PINS 49
+	#define TOTAL_PINS 45
 	#define PIN_LED 21
 	#define INVERT_USER_LED true
 	#define USE_DIGITAL_PIN_MAP true
@@ -986,13 +987,14 @@ void hardwareInit() {
 	static const char digitalPin[DIGITAL_PINS] = {1, 2, 3, 4, 5, 6, 43, 44, 7, 8, 9, 42, 41, 21};
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+		1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-		0, 0, 0, 0, 0, 1, 1, 0, 0};
+		0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_XIAO_ESP32C3)
 	#define BOARD_TYPE "Xiao ESP32C3"
+	#define IS_XIAO 1
 	#define DIGITAL_PINS 22
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS 22
@@ -1220,9 +1222,9 @@ void hardwareInit() {
 
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
-	#define DIGITAL_PINS 49
+	#define DIGITAL_PINS 43
 	#define ANALOG_PINS 20
-	#define TOTAL_PINS 49
+	#define TOTAL_PINS 43
 	static const int analogPin[] = {};
 	#ifdef LED_BUILTIN
 		#define PIN_LED LED_BUILTIN
@@ -1243,10 +1245,10 @@ void hardwareInit() {
 	// also possibly: 39-42 (JTAG pins)
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+		1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 0, 0, 0, 0};
+		0, 0, 0};
 
 #elif defined(AIRM2MC3)
 //合宙ESP32C3
@@ -1302,10 +1304,11 @@ void hardwareInit() {
 	#define ANALOG_PINS 6 // pins 0-5, but pin 5 uses ADC2 may be less reliable
 	#define TOTAL_PINS 22
 	static const int analogPin[] = {};
-	#ifdef LED_BUILTIN
-		#define PIN_LED LED_BUILTIN
-	#elif !defined(PIN_LED)
+	#if defined(FAB_SPARKLE)
+		// Note: The Super C3 mini has user LED on the I2C SDA line; do not use it!
 		#define PIN_LED -1
+	#elif defined(LED_BUILTIN)
+		#define PIN_LED LED_BUILTIN
 	#endif
 	#if !defined(PIN_BUTTON_A)
 		#if defined(KEY_BUILTIN)
@@ -1595,12 +1598,7 @@ void hardwareInit() {
 	#define DIGITAL_PINS 27
 	#define ANALOG_PINS 5
 	#define TOTAL_PINS 60
-	#define PIN_LED 15 // PA_6 (unmapped)
-	#define PIN_BUTTON_A 28 // (unmapped) edge pin 5
-	#define PIN_BUTTON_B 27 // (unmapped) edge pin 11
-	#undef BUTTON_PRESSED
-	#define BUTTON_PRESSED HIGH
-	#define DEFAULT_TONE_PIN 21
+	#define PIN_LED 15 // PB_8
 	static const int8_t analogPin[ANALOG_PINS] = {16, 17, 18, 19, 37}; // used to initialize random generater
 
 	// Reserved C071R pins:
@@ -1610,21 +1608,23 @@ void hardwareInit() {
 	// 47 (PA_3) - Downlink RX (serial)
 	// 52 (PA_2) - Downlink TX (serial)
 
-	// 13 (PA_5, edge pin 21) is the buzzer
-	// 19 (PB_0, edge pin 8) is the light sensor
+	// PA_5, D13, edge pin 21 is the buzzer
+	// PB_0, D19, edge pin  9 is the light sensor
 	static const char cincoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
 		 2, 27, 32,  9,  5,  4, 33, 255, 255,  0,
 		 1, 13,  7, 12, 15, 54, 11}; // row pins: 7, 12, 15, 54, 11
 
-	// 13 (PA_5, edge pin 21) is the buzzer
-	// 12 (PA_6, edge pin 23) is the light sensor
-	// 29 (PA_10, edge pin 22) is the display reset pin
+	// PA_5, D13, edge pin 21 is the buzzer
+	// PC_6, D29, edge pin 22 is the display reset pin
+	// PA_6, D12, edge pin 23 is the light sensor
 	static const char pixoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
 		 2, 27,  7,  9,  5,  4, 33, 255, 255,  0,
 		 1, 13, 29, 12, 15, 14, 32}; // unused pins: 12, 15, 14, 32
 
+	// PA_9, D8, edge pin 21 is UART1_TX
+	// PA_10, D2, edge pin 22 is UART1_RX
 	static const char dueStandardPin[DIGITAL_PINS] = {
 		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
 		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
@@ -1632,11 +1632,15 @@ void hardwareInit() {
 
 	// Analog pin names for DUELink boards
 	// Note: CincoBit edge pins 3, 4, and 12 are not analog capable
-	#define DUE_ANALOG_PIN_COUNT 18
+	#define DUE_ANALOG_PIN_COUNT 24
 	static const int16_t dueEdgeAnalog[DUE_ANALOG_PIN_COUNT] = {
-		PA_0, PA_1, PA_4, PA_7, PB_1, PA_14, -1, -1, PB_2, PB_0, -1, PA_13, PA_8, -1, -1, -1, -1, -1};
+		PA_0, PA_1, PA_4, PA_7, PB_1, PA_14, -1, -1, PB_2, PB_0,
+		-1, PA_13, PA_8, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, PA_6};
 	static const int16_t dueStandardAnalog[DUE_ANALOG_PIN_COUNT] = {
-		-1, PA_0, PA_1, PA_4, PA_5, PA_6, PA_7, PA_8, PB_1, PB_0, -1, -1, -1, -1, -1,  -1,  -1, PB_2};
+		-1, PA_0, PA_1, PA_4, PA_5, PA_6, PA_7, PA_8, PB_1, PB_0,
+		-1, -1, -1, -1, -1,  -1,  -1, PB_2, -1, -1,
+		-1, -1, -1, -1};
 
 	static int dueAnalogPin(int pinNum) {
 		int result = -1; // default - no pin
@@ -1654,9 +1658,9 @@ void hardwareInit() {
 		return result;
 	}
 
-	// PWM pins for CincoBit and PixoBit edge pins 0 to 16
+	// PWM pins for CincoBit and PixoBit edge pins 0 to 21
 	// Note: TIM14 is used by Tone library. TIM16 is used by Servo library
-	#define DUE_PWM_PIN_COUNT 17
+	#define DUE_PWM_PIN_COUNT 22
 	static const int16 dueEdgePWM[DUE_PWM_PIN_COUNT] = {
 		PA_0_ALT1,		// TIM1_CH1, *TIM2_CH1, TIM16_CH1
 		PA_1_ALT1,		// TIM1_CH2, TIM2_CH2, TIM17_CH1
@@ -1675,6 +1679,11 @@ void hardwareInit() {
 		PB_4,			// *TIM3_CH1
 		PB_5_ALT1,		// TIM3_CH2, *TIM3_CH3
 		-1, // PC_15,	// TIM3_CH3
+		-1,
+		-1,
+		-1,
+		-1,
+		PA_5_ALT1,		// TIM1_CH1, *TIM1_CH3N, TIM2_CH1
 	};
 
 	// PWM pins for standard DUEBoards 0 to 16 (pin 17 does not have a timer)
@@ -1685,7 +1694,7 @@ void hardwareInit() {
 		PA_1_ALT1,	// TIM1_CH2, *TIM2_CH2*, TIM17_CH1
 		PA_4_ALT2,	// TIM1_CH2N, TIM14_CH1, *TIM17_CH1N* (buzzer on Ghizzy)
 		PA_5_ALT2,	// TIM1_CH1, TIM1_CH3N, *TIM2_CH1
-		PA_6_ALT1,	// TIM3_CH1, *TIM16_CH1*
+		PA_6,		// *TIM3_CH1*, TIM16_CH1
 		PA_7_ALT1,	// TIM1_CH1N, *TIM3_CH2*, TIM14_CH1, TIM17_CH1
 		PA_8_ALT2,	// TIM1_CH1, TIM1_CH2N, *TIM1_CH3N, TIM3_CH3, TIM3_CH4, TIM14_CH1
 		PB_1_ALT2,	// TIM1_CH2N, TIM1_CH3N, *TIM3_CH4*, TIM14_CH1
@@ -1696,7 +1705,12 @@ void hardwareInit() {
 		-1, 		// xxx TIM3_CH1
 		-1, 		// xxx TIM3_CH2, TIM3_CH3
 		-1,			// xxx TIM16_CH1N
-		PB_7,		// TIM1_CH4, TIM3_CH1, TIM3_CH4, TIM16_CH1, TIM17_CH1N
+		PB_7,		// *TIM1_CH4*, TIM3_CH1, TIM3_CH4, TIM16_CH1, TIM17_CH1N
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
 	};
 
 	static int duePWMPin(int pinNum) {
