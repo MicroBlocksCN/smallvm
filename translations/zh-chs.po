@@ -5108,7 +5108,7 @@ msgid "Sentry3 _  algo Blob  detected _ blob result _"
 msgstr "Sentry3 _  色块检测  检测到 _ 块 结果 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
-msgid "Sentry3 _  algo Yolo  recognized _ result _"
+msgid "Sentry3 _  algo Objects  recognized _ result _"
 msgstr "Sentry3 _  物体识别  识别到 _ 结果 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
@@ -5148,7 +5148,7 @@ msgid " Face "
 msgstr "人脸识别"
 
 #. Sentry3  Vision Sensor menu choices
-msgid " Yolo "
+msgid " Objects "
 msgstr "物体识别"
 
 #. Sentry3  Vision Sensor menu choices
@@ -5295,323 +5295,323 @@ msgstr "删除数据"
 msgid "All"
 msgstr "全部"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "1  person"
 msgstr "1  人"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "2  bicycle"
 msgstr "2  自行车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "3  car"
 msgstr "3  汽车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "4  motorcycle"
 msgstr "4  摩托车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "5  airplane"
 msgstr "5  飞机"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "6  bus"
 msgstr "6  公交车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "7  train"
 msgstr "7  火车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "8  truck"
 msgstr "8  卡车"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "9  boat"
 msgstr "9  船"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "10 traffic light"
 msgstr "10 信号灯"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "11 fire hydrant"
 msgstr "11 消防栓"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "12 stop sign"
 msgstr "12 停车标志"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "13 parking meter"
 msgstr "13 计费器"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "14 bench"
 msgstr "14 长椅"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "15 bird"
 msgstr "15 鸟"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "16 cat"
 msgstr "16 猫"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "17 dog"
 msgstr "17 狗"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "18 horse"
 msgstr "18 马"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "19 sheep"
 msgstr "19 羊"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "20 cow"
 msgstr "20 牛"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "21 elephant"
 msgstr "21 大象"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "22 bear"
 msgstr "22 熊"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "23 zebra"
 msgstr "23 斑马"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "24 giraffe"
 msgstr "24 长颈鹿"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "25 backpack"
 msgstr "25 背包"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "26 umbrella"
 msgstr "26 雨伞"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "27 handbag"
 msgstr "27 手提包"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "28 tie"
 msgstr "28 领带"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "29 suitcase"
 msgstr "29 行李箱"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "30 frisbee"
 msgstr "30 飞盘"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "31 skis"
 msgstr "31 双滑雪板"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "32 snowboard"
 msgstr "32 单滑雪板"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "33 sports ball"
 msgstr "33 运动球类"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "34 kite"
 msgstr "34 风筝"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "35 baseball bat"
 msgstr "35 棒球棒"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "36 baseball glove"
 msgstr "36 棒球手套"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "37 skateboard"
 msgstr "37 滑板"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "38 surfboard"
 msgstr "38 冲浪板"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "39 tennis racket"
 msgstr "39 网球拍"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "40 bottle"
 msgstr "40 瓶子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "41 wine glass"
 msgstr "41 红酒杯"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "42 cup"
 msgstr "42 杯子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "43 fork"
 msgstr "43 叉子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "44 knife"
 msgstr "44 刀"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "45 spoon"
 msgstr "45 勺子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "46 bowl"
 msgstr "46 碗"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "47 banana"
 msgstr "47 香蕉"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "48 apple"
 msgstr "48 苹果"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "49 sandwich"
 msgstr "49 三明治"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "50 orange"
 msgstr "50 橙子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "51 broccoli"
 msgstr "51 西兰花"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "52 carrot"
 msgstr "52 胡萝卜"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "53 hot dog"
 msgstr "53 热狗"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "54 pizza"
 msgstr "54 披萨"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "55 donut"
 msgstr "55 甜甜圈"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "56 cake"
 msgstr "56 蛋糕"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "57 chair"
 msgstr "57 椅子"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "58 couch"
 msgstr "58 沙发"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "59 potted plant"
 msgstr "59 盆栽植物"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "60 bed"
 msgstr "60 床"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "61 dining table"
 msgstr "61 餐桌"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "62 toilet"
 msgstr "62 马桶"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "63 tv"
 msgstr "63 显示器"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "64 laptop"
 msgstr "64 便携电脑"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "65 mouse"
 msgstr "65 鼠标"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "66 remote"
 msgstr "66 遥控器"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "67 keyboard"
 msgstr "67 键盘"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "68 cell phone"
 msgstr "68 手机"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "69 microwave"
 msgstr "69 微波炉"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "70 oven"
 msgstr "70 烤箱"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "71 toaster"
 msgstr "71 烤面包机"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "72 sink"
 msgstr "72 水槽"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "73 refrigerator"
 msgstr "73 冰箱"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "74 book"
 msgstr "74 书"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "75 clock"
 msgstr "75 钟表"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "76 vase"
 msgstr "76 花瓶"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "77 scissors"
 msgstr "77 剪刀"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "78 teddy bear"
 msgstr "78 泰迪熊"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "79 hair drier"
 msgstr "79 吹风机"
 
-#. Sentry 3 YOLO object classes
+#. Sentry 3 Objects object classes
 msgid "80 toothbrush"
 msgstr "80 牙刷"
 
