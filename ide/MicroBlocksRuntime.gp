@@ -850,7 +850,9 @@ method selectPort SmallRuntime {
 	if ('Browser' == (platform)) {
 		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
 		if (and (isNil port) ('boardie' != portName)) {
-			addItem menu 'connect (USB)'
+			if (not (isMobile)) {
+				addItem menu 'connect (USB)'
+			}
 			addItem menu 'connect (BLE)'
 			addLine menu
 			addItem menu 'open Boardie'
@@ -1430,6 +1432,9 @@ method boardIsBLECapable SmallRuntime {
 	if (isNil boardType) { getVersion this }
 	if (isOneOf boardType
 		'Citilab ED1' 'CoCube' 'Databot' 'M5Stack-Core' 'ESP32' 'Mbits' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'micro:STEAMakers' 'CodingBox' 'Foxbit' 'KidsIOT' '未来科技盒' '未来科技盒v2.0' 'handpy') {
+		return true
+	}
+	if (notNil (findSubstring 'ESP' boardType)) {
 		return true
 	}
 	return false
