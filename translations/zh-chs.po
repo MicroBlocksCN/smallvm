@@ -5040,8 +5040,8 @@ msgid "Initialize  Sentry3 _  port _ addr _"
 msgstr "初始化  Sentry3 _  端口 _ 地址 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
-msgid "Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-15) _"
-msgstr "设置  Sentry3 _  检测到目标时LED发光 _ 否则 _ 亮度(1~15) _"
+msgid "Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-10) _"
+msgstr "设置  Sentry3 _  检测到目标时LED发光 _ 否则 _ 亮度(1-10) _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
 msgid "Set  Sentry3 _  _  algo _"
@@ -5097,7 +5097,7 @@ msgstr "Sentry3 _  线条检测  返回值 _ 结果 _ 的"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
 msgid "Sentry3 _  algo _  string of decoding result _"
-msgstr "Sentry3 _   _  返回字符串 结果 _ 的"
+msgstr "Sentry3 _   _  返回的字符串 结果 _ 的"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
 msgid "Sentry3 _  algo Color  recognized _ result _"
