@@ -28,7 +28,7 @@ Supports color detection, blob detection, AprilTag, line detection, learning mod
 variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config_list _sentry_cache_validation _sentry_uart_packet_buffer _sentry_uart_response_buffer _sentry_buffer_size _sentry_params_buffer _sentry_cache_entry _sentry_err _sentry_vision_id _sentry_index_val 
 
   spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu menu.sentryAddrMenu' '#1' 'I2C' '0x60'
-  spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-15) _' 'menu.sentryIndexMenu menu.sentryLedColorMenu menu.sentryLedColorMenu num' '#1' 'Red' 'Blue' 1
+  spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-10) _' 'menu.sentryIndexMenu menu.sentryLedColorMenu menu.sentryLedColorMenu num' '#1' 'Red' 'Blue' 1
   spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentryIndexMenu menu.sentryVisionStaMenu menu.sentryVisionMenu' '#1' 'run' ' Color '
   spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentryIndexMenu menu.sentryVisionParamNumMenu num' '#1' ' Color ' 1
   spec ' ' 'Sentry3 VisionColorSetParam' 'Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentryIndexMenu num num num num num' '#1' 50 50 3 4 1
