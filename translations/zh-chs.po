@@ -3447,6 +3447,15 @@ msgstr "将 unicodes _ 转为字符串"
 msgid "num2str _"
 msgstr "数字 _ 转为字符串"
 
+#. Strings library block
+msgid "string from byteArray _"
+msgstr "将字节数组 _ 转为字符串"
+
+#. Strings library block
+msgid "string from AnyType _"
+msgstr "将任意类型 _ 转为字符串"
+
+
 #. Example WiFi network name
 msgid "Network_Name"
 msgstr "网络名称"
@@ -5037,7 +5046,7 @@ msgid "Initialize  Sentry3 _  port _ addr _"
 msgstr "初始化  Sentry3 _  端口 _ 地址 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
-msgid "Set  Sentry3 _  light color _ when targets were detected otherwise _ luma(1-10) _"
+msgid "Set  Sentry3 _  light color _ upon targets detection otherwise _ brightness(1-10) _"
 msgstr "设置  Sentry3 _  检测到目标时LED发光 _ 否则 _ 亮度(1-10) _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
@@ -5109,11 +5118,11 @@ msgid "Sentry3 _  algo Objects  recognized _ result _"
 msgstr "Sentry3 _  物体识别  识别到 _ 结果 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
-msgid "Sentry3 _  algo HandPose  recognized custom gesture  thumb _ index _ middle _ ring _ pinky _ result _"
-msgstr "Sentry3 _  手势姿态  识别到 大拇指 _ 食指 _ 中指 _ 无名指 _ 小拇指 _ 结果 _"
+msgid "Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _"
+msgstr "Sentry3 _  手势姿态  检测到 大拇指 _ 食指 _ 中指 _ 无名指 _ 小拇指 _ 结果 _"
 
 #. Tip Bar text for a block in Sentry3 Vision Sensor library
-msgid "Sentry3 _  algo HandPose  recognized preset gesture _ result _"
+msgid "Sentry3 _  algo HandPose  recognized gesture _ result _"
 msgstr "Sentry3 _  手势姿态  识别到 _ 结果 _"
 
 #. Sentry3  Vision Sensor menu choices
