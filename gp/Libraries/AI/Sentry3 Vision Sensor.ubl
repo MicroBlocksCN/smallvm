@@ -43,7 +43,7 @@ variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config
   spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Black' 1
   spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Red' 1
   spec 'r' 'Sentry3 VisionDetectedObjects' 'Sentry3 _  algo Objects  recognized _ result _' 'menu.sentryIndexMenu menu.sentryObjectsClassMenu num' '#1' '1  person' 1
-  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  recognized thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentryIndexMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu num' '#1' 'extended' 'extended' 'extended' 'extended' 'extended' 1
+  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentryIndexMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu num' '#1' 'extended' 'extended' 'extended' 'extended' 'extended' 1
   spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandPose  recognized gesture _ result _' 'menu.sentryIndexMenu menu.sentryHandPosePresetMenu num' '#1' 'One' 1
 
 to 'Sentry3 Begin' index_menu comm_mode address {
