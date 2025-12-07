@@ -5665,3 +5665,11 @@ msgstr "布"
 #. Sentry3 HandPose Preset menu choices
 msgid "Like"
 msgstr "点赞"
+
+#.udpLog 
+msgid "UdpLog connect server _ port _"
+msgstr "UDP日志连接到服务器 _ 端口 _ "
+
+#.udpLog 
+msgid "UdpLog _ _"
+msgstr "UDP日志输出 _ _"
