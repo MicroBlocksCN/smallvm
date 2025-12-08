@@ -1,8 +1,8 @@
 module udpLog
-author '作者 AITosee'
-version 1 1 
+author 'AITosee'
+version 1 2 
 depends UDP WIFI 
-description ''
+description '基于udp协议日志调试库，服务器可以使用https://netlab.luatos.com/'
 variables _LogCnt _UDPlogIp _UDPlogPort 
 
   spec ' ' 'UdpLogInit' 'UdpLog connect server _ port _' 'str str' '112.125.89.8' 32063
