@@ -1,7 +1,7 @@
 module 'Sentry Communication Protocol' Control
 author 'AiToose'
-version 0 2
-depends 'other/Sentry Serial Protocol' 
+version 1 0
+depends 'Other/Sentry Serial Protocol' 
 description '底层通信协议库，支持Sentry2和Sentry3的I2C通信
 设备配置使用20位整数存储：bit15=通信模式,bit8-14=地址,bit0-7=deviceIdx(0-4位设备ID,5-7位索引) 
 支持多个设备同时使用，通过index和设备ID组合区分
