@@ -1,7 +1,7 @@
 module 'Sentry2 Vision Sensor' Control
 author '作者 AITosee'
-version 0 2
-depends 'other/Sentry Communication Protocol' 
+version 1 0
+depends 'Other/Sentry Communication Protocol' 
 choices sentry2VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion ' 
 choices sentry2VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' Motion ' 
 choices sentry2OperaVisionMenu ' Learning ' ' Face ' 
