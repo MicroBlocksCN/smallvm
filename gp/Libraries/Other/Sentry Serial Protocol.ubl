@@ -1,0 +1,384 @@
+module 'Sentry Serial Protocol' Control
+author 'AiToose'
+version 0 1
+description '底层通信协议库，支持Sentry2和Sentry3的串口通信
+'
+variables _sentry_comm_uart_packet_buffer _sentry_comm_uart_response_buffer _sentry_comm_buffer_size
+
+
+to '_sentry comm uart clear buffer' {
+  // comment 'Clear UART receive buffer using official method'
+  '[serial:read]'
+  _sentry_comm_buffer_size = 0
+  // comment 'Discard all available data'
+
+  // comment 'Serial mode - Initialize UART packet buffer ByteArray (max 32 bytes for packet building)'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  // comment 'Initialize UART response buffer ByteArray (max 128 bytes for response parsing)'
+  if (_sentry_comm_uart_response_buffer == 0) {
+    _sentry_comm_uart_response_buffer = ('[data:newByteArray]' 128 0)
+    _sentry_comm_uart_buffer_size = 0
+  }
+}
+
+to '_sentry comm uart get' address reg_address {
+  // comment 'UART Get operation - read value from register'
+  // comment 'Protocol: [START][LENGTH][ADDRESS][COMMAND_GET][REG][CHECKSUM][END]'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  atPut 3 _sentry_comm_uart_packet_buffer address
+  atPut 4 _sentry_comm_uart_packet_buffer 2
+  atPut 5 _sentry_comm_uart_packet_buffer reg_address
+  '_sentry comm uart send packet' 1
+  // comment '等待响应'
+  local 'responseLength' ('_sentry comm uart read response')
+  if (responseLength < 3) {
+    sayIt 'SENTRY_UART_READ_TIMEOUT'
+    waitMillis 2000
+    return 0
+  }
+  // comment 'Check response status and extract value'
+  // comment 'Response format: [STATUS][COMMAND][VALUE]...'
+  if ((at 1 _sentry_comm_uart_response_buffer) == 224) {
+    // comment '0xE0: SENTRY_PROTOC_OK'
+    if (responseLength >= 3) {
+      // comment 'Return register value'
+      return (at 3 _sentry_comm_uart_response_buffer)
+    }
+  }
+  sayIt 'SENTRY_UART_GET_FAIL'
+  waitMillis 2000
+  return 0
+}
+
+to '_sentry comm uart set' address reg_address value {
+  // comment 'UART Set operation - write value to register'
+  // comment 'Protocol: [START][LENGTH][ADDRESS][COMMAND_SET][REG][VALUE][CHECKSUM][END]'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  atPut 3 _sentry_comm_uart_packet_buffer address
+  atPut 4 _sentry_comm_uart_packet_buffer 1
+  atPut 5 _sentry_comm_uart_packet_buffer reg_address
+  atPut 6 _sentry_comm_uart_packet_buffer value
+  '_sentry comm uart send packet' 2
+  // comment '等待响应'
+  local 'responseLength' ('_sentry comm uart read response')
+  if (responseLength < 3) {
+    sayIt 'SENTRY_WRITE_TIMEOUT'
+    waitMillis 2000
+    return 2
+  }
+  // comment 'Check response status (byte 1 should be 0xE0 for OK)'
+  if ((at 1 _sentry_comm_uart_response_buffer) == 224) {
+    // comment 'SENTRY_OK'
+    return 0
+  }
+  sayIt 'SENTRY_FAIL'
+  waitMillis 2000
+  return 1
+}
+
+to '_sentry comm uart read object' address visionId obj_id cacheEntryIndex {
+  // comment 'UART Read operation - read detection results and write directly to ByteArray cache in list by index'
+  // comment 'Protocol: [START][LENGTH][ADDRESS][GET_RESULT][VISION_TYPE][OBJ_ID][OBJ_ID][CHECKSUM][END]'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  atPut 3 _sentry_comm_uart_packet_buffer address
+  atPut 4 _sentry_comm_uart_packet_buffer 35
+  atPut 5 _sentry_comm_uart_packet_buffer visionId
+  atPut 6 _sentry_comm_uart_packet_buffer obj_id
+  atPut 7 _sentry_comm_uart_packet_buffer obj_id
+  '_sentry comm uart send packet' 3
+  // comment 'Wait for response and parse results'
+  local 'responseLength' ('_sentry comm uart read response')
+  local 'cacheEntry' (at cacheEntryIndex _sentry_comm_cache_validation)
+  if (cacheEntry == 0) {return 0}
+  if (responseLength < 6) {
+    // comment 'No data, clear cache entry data area'
+    sayIt 'SENTRY_UART_NO_DATA'
+    waitMillis 2000
+    local 'byteOffset' 0
+    for i 5 {
+      byteOffset = (6 + ((i - 1) * 2))
+      atPut byteOffset cacheEntry 0
+      atPut (byteOffset + 1) cacheEntry 0
+    }
+    atPut cacheEntryIndex _sentry_comm_cache_validation cacheEntry
+    return 0
+  }
+  // comment 'Parse response and write object data directly to ByteArray cache'
+  // comment 'Response format: [STATUS][COMMAND][FRAME][VISION_TYPE][START_ID][STOP_ID][DATA...]'
+  // comment 'Data should be 10 bytes (5 x 16-bit values)'
+  // comment 'Extract object data from response (bytes 7 onwards, should be 10 bytes)'
+  local 'highByte' 0
+  local 'lowByte' 0
+  local 'byteOffset' 0
+  if (responseLength > 15) {
+    // comment 'Read 5 data values (each is 16-bit, so 10 bytes total) directly into ByteArray cache'
+    // comment 'Response format after parsing: [STATUS][COMMAND][FRAME][VISION_TYPE][START_ID][STOP_ID][DATA...]'
+    // comment 'DATA starts at position 7 in parsed response buffer'
+    for i 5 {
+      // comment 'Read from response buffer: position matches original code calculation'
+      highByte = (at (5 + (i * 2)) _sentry_comm_uart_response_buffer)
+      lowByte = (at (6 + (i * 2)) _sentry_comm_uart_response_buffer)
+      // comment 'Write to cache entry: data area starts at position 6'
+      byteOffset = (6 + ((i - 1) * 2))
+      atPut byteOffset cacheEntry highByte
+      atPut (byteOffset + 1) cacheEntry lowByte
+    }
+  } else {
+    // comment 'Not enough data, clear cache entry data area'
+    sayIt 'SENTRY_UART_DATA_SHORT'
+    waitMillis 2000
+    for i 5 {
+      byteOffset = (6 + ((i - 1) * 2))
+      atPut byteOffset cacheEntry 0
+      atPut (byteOffset + 1) cacheEntry 0
+    }
+  }
+  atPut cacheEntryIndex _sentry_comm_cache_validation cacheEntry
+}
+
+to '_sentry comm uart read string' address visionId obj_id {
+  // comment 'Read string data from UART using GET_STRING protocol'
+  // comment 'Protocol: [START][LENGTH][ADDRESS][GET_STRING][VISION_TYPE][OBJ_ID][0][0][CHECKSUM][END]'
+  // comment 'SENTRY_PROTOC_GET_STRING = 0x27 (39), SENTRY_PROTOC_OK = 0xE0 (224), SENTRY_PROTOC_RESULT_NOT_END = 0xEC (236)'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  atPut 3 _sentry_comm_uart_packet_buffer address
+  atPut 4 _sentry_comm_uart_packet_buffer 39
+  atPut 5 _sentry_comm_uart_packet_buffer visionId
+  atPut 6 _sentry_comm_uart_packet_buffer obj_id
+  atPut 7 _sentry_comm_uart_packet_buffer 0
+  atPut 8 _sentry_comm_uart_packet_buffer 0
+  '_sentry comm uart send packet' 4
+  local 'tryTime' 0
+  local 'strListTemp' ('[data:newByteArray]' 0 0)
+  local 'responseLength' 0
+  local 'startCharIdx' 0
+  local 'stopCharIdx' 0
+  local 'strLen' 0
+  local 'strList' 0
+  local 'actualDataLen' 0
+  // comment 'Main loop to handle RESULT_NOT_END packets for string data'
+  repeatUntil (tryTime > 10) {
+    responseLength = ('_sentry comm uart read response')
+    if (responseLength < 7) {
+      tryTime = (tryTime + 1)
+      waitMillis 100
+    } else {
+      if (not (or ((at 1 _sentry_comm_uart_response_buffer) == 224) ((at 1 _sentry_comm_uart_response_buffer) == 236))) {
+        tryTime = (tryTime + 1)
+        waitMillis 100
+      } else {
+        if ((at 2 _sentry_comm_uart_response_buffer) != 39) {
+          tryTime = (tryTime + 1)
+          waitMillis 100
+        } else {
+          if (not (and ((at 4 _sentry_comm_uart_response_buffer) == visionId) ((at 5 _sentry_comm_uart_response_buffer) == obj_id))) {
+            tryTime = (tryTime + 1)
+            waitMillis 100
+          } else {
+            startCharIdx = (at 6 _sentry_comm_uart_response_buffer)
+            stopCharIdx = (at 7 _sentry_comm_uart_response_buffer)
+            strLen = ((stopCharIdx - startCharIdx) + 1)
+            strList = ('[data:newByteArray]' strLen 0)
+            actualDataLen = (responseLength - 7)
+            if (strLen != actualDataLen) {
+              sayIt 'SENTRY_STRING_LENGTH_MISMATCH'
+              waitMillis 2000
+              return ('[data:newByteArray]' 0 0)
+            }
+            // comment 'Extract string data from response (bytes 8 onwards)'
+            // comment 'Copy new data to accumulated ByteArray'
+            for i actualDataLen {
+              atPut i strList (at (7 + i) _sentry_comm_uart_response_buffer)
+            }
+            strListTemp = ('[data:join]' strListTemp strList)
+            if ((at 1 _sentry_comm_uart_response_buffer) == 224) {
+              // comment 'SENTRY_PROTOC_OK - return ByteArray'
+              return strListTemp
+            }
+            // comment 'SENTRY_PROTOC_RESULT_NOT_END - continue reading'
+            tryTime = 0
+          }
+        }
+      }
+    }
+  }
+  // comment 'Timeout - return empty ByteArray'
+  sayIt 'SENTRY_UART_STRING_TIMEOUT'
+  waitMillis 2000
+  return ('[data:newByteArray]' 0 0)
+}
+
+to '_sentry comm uart read response' {
+  // comment 'Read UART response packet using ByteArray buffer'
+  if (_sentry_comm_uart_response_buffer == 0) {
+    _sentry_comm_uart_response_buffer = ('[data:newByteArray]' 128 0)
+    _sentry_comm_buffer_size = 0
+  }
+  local 'timeoutCount' 0
+  local 'datalen' 0
+  local 'ckdatalen' 0
+  local 'checksum' 0
+  local 'responseLength' 0
+  local 'newData' 0
+  local 'newDataSize' 0
+  // comment 'Wait for data with timeout (max 2000ms)'
+  repeatUntil (timeoutCount > 10) {
+    newData = ('[serial:read]')
+    newDataSize = (size newData)
+    // UdpLog 'read' newDataSize newData
+    if (newDataSize > 0) {
+      // comment 'Append new data to buffer'
+      for i newDataSize {
+        if (_sentry_comm_buffer_size < 128) {
+          atPut (_sentry_comm_buffer_size + 1) _sentry_comm_uart_response_buffer (at i newData)
+          _sentry_comm_buffer_size = (_sentry_comm_buffer_size + 1)
+        }
+      }
+      // comment 'Check for packet start (0xFF)'
+      if ((at 1 _sentry_comm_uart_response_buffer) == 255) {
+        if (_sentry_comm_buffer_size >= 2) {
+          datalen = (at 2 _sentry_comm_uart_response_buffer)
+          ckdatalen = (datalen - 2)
+          if (_sentry_comm_buffer_size >= datalen) {
+            // comment 'Verify checksum'
+            checksum = 0
+            for i ckdatalen {
+              checksum = (checksum + (at i _sentry_comm_uart_response_buffer))
+            }
+            if ((at (datalen - 1) _sentry_comm_uart_response_buffer) == (checksum & 255)) {
+              // comment 'Valid packet - extract response data (skip START, LENGTH, ADDRESS, COMMAND)'
+              responseLength = (datalen - 5)
+              if (responseLength > 0) {
+                // comment 'Copy response data to response buffer starting from position 1'
+                for i responseLength {
+                  atPut i _sentry_comm_uart_response_buffer (at (3 + i) _sentry_comm_uart_response_buffer)
+                }
+                // comment 'Remove processed packet from buffer'
+                local 'remainingSize' (_sentry_comm_buffer_size - datalen)
+                if (remainingSize > 0) {
+                  for i remainingSize {
+                    atPut i _sentry_comm_uart_response_buffer (at (datalen + i) _sentry_comm_uart_response_buffer)
+                  }
+                }
+                _sentry_comm_buffer_size = (_sentry_comm_buffer_size - datalen)
+                // comment 'Return response length (response data is in _sentry_uart_response_buffer)'
+                // UdpLog 'resp' responseLength ('[data:copyFromTo]' _sentry_comm_uart_response_buffer 1 responseLength)
+                return responseLength
+              }
+            } else {
+              // comment 'Checksum error - remove first byte and continue'
+              for i (_sentry_comm_buffer_size - 1) {
+                atPut i _sentry_comm_uart_response_buffer (at (i + 2) _sentry_comm_uart_response_buffer)
+              }
+              _sentry_comm_buffer_size = (_sentry_comm_buffer_size - 1)
+            }
+          } else {
+            // comment 'Not enough data yet'
+          }
+        }
+      } else {
+        // comment 'Invalid start byte - remove first byte'
+        for i (_sentry_comm_buffer_size - 1) {
+          atPut i _sentry_comm_uart_response_buffer (at (i + 2) _sentry_comm_uart_response_buffer)
+        }
+        _sentry_comm_buffer_size = (_sentry_comm_buffer_size - 1)
+      }
+    } else {
+      waitMillis 200
+    }
+    timeoutCount = (timeoutCount + 1)
+  }
+  // comment 'Timeout - return 0'
+  sayIt 'SENTRY_UART_RESPONSE_TIMEOUT'
+  waitMillis 2000
+  return 0
+}
+
+to '_sentry comm uart send packet' dataLength {
+  // comment '通用UART协议发送函数 - 使用ByteArray缓冲区'
+  // comment '参数: dataLength - 数据字节长度'
+  // comment '协议格式: [START(0xFF)][LENGTH][ADDRESS][COMMAND][DATA...][CHECKSUM][END(0xED)]'
+  // comment '注意: address 和 command 需要在上层调用前已写入缓冲区位置 3 和 4'
+  // comment 'LENGTH字段 = 整个包长度 = START(1) + LENGTH(1) + ADDRESS(1) + COMMAND(1) + DATA(dataLength) + CHECKSUM(1) + END(1) = 6 + dataLength'
+  // comment '实际包长度 = LENGTH字段的值 = 6 + dataLength'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  local 'totalLength' (6 + dataLength)
+  // comment '构建数据包到ByteArray缓冲区'
+  atPut 1 _sentry_comm_uart_packet_buffer 255
+  atPut 2 _sentry_comm_uart_packet_buffer totalLength
+  // comment 'ADDRESS 和 COMMAND 已在调用前写入位置 3 和 4'
+  // comment '数据部分已经在缓冲区中（从位置5开始）'
+  // comment '计算校验和（包括START到DATA部分，不包括CHECKSUM和END，与接收端一致）'
+  // comment '接收端: datalen = LENGTH字段 = 6 + dataLength, ckdatalen = datalen - 2 = 4 + dataLength'
+  // comment '接收端校验: 从位置1（START）到位置ckdatalen，即 START + LENGTH + ADDRESS + COMMAND + DATA'
+  local 'checksum' 0
+  local 'checkEnd' (4 + dataLength)
+  for i checkEnd {
+    checksum = (checksum + (at i _sentry_comm_uart_packet_buffer))
+  }
+  // comment '写入校验和和结束标志'
+  atPut (checkEnd + 1) _sentry_comm_uart_packet_buffer (checksum & 255)
+  atPut (checkEnd + 2) _sentry_comm_uart_packet_buffer 237
+  // UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_comm_uart_packet_buffer 1 totalLength)
+  // comment '清空接收缓冲区'
+  '_sentry comm uart clear buffer'
+  // comment '发送数据包（从位置1到totalLength）'
+  for i totalLength {
+    '[serial:write]' (at i _sentry_comm_uart_packet_buffer)
+  }
+}
+
+to '_sentry comm uart set param' address visionId param_id paramsBuffer {
+  // comment 'UART SetParam operation - set vision parameters using provided ByteArray buffer'
+  // comment 'Protocol: [START][LENGTH][ADDRESS][SET_PARAM][VISION_ID][PARAM_ID][PARAM_ID][PARAM1H][PARAM1L]...[CHECKSUM][END]'
+  // comment 'Build data bytes directly in ByteArray buffer (3 header + 10 param bytes = 13 bytes)'
+  if (_sentry_comm_uart_packet_buffer == 0) {
+    _sentry_comm_uart_packet_buffer = ('[data:newByteArray]' 32 0)
+  }
+  atPut 3 _sentry_comm_uart_packet_buffer address
+  atPut 4 _sentry_comm_uart_packet_buffer 33
+  atPut 5 _sentry_comm_uart_packet_buffer visionId
+  atPut 6 _sentry_comm_uart_packet_buffer param_id
+  atPut 7 _sentry_comm_uart_packet_buffer param_id
+  // comment 'Copy parameter values from provided ByteArray buffer (5 parameters, each 2 bytes: high, low)'
+  local 'byteOffset' 0
+  local 'paramByteOffset' 0
+  for i 5 {
+    byteOffset = (8 + ((i - 1) * 2))
+    paramByteOffset = (1 + ((i - 1) * 2))
+    atPut byteOffset _sentry_comm_uart_packet_buffer (at paramByteOffset paramsBuffer)
+    atPut (byteOffset + 1) _sentry_comm_uart_packet_buffer (at (paramByteOffset + 1) paramsBuffer)
+  }
+  '_sentry comm uart send packet' 13
+  // comment '等待响应'
+  local 'responseLength' ('_sentry comm uart read response')
+  if (responseLength < 2) {
+    // comment 'SENTRY_WRITE_TIMEOUT'
+    return 2
+  }
+  // comment 'Check response'
+  if ((at 1 _sentry_comm_uart_response_buffer) == 224) {
+    // comment '0xE0: SENTRY_PROTOC_OK'
+    if (responseLength >= 2) {
+      if ((at 2 _sentry_comm_uart_response_buffer) == 33) {
+        // comment 'Correct command echo'
+        // comment 'SENTRY_OK'
+        return 0
+      }
+    }
+  }
+  // comment 'SENTRY_FAIL'
+  return 1
+}

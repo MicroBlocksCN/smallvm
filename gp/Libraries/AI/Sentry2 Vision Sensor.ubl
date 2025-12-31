@@ -1,0 +1,221 @@
+module 'Sentry2 Vision Sensor' Control
+author '作者 AITosee'
+version 0 2
+depends 'other/Sentry Communication Protocol' 
+choices sentry2VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion ' 
+choices sentry2VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' Motion ' 
+choices sentry2OperaVisionMenu ' Learning ' ' Face ' 
+choices sentry2VisionParamNumMenu ' Color ' ' Blob ' ' Custom ' 
+choices sentry2VisionCustomNumMenu ' Color ' ' Blob '  ' Learning ' ' Face ' ' Custom '
+choices sentry2VisionStringMenu ' QrCode ' 
+choices sentry2ObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
+choices sentry2ObjInfoMenu 'x-coord' 'y-coord' width height label 
+choices sentry2ObjInfoQrMenu 'x-coord' 'y-coord' width height 
+choices sentry2ObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
+choices sentry2ObjInfoCustomMenu returnValue1 returnValue2 returnValue3 returnValue4 returnValue5
+choices sentry2CommModeMenu I2C Serial 
+choices sentry2OperaParamMenu 'learn and assign' 'delete data' 
+choices sentry2AddrMenu '0x60' '0x61' '0x62' '0x63' 
+choices sentry2LedColorMenu Black Red Green Yellow Blue Purple Cyan White 
+choices sentry2IndexMenu '#1' '#2' '#3' '#4' '#5' 
+choices sentry2VisionStaMenu run stop 
+choices sentry2ColorMenu Black White Red Green Blue Yellow 
+choices sentry2Class20Menu '1  airplane' '2  bicycle' '3  bird' '4  boat' '5  bottle' '6  bus' '7  car' '8  cat' '9  chair' '10  cow' '11  dining table' '12  dog' '13  horse' '14  motorbike' '15  person' '16  potted plant' '17  sheep' '18  sofa' '19  train' '20  tv monitor' 
+choices sentry2CardMenu '1  forward' '2  left' '3  right' '4  turn around' '5  park' '6  green light' '7  red light' '8  speed 40' '9  speed 60' '10  speed 80' '11  √' '12  X' '13  ◯' '14  ☐' '15  △' '16  +' '17  -' '18  ÷' '19  =' '_   0' '_   1' '_   2' '_   3' '_   4' '_   5' '_   6' '_   7' '_   8' '_   9' 
+description 'Sentry2 vision sensor library with I2C/UART support
+Supports color detection, blob detection, AprilTag, line detection, learning mode, face detection, 20Classes object detection, card detection, custom, motion detection, and QrCode string decoding
+'
+variables _sentry2_vision_list 
+
+  spec ' ' 'Sentry2 Begin' 'Initialize  Sentry2 _  port _ addr _' 'menu.sentry2IndexMenu menu.sentry2CommModeMenu menu.sentry2AddrMenu' '#1' 'I2C' '0x60'
+  spec ' ' 'Sentry2 LedSetColor' 'Set  Sentry2 _  light color _ upon targets detection otherwise _ brightness(1-15) _' 'menu.sentry2IndexMenu menu.sentry2LedColorMenu menu.sentry2LedColorMenu num' '#1' 'Blue' 'Red' 1
+  spec ' ' 'Sentry2 VisionSetStatus' 'Set  Sentry2 _  _  algo _' 'menu.sentry2IndexMenu menu.sentry2VisionStaMenu menu.sentry2VisionMenu' '#1' 'run' ' Color '
+  spec ' ' 'Sentry2 VisionSetParamNum' 'Set  Sentry2 _  algo _  _ sets of params' 'menu.sentry2IndexMenu menu.sentry2VisionParamNumMenu num' '#1' ' Color ' 1
+  spec ' ' 'Sentry2 VisionColorSetParam' 'Set  Sentry2 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentry2IndexMenu num num num num num' '#1' 50 50 3 4 1
+  spec ' ' 'Sentry2 VisionBlobSetParam' 'Set  Sentry2 _  algo Blob  min-width _ min-height _ color _ paramset _' 'menu.sentry2IndexMenu num num menu.sentry2ColorMenu num' '#1' 3 4 'Red' 1
+  spec ' ' 'Sentry2 VisionSetParam' 'Set  Sentry2 _  algo _  _  ID _' 'menu.sentry2IndexMenu menu.sentry2OperaVisionMenu menu.sentry2OperaParamMenu num' '#1' ' Learning ' 'learn and assign' 1
+  spec ' ' 'Sentry2 VisionCustomSetParam' 'Set  Sentry2 _  algo _  param1 _ param2 _ param3 _ param4 _ param5 _ paramset _' 'menu.sentry2IndexMenu menu.sentry2VisionCustomNumMenu num num num num num num' '#1' ' Custom ' 0 0 0 0 0 1
+  spec 'r' 'Sentry2 VisionDetectedCount' 'Sentry2 _  algo _  num of results' 'menu.sentry2IndexMenu menu.sentry2VisionMenu' '#1' ' Color '
+  spec 'r' 'Sentry2 GetVisionObjColorValue' 'Sentry2 _  algo Color  _ of result _' 'menu.sentry2IndexMenu menu.sentry2ObjInfoColorMenu num' '#1' 'label' 1
+  spec 'r' 'Sentry2 GetVisionObjValue' 'Sentry2 _  algo _  _ of result _' 'menu.sentry2IndexMenu menu.sentry2VisionValueMenu menu.sentry2ObjInfoMenu num' '#1' ' Blob ' 'x-coord' 1
+  spec 'r' 'Sentry2 GetVisionObjLineValue' 'Sentry2 _  algo Line   _ of result _' 'menu.sentry2IndexMenu menu.sentry2ObjInfoLineMenu num' '#1' 'x-coord of ending point' 1
+  spec 'r' 'Sentry2 GetVisionObjStringValue' 'Sentry2 _  algo _  _ of result _' 'menu.sentry2IndexMenu menu.sentry2VisionStringMenu menu.sentry2ObjInfoQrMenu num' '#1' ' QrCode ' 'x-coord' 1
+  spec 'r' 'Sentry2 GetString' 'Sentry2 _  algo _  string of decoding result' 'menu.sentry2IndexMenu menu.sentry2VisionStringMenu num' '#1' ' QrCode ' 
+  spec 'r' 'Sentry2 GetVisionObjCustomValue' 'Sentry2 _  algo _  _ of result _' 'menu.sentry2IndexMenu menu.sentry2VisionCustomNumMenu menu.sentry2ObjInfoCustomMenu num' '#1' ' Custom ' 'returnValue1' 1
+  spec 'r' 'Sentry2 VisionDetectedColor' 'Sentry2 _  algo Color  recognized _ result _' 'menu.sentry2IndexMenu menu.sentry2ColorMenu num' '#1' 'Black' 1
+  spec 'r' 'Sentry2 VisionDetectedBlob' 'Sentry2 _  algo Blob  detected _ blob result _' 'menu.sentry2IndexMenu menu.sentry2ColorMenu num' '#1' 'Red' 1
+  spec 'r' 'Sentry2 VisionDetectedClass20' 'Sentry2 _  algo 20Class  recognized _ result _' 'menu.sentry2IndexMenu menu.sentry2Class20Menu num' '#1' '1  airplane' 1
+  spec 'r' 'Sentry2 VisionDetectedCard' 'Sentry2 _  algo Card  recognized _ result _' 'menu.sentry2IndexMenu menu.sentry2CardMenu num' '#1' '1  forward' 1
+
+to 'Sentry2 Begin' index_menu comm_mode address {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  _sentry2_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion')
+    if ('[vars:varExists]' '_sentry_comm_config_list') {
+      '_sentry comm initialize' idx (hexToInt address) comm_mode
+    } else {
+      sayIt 'Please import "Sentry Communication Protocol"'
+      waitMillis 500
+      stopTask
+    }
+  return
+}
+
+to 'Sentry2 GetString' index_menu vision_type {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'byteArrayData' 0
+  byteArrayData = ('_sentry comm read string' idx ('_sentry2 get vision id' vision_type) 1)
+  return ('_sentry utf8 decode' byteArrayData)
+}
+
+to 'Sentry2 GetVisionObjColorValue' index_menu obj_info obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm get value' idx 1 obj_info obj_id)
+}
+
+to 'Sentry2 GetVisionObjLineValue' index_menu obj_info obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm get value' idx 4 obj_info obj_id)
+}
+
+to 'Sentry2 GetVisionObjStringValue' index_menu vision_type obj_info obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm get value' idx ('_sentry2 get vision id' vision_type) obj_info obj_id)
+}
+
+to 'Sentry2 GetVisionObjCustomValue' index_menu vision_type obj_info obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'lastChar' ('[data:copyFromTo]' obj_info (size obj_info) (size obj_info))
+  local 'obj_index' ('[data:convertType]' lastChar 'number')
+  return ('_sentry comm get value' idx ('_sentry2 get vision id' vision_type) obj_index obj_id)
+}
+
+to 'Sentry2 GetVisionObjValue' index_menu vision_type obj_info obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm get value' idx ('_sentry2 get vision id' vision_type) obj_info obj_id)
+}
+
+to 'Sentry2 LedSetColor' index_menu detected_color undetected_color level {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm led set color' idx detected_color undetected_color level)
+}
+
+to 'Sentry2 VisionBlobSetParam' index_menu min_width min_height color_label param_num {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'colorId' ('_sentry comm get color index' color_label)
+  if (0 == colorId) {
+    colorId = 1
+  }
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 5 params ((min_width >> 8) & 255)
+  atPut 6 params (min_width & 255)
+  atPut 7 params ((min_height >> 8) & 255)
+  atPut 8 params (min_height & 255)
+  atPut 9 params ((colorId >> 8) & 255)
+  atPut 10 params (colorId & 255)
+  return ('_sentry comm set param' idx 2 param_num params)
+}
+
+to 'Sentry2 VisionColorSetParam' index_menu x_value y_value width height param_num {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 1 params ((x_value >> 8) & 255)
+  atPut 2 params (x_value & 255)
+  atPut 3 params ((y_value >> 8) & 255)
+  atPut 4 params (y_value & 255)
+  atPut 5 params ((width >> 8) & 255)
+  atPut 6 params (width & 255)
+  atPut 7 params ((height >> 8) & 255)
+  atPut 8 params (height & 255)
+  return ('_sentry comm set param' idx 1 param_num params)
+}
+
+to 'Sentry2 VisionCustomSetParam' index_menu vision_type x_value y_value width height label param_num {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 1 params ((x_value >> 8) & 255)
+  atPut 2 params (x_value & 255)
+  atPut 3 params ((y_value >> 8) & 255)
+  atPut 4 params (y_value & 255)
+  atPut 5 params ((width >> 8) & 255)
+  atPut 6 params (width & 255)
+  atPut 7 params ((height >> 8) & 255)
+  atPut 8 params (height & 255)
+  atPut 9 params ((label >> 8) & 255)
+  atPut 10 params (label & 255)
+  return ('_sentry comm set param' idx ('_sentry2 get vision id' vision_type) param_num params)
+}
+
+to 'Sentry2 VisionDetectedBlob' index_menu color_label obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return (('_sentry comm get value' idx 2 'label' obj_id) == ('_sentry comm get color index' color_label))
+}
+
+to 'Sentry2 VisionDetectedColor' index_menu color_label obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return (('_sentry comm get value' idx 1 'label' obj_id) == ('_sentry comm get color index' color_label))
+}
+
+to 'Sentry2 VisionDetectedClass20' index_menu class20_label obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'spacePos' ('[data:find]' ' ' class20_label)
+  if (spacePos == 0) {
+    return 0
+  }
+  return (('_sentry comm get value' idx 8 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' class20_label 1 (spacePos - 1)) 'number')))
+}
+
+to 'Sentry2 VisionDetectedCard' index_menu card_label obj_id {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'spacePos' ('[data:find]' ' ' card_label)
+  if (spacePos == 0) {
+    return 0
+  }
+  local 'prefix' ('[data:copyFromTo]' card_label 1 (spacePos - 1))
+  local 'expectedLabel' 0
+  if (prefix == '_') {
+    local 'lastChar' ('[data:copyFromTo]' card_label (size card_label) (size card_label))
+    expectedLabel = (20 + ('[data:convertType]' lastChar 'number'))
+  } else {
+    expectedLabel = ('[data:convertType]' prefix 'number')
+  }
+  return (('_sentry comm get value' idx 6 'label' obj_id) == expectedLabel)
+}
+
+to 'Sentry2 VisionDetectedCount' index_menu vision_type {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm vision detected count' idx ('_sentry2 get vision id' vision_type))
+}
+
+to 'Sentry2 VisionSetParam' index_menu vision_type opera_param param_num {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  local 'lastParam' (ifExpression (opera_param == 'learn and assign') 100 0)
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 9 params ((lastParam >> 8) & 255)
+  atPut 10 params (lastParam & 255)
+  return ('_sentry comm set param' idx ('_sentry2 get vision id' vision_type) param_num params)
+}
+
+to 'Sentry2 VisionSetParamNum' index_menu vision_type max_num {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  '_sentry comm vision set param num' idx ('_sentry2 get vision id' vision_type) max_num
+  return 0
+}
+
+to 'Sentry2 VisionSetStatus' index_menu vision_sta vision_type {
+  local 'idx' ('_sentry2 get index from menu' index_menu)
+  return ('_sentry comm vision set status' idx vision_sta ('_sentry2 get vision id' vision_type))
+}
+
+to '_sentry2 get index from menu' index_menu {
+  if (isType index_menu 'string') {
+    if ((at 1 index_menu) == '#') {
+      local 'index' ('[data:convertType]' (at 2 index_menu) 'number')
+      return (((index & 7) << 5) | 4)
+    }
+  }
+  return 4
+}
+
+to '_sentry2 get vision id' vision_type {
+  return ('[data:find]' vision_type _sentry2_vision_list)
+}
