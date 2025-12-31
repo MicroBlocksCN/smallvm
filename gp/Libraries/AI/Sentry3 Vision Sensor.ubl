@@ -1,988 +1,248 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 0 5
-choices sentryVisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' ' OCR ' ' HandPose ' ' LicensePlate ' 
-choices sentryVisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Objects ' ' HandPose '
-choices sentryOperaVisionMenu ' Learning ' ' Face ' 
-choices sentryVisionParamNumMenu ' Color ' ' Blob ' 
-choices sentryVisionStringMenu ' QrCode ' ' BarCode ' ' OCR ' ' LicensePlate ' 
-choices sentryObjInfoMenu 'x-coord' 'y-coord' width height label 
-choices sentryObjInfoQrMenu 'x-coord' 'y-coord' width height 
-choices sentryAprilTagModeMenu '16H5' '25H9' '36H11' Circle21H7 Standard41H12 
-choices sentryObjectsClassMenu '1  person' '2  bicycle' '3  car' '4  motorcycle' '5  airplane' '6  bus' '7  train' '8  truck' '9  boat' '10 traffic light' '11 fire hydrant' '12 stop sign' '13 parking meter' '14 bench' '15 bird' '16 cat' '17 dog' '18 horse' '19 sheep' '20 cow' '21 elephant' '22 bear' '23 zebra' '24 giraffe' '25 backpack' '26 umbrella' '27 handbag' '28 tie' '29 suitcase' '30 frisbee' '31 skis' '32 snowboard' '33 sports ball' '34 kite' '35 baseball bat' '36 baseball glove' '37 skateboard' '38 surfboard' '39 tennis racket' '40 bottle' '41 wine glass' '42 cup' '43 fork' '44 knife' '45 spoon' '46 bowl' '47 banana' '48 apple' '49 sandwich' '50 orange' '51 broccoli' '52 carrot' '53 hot dog' '54 pizza' '55 donut' '56 cake' '57 chair' '58 couch' '59 potted plant' '60 bed' '61 dining table' '62 toilet' '63 tv' '64 laptop' '65 mouse' '66 remote' '67 keyboard' '68 cell phone' '69 microwave' '70 oven' '71 toaster' '72 sink' '73 refrigerator' '74 book' '75 clock' '76 vase' '77 scissors' '78 teddy bear' '79 hair drier' '80 toothbrush' 
-choices sentryObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
-choices sentryColorMenu Black White Red Green Blue Yellow 
-choices sentryVisionStaMenu run stop 
-choices sentryIndexMenu '#1' '#2' '#3' '#4' '#5' 
-choices sentryHandPoseFingerStateMenu bent extended ignore 
-choices sentryHandPosePresetMenu One Two Three Four Five Six Eight Ten Yeah Rock Scissors Paper Like 'OK '
-choices sentryObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
-choices sentryCommModeMenu I2C Serial 
-choices sentryOperaParamMenu 'learn and assign' 'delete data' 
-choices sentryBarcodeModeMenu All ENA13 Code128 Code39 
-choices sentryAddrMenu '0x60' '0x61' '0x62' '0x63' 
-choices sentryLedColorMenu Black Red Green Yellow Blue Purple Cyan White 
+version 0 7
+depends 'other/Sentry Communication Protocol'
+choices sentry3VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' ' OCR ' ' HandPose ' ' LicensePlate ' 
+choices sentry3VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Objects ' ' HandPose '
+choices sentry3OperaVisionMenu ' Learning ' ' Face ' 
+choices sentry3VisionParamNumMenu ' Color ' ' Blob ' 
+choices sentry3VisionStringMenu ' QrCode ' ' BarCode ' ' OCR ' ' LicensePlate ' 
+choices sentry3ObjInfoMenu 'x-coord' 'y-coord' width height label 
+choices sentry3ObjInfoQrMenu 'x-coord' 'y-coord' width height 
+choices sentry3ObjectsClassMenu '1  person' '2  bicycle' '3  car' '4  motorcycle' '5  airplane' '6  bus' '7  train' '8  truck' '9  boat' '10 traffic light' '11 fire hydrant' '12 stop sign' '13 parking meter' '14 bench' '15 bird' '16 cat' '17 dog' '18 horse' '19 sheep' '20 cow' '21 elephant' '22 bear' '23 zebra' '24 giraffe' '25 backpack' '26 umbrella' '27 handbag' '28 tie' '29 suitcase' '30 frisbee' '31 skis' '32 snowboard' '33 sports ball' '34 kite' '35 baseball bat' '36 baseball glove' '37 skateboard' '38 surfboard' '39 tennis racket' '40 bottle' '41 wine glass' '42 cup' '43 fork' '44 knife' '45 spoon' '46 bowl' '47 banana' '48 apple' '49 sandwich' '50 orange' '51 broccoli' '52 carrot' '53 hot dog' '54 pizza' '55 donut' '56 cake' '57 chair' '58 couch' '59 potted plant' '60 bed' '61 dining table' '62 toilet' '63 tv' '64 laptop' '65 mouse' '66 remote' '67 keyboard' '68 cell phone' '69 microwave' '70 oven' '71 toaster' '72 sink' '73 refrigerator' '74 book' '75 clock' '76 vase' '77 scissors' '78 teddy bear' '79 hair drier' '80 toothbrush' 
+choices sentry3ObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
+choices sentry3ColorMenu Black White Red Green Blue Yellow 
+choices sentry3VisionStaMenu run stop 
+choices sentry3IndexMenu '#1' '#2' '#3' '#4' '#5' 
+choices sentry3HandPoseFingerStateMenu bent extended ignore 
+choices sentry3HandPosePresetMenu One Two Three Four Five Six Eight Ten Yeah Rock Scissors Paper Like OK 
+choices sentry3ObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
+choices sentry3CommModeMenu I2C Serial 
+choices sentry3OperaParamMenu 'learn and assign' 'delete data' 
+choices sentry3AddrMenu '0x60' '0x61' '0x62' '0x63' 
+choices sentry3LedColorMenu Black Red Green Yellow Blue Purple Cyan White 
 description 'Sentry3 vision sensor library with I2C/UART support
 Supports color detection, blob detection, AprilTag, line detection, learning mode, qr，ocr, face detection, and Objects object detection
 '
-variables _sentry_index _sentry_vision_list _sentry_obj_info_list _sentry_config_list _sentry_cache_validation _sentry_uart_packet_buffer _sentry_uart_response_buffer _sentry_buffer_size _sentry_params_buffer _sentry_cache_entry _sentry_err _sentry_vision_id _sentry_index_val 
+variables _sentry3_vision_list 
 
-  spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentryIndexMenu menu.sentryCommModeMenu menu.sentryAddrMenu' '#1' 'I2C' '0x60'
-  spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ upon targets detection otherwise _ brightness(1-10) _' 'menu.sentryIndexMenu menu.sentryLedColorMenu menu.sentryLedColorMenu num' '#1' 'Blue' 'Red' 1
-  spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentryIndexMenu menu.sentryVisionStaMenu menu.sentryVisionMenu' '#1' 'run' ' Color '
-  spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentryIndexMenu menu.sentryVisionParamNumMenu num' '#1' ' Color ' 1
-  spec ' ' 'Sentry3 VisionColorSetParam' 'Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentryIndexMenu num num num num num' '#1' 50 50 3 4 1
-  spec ' ' 'Sentry3 VisionBlobSetParam' 'Set  Sentry3 _  algo Blob  min-width _ min-height _ color _ paramset _' 'menu.sentryIndexMenu num num menu.sentryColorMenu num' '#1' 3 4 'Red' 1
-  spec ' ' 'Sentry3 VisionSetParam' 'Set  Sentry3 _  algo _  _  ID _' 'menu.sentryIndexMenu menu.sentryOperaVisionMenu menu.sentryOperaParamMenu num' '#1' ' Learning ' 'learn and assign' 1
-  spec 'r' 'Sentry3 VisionDetectedCount' 'Sentry3 _  algo _  num of results' 'menu.sentryIndexMenu menu.sentryVisionMenu' '#1' ' Color '
-  spec 'r' 'Sentry3 GetVisionObjColorValue' 'Sentry3 _  algo Color  _ of result _' 'menu.sentryIndexMenu menu.sentryObjInfoColorMenu num' '#1' 'label' 1
-  spec 'r' 'Sentry3 GetVisionObjValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionValueMenu menu.sentryObjInfoMenu num' '#1' ' Blob ' 'x-coord' 1
-  spec 'r' 'Sentry3 GetVisionObjLineValue' 'Sentry3 _  algo Line   _ of result _' 'menu.sentryIndexMenu menu.sentryObjInfoLineMenu num' '#1' 'x-coord of ending point' 1
-  spec 'r' 'Sentry3 GetVisionObjStringValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu menu.sentryObjInfoQrMenu num' '#1' ' QrCode ' 'x-coord' 1
-  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentryIndexMenu menu.sentryVisionStringMenu num' '#1' ' QrCode ' 1
-  spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Black' 1
-  spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentryIndexMenu menu.sentryColorMenu num' '#1' 'Red' 1
-  spec 'r' 'Sentry3 VisionDetectedObjects' 'Sentry3 _  algo Objects  recognized _ result _' 'menu.sentryIndexMenu menu.sentryObjectsClassMenu num' '#1' '1  person' 1
-  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentryIndexMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu menu.sentryHandPoseFingerStateMenu num' '#1' 'bent' 'bent' 'bent' 'bent' 'bent' 1
-  spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandPose  recognized gesture _ result _' 'menu.sentryIndexMenu menu.sentryHandPosePresetMenu num' '#1' 'One' 1
+  spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentry3IndexMenu menu.sentry3CommModeMenu menu.sentry3AddrMenu' '#1' 'I2C' '0x60'
+  spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ upon targets detection otherwise _ brightness(1-10) _' 'menu.sentry3IndexMenu menu.sentry3LedColorMenu menu.sentry3LedColorMenu num' '#1' 'Blue' 'Red' 1
+  spec ' ' 'Sentry3 VisionSetStatus' 'Set  Sentry3 _  _  algo _' 'menu.sentry3IndexMenu menu.sentry3VisionStaMenu menu.sentry3VisionMenu' '#1' 'run' ' Color '
+  spec ' ' 'Sentry3 VisionSetParamNum' 'Set  Sentry3 _  algo _  _ sets of params' 'menu.sentry3IndexMenu menu.sentry3VisionParamNumMenu num' '#1' ' Color ' 1
+  spec ' ' 'Sentry3 VisionColorSetParam' 'Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentry3IndexMenu num num num num num' '#1' 50 50 3 4 1
+  spec ' ' 'Sentry3 VisionBlobSetParam' 'Set  Sentry3 _  algo Blob  min-width _ min-height _ color _ paramset _' 'menu.sentry3IndexMenu num num menu.sentry3ColorMenu num' '#1' 3 4 'Red' 1
+  spec ' ' 'Sentry3 VisionSetParam' 'Set  Sentry3 _  algo _  _  ID _' 'menu.sentry3IndexMenu menu.sentry3OperaVisionMenu menu.sentry3OperaParamMenu num' '#1' ' Learning ' 'learn and assign' 1
+  spec 'r' 'Sentry3 VisionDetectedCount' 'Sentry3 _  algo _  num of results' 'menu.sentry3IndexMenu menu.sentry3VisionMenu' '#1' ' Color '
+  spec 'r' 'Sentry3 GetVisionObjColorValue' 'Sentry3 _  algo Color  _ of result _' 'menu.sentry3IndexMenu menu.sentry3ObjInfoColorMenu num' '#1' 'label' 1
+  spec 'r' 'Sentry3 GetVisionObjValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentry3IndexMenu menu.sentry3VisionValueMenu menu.sentry3ObjInfoMenu num' '#1' ' Blob ' 'x-coord' 1
+  spec 'r' 'Sentry3 GetVisionObjLineValue' 'Sentry3 _  algo Line   _ of result _' 'menu.sentry3IndexMenu menu.sentry3ObjInfoLineMenu num' '#1' 'x-coord of ending point' 1
+  spec 'r' 'Sentry3 GetVisionObjStringValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentry3IndexMenu menu.sentry3VisionStringMenu menu.sentry3ObjInfoQrMenu num' '#1' ' QrCode ' 'x-coord' 1
+  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentry3IndexMenu menu.sentry3VisionStringMenu num' '#1' ' QrCode ' 1
+  spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentry3IndexMenu menu.sentry3ColorMenu num' '#1' 'Black' 1
+  spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentry3IndexMenu menu.sentry3ColorMenu num' '#1' 'Red' 1
+  spec 'r' 'Sentry3 VisionDetectedObjects' 'Sentry3 _  algo Objects  recognized _ result _' 'menu.sentry3IndexMenu menu.sentry3ObjectsClassMenu num' '#1' '1  person' 1
+  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu num' '#1' 'extended' 'extended' 'extended' 'extended' 'extended' 1
+  spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandPose  recognized gesture _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPosePresetMenu num' '#1' 'One' 1
 
 to 'Sentry3 Begin' index_menu comm_mode address {
-  comment 'Initialize SentryBase with index, communication mode and I2C address'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return
-  }
-  comment 'Initialize config and result lists'
-  '_sentry init config lists'
-  comment 'Save config for this device index'
-  comment 'Pack mode (bit 7: 1=Serial, 0=I2C) and address (bits 0-6: 0-127) into single byte'
-  local 'addr' (minimum 127 (maximum 1 (hexToInt address)))
-  local 'deviceConfig' addr
-  if (comm_mode == 'Serial') {
-    deviceConfig = (128 | addr)
-  }
-  atPut _sentry_index _sentry_config_list deviceConfig
-  '_sentry initialize label lists'
-  _sentry_err = ('_sentry initialize base' _sentry_index)
-  repeatUntil (_sentry_err == 0) {
-    sayIt 'Sentry3 init failed!!!'
-    waitMillis 1000
-    _sentry_err = ('_sentry initialize base' _sentry_index)
-  }
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  _sentry3_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' 'n' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' 'n' ' OCR ' ' HandPose ' ' LicensePlate ')
+
+    if ('[vars:varExists]' '_sentry_comm_config_list') {
+      '_sentry comm initialize' idx (hexToInt address) comm_mode
+    } else {
+      sayIt 'Please import "Sentry Communication Protocol"'
+      waitMillis 500
+      stopTask
+    }
   return
 }
 
 to 'Sentry3 GetString' index_menu vision_type obj_id {
-  comment 'Get String or ByteArray value from vision type (QR code, BarCode, OCR, etc.)'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return ''
-  }
-  local 'deviceConfig' ('_sentry get device config' _sentry_index)
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    return ''
-  }
-  comment 'Use ReadString for real-time string reading in both UART and I2C modes'
-  comment 'Both functions now return ByteArray'
+  local 'idx' ('_sentry3 get index from menu' index_menu)
   local 'byteArrayData' 0
-  if ((deviceConfig & 128) != 0) {
-    byteArrayData = ('_sentry_uart_read_string' (deviceConfig & 127) _sentry_vision_id obj_id)
-  } else {
-    byteArrayData = ('_sentry_i2c_read_string' (deviceConfig & 127) _sentry_vision_id obj_id)
-  }
-  comment 'Check ByteArray length'
-  if ((size byteArrayData) <= 0) {
-    return ''
-  }
-  comment 'Decode UTF-8 ByteArray to Unicode code points, then convert to String'
+  byteArrayData = ('_sentry comm read string' idx ('_sentry3 get vision id' vision_type) obj_id)
   return ('_sentry utf8 decode' byteArrayData)
 }
 
 to 'Sentry3 GetVisionObjColorValue' index_menu obj_info obj_id {
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 0
-  }
-  return ('_sentry getValue' _sentry_index ' Color ' obj_info obj_id)
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm get value' idx 1 obj_info obj_id)
 }
 
 to 'Sentry3 GetVisionObjLineValue' index_menu obj_info obj_id {
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 0
-  }
-  return ('_sentry getValue' _sentry_index ' Line ' obj_info obj_id)
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm get value' idx 4 obj_info obj_id)
 }
 
 to 'Sentry3 GetVisionObjStringValue' index_menu vision_type obj_info obj_id {
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 0
-  }
-  return ('_sentry getValue' _sentry_index vision_type obj_info obj_id)
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm get value' idx ('_sentry3 get vision id' vision_type) obj_info obj_id)
 }
 
 to 'Sentry3 GetVisionObjValue' index_menu vision_type obj_info obj_id {
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 0
-  }
-  return ('_sentry getValue' _sentry_index vision_type obj_info obj_id)
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm get value' idx ('_sentry3 get vision id' vision_type) obj_info obj_id)
 }
 
 to 'Sentry3 LedSetColor' index_menu detected_color undetected_color level {
-  comment 'Set LED color and brightness'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  comment 'Convert color names to indices (1-8)'
-  local 'led_colors_list' ('[data:makeList]' 'Black' 'Red' 'Green' 'Yellow' 'Blue' 'Purple' 'Cyan' 'White')
-  local 'detectedIdx' ('[data:find]' detected_color led_colors_list)
-  local 'undetectedIdx' ('[data:find]' undetected_color led_colors_list)
-  if (or (detectedIdx == 0) (undetectedIdx == 0)) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Set LED brightness level (0-15) at register 0x08'
-  local 'ledLevel' ('_sentry get' _sentry_index 8)
-  ledLevel = ((ledLevel & 240) | (level & 15))
-  '_sentry set' _sentry_index 8 ledLevel
-  comment 'Set LED color configuration at register 0x06'
-  local 'ledValue' ('_sentry get' _sentry_index 6)
-  ledValue = (ledValue & 16)
-  if (detected_color == undetected_color) {
-    ledValue = (ledValue | 1)
-  }
-  comment 'Convert to 0-7 range for register (subtract 1 from 1-8 range)'
-  ledValue = ((ledValue | ((detectedIdx - 1) << 1)) | ((undetectedIdx - 1) << 5))
-  '_sentry set' _sentry_index 6 ledValue
-  return 0
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm led set color' idx detected_color undetected_color level)
 }
 
 to 'Sentry3 VisionBlobSetParam' index_menu min_width min_height color_label param_num {
-  comment 'Set Blob vision parameters - min width, min height, color label'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  comment 'Convert color label to numeric'
-  local 'colorId' ('_sentry_get_color_tag_index' color_label)
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'colorId' ('_sentry comm get color index' color_label)
   if (0 == colorId) {
     colorId = 1
-    comment 'default to black'
   }
-  comment 'Set parameters to global ByteArray buffer'
-  '_sentry set params buffer' 0 0 min_width min_height colorId
-  comment 'Use unified SetParam interface (no params needed, using global buffer)'
-  _sentry_err = ('_sentry set param' _sentry_index 2 param_num)
-  return _sentry_err
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 5 params ((min_width >> 8) & 255)
+  atPut 6 params (min_width & 255)
+  atPut 7 params ((min_height >> 8) & 255)
+  atPut 8 params (min_height & 255)
+  atPut 9 params ((colorId >> 8) & 255)
+  atPut 10 params (colorId & 255)
+  return ('_sentry comm set param' idx 2 param_num params)
 }
 
 to 'Sentry3 VisionColorSetParam' index_menu x_value y_value width height param_num {
-  comment 'Set Color vision parameters - x, y, width, height'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  comment 'Set parameters to global ByteArray buffer'
-  '_sentry set params buffer' x_value y_value width height 0
-  comment 'Use unified SetParam interface (no params needed, using global buffer)'
-  _sentry_err = ('_sentry set param' _sentry_index 1 param_num)
-  return _sentry_err
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 1 params ((x_value >> 8) & 255)
+  atPut 2 params (x_value & 255)
+  atPut 3 params ((y_value >> 8) & 255)
+  atPut 4 params (y_value & 255)
+  atPut 5 params ((width >> 8) & 255)
+  atPut 6 params (width & 255)
+  atPut 7 params ((height >> 8) & 255)
+  atPut 8 params (height & 255)
+  return ('_sentry comm set param' idx 1 param_num params)
 }
 
 to 'Sentry3 VisionDetectedBlob' index_menu color_label obj_id {
-  comment 'Check if Blob vision detected specific color blob'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return false
-  }
-  return (('_sentry getValue' _sentry_index ' Blob ' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return (('_sentry comm get value' idx 2 'label' obj_id) == ('_sentry comm get color index' color_label))
 }
 
 to 'Sentry3 VisionDetectedColor' index_menu color_label obj_id {
-  comment 'Check if Color vision detected specific color'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return false
-  }
-  return (('_sentry getValue' _sentry_index ' Color ' 'label' obj_id) == ('_sentry_get_color_tag_index' color_label))
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return (('_sentry comm get value' idx 1 'label' obj_id) == ('_sentry comm get color index' color_label))
 }
 
 to 'Sentry3 VisionDetectedCount' index_menu vision_type {
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 0
-  }
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    return 0
-  }
-  _sentry_index_val = ('_sentry find cache entry' _sentry_index _sentry_vision_id)
-  if (_sentry_index_val == 0) {
-    sayIt 'Please open vision first'
-    return -1
-  }
-  local 'currentFrame' ('_sentry get' _sentry_index 31)
-  local 'cache_frame' ('_sentry cache get byte' _sentry_index_val 3)
-  local 'cache_count' ('_sentry cache get byte' _sentry_index_val 4)
-  local 'detectCount' 0
-  local 'tryCount' 0
-  repeatUntil (detectCount != 0) {
-    if (or (cache_frame == 0) (cache_count == 0) (cache_frame == currentFrame)) {
-      comment 'Unlock sensor first to read frame'
-      '_sentry sensor lock' _sentry_index false
-      cache_frame = currentFrame
-      repeatUntil (currentFrame != cache_frame) {
-        comment 'Wait Frame Update'
-        waitMillis 10
-        currentFrame = ('_sentry get' _sentry_index 31)
-      }
-      
-      cache_frame = currentFrame
-    }
-    
-    comment 'Set vision ID register (0x20)'
-    '_sentry set' _sentry_index 32 _sentry_vision_id
-    comment 'Read detection count from register 0x34'
-    detectCount = ('_sentry get' _sentry_index 52)
-    comment 'Get current frame number'
-    if (detectCount == 0) {
-      comment 'No detection'
-      tryCount = (tryCount + 1)
-      if (3 < tryCount) {
-        '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
-        return 0
-      }
-    }
-    else {
-    '_sentry sensor lock' _sentry_index true
-    }
-  }
-  '_sentry update cache entry' _sentry_index _sentry_vision_id currentFrame detectCount
-  // UdpLog 'detectCount' currentFrame detectCount
-  return detectCount
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm vision detected count' idx ('_sentry3 get vision id' vision_type))
 }
 
 to 'Sentry3 VisionDetectedHandPoseCustom' index_menu thumb_state index_state middle_state ring_state pinky_state obj_id {
-  comment 'Check if HandPose vision detected custom handpose'
-  comment 'Finger states: bent(0), extended(1), ignore(-1)'
-  comment 'Bit order: bit4(pinky) bit3(ring) bit2(middle) bit1(index) bit0(thumb)'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return false
-  }
-  comment 'Get label value from HandPose result'
-  local 'label' ('_sentry getValue' _sentry_index ' HandPose ' 'label' obj_id)
-  comment 'Calculate mask and status based on finger states'
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'label' ('_sentry comm get value' idx 13 'label' obj_id)
   local 'mask' 0
   local 'status' 0
-  comment 'Thumb (bit 0)'
   if (thumb_state != 'ignore') {
     mask = (mask | 1)
     if (thumb_state == 'extended') {
       status = (status | 1)
     }
   }
-  comment 'Index finger (bit 1)'
   if (index_state != 'ignore') {
     mask = (mask | 2)
     if (index_state == 'extended') {
       status = (status | 2)
     }
   }
-  comment 'Middle finger (bit 2)'
   if (middle_state != 'ignore') {
     mask = (mask | 4)
     if (middle_state == 'extended') {
       status = (status | 4)
     }
   }
-  comment 'Ring finger (bit 3)'
   if (ring_state != 'ignore') {
     mask = (mask | 8)
     if (ring_state == 'extended') {
       status = (status | 8)
     }
   }
-  comment 'Pinky (bit 4)'
   if (pinky_state != 'ignore') {
     mask = (mask | 16)
     if (pinky_state == 'extended') {
       status = (status | 16)
     }
   }
-  comment 'Check if (label & mask) == status'
   return ((label & mask) == status)
 }
 
 to 'Sentry3 VisionDetectedHandPosePreset' index_menu handpose_preset obj_id {
-  comment 'Check if HandPose vision detected preset handpose'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return false
-  }
-  comment 'Get label value from HandPose result'
-  local 'label' ('_sentry getValue' _sentry_index ' HandPose ' 'label' obj_id)
-  comment 'Check if (label & 0b11111) == preset_value'
-  return ((label & 31) == ('_sentry_get_handpose_preset_value' handpose_preset))
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'label' ('_sentry comm get value' idx 13 'label' obj_id)
+  return ((label & 31) == ('_sentry3_get_handpose_preset_value' handpose_preset))
 }
 
 to 'Sentry3 VisionDetectedObjects' index_menu Objects_class obj_id {
-  comment 'Check if Objects vision detected specific class'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return false
-  }
-  comment 'Get Objects class index by extracting number from prefix (format: "N  label" or "NN label")'
-  comment 'Find first space position'
+  local 'idx' ('_sentry3 get index from menu' index_menu)
   local 'spacePos' ('[data:find]' ' ' Objects_class)
   if (spacePos == 0) {
-    comment 'No space found, invalid format'
     return 0
   }
-  comment 'Extract number part (from start to before first space) and convert to number'
-  return (('_sentry getValue' _sentry_index ' Objects ' 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' Objects_class 1 (spacePos - 1)) 'number')))
-}
-
-to 'Sentry3 VisionSetAprilTagMode' index_menu apriltag_mode {
-  comment 'Set AprilTag vision mode'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  comment 'Convert apriltag mode to numeric'
-  local 'apriltag_mode_list' ('[data:makeList]' '16H5' '25H9' '36H11' 'Circle21H7' 'Standard41H12')
-  '_sentry vision set mode' _sentry_index 3 (('[data:find]' apriltag_mode apriltag_mode_list) - 1)
-  return 0
-}
-
-to 'Sentry3 VisionSetBarCodeMode' index_menu barcode_mode {
-  comment 'Set Barcode vision mode'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  comment 'Convert barcode mode to numeric'
-  local 'mode_value' 0
-  if (barcode_mode == 'All') {
-    mode_value = 14
-  } (barcode_mode == 'ENA13') {
-    mode_value = 2
-  } (barcode_mode == 'Code128') {
-    mode_value = 4
-  } (barcode_mode == 'Code39') {
-    mode_value = 8
-  } else {
-    comment 'Invalid barcode mode'
-    return 16
-  }
-  '_sentry vision set mode' _sentry_index 10 mode_value
-  return 0
-}
-
-to 'Sentry3 VisionSetBlobNum' index_menu max_blobs {
-  comment 'Set maximum number of blobs for each color (1-5)'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  '_sentry vision set mode' _sentry_index 2 (max_blobs & 15)
-  return 0
-}
-
-to 'Sentry3 VisionSetLineNum' index_menu max_lines {
-  comment 'Set maximum number of lines (1-5)'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  '_sentry vision set mode' _sentry_index 4 (max_lines & 15)
-  return 0
+  return (('_sentry comm get value' idx 8 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' Objects_class 1 (spacePos - 1)) 'number')))
 }
 
 to 'Sentry3 VisionSetParam' index_menu vision_type opera_param param_num {
-  comment 'Set vision parameters for Learning/Face modes'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Convert opera param to numeric'
-  comment 'Set parameters to global ByteArray buffer'
-  '_sentry set params buffer' 0 0 0 0 (ifExpression (opera_param == 'learn and assign') 100 0)
-  comment 'Use unified SetParam interface (no params needed, using global buffer)'
-  _sentry_err = ('_sentry set param' _sentry_index _sentry_vision_id param_num)
-  return _sentry_err
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'lastParam' (ifExpression (opera_param == 'learn and assign') 100 0)
+  local 'params' ('[data:newByteArray]' 10 0)
+  atPut 9 params ((lastParam >> 8) & 255)
+  atPut 10 params (lastParam & 255)
+  return ('_sentry comm set param' idx ('_sentry3 get vision id' vision_type) param_num params)
 }
 
 to 'Sentry3 VisionSetParamNum' index_menu vision_type max_num {
-  comment 'Set maximum parameter number'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Set vision ID register (0x20) and parameter number (0x23)'
-  '_sentry set' _sentry_index 32 _sentry_vision_id
-  '_sentry set' _sentry_index 35 max_num
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  '_sentry comm vision set param num' idx ('_sentry3 get vision id' vision_type) max_num
   return 0
 }
 
 to 'Sentry3 VisionSetStatus' index_menu vision_sta vision_type {
-  comment 'Set vision detection mode - enable or disable a vision algorithm'
-  _sentry_index = ('_sentry get index from menu' index_menu)
-  if (_sentry_index == 0) {
-    return 16
-  }
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Set vision ID register (0x20) with retry and verification'
-  local 'err' ('_sentry set and verify' _sentry_index 32 _sentry_vision_id)
-  if (err != 0) {
-    return err
-  }
-  comment 'Read current config (0x21)'
-  local 'visionConfig' ('_sentry get' _sentry_index 33)
-  comment 'Check if status bit needs to change'
-  local 'newStatus' (ifExpression (vision_sta == 'run') 1 0)
-  if ((visionConfig & 1) != newStatus) {
-    comment 'Clear bit 0 and set new status'
-    visionConfig = ((visionConfig & 254) | newStatus)
-    comment 'Set config register (0x21) with retry and verification'
-    local 'err' ('_sentry set and verify' _sentry_index 33 visionConfig)
-    if (err != 0) {
-      return err
-    }
-  }
-  _sentry_index_val = ('_sentry find cache entry' _sentry_index _sentry_vision_id)
-  if (vision_sta == 'run') {
-    if (_sentry_index_val == 0) {
-      comment 'Add new cache entry'
-      '_sentry update cache entry' _sentry_index _sentry_vision_id 0 0
-    }
-  } else {
-    if (_sentry_index_val != 0) {
-      comment 'Remove cache entry from list'
-      '[data:delete]' _sentry_index_val _sentry_cache_validation
-    }
-  }
-  return 0
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  return ('_sentry comm vision set status' idx vision_sta ('_sentry3 get vision id' vision_type))
 }
 
-to '_sentry cache get byte' entryIndex offset {
-  comment 'Get byte from cache entry at offset (1-15)'
-  comment 'entryIndex is the index in _sentry_cache_validation list (1-based)'
-  _sentry_cache_entry = (at entryIndex _sentry_cache_validation)
-  if (_sentry_cache_entry == 0) {
-    return 0
-  }
-  return (at offset _sentry_cache_entry)
-}
 
-to '_sentry cache get word' entryIndex dataOffset {
-  comment 'Get 16-bit word from cache entry data area (dataOffset 1-5)'
-  comment 'entryIndex is the index in _sentry_cache_validation list (1-based)'
-  _sentry_cache_entry = (at entryIndex _sentry_cache_validation)
-  if (_sentry_cache_entry == 0) {
-    return 0
-  }
-  local 'byteOffset' (6 + (dataOffset * 2))
-  // UdpLog 'cache get word' _sentry_cache_entry byteOffset
-  return (((at byteOffset _sentry_cache_entry) << 8) | (at (byteOffset + 1) _sentry_cache_entry))
-}
+to '_sentry3 get index from menu' index_menu {
 
-to '_sentry cache set byte' entryIndex offset value {
-  comment 'Set byte in cache entry at offset (1-15)'
-  comment 'entryIndex is the index in _sentry_cache_validation list (1-based)'
-  _sentry_cache_entry = (at entryIndex _sentry_cache_validation)
-  if (_sentry_cache_entry == 0) {
-    return 0
-  }
-  atPut offset _sentry_cache_entry value
-  atPut entryIndex _sentry_cache_validation _sentry_cache_entry
-}
-
-to '_sentry find cache entry' index visionId {
-  comment 'Find cache entry for device+algorithm in list'
-  comment 'Each entry is a ByteArray of 15 bytes: index(1) + visionId(1) + frame(1) + detectCount(1) + obj_id(1) + data(10)'
-  local 'listSize' (size _sentry_cache_validation)
-  for i listSize {
-    _sentry_cache_entry = (at i _sentry_cache_validation)
-    if (_sentry_cache_entry != 0) {
-      if (and ((at 1 _sentry_cache_entry) == index) ((at 2 _sentry_cache_entry) == visionId)) {return i}
-    }
-  }
-  return 0
-}
-
-to '_sentry get' index reg_address {
-  comment 'Unified Get interface - hides I2C/UART protocol differences'
-  local 'deviceConfig' ('_sentry get device config' index)
-  if ((deviceConfig & 128) != 0) {
-    return ('_sentry_uart_get' (deviceConfig & 127) reg_address)
-  }
-  return ('_sentry_i2c_get' (deviceConfig & 127) reg_address)
-}
-
-to '_sentry get device config' index {
-  comment 'Get device config by index - returns single byte (bit 7=mode, bits 0-6=address)'
-  comment 'Initialize lists if not exists'
-  '_sentry init config lists'
-  comment 'Validate index (1-5)'
-  if (or (index < 1) (index > 5)) {
-    return 96
-  }
-  comment 'Get device config from list'
-  local 'deviceConfig' (at index _sentry_config_list)
-  if (deviceConfig == 0) {
-    comment 'Invalid config, use default I2C address 96'
-    deviceConfig = 96
-    atPut index _sentry_config_list deviceConfig
-  }
-  return deviceConfig
-}
-
-to '_sentry get index from menu' index_menu {
-  comment 'Convert index menu value (#1, #2, etc.) to number (1, 2, etc.)'
-  comment 'If input is number, return directly'
-  if (isType index_menu 'number') {
-    return index_menu
-  }
-  comment 'If input is string starting with #, extract second character as number'
   if (isType index_menu 'string') {
-    if ((at 1 index_menu) == '#') {return ('[data:convertType]' (at 2 index_menu) 'number')}
+    if ((at 1 index_menu) == '#') {
+      local 'index' ('[data:convertType]' (at 2 index_menu) 'number')
+      return (((index & 7) << 5) | 8)
+    }
   }
-  return 1
+  
+  return 8
 }
 
-to '_sentry getValue' index vision_type property obj_id {
-  comment 'Get object property value - uses on-demand result retrieval from ByteArray cache'
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (or (0 == _sentry_vision_id) (obj_id < 1)) {
-    sayIt 'Invalid vision type'
-    return 0
+to '_sentry3 get vision id' vision_type {
+  local 'id' ('[data:find]' vision_type _sentry3_vision_list)
+  if (id > 0) {
+    return id
   }
-  comment 'Convert property name to ID using direct lookup'
-  local 'propertyId' ('_sentry_get_obj_info_index' property)
-  if (or (propertyId < 1) (propertyId > 5)) {
-    sayIt 'Invalid property name'
-    return 0
+  for i (size _sentry3_vision_list) {
+    if (('[data:find]' vision_type (at i _sentry3_vision_list)) > 0) {return i}
   }
-  comment 'For other properties, use value retrieval function'
-  _sentry_index_val = ('_sentry find cache entry' index _sentry_vision_id)
-  if (_sentry_index_val == 0) {
-    sayIt 'Please open vision first'
-    return 0
-  }
-  local 'cachedDetectCount' ('_sentry cache get byte' _sentry_index_val 4)
-  if (or (cachedDetectCount == 0) (obj_id > cachedDetectCount)) {
-    sayIt 'Please call detected count first'
-    return 0
-  }
-  local 'cacheObjId' ('_sentry cache get byte' _sentry_index_val 5)
-  if (or (cacheObjId == 0) (cacheObjId != obj_id)) {
-    comment 'Read single object data directly into ByteArray cache'
-    comment 'Get device config by index'
-    local 'deviceConfig' ('_sentry get device config' index)
-    '_sentry cache set byte' _sentry_index_val 5 obj_id
-    if ((deviceConfig & 128) != 0) {
-      '_sentry_uart_read_object' (deviceConfig & 127) _sentry_vision_id obj_id _sentry_index_val
-    } else {
-      '_sentry_i2c_read_object' (deviceConfig & 127) _sentry_vision_id obj_id _sentry_index_val
-    }
-  }
-  comment 'Read property value from ByteArray cache (dataOffset is propertyId-1, 0-4)'
-  return ('_sentry cache get word' _sentry_index_val (propertyId - 1))
-}
-
-to '_sentry init config lists' {
-  comment 'Initialize config list with 5 elements'
-  if (_sentry_config_list == 0) {
-    _sentry_config_list = (newList 5)
-    comment 'Initialize each device config as single byte (bit 7=mode, bits 0-6=address)'
-    comment 'Default: I2C mode (bit 7=0) with address 96'
-    for i 5 {
-      atPut i _sentry_config_list 96
-    }
-  }
-  comment 'Initialize cache validation list (stores ByteArray for each device+algorithm)'
-  comment 'Each entry is a ByteArray of 15 bytes: index(1) + visionId(1) + frame(1) + detectCount(1) + obj_id(1) + data(10)'
-  if (_sentry_cache_validation == 0) {
-    _sentry_cache_validation = (newList 0)
-  }
-  comment 'Initialize params buffer ByteArray (10 bytes for 5 x 16-bit parameters)'
-  if (_sentry_params_buffer == 0) {
-    _sentry_params_buffer = ('[data:newByteArray]' 10 0)
-  }
-}
-
-to '_sentry initialize base' index {
-  comment 'Validate communication mode and get device config'
-  local 'deviceConfig' ('_sentry get device config' index)
-  comment 'Check address validity'
-  if (0 == (deviceConfig & 127)) {
-    comment 'SENTRY_FAIL'
-    return 1
-  }
-  if ((deviceConfig & 128) != 0) {
-    comment 'Serial mode - Initialize UART packet buffer ByteArray (max 32 bytes for packet building)'
-    if (_sentry_uart_packet_buffer == 0) {
-      _sentry_uart_packet_buffer = ('[data:newByteArray]' 32 0)
-    }
-    comment 'Initialize UART response buffer ByteArray (max 128 bytes for response parsing)'
-    if (_sentry_uart_response_buffer == 0) {
-      _sentry_uart_response_buffer = ('[data:newByteArray]' 128 0)
-      _sentry_buffer_size = 0
-    }
-  } else {
-    comment 'I2C mode - check if device exists'
-    if (not ('[sensors:i2cExists]' (deviceConfig & 127))) {
-      sayIt 'Can not find i2c device！！！'
-      waitMillis 200
-      return 16
-    }
-  }
-  comment 'Check if device is present - read device ID from register 0x01'
-  if (('_sentry get' index 1) != 8) {
-    comment 'SENTRY_UNKNOWN_PROTOCOL'
-    return 17
-  }
-  comment 'Initialize sensor'
-  _sentry_err = ('_sentry sensor init' index)
-  if (0 != _sentry_err) {
-    return _sentry_err
-  }
-  _sentry_err = ('_sentry sensor set default' index)
-  if (_sentry_err == 0) {
-    return 0
-  }
-  return _sentry_err
-}
-
-to '_sentry initialize label lists' {
-  comment 'Initialize label lists for better property mapping'
-  _sentry_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' 'n' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' 'n' ' OCR ' ' HandPose ' ' LicensePlate ')
-  local 'obj_info_group1' ('[data:makeList]' 'status' 'x-coord' 'y-coord' 'width' 'height')
-  local 'obj_info_group2' ('[data:makeList]' 'label' 'red CH value' 'green CH value' 'blue CH value')
-  local 'obj_info_group3' ('[data:makeList]' 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle')
-  _sentry_obj_info_list = ('[data:join]' obj_info_group1 obj_info_group2 obj_info_group3)
-}
-
-to '_sentry sensor init' index {
-  comment 'Initialize sensor hardware'
-  comment 'Check sensor startup - wait for bit 0 of register 0x04 to be 1'
-  local 'startupCount' 0
-  repeatUntil (1 == (('_sentry get' index 4) & 1)) {
-    startupCount = (startupCount + 1)
-    if (startupCount > 200) {
-      comment 'SENTRY_UNKNOWN_PROTOCOL'
-      return 17
-    }
-    comment 'Wait 10ms'
-    waitMicros 10000
-  }
-  comment 'Check protocol version - read device ID from register 0x01'
-  local 'versionCount' 0
-  local 'deviceId' 0
-  repeatUntil (deviceId == 8) {
-    versionCount = (versionCount + 1)
-    deviceId = ('_sentry get' index 1)
-    if (versionCount > 10) {
-      comment 'SENTRY_UNKNOWN_PROTOCOL'
-      return 17
-    }
-  }
-  comment 'Set sensor default - set bit 3 of register 0x04'
-  local 'sensorConfig' ('_sentry get' index 4)
-  sensorConfig = (sensorConfig | 8)
-  '_sentry set' index 4 sensorConfig
-  comment 'Wait for default setting to complete - wait until bit 3 is cleared'
-  repeatUntil (8 != (('_sentry get' index 4) & 8)) {
-    comment 'Wait for completion'
-  }
-  comment 'SENTRY_OK'
+  sayIt vision_type  id 'Error: not found!'
+  waitMicros 2000
+  stopTask
   return 0
 }
 
-to '_sentry sensor lock' index lock {
-  comment 'Lock or unlock sensor register (0x05)'
-  local 'lockValue' (ifExpression lock 1 0)
-  '_sentry set' index 5 lockValue
-  repeatUntil (lockValue == (('_sentry get' index 5) & 1)) {
-    '_sentry set' index 5 lockValue
-    comment 'Wait for completion'
-  }
-  return 0
-}
-
-to '_sentry sensor set default' index {
-  comment 'Restore sensor to default settings'
-  comment 'Read SensorConfig1 register (0x04)'
-  local 'sensorConfig' ('_sentry get' index 4)
-  comment 'Set bit 3 to trigger default restoration'
-  sensorConfig = (sensorConfig | 8)
-  '_sentry set' index 4 sensorConfig
-  comment 'Wait for bit 3 to clear (indicating completion)'
-  repeatUntil (0 == (('_sentry get' index 4) & 8)) {
-    waitMillis 50
-  }
-  return 0
-}
-
-to '_sentry set' index reg_address value {
-  comment 'Unified Set interface - hides I2C/UART protocol differences'
-  local 'deviceConfig' ('_sentry get device config' index)
-  if ((deviceConfig & 128) != 0) {
-    comment 'UART Set operation - write value to register'
-    comment 'Protocol: [START][LENGTH][ADDRESS][COMMAND_SET][REG][VALUE][CHECKSUM][END]'
-    atPut 3 _sentry_uart_packet_buffer (deviceConfig & 127)
-    atPut 4 _sentry_uart_packet_buffer 1
-    atPut 5 _sentry_uart_packet_buffer reg_address
-    atPut 6 _sentry_uart_packet_buffer value
-    '_sentry_uart_send_packet' 2
-    comment '等待响应'
-    local 'responseLength' ('_sentry_uart_read_response')
-    if (responseLength < 3) {
-      comment 'SENTRY_WRITE_TIMEOUT'
-      return 2
-    }
-    comment 'Check response status (byte 1 should be 0xE0 for OK)'
-    if ((at 1 _sentry_uart_response_buffer) == 224) {
-      comment 'SENTRY_OK'
-      return 0
-    }
-    comment 'SENTRY_FAIL'
-    return 1
-  }
-  return ('_sentry_i2c_set' (deviceConfig & 127) reg_address value)
-}
-
-to '_sentry set and verify' index reg_address value {
-  comment 'Write register with retry and verification'
-  comment 'Returns 0 on success, non-zero error code on failure'
-  local 'retryCount' 0
-  local 'writeSuccess' false
-  repeat 5 {
-    '_sentry set' index reg_address value
-    comment 'Verify register value'
-    local 'readValue' ('_sentry get' index reg_address)
-    if (readValue == value) {
-      writeSuccess = true
-      break
-    }
-    retryCount = (retryCount + 1)
-  }
-  if (not writeSuccess) {
-    comment 'Write verification failed after retries'
-    return 17
-  }
-  return 0
-}
-
-to '_sentry set param' index visionId param_id {
-  comment 'Unified SetParam interface - hides I2C/UART protocol differences'
-  comment 'Get device config by index'
-  local 'deviceConfig' ('_sentry get device config' index)
-  if ((deviceConfig & 128) != 0) {
-    return ('_sentry_uart_set_param' (deviceConfig & 127) visionId param_id)
-  }
-  return ('_sentry_i2c_set_param' (deviceConfig & 127) visionId param_id)
-}
-
-to '_sentry set params buffer' param1 param2 param3 param4 param5 {
-  comment 'Set parameters to global ByteArray buffer (5 x 16-bit values = 10 bytes)'
-  comment 'Initialize buffer if needed'
-  '_sentry init config lists'
-  comment 'Store each 16-bit parameter as high byte and low byte'
-  atPut 1 _sentry_params_buffer ((param1 >> 8) & 255)
-  atPut 2 _sentry_params_buffer (param1 & 255)
-  atPut 3 _sentry_params_buffer ((param2 >> 8) & 255)
-  atPut 4 _sentry_params_buffer (param2 & 255)
-  atPut 5 _sentry_params_buffer ((param3 >> 8) & 255)
-  atPut 6 _sentry_params_buffer (param3 & 255)
-  atPut 7 _sentry_params_buffer ((param4 >> 8) & 255)
-  atPut 8 _sentry_params_buffer (param4 & 255)
-  atPut 9 _sentry_params_buffer ((param5 >> 8) & 255)
-  atPut 10 _sentry_params_buffer (param5 & 255)
-}
-
-to '_sentry update cache entry' index visionId frame detectCount {
-  comment 'Update or add cache entry for device+algorithm'
-  comment 'Each entry is a ByteArray of 15 bytes: index(1) + visionId(1) + frame(1) + detectCount(1) + obj_id(1) + data(10)'
-  _sentry_index_val = ('_sentry find cache entry' index visionId)
-  if (_sentry_index_val > 0) {
-    comment 'Update existing entry'
-    _sentry_cache_entry = (at _sentry_index_val _sentry_cache_validation)
-    atPut 1 _sentry_cache_entry index
-    atPut 2 _sentry_cache_entry visionId
-    atPut 3 _sentry_cache_entry frame
-    atPut 4 _sentry_cache_entry detectCount
-    atPut 5 _sentry_cache_entry 0
-    comment 'Clear data area (set to 0)'
-    for i 10 {
-      atPut (5 + i) _sentry_cache_entry 0
-    }
-    atPut _sentry_index_val _sentry_cache_validation _sentry_cache_entry
-  } else {
-    comment 'Add new entry - create new ByteArray'
-    _sentry_cache_entry = ('[data:newByteArray]' 15 0)
-    atPut 1 _sentry_cache_entry index
-    atPut 2 _sentry_cache_entry visionId
-    atPut 3 _sentry_cache_entry frame
-    atPut 4 _sentry_cache_entry detectCount
-    atPut 5 _sentry_cache_entry 0
-    comment 'Data area already initialized to 0'
-    '[data:addLast]' _sentry_cache_entry _sentry_cache_validation
-    _sentry_index_val = (size _sentry_cache_validation)
-  }
-  return _sentry_index_val
-}
-
-to '_sentry utf8 decode' byteArray {
-  comment 'Decode UTF-8 ByteArray to Unicode string using streaming parse'
-  local 'len' (size byteArray)
-  if (len <= 0) {
-    return ''
-  }
-  local 'unicodeList' (newList 0)
-  local 'i' 1
-  local 'b' 0
-  local 'bytes' 0
-  local 'mask' 0
-  local 'cp' 0
-  local 'j' 0
-  local 'nextByte' 0
-  repeatUntil (i > len) {
-    b = (at i byteArray)
-    if ((b & 128) == 0) {
-      '[data:addLast]' b unicodeList
-      i = (i + 1)
-    } else {
-      if ((b & 224) == 192) {
-        bytes = 2
-        mask = 31
-      } else {
-        if ((b & 240) == 224) {
-          bytes = 3
-          mask = 15
-        } else {
-          if ((b & 248) == 240) {
-            bytes = 4
-            mask = 7
-          } else {
-            i = (i + 1)
-          }
-        }
-      }
-      if (bytes > 0) {
-        if (((i + bytes) - 1) > len) {
-          i = (i + 1)
-        } else {
-          cp = (b & mask)
-          j = 1
-          repeatUntil (j >= bytes) {
-            nextByte = (at (i + j) byteArray)
-            if ((nextByte & 192) != 128) {
-              break
-            }
-            cp = ((cp << 6) | (nextByte & 63))
-            j = (j + 1)
-          }
-          if (j == bytes) {
-            '[data:addLast]' cp unicodeList
-            i = (i + bytes)
-          } else {
-            i = (i + 1)
-          }
-          bytes = 0
-        }
-      }
-    }
-  }
-  return ('[data:unicodeString]' unicodeList)
-}
-
-to '_sentry vision set default' index vision_type {
-  comment 'Restore vision algorithm to default settings'
-  _sentry_vision_id = ('[data:find]' vision_type _sentry_vision_list)
-  if (0 == _sentry_vision_id) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Set vision ID register (0x20)'
-  '_sentry set' index 32 _sentry_vision_id
-  comment 'Read visionConfig register (0x21)'
-  local 'visionConfig' ('_sentry get' index 33)
-  comment 'Set bit 1 to trigger default restoration, clear it first'
-  visionConfig = ((visionConfig & 253) | 2)
-  '_sentry set' index 33 visionConfig
-  comment 'Wait for bit 1 to clear (indicating completion)'
-  local 'defaultSetting' ((visionConfig >> 1) & 1)
-  repeatUntil (0 == defaultSetting) {
-    waitMillis 10
-    visionConfig = ('_sentry get' index 33)
-    defaultSetting = ((visionConfig >> 1) & 1)
-  }
-  return 0
-}
-
-to '_sentry vision set mode' index visionId mode_value {
-  if (0 == visionId) {
-    comment 'SENTRY_UNSUPPORT_PARAM'
-    return 16
-  }
-  comment 'Set vision ID register (0x20)'
-  '_sentry set' index 32 visionId
-  comment 'Read VisionConfig2 register (0x22)'
-  local 'visionConfig2' ('_sentry get' index 34)
-  comment 'Check if mode needs to change (lower 4 bits)'
-  if ((visionConfig2 & 15) != mode_value) {
-    comment 'Clear lower 4 bits and set new mode'
-    visionConfig2 = ((visionConfig2 & 240) | mode_value)
-    '_sentry set' index 34 visionConfig2
-  }
-  return 0
-}
-
-to '_sentry_get_color_tag_index' color_label {
-  comment 'Get color tag index by name'
-  if (color_label == 'Black') {
-    return 1
-  } (color_label == 'White') {
-    return 2
-  } (color_label == 'Red') {
-    return 3
-  } (color_label == 'Green') {
-    return 4
-  } (color_label == 'Blue') {
-    return 5
-  } (color_label == 'Yellow') {
-    return 6
-  }
-  return 0
-}
-
-to '_sentry_get_handpose_preset_value' handpose_preset {
+to '_sentry3_get_handpose_preset_value' handpose_preset {
   comment 'Return preset value directly based on preset name'
   if (handpose_preset == 'One') {
     return 2
   } (or (handpose_preset == 'Two') (handpose_preset == 'Yeah')) {
     return 6
-  } (or (handpose_preset == 'Three') (handpose_preset == 'OK ') (handpose_preset == 'OK')) {
+  } (or (handpose_preset == 'Three') (handpose_preset == 'OK')) {
     return 28
   } (handpose_preset == 'Four') {
     return 30
@@ -1003,462 +263,3 @@ to '_sentry_get_handpose_preset_value' handpose_preset {
   }
   return -1
 }
-
-to '_sentry_get_obj_info_index' property {
-  comment 'Get object info index by property name - optimized direct lookup'
-  if (or (property == 'x-coord') (property == 'red CH value') (property == 'x-coord of ending point')) {
-    return 1
-  } (or (property == 'y-coord') (property == 'green CH value') (property == 'y-coord of ending point')) {
-    return 2
-  } (or (property == 'width') (property == 'blue CH value') (property == 'x-coord of starting point')) {
-    return 3
-  } (or (property == 'height') (property == 'y-coord of starting point')) {
-    return 4
-  } (or (property == 'label') (property == 'inclination angle')) {
-    return 5
-  }
-  comment 'Not found'
-  return 0
-}
-
-to '_sentry_i2c_get' address reg_address {
-  comment 'I2C Get operation - read value from register'
-  local 'value' (i2cGet address reg_address)
-  // UdpLog 'reg_r' reg_address value
-  if (value < 0) {
-    comment 'SENTRY_I2C_ERROR'
-    sayIt 'SENTRY_I2C_ERROR'
-    waitMillis 2000
-    return 0
-  }
-  return value
-}
-
-to '_sentry_i2c_read_object' address visionId obj_id cacheEntryIndex {
-  comment 'Read single object data from sensor via I2C and write directly to ByteArray cache'
-  comment 'Set vision ID register (0x20)'
-  '_sentry_i2c_set' address 32 visionId
-  comment 'Set result ID register (0x35)'
-  '_sentry_i2c_set' address 53 obj_id
-  comment 'Get cache entry ByteArray from list'
-  _sentry_cache_entry = (at cacheEntryIndex _sentry_cache_validation)
-  if (_sentry_cache_entry == 0) {
-    return 0
-  }
-  comment 'Read 5 data values (each is 16-bit) directly into ByteArray cache'
-  local 'regBase' 0
-  local 'highByte' 0
-  local 'lowByte' 0
-  local 'byteOffset' 0
-  for i 5 {
-    comment '0x80, 0x82, 0x84, 0x86, 0x88'
-    regBase = (128 + ((i - 1) * 2))
-    highByte = ('_sentry_i2c_get' address regBase)
-    lowByte = ('_sentry_i2c_get' address (regBase + 1))
-    comment 'Write directly to ByteArray: byteOffset = 5 + (i-1)*2 + 1 = 6 + (i-1)*2'
-    byteOffset = (6 + ((i - 1) * 2))
-    atPut byteOffset _sentry_cache_entry highByte
-    atPut (byteOffset + 1) _sentry_cache_entry lowByte
-  }
-  atPut cacheEntryIndex _sentry_cache_validation _sentry_cache_entry
-}
-
-to '_sentry_i2c_read_string' address visionId obj_id {
-  comment 'write start_id to 0x6B, read_len to 0x6D, then read characters from 0x6C'
-  comment 'Set vision ID register (0x20)'
-  '_sentry_i2c_set' address 32 visionId
-  comment 'Set result ID register (0x35) to select object'
-  '_sentry_i2c_set' address 53 obj_id
-  comment 'Read actual byte count from register 0x6A (106) - important for Chinese characters'
-  local 'read_len' ('_sentry_i2c_get' address 106)
-  if (read_len <= 0) {
-    return ('[data:newByteArray]' 0 0)
-  }
-  comment 'Write read_len to register 0x6e (110)'
-  '_sentry_i2c_set' address 110
-  comment 'Read characters from register 0x6C (108) - loop read_len times'
-  local 'strData' ('[data:newByteArray]' read_len 0)
-  local 'char' 0
-  for i read_len {
-    char = ('_sentry_i2c_get' address 108)
-    comment 'Append character byte to data list (read all bytes)'
-    if (char > 0) {
-      atPut i strData char
-    } else {
-      return ('[data:newByteArray]' 0 0)
-    }
-  }
-  comment 'Return ByteArray'
-  return strData
-}
-
-to '_sentry_i2c_set' address reg_address value {
-  comment 'I2C Set operation - write value to register'
-  // UdpLog 'reg_w' reg_address value
-  i2cSet address reg_address value
-  comment 'SENTRY_OK'
-  return 0
-}
-
-to '_sentry_i2c_set_param' address visionId param_id {
-  comment 'I2C SetParam operation - set vision parameters using global ByteArray buffer'
-  comment 'Set vision ID register (0x20)'
-  '_sentry_i2c_set' address 32 visionId
-  comment 'Set parameter ID register (0x24)'
-  '_sentry_i2c_set' address 36 param_id
-  comment 'Read parameter values from global ByteArray buffer (5 x 16-bit = 10 bytes)'
-  comment '0x70: ParamValue1H'
-  '_sentry_i2c_set' address 112 (at 1 _sentry_params_buffer)
-  comment '0x71: ParamValue1L'
-  '_sentry_i2c_set' address 113 (at 2 _sentry_params_buffer)
-  comment '0x72: ParamValue2H'
-  '_sentry_i2c_set' address 114 (at 3 _sentry_params_buffer)
-  comment '0x73: ParamValue2L'
-  '_sentry_i2c_set' address 115 (at 4 _sentry_params_buffer)
-  comment '0x74: ParamValue3H'
-  '_sentry_i2c_set' address 116 (at 5 _sentry_params_buffer)
-  comment '0x75: ParamValue3L'
-  '_sentry_i2c_set' address 117 (at 6 _sentry_params_buffer)
-  comment '0x76: ParamValue4H'
-  '_sentry_i2c_set' address 118 (at 7 _sentry_params_buffer)
-  comment '0x77: ParamValue4L'
-  '_sentry_i2c_set' address 119 (at 8 _sentry_params_buffer)
-  comment '0x78: ParamValue5H'
-  '_sentry_i2c_set' address 120 (at 9 _sentry_params_buffer)
-  comment '0x79: ParamValue5L'
-  '_sentry_i2c_set' address 121 (at 10 _sentry_params_buffer)
-  comment 'SENTRY_OK'
-  return 0
-}
-
-to '_sentry_uart_clear_buffer' {
-  comment 'Clear UART receive buffer using official method'
-  '[serial:read]'
-  _sentry_buffer_size = 0
-  comment 'Discard all available data'
-}
-
-to '_sentry_uart_get' address reg_address {
-  comment 'UART Get operation - read value from register'
-  comment 'Protocol: [START][LENGTH][ADDRESS][COMMAND_GET][REG][CHECKSUM][END]'
-  atPut 3 _sentry_uart_packet_buffer address
-  atPut 4 _sentry_uart_packet_buffer 2
-  atPut 5 _sentry_uart_packet_buffer reg_address
-  '_sentry_uart_send_packet' 1
-  comment '等待响应'
-  local 'responseLength' ('_sentry_uart_read_response')
-  if (responseLength < 3) {
-    comment 'Timeout, return 0'
-    return 0
-  }
-  comment 'Check response status and extract value'
-  comment 'Response format: [STATUS][COMMAND][VALUE]...'
-  if ((at 1 _sentry_uart_response_buffer) == 224) {
-    comment '0xE0: SENTRY_PROTOC_OK'
-    if (responseLength >= 3) {
-      comment 'Return register value'
-      return (at 3 _sentry_uart_response_buffer)
-    }
-  }
-  return 0
-}
-
-to '_sentry_uart_read_object' address visionId obj_id cacheEntryIndex {
-  comment 'UART Read operation - read detection results and write directly to ByteArray cache'
-  comment 'Protocol: [START][LENGTH][ADDRESS][GET_RESULT][VISION_TYPE][OBJ_ID][OBJ_ID][CHECKSUM][END]'
-  atPut 3 _sentry_uart_packet_buffer address
-  atPut 4 _sentry_uart_packet_buffer 35
-  atPut 5 _sentry_uart_packet_buffer visionId
-  atPut 6 _sentry_uart_packet_buffer obj_id
-  atPut 7 _sentry_uart_packet_buffer obj_id
-  '_sentry_uart_send_packet' 3
-  comment 'Wait for response and parse results'
-  local 'responseLength' ('_sentry_uart_read_response')
-  comment 'Get cache entry ByteArray from list'
-  _sentry_cache_entry = (at cacheEntryIndex _sentry_cache_validation)
-  if (_sentry_cache_entry == 0) {
-    return 0
-  }
-  if (responseLength < 6) {
-    comment 'No data, clear cache entry data area'
-    local 'byteOffset' 0
-    for i 5 {
-      byteOffset = (6 + ((i - 1) * 2))
-      atPut byteOffset _sentry_cache_entry 0
-      atPut (byteOffset + 1) _sentry_cache_entry 0
-    }
-    atPut cacheEntryIndex _sentry_cache_validation _sentry_cache_entry
-    return 0
-  }
-  comment 'Parse response and write object data directly to ByteArray cache'
-  comment 'Response format: [STATUS][COMMAND][FRAME][VISION_TYPE][START_ID][STOP_ID][DATA...]'
-  comment 'Data should be 10 bytes (5 x 16-bit values)'
-  comment 'Extract object data from response (bytes 7 onwards, should be 10 bytes)'
-  local 'highByte' 0
-  local 'lowByte' 0
-  local 'byteOffset' 0
-  if (responseLength >= 16) {
-    comment 'Read 5 data values (each is 16-bit, so 10 bytes total) directly into ByteArray cache'
-    for i 5 {
-      highByte = (at (5 + (i * 2)) _sentry_uart_response_buffer)
-      lowByte = (at (6 + (i * 2)) _sentry_uart_response_buffer)
-      comment 'Write directly to ByteArray: byteOffset = 5 + (i-1)*2 + 1 = 6 + (i-1)*2'
-      byteOffset = (4 + (i * 2))
-      atPut byteOffset _sentry_cache_entry highByte
-      atPut (byteOffset + 1) _sentry_cache_entry lowByte
-    }
-  } else {
-    comment 'Not enough data, clear cache entry data area'
-    for i 5 {
-      byteOffset = (6 + ((i - 1) * 2))
-      atPut byteOffset _sentry_cache_entry 0
-      atPut (byteOffset + 1) _sentry_cache_entry 0
-    }
-  }
-  atPut cacheEntryIndex _sentry_cache_validation _sentry_cache_entry
-}
-
-to '_sentry_uart_read_response' {
-  comment 'Read UART response packet using ByteArray buffer'
-  local 'timeoutCount' 0
-  local 'datalen' 0
-  local 'ckdatalen' 0
-  local 'checksum' 0
-  local 'responseLength' 0
-  local 'newData' 0
-  local 'newDataSize' 0
-  comment 'Wait for data with timeout (max 2000ms)'
-  repeatUntil (timeoutCount > 10) {
-    newData = ('[serial:read]')
-    newDataSize = (size newData)
-    // UdpLog 'read' newDataSize newData
-    if (newDataSize > 0) {
-      comment 'Append new data to buffer'
-      for i newDataSize {
-        if (_sentry_buffer_size < 128) {
-          atPut (_sentry_buffer_size + 1) _sentry_uart_response_buffer (at i newData)
-          _sentry_buffer_size = (_sentry_buffer_size + 1)
-        }
-      }
-      comment 'Check for packet start (0xFF)'
-      if ((at 1 _sentry_uart_response_buffer) == 255) {
-        if (_sentry_buffer_size >= 2) {
-          datalen = (at 2 _sentry_uart_response_buffer)
-          ckdatalen = (datalen - 2)
-          if (_sentry_buffer_size >= datalen) {
-            comment 'Verify checksum'
-            checksum = 0
-            for i ckdatalen {
-              checksum = (checksum + (at i _sentry_uart_response_buffer))
-            }
-            if ((at (datalen - 1) _sentry_uart_response_buffer) == (checksum & 255)) {
-              comment 'Valid packet - extract response data (skip START, LENGTH, ADDRESS, COMMAND)'
-              responseLength = (datalen - 5)
-              if (responseLength > 0) {
-                comment 'Copy response data to response buffer starting from position 1'
-                for i responseLength {
-                  atPut i _sentry_uart_response_buffer (at (3 + i) _sentry_uart_response_buffer)
-                }
-                comment 'Remove processed packet from buffer'
-                local 'remainingSize' (_sentry_buffer_size - datalen)
-                if (remainingSize > 0) {
-                  for i remainingSize {
-                    atPut i _sentry_uart_response_buffer (at (datalen + i) _sentry_uart_response_buffer)
-                  }
-                }
-                _sentry_buffer_size = (_sentry_buffer_size - datalen)
-                // UdpLog 'response' responseLength ('[data:copyFromTo]' _sentry_uart_response_buffer 1 responseLength)
-                comment 'Return response length (response data is in _sentry_uart_response_buffer)'
-                return responseLength
-              }
-            } else {
-              comment 'Checksum error - remove first byte and continue'
-              for i (_sentry_buffer_size - 1) {
-                atPut i _sentry_uart_response_buffer (at (i + 2) _sentry_uart_response_buffer)
-              }
-              _sentry_buffer_size = (_sentry_buffer_size - 1)
-            }
-          } else {
-            comment 'Not enough data yet'
-          }
-        }
-      } else {
-        comment 'Invalid start byte - remove first byte'
-        for i (_sentry_buffer_size - 1) {
-          atPut i _sentry_uart_response_buffer (at (i + 2) _sentry_uart_response_buffer)
-        }
-        _sentry_buffer_size = (_sentry_buffer_size - 1)
-      }
-    } else {
-      waitMillis 200
-    }
-    timeoutCount = (timeoutCount + 1)
-  }
-  comment 'Timeout - return 0'
-  return 0
-}
-
-to '_sentry_uart_read_string' address visionId obj_id {
-  comment 'Read string data from UART using GET_STRING protocol'
-  comment 'Protocol: [START][LENGTH][ADDRESS][GET_STRING][VISION_TYPE][OBJ_ID][0][0][CHECKSUM][END]'
-  comment 'SENTRY_PROTOC_GET_STRING = 0x27 (39), SENTRY_PROTOC_OK = 0xE0 (224), SENTRY_PROTOC_RESULT_NOT_END = 0xEC (236)'
-  atPut 3 _sentry_uart_packet_buffer address
-  atPut 4 _sentry_uart_packet_buffer 39
-  atPut 5 _sentry_uart_packet_buffer visionId
-  atPut 6 _sentry_uart_packet_buffer obj_id
-  atPut 7 _sentry_uart_packet_buffer 0
-  atPut 8 _sentry_uart_packet_buffer 0
-  '_sentry_uart_send_packet' 4
-  local 'tryTime' 0
-  local 'strListTemp' ('[data:newByteArray]' 0 0)
-  local 'responseLength' 0
-  local 'startCharIdx' 0
-  local 'stopCharIdx' 0
-  local 'strLen' 0
-  local 'strList' 0
-  local 'actualDataLen' 0
-  comment 'Main loop to handle RESULT_NOT_END packets for string data'
-  repeatUntil (tryTime > 10) {
-    responseLength = ('_sentry_uart_read_response')
-    if (responseLength < 7) {
-      tryTime = (tryTime + 1)
-      waitMillis 100
-    } else {
-      if (not (or ((at 1 _sentry_uart_response_buffer) == 224) ((at 1 _sentry_uart_response_buffer) == 236))) {
-        tryTime = (tryTime + 1)
-        waitMillis 100
-      } else {
-        if ((at 2 _sentry_uart_response_buffer) != 39) {
-          tryTime = (tryTime + 1)
-          waitMillis 100
-        } else {
-          if (not (and ((at 4 _sentry_uart_response_buffer) == visionId) ((at 5 _sentry_uart_response_buffer) == obj_id))) {
-            tryTime = (tryTime + 1)
-            waitMillis 100
-          } else {
-            startCharIdx = (at 6 _sentry_uart_response_buffer)
-            stopCharIdx = (at 7 _sentry_uart_response_buffer)
-            strLen = ((stopCharIdx - startCharIdx) + 1)
-            strList = ('[data:newByteArray]' strLen 0)
-            actualDataLen = (responseLength - 7)
-            if (strLen != actualDataLen) {
-              return ('[data:newByteArray]' 0 0)
-            }
-            comment 'Extract string data from response (bytes 8 onwards)'
-            comment 'Copy new data to accumulated ByteArray'
-            for i actualDataLen {
-              atPut i strList (at (7 + i) _sentry_uart_response_buffer)
-            }
-            strListTemp = ('[data:join]' strListTemp strList)
-            if ((at 1 _sentry_uart_response_buffer) == 224) {
-              comment 'SENTRY_PROTOC_OK - return ByteArray'
-              return strListTemp
-            }
-            comment 'SENTRY_PROTOC_RESULT_NOT_END - continue reading'
-            tryTime = 0
-          }
-        }
-      }
-    }
-  }
-  comment 'Timeout - return empty ByteArray'
-  return ('[data:newByteArray]' 0 0)
-}
-
-to '_sentry_uart_send_packet' dataLength {
-  comment '通用UART协议发送函数 - 使用ByteArray缓冲区'
-  comment '参数: dataLength - 数据字节长度'
-  comment '协议格式: [START(0xFF)][LENGTH][ADDRESS][COMMAND][DATA...][CHECKSUM][END(0xED)]'
-  comment '注意: address 和 command 需要在上层调用前已写入缓冲区位置 3 和 4'
-  comment 'LENGTH字段 = 整个包长度 = START(1) + LENGTH(1) + ADDRESS(1) + COMMAND(1) + DATA(dataLength) + CHECKSUM(1) + END(1) = 6 + dataLength'
-  comment '实际包长度 = LENGTH字段的值 = 6 + dataLength'
-  local 'totalLength' (6 + dataLength)
-  comment '构建数据包到ByteArray缓冲区'
-  atPut 1 _sentry_uart_packet_buffer 255
-  atPut 2 _sentry_uart_packet_buffer totalLength
-  comment 'ADDRESS 和 COMMAND 已在调用前写入位置 3 和 4'
-  comment '数据部分已经在缓冲区中（从位置5开始）'
-  comment '计算校验和（包括START到DATA部分，不包括CHECKSUM和END，与接收端一致）'
-  comment '接收端: datalen = LENGTH字段 = 6 + dataLength, ckdatalen = datalen - 2 = 4 + dataLength'
-  comment '接收端校验: 从位置1（START）到位置ckdatalen，即 START + LENGTH + ADDRESS + COMMAND + DATA'
-  local 'checksum' 0
-  local 'checkEnd' (4 + dataLength)
-  for i checkEnd {
-    checksum = (checksum + (at i _sentry_uart_packet_buffer))
-  }
-  comment '写入校验和和结束标志'
-  atPut (checkEnd + 1) _sentry_uart_packet_buffer (checksum & 255)
-  atPut (checkEnd + 2) _sentry_uart_packet_buffer 237
-  comment '清空接收缓冲区'
-  '_sentry_uart_clear_buffer'
-  comment '发送数据包（从位置1到totalLength）'
-  // UdpLog 'send' totalLength ('[data:copyFromTo]' _sentry_uart_packet_buffer 1 totalLength)
-  for i totalLength {
-    '[serial:write]' (at i _sentry_uart_packet_buffer)
-  }
-}
-
-to '_sentry_uart_set_param' address visionId param_id {
-  comment 'UART SetParam operation - set vision parameters using global ByteArray buffer'
-  comment 'Protocol: [START][LENGTH][ADDRESS][SET_PARAM][VISION_ID][PARAM_ID][PARAM_ID][PARAM1H][PARAM1L]...[CHECKSUM][END]'
-  comment 'Build data bytes directly in ByteArray buffer (3 header + 10 param bytes = 13 bytes)'
-  atPut 3 _sentry_uart_packet_buffer address
-  atPut 4 _sentry_uart_packet_buffer 33
-  atPut 5 _sentry_uart_packet_buffer visionId
-  atPut 6 _sentry_uart_packet_buffer param_id
-  atPut 7 _sentry_uart_packet_buffer param_id
-  comment 'Copy parameter values from global ByteArray buffer (5 parameters, each 2 bytes: high, low)'
-  local 'byteOffset' 0
-  local 'paramByteOffset' 0
-  for i 5 {
-    byteOffset = (8 + ((i - 1) * 2))
-    paramByteOffset = (1 + ((i - 1) * 2))
-    atPut byteOffset _sentry_uart_packet_buffer (at paramByteOffset _sentry_params_buffer)
-    atPut (byteOffset + 1) _sentry_uart_packet_buffer (at (paramByteOffset + 1) _sentry_params_buffer)
-  }
-  '_sentry_uart_send_packet' 13
-  comment '等待响应'
-  local 'responseLength' ('_sentry_uart_read_response')
-  if (responseLength < 2) {
-    comment 'SENTRY_WRITE_TIMEOUT'
-    return 2
-  }
-  comment 'Check response'
-  if ((at 1 _sentry_uart_response_buffer) == 224) {
-    comment '0xE0: SENTRY_PROTOC_OK'
-    if (responseLength >= 2) {
-      if ((at 2 _sentry_uart_response_buffer) == 33) {
-        comment 'Correct command echo'
-        comment 'SENTRY_OK'
-        return 0
-      }
-    }
-  }
-  comment 'SENTRY_FAIL'
-  return 1
-}
-
-to '_sentry_uart_validate_response' responseLength visionId {
-  comment 'Validate UART response packet from ByteArray'
-  comment 'Returns: true if valid, false otherwise'
-  comment 'Check minimum response length'
-  if (responseLength < 6) {
-    return false
-  }
-  comment 'Check status byte - must be OK (0xE0) or RESULT_NOT_END (0xEC)'
-  if (not (or ((at 1 _sentry_uart_response_buffer) == 224) ((at 1 _sentry_uart_response_buffer) == 236))) {
-    return false
-  }
-  comment 'Check command byte - must be GET_RESULT (0x23)'
-  if ((at 2 _sentry_uart_response_buffer) != 35) {
-    return false
-  }
-  comment 'Parse response fields'
-  comment 'Verify vision type matches request'
-  if ((at 4 _sentry_uart_response_buffer) != visionId) {
-    return false
-  }
-  comment 'Valid response'
-  return true
-}
-
