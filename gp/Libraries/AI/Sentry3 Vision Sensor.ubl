@@ -1,6 +1,6 @@
 module 'Sentry3 Vision Sensor' Control
 author '作者 AITosee'
-version 1  0
+version 1 0
 depends 'Other/Sentry Communication Protocol'
 choices sentry3VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' ' OCR ' ' HandPose ' ' LicensePlate ' 
 choices sentry3VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Objects ' ' HandPose '
