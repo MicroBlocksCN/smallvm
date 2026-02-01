@@ -1,6 +1,6 @@
 module 'Sentry2 Vision Sensor' Control
 author '作者 AITosee'
-version 1 0
+version 1 1
 depends 'Other/Sentry Communication Protocol' 
 choices sentry2VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion ' 
 choices sentry2VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' Motion ' 
@@ -49,7 +49,7 @@ variables _sentry2_vision_list
 
 to 'Sentry2 Begin' index_menu comm_mode address {
   local 'idx' ('_sentry2 get index from menu' index_menu)
-  _sentry2_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion')
+  _sentry2_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Card ' ' Face ' ' 20Class ' ' QrCode ' ' Custom ' ' Motion ')
     if ('[vars:varExists]' '_sentry_comm_config_list') {
       '_sentry comm initialize' idx (hexToInt address) comm_mode
     } else {
