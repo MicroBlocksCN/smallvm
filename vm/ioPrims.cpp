@@ -485,7 +485,7 @@ void hardwareInit() {
 	#define INVERT_USER_LED true
 	#define PIN_BUTTON_A 13 // PB10, pin13 in PlatformIO
 	static const int analogPin[] = {A0, A1, A2};
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -644,7 +644,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED 19
 	#endif
 	
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
@@ -678,7 +678,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define DEFAULT_TONE_PIN 2
 	#define PIN_LED 10
 	#define INVERT_USER_LED true
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
@@ -730,7 +730,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define TOTAL_PINS 42
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 41
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -746,7 +746,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED -1 // no built-in LED
 	#define DEFAULT_TONE_PIN 2
 	// Pins 5 and 15 are reserved for use by the M5Stack Core2 TFT display
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -767,7 +767,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define DEFAULT_R2_PIN 25
 	#define PIN_BUTTON_A 38
 	#define PIN_BUTTON_B 37
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -783,7 +783,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED -1
 	#define PIN_BUTTON_A 38
 	#define PIN_BUTTON_B 37
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
@@ -880,7 +880,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define DEFAULT_TONE_PIN 16
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -896,7 +896,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 34
 	#define PIN_BUTTON_B 35
 	#define DEFAULT_TONE_PIN 26
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -914,7 +914,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define DEFAULT_TONE_PIN 4
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -963,7 +963,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		26, 17, 15, 18, 19, 23, 5, 255, 255, 22,
 		21, 33, 35, 36, 39}; // edge connector pins 17 & 18 are not used (255 in map)
 	#define DEFAULT_TONE_PIN 21
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -989,7 +989,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {};
 	static const char digitalPin[DIGITAL_PINS] = {1, 2, 3, 4, 5, 6, 43, 44, 7, 8, 9, 42, 41, 21};
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
 		1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1006,7 +1006,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define USE_DIGITAL_PIN_MAP true
 	static const int analogPin[] = {};
 	static const char digitalPin[DIGITAL_PINS] = {2, 3, 4, 5, 6, 7, 21, 20, 8, 9, 10};
-		static const char reservedPin[TOTAL_PINS] = {
+		static char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			0, 0};
@@ -1032,7 +1032,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// See https://docs.espressif.com/projects/esp-idf/en/stable/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html
 	// strapping pins 0 (Boot), 45 (VSPI), 46 (LOG)
 	// USB pins: 19 (USB D-), 20 (USB D+)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
@@ -1056,7 +1056,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
 	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1080,7 +1080,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
 	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
@@ -1096,7 +1096,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED 35
 	#define PIN_BUTTON_A 41
 
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1112,7 +1112,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_LED -1
 	#define PIN_BUTTON_A 41
 
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1137,7 +1137,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 			#define PIN_BUTTON_A 0
 		#endif
 	#endif
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1159,7 +1159,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 42
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1189,7 +1189,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
 	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1217,7 +1217,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
 	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1226,11 +1226,13 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
-	#define DIGITAL_PINS 43
+	#define DIGITAL_PINS 49
 	#define ANALOG_PINS 20
-	#define TOTAL_PINS 43
+	#define TOTAL_PINS 49
 	static const int analogPin[] = {};
-	#ifdef LED_BUILTIN
+	#ifdef METRO_S3
+		#define PIN_LED 13
+	#elif defined(LED_BUILTIN)
 		#define PIN_LED LED_BUILTIN
 	#elif !defined(PIN_LED)
 		#define PIN_LED -1
@@ -1243,16 +1245,16 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		#endif
 	#endif
 	// See https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-	// strapping pins 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG)
-	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
+	// Reserved FLASH and RAM SPI: 26-32 plus 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
-	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	// Strapping pins: 0 (Boot), 3 (JTAG), 45 (VSPI), 46 (LOG) (useable with care)
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-		0, 0, 0};
+		1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 
 #elif defined(AIRM2MC3)
 //合宙ESP32C3
@@ -1273,7 +1275,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 			#define PIN_BUTTON_A 9
 		#endif
 	#endif
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 #elif defined(GRAPEBIT)
@@ -1298,7 +1300,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
  	static const int analogPin[] = {0, 2};
 
 
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 1, 1, 1, 1, 0, 0};
 
@@ -1323,13 +1325,13 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#endif
 	#if defined(ARDUINO_USB_MODE)
 		// USB is used to communicate with IDE, so pins 20, 21 are available
-		static const char reservedPin[TOTAL_PINS] = {
+		static char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			0, 0};
 	#else
 		// pins 20, 21 are used for IDE serial connection
-		static const char reservedPin[TOTAL_PINS] = {
+		static char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 			1, 1};
@@ -1358,7 +1360,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// SPI (26-32); also 33-37 on boards with Octal SPI Flash PSRAM
 	// USB pins: 19 (USB D-), 20 (USB D+)
 	// also possibly: 39-42 (JTAG pins)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
@@ -1373,7 +1375,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 26
 	#define PIN_LED 0
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -1389,7 +1391,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 35
 	#define PIN_BUTTON_B 36
 	#define DEFAULT_TONE_PIN 32
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -1406,7 +1408,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_A 34
 	#define PIN_BUTTON_B 12
 	#define DEFAULT_TONE_PIN 14
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
@@ -1455,7 +1457,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define PIN_BUTTON_A 6
 	#define PIN_BUTTON_B 7
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
@@ -1467,7 +1469,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define PIN_BUTTON_A 36
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
@@ -1483,7 +1485,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define PIN_BUTTON_A 6
 	#define PIN_BUTTON_B 7
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
@@ -1503,7 +1505,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
 		10, 11, 12, 13, 14, 15, 16,  0, 25, 19, // change pin 17 from 0 to 3 for pico-ed v2
 		18, 99, 99, 99, 99, 99, 99, 99, 99, 99}; // Note: pins 26-29 are accessed as pins 0-3 (99 means unused)
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1520,7 +1522,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_B 19
 	#define DEFAULT_TONE_PIN 9
 	static const int analogPin[] = {26, 27, 28};
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0};
@@ -1538,7 +1540,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	static const char digitalPin[DIGITAL_PINS] = {
 		D0, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10,
 		PIN_LED_R, PIN_LED_G, PIN_LED_B, PIN_NEOPIXEL};
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1558,7 +1560,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 		D10, D11, D12, D13, D14, D15, D16, D17, D18, PIN_LED,
 		PIN_NEOPIXEL};
-	static const char reservedPin[TOTAL_PINS] = {
+	static char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1590,7 +1592,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		#define PIN_BUTTON_A 20
 		#define PIN_BUTTON_B 21
 		#define DEFAULT_TONE_PIN 0 // speaker pin on Pico-ed v1 board
-		static const char reservedPin[TOTAL_PINS] = {
+		static char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1607,7 +1609,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 			#define BOARD_TYPE "RP2350"
 		#endif
 		#define DEFAULT_TONE_PIN 20 // speaker pin on PicoBricks board
-		static const char reservedPin[TOTAL_PINS] = {
+		static char reservedPin[TOTAL_PINS] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
@@ -1616,7 +1618,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 #elif defined(DUELink)
 
 	#define BOARD_TYPE "DUELink"
-	#define DIGITAL_PINS 27
+	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 5
 	#define TOTAL_PINS 60
 	#define PIN_LED 15 // PB_8
@@ -1626,30 +1628,34 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	// 42 (PF_2) - reset
 	// 49 (PA_12) - USB P
 	// 50 (PA_11) - USB N
-	// 47 (PA_3) - Downlink RX (serial)
-	// 52 (PA_2) - Downlink TX (serial)
 
-	// PA_5, D13, edge pin 21 is the buzzer
 	// PB_0, D19, edge pin  9 is the light sensor
+	// PA_5, D13, edge pin 21 is the buzzer
+	// PA_2, D52, edge pin 25 is downlink TX
+	// PA_3, D47, edge pin 26 is downlink RX
 	static const char cincoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 14, 29, 28,  8,  10,  37, 19,
 		 2, 27, 32,  9,  5,  4, 33, 255, 255,  0,
-		 1, 13,  7, 12, 15, 54, 11}; // row pins: 7, 12, 15, 54, 11
+		 1, 13,  7, 12, 15, 52, 47, 54, 11}; // row pins: 7, 12, 15, 54, 11
 
 	// PA_5, D13, edge pin 21 is the buzzer
 	// PC_6, D29, edge pin 22 is the display reset pin
 	// PA_6, D12, edge pin 23 is the light sensor
+	// PA_2, D52, edge pin 25 is downlink TX
+	// PA_3, D47, edge pin 26 is downlink RX
 	static const char pixoEdgePin[DIGITAL_PINS] = {
 		16, 17, 18, 11, 54, 28,  8,  10,  37, 19,
 		 2, 27,  7,  9,  5,  4, 33, 255, 255,  0,
-		 1, 13, 29, 12, 15, 14, 32}; // unused pins: 12, 15, 14, 32
+		 1, 13, 29, 12, 15, 52, 47, 14, 32}; // unused pins: 12, 15, 14, 32
 
-	// PA_9, D8, edge pin 21 is UART1_TX
-	// PA_10, D2, edge pin 22 is UART1_RX
+	// PA_9,  D8, edge pin 21 is UART1_TX (uplink UART and often USB, too)
+	// PA_10, D2, edge pin 22 is UART1_RX (uplink UART and often USB, too)
+	// PA_2, D52, edge pin 25 is downlink TX
+	// PA_3, D47, edge pin 26 is downlink RX
 	static const char dueStandardPin[DIGITAL_PINS] = {
 		15, 16, 17, 18, 13, 12, 11,  7, 54, 19,
 		33, 29,  9,  5,  4,  1,  0, 37, 14, 10,
-		28,  8,  2, 27, 32, 255, 255};
+		28,  8,  2, 27, 32, 52, 47, 255, 255};
 
 	// Analog pin names for DUELink boards
 	// Note: CincoBit edge pins 3, 4, and 12 are not analog capable

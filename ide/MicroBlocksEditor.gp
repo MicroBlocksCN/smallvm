@@ -1190,7 +1190,7 @@ method gearMenu MicroBlocksEditor {
 		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)' (newCheckmark this (showHiddenBlocksEnabled this))
 		addItem menu 'autoload board libraries' (action 'toggleBoardLibAutoLoad' this) nil (newCheckmark this (not (boardLibAutoLoadDisabled this)))
 // Does anyone ever enable 'PlugShare when project empty'?
-		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
+//		addItem menu 'PlugShare when project empty' (action 'toggleAutoDecompile' this) 'when plugging a board, automatically read its contents into the IDE if the current project is empty' (newCheckmark this (autoDecompileEnabled this))
 		addLine menu
 		addItem menu 'open vm folder on microblocks.fun' (action 'openVMFolder' this)
 		addLine menu
@@ -1198,12 +1198,16 @@ method gearMenu MicroBlocksEditor {
 		addItem menu 'install ESP firmware from microblocks.fun' (action 'installESPFirmwareFromRepo' (smallRuntime))
 		addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 		addLine menu
-		addItem menu 'compact code store' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
-
-		if (boardIsBLECapable (smallRuntime)) {
-			addLine menu
-			addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
+		if (and
+				isConnected
+				(boardIsBLECapable (smallRuntime))
+				(not (connectedViaBLE (smallRuntime)))
+			) {
+				addLine menu
+				addItem menu 'enable or disable BLE' (action 'setBLEFlag' (smallRuntime))
 		}
+		addLine menu
+		addItem menu 'show program size on board' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil) nil nil true (not isConnected)
 
 // Let's deprecate the HTTP server since it doesn't work in browser?
 // Don't think anyone is using it now that we have so many other ways to communicate.

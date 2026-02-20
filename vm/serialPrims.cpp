@@ -225,20 +225,20 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	#elif defined(COCUBE)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 22, 21);
-	#elif defined(C3_SUPERMINI) || defined(ARDUINO_XIAO_ESP32C3)
-		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 20, 21);
 	#elif defined(ARDUINO_XIAO_ESP32S3)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 44, 43);
 	#elif defined(M5CORE2)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 33);
-	#elif defined(M5Atom_Lite) || defined(M5Atom_Matrix) || defined(ARDUINO_M5Atom_Lite_ESP32) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(M5Atom_Lite) || defined(M5Atom_Matrix)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 32, 26);
 	#elif defined(ARDUINO_M5Stick_C)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 33, 32);
 	#elif defined(ARDUINO_M5Stack_ATOMS3)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 1, 2);
-	#elif defined(TX_FT_BOX)
-		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 44, 43);
+	#elif defined(FOXBIT)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, mapDigitalPinNum(0), mapDigitalPinNum(1));
+	#elif defined(STEAMaker)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, mapDigitalPinNum(0), mapDigitalPinNum(1));
 	#elif defined(RP2040_PHILHOWER)
 		#if defined(PICO_ED)
 			// pico:ed edge connector pins 0-3 are analog pins 26-29
@@ -257,7 +257,22 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.begin(baudRate); // reset to discard garbage byte
 	#elif defined(ARDUINO_Labplus_mPython)
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 18, 19);
+	#elif defined(ESP32_C3)
+		#if !defined(ARDUINO_USB_MODE)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 18, 19);
+		#else
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, RX, TX);
+		#endif
 	#elif defined(ESP32_ORIGINAL)
+		if (hasPSRAM()) { // GPIO16 and GPIO17 are used by PSRAM on original ESP32
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, 21, 22);
+		} else {
+			SERIAL_PORT.begin(baudRate, SERIAL_8N1, 16, 17);
+		}
+	#elif defined(METRO_S3)
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 41, 40);
+	#elif defined(ESP32)
+		// all ESP32 boards that do not have cases above
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, 16, 17);
 	#elif defined(DUELink)
 		if (DUE_HAS_EDGE_CONNECTOR) {

@@ -2539,6 +2539,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (not (connectedToBoard this)) { return false }
 	if (isNil boardType) { getVersion this }
+	if (and (notNil boardType) (notNil (findSubstring 'ESP' boardType))) { return true }
 	return (isOneOf boardType
 		'Citilab ED1' 'CoCube' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix'
 		'ESP32' 'ESP8266' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040'
