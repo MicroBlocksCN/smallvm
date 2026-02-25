@@ -1075,7 +1075,7 @@ static int readTemperature() {
 	return 25 + (temp >> shift);
 }
 
-#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) || defined(M5Atom_S3_TFT) || \
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) || defined(M5Atom_S3_TFT) || \
 	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32 || defined(M5Atom_Matrix) || ARDUINO_M5STACK_FIRE

@@ -3262,7 +3262,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu '未来科技盒'
 			addItem menu '未来科技盒v2.0'
 			addItem menu 'handpy'
-			addItem menu 'CoCube'
+			// addItem menu 'CoCube'
 			addItem menu 'M5StickC+'
 		}
 		popUpAtHand menu (global 'page')
