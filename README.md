@@ -6,7 +6,7 @@
 
 ## 开发相关
 
-当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot) 上.
+当前仓库的 devCN 分支(部署在 https://microblocksfun.cn/run )会定期变基(git rebase)到官方的 pilot 版本(最新版本 https://microblocks.fun/run-pilot) 上. **推荐尽可能贡献到[官方仓库](https://bitbucket.org/john_maloney/smallvm/src)**.
 
 开发者应该确保 pull requests 的代码总是基于最新的 devCN 分支.
 
@@ -19,6 +19,26 @@
 5. 提交你的开发分支, 并创建 pull request
 
 **如果你想贡献积木库(ubl文件), 但觉得使用 git 太繁琐, 可以直接将库文件发给我(wuwenjie718@gmail.com), 我来代为提交**
+
+## 部署版本
+
+主要维护的版本:
+
+- [体验版(浏览器)](https://microblocksfun.cn/dev/microblocks.html)
+- [稳定版(浏览器)](https://microblocksfun.cn/run/microblocks.html)
+
+旧版本(不再更新):
+
+- [stable-2077(浏览器)](https://microblocksfun.cn/stable-2077/)
+- [v1 版(浏览器)](https://microblocksfun.cn/v1/microblocks.html)
+
+<!--
+2.0.77
+    https://microblocksfun.cn/stable/ 
+    https://microblocksfun.cn/run
+
+2.0.77 不再更新, 作为 https://microblocksfun.cn/stable_2077
+-->
 
 ## MicroBlocks Website ##
 
