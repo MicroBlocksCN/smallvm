@@ -1,7 +1,7 @@
 module 'Elite AI Training Platform'
 author yinxi
 version 1 1 
-description 'work with https://trainv2.aimaker.space and wireless programming firmware: https://wwj718.github.io/post/%E7%BC%96%E7%A8%8B/microblocks-wireless-programming '
+description 'work with https://train.aimaker.space and wireless programming firmware: https://wwj718.github.io/post/%E7%BC%96%E7%A8%8B/microblocks-wireless-programming '
 
   spec 'r' 'class' 'class _ > probability _ %' 'auto num' '石头' 80
 
