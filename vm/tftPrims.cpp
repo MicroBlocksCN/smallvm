@@ -80,7 +80,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
  			tft = new Arduino_ST7735(bus, TFT_RST, 0, false,
  					TFT_WIDTH, TFT_HEIGHT, 2, 3, 2, 3);
 			if (!tft->begin()) {
-				outputString("TFT initialization failed!");
+				outputString("tftInit() failed!");
 			} else {
 				tftWidth = TFT_WIDTH;
 				tftHeight = TFT_HEIGHT;
@@ -565,9 +565,6 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			}
 		}
 
-		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft->flush(); taskSleep(-1); }}
-
 	#elif defined(TTGO_DISPLAY)
 		#define TFT_MOSI 19
 		#define TFT_SCLK 18
@@ -829,8 +826,6 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		#define TFT_HEIGHT 240
 		#define DEFAULT_BATTERY_PIN 34
 		#define LOGO_PATH "/logo.raw"
-		#define BLACK 0
-		#define WHITE 65535
 
 		void drawRawImage(const char* filename, int x0, int y0, int width, int height) {
 			if (!LittleFS.begin()) return;
@@ -852,8 +847,8 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			if (percentage < 67) fillColor = 0xFD20; // YELLOW
 			if (percentage < 34) fillColor = 0xF800; // RED
 
-			uint16_t borderColor = 0x0000; // BLACK
-			uint16_t textColor = 0x0000;   // BLACK by default
+			uint16_t borderColor = 0x0000;	// BLACK
+			uint16_t textColor = 0x0000;	// BLACK by default
 
 			int level = map(percentage, 0, 100, 0, width - 4);
 			tft->drawRoundRect(x, y, width, height, 3, borderColor);
@@ -883,7 +878,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			tft = new Arduino_ST7789(bus, TFT_RST, 3, true,
 					TFT_WIDTH, TFT_HEIGHT, 0, 80, 0, 80);
 			if (!tft->begin()) {
-				outputString("TFT initialization failed!");
+				outputString("tftInit() failed!");
 			} else {
 				pinMode(TFT_BL, OUTPUT);
 				digitalWrite(TFT_BL, HIGH); // turn on backlight
@@ -922,16 +917,16 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	#elif defined(M5Atom_S3_TFT)
 		#define TFT_MOSI 21
 		#define TFT_SCLK 17
-		#define TFT_CS   15
-		#define TFT_DC   33
-		#define TFT_RST  34
-		#define TFT_BL   16
+		#define TFT_CS 15
+		#define TFT_DC 33
+		#define TFT_RST 34
+		#define TFT_BL 16
 
 		void tftInit() {
 			Arduino_ESP32SPI *bus = new Arduino_ESP32SPI(TFT_DC, TFT_CS, TFT_SCLK, TFT_MOSI, -1);
 			tft = new Arduino_GC9107(bus, TFT_RST, 0 /* rotation */, true /* IPS */);
 			if (!tft->begin()) {
-				outputString("TFT initialization failed!");
+				outputString("tftInit() failed!");
 			} else {
 				pinMode(TFT_BL, OUTPUT);
 				digitalWrite(TFT_BL, HIGH); // turn on backlight
@@ -942,7 +937,7 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			}
 		}
 
-	#elif defined(ARDUINO_WEACT) || defined(NRF51)
+	#elif defined(NO_EXTERNAL_DISPLAY_PRIMS)
 		// no external display primitives
 
 		void tftInit() { } // stub; no display is initialized at startup time
@@ -950,7 +945,6 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 	#else
 		// no built-in display but support external display prims
 		#define HAS_EXTERNAL_DISPLAY_PRIMS
-
 		void tftInit() { } // stub; no display is initialized at startup time
 
 #endif
@@ -1741,7 +1735,9 @@ static void turnOnBacklight(int blPin) {
 
 static void freeDisplayController() {
 	if (!tft) delete tft;
-	tftWidth = tftWidth = 0;
+	tftWidth = 0;
+	tftHeight = 0;
+	useTFT = false;
 }
 
 static void init_7735(int w, int h, int rotation, int dcPin, int csPin, int backlightPin,
@@ -1762,6 +1758,7 @@ static void init_7735(int w, int h, int rotation, int dcPin, int csPin, int back
 		isMonochrome = false;
 		turnOnBacklight(backlightPin);
 		tftClear();
+		useTFT = true;
 	}
 }
 
@@ -1782,6 +1779,7 @@ static void init_7789(int w, int h, int rotation, int dcPin, int csPin, int back
 		isMonochrome = false;
 		turnOnBacklight(backlightPin);
 		tftClear();
+		useTFT = true;
 	}
 }
 
@@ -1802,6 +1800,7 @@ static void init_7796(int w, int h, int rotation, int dcPin, int csPin, int back
 		isMonochrome = false;
 		turnOnBacklight(backlightPin);
 		tftClear();
+		useTFT = true;
 	}
 }
 
@@ -1821,10 +1820,11 @@ static void init_9341(int rotation, int dcPin, int csPin, int backlightPin,
 		tftWidth = 320;
 		tftHeight = 240;
 		tftClear();
+		useTFT = true;
 	}
 }
 
-static void init_1306(int w, int h, int resetPin = GFX_NOT_DEFINED) {
+static void init_1306(int w, int h, int resetPin) {
 	if ((w < 32) || (w > 128) || (h < 16) || (h > 128)) return;
 	if (!tft) delete tft;
 
@@ -1853,7 +1853,8 @@ static void init_1306(int w, int h, int resetPin = GFX_NOT_DEFINED) {
 	} else {
 		g = new Arduino_SSD1306(bus, resetPin, w, h);
 	}
-	if (!tft->begin()) {
+	tft = new Arduino_Canvas_Mono(w, h, g, 0, 0, true);
+	if (!tft->begin(400000)) {
 		freeDisplayController();
 		outputString("Display initialization failed!");
 	} else {
@@ -1861,6 +1862,7 @@ static void init_1306(int w, int h, int resetPin = GFX_NOT_DEFINED) {
 		tftWidth = w;
 		tftHeight = h;
 		tftClear();
+		useTFT = true;
 	}
 }
 
@@ -1875,10 +1877,10 @@ static OBJ primInitST7735(int argCount, OBJ *args) {
 	int rotation = obj2int(args[2]);
 	if (rotation < 0) rotation = 0;
 	if (rotation > 3) rotation = 3;
-	int dcPin = obj2int(args[3]);
-	int csPin = obj2int(args[4]);
-	int blPin = obj2int(args[5]);
-	int rstPin = ((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1;
+	int dcPin = mapDigitalPinNum(obj2int(args[3]));
+	int csPin = mapDigitalPinNum(obj2int(args[4]));
+	int blPin = mapDigitalPinNum(obj2int(args[5]));
+	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
 	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
 	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
 	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
@@ -1899,10 +1901,10 @@ static OBJ primInitST7789(int argCount, OBJ *args) {
 	int rotation = obj2int(args[2]);
 	if (rotation < 0) rotation = 0;
 	if (rotation > 3) rotation = 3;
-	int dcPin = obj2int(args[3]);
-	int csPin = obj2int(args[4]);
-	int blPin = obj2int(args[5]);
-	int rstPin = ((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1;
+	int dcPin = mapDigitalPinNum(obj2int(args[3]));
+	int csPin = mapDigitalPinNum(obj2int(args[4]));
+	int blPin = mapDigitalPinNum(obj2int(args[5]));
+	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
 	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
 	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
 	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
@@ -1923,10 +1925,10 @@ static OBJ primInitST7796(int argCount, OBJ *args) {
 	int rotation = obj2int(args[2]);
 	if (rotation < 0) rotation = 0;
 	if (rotation > 3) rotation = 3;
-	int dcPin = obj2int(args[3]);
-	int csPin = obj2int(args[4]);
-	int blPin = obj2int(args[5]);
-	int rstPin = ((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1;
+	int dcPin = mapDigitalPinNum(obj2int(args[3]));
+	int csPin = mapDigitalPinNum(obj2int(args[4]));
+	int blPin = mapDigitalPinNum(obj2int(args[5]));
+	int rstPin = mapDigitalPinNum(((argCount > 6) && isInt(args[6])) ? obj2int(args[6]) : -1);
 	int invertDisplay = ((argCount > 7) && (args[7] == trueObj)) ? true : false;
 	colorBGR = ((argCount > 8) && (args[8] == trueObj)) ? true : false;
 	int xOffset = ((argCount > 9) && isInt(args[9])) ? obj2int(args[9]) : 0;
@@ -1944,10 +1946,10 @@ static OBJ primInitILI9341(int argCount, OBJ *args) {
 	int rotation = obj2int(args[0]);
 	if (rotation < 0) rotation = 0;
 	if (rotation > 3) rotation = 3;
-	int dcPin = obj2int(args[1]);
-	int csPin = obj2int(args[2]);
-	int blPin = obj2int(args[3]);
-	int rstPin = ((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1;
+	int dcPin = mapDigitalPinNum(obj2int(args[1]));
+	int csPin = mapDigitalPinNum(obj2int(args[2]));
+	int blPin = mapDigitalPinNum(obj2int(args[3]));
+	int rstPin = mapDigitalPinNum(((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1);
 	int invertDisplay = ((argCount > 5) && (args[5] == trueObj)) ? true : false;
 
 	init_9341(rotation, dcPin, csPin, blPin, rstPin, invertDisplay);
@@ -1959,7 +1961,7 @@ static OBJ primInitOLED(int argCount, OBJ *args) {
 	if (!(isInt(args[0]) && isInt(args[1]))) return fail(needsIntegerError);
 	int w = obj2int(args[0]);
 	int h = obj2int(args[1]);
-	int rstPin = ((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1;
+	int rstPin = mapDigitalPinNum(((argCount > 4) && isInt(args[4])) ? obj2int(args[4]) : -1);
 
 	init_1306(w, h, rstPin);
 	return falseObj;
