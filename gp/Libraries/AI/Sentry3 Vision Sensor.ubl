@@ -1,30 +1,37 @@
 module 'Sentry3 Vision Sensor' Control
-author '作者 AITosee'
-version 1 0
+author 'AITosee'
+version 1 4
 depends 'Other/Sentry Communication Protocol'
-choices sentry3VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' ' OCR ' ' HandPose ' ' LicensePlate ' 
-choices sentry3VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Objects ' ' HandPose '
-choices sentry3OperaVisionMenu ' Learning ' ' Face ' 
-choices sentry3VisionParamNumMenu ' Color ' ' Blob ' 
-choices sentry3VisionStringMenu ' QrCode ' ' BarCode ' ' OCR ' ' LicensePlate ' 
-choices sentry3ObjInfoMenu 'x-coord' 'y-coord' width height label 
-choices sentry3ObjInfoQrMenu 'x-coord' 'y-coord' width height 
-choices sentry3ObjectsClassMenu '1  person' '2  bicycle' '3  car' '4  motorcycle' '5  airplane' '6  bus' '7  train' '8  truck' '9  boat' '10 traffic light' '11 fire hydrant' '12 stop sign' '13 parking meter' '14 bench' '15 bird' '16 cat' '17 dog' '18 horse' '19 sheep' '20 cow' '21 elephant' '22 bear' '23 zebra' '24 giraffe' '25 backpack' '26 umbrella' '27 handbag' '28 tie' '29 suitcase' '30 frisbee' '31 skis' '32 snowboard' '33 sports ball' '34 kite' '35 baseball bat' '36 baseball glove' '37 skateboard' '38 surfboard' '39 tennis racket' '40 bottle' '41 wine glass' '42 cup' '43 fork' '44 knife' '45 spoon' '46 bowl' '47 banana' '48 apple' '49 sandwich' '50 orange' '51 broccoli' '52 carrot' '53 hot dog' '54 pizza' '55 donut' '56 cake' '57 chair' '58 couch' '59 potted plant' '60 bed' '61 dining table' '62 toilet' '63 tv' '64 laptop' '65 mouse' '66 remote' '67 keyboard' '68 cell phone' '69 microwave' '70 oven' '71 toaster' '72 sink' '73 refrigerator' '74 book' '75 clock' '76 vase' '77 scissors' '78 teddy bear' '79 hair drier' '80 toothbrush' 
-choices sentry3ObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
-choices sentry3ColorMenu Black White Red Green Blue Yellow 
 choices sentry3VisionStaMenu run stop 
-choices sentry3IndexMenu '#1' '#2' '#3' '#4' '#5' 
-choices sentry3HandPoseFingerStateMenu bent extended ignore 
-choices sentry3HandPosePresetMenu One Two Three Four Five Six Eight Ten Yeah Rock Scissors Paper Like OK 
-choices sentry3ObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
-choices sentry3CommModeMenu I2C Serial 
+choices sentry3OperaVisionMenu ' Learning ' ' Face ' 
 choices sentry3OperaParamMenu 'learn and assign' 'delete data' 
-choices sentry3AddrMenu '0x60' '0x61' '0x62' '0x63' 
 choices sentry3LedColorMenu Black Red Green Yellow Blue Purple Cyan White 
+choices sentry3FaceExpressionMenu ' Anger ' ' Disgust ' ' Fear ' ' Happiness ' ' Neutral ' ' Sadness ' ' Surprise ' 
+choices sentry3HeadPoseMenu ' facing forward ' ' facing left ' ' facing right ' ' turning left ' ' turning right ' ' shaking ' ' nodding ' 
+choices sentry3EyeSelectMenu ' both eyes ' 
+choices sentry3VisionValueMenu ' Blob ' ' AprilTag ' ' Learning ' ' Face ' ' Objects ' ' HandPose ' 
+choices sentry3HandPosePresetMenu One Two Three Four Five Six Eight Ten Yeah Rock Scissors Paper Like OK 
+choices sentry3ObjInfoMenu 'x-coord' 'y-coord' width height label 
+choices sentry3LLMThinkenu ' enable ' ' disable ' 
+choices sentry3MouthStateMenu ' open  ' ' closed  '
+choices sentry3ObjInfoQrMenu 'x-coord' 'y-coord' width height 
+choices sentry3ObjInfoLineMenu 'x-coord of ending point' 'y-coord of ending point' 'x-coord of starting point' 'y-coord of starting point' 'inclination angle' 
+choices sentry3LLMModeMenu ' Chat ' ' Image ' ' Talk ' ' ASR ' ' TTS ' 
+choices sentry3EyeStateMenu ' open ' ' closed ' ' blinking ' 
+choices sentry3AddrMenu '0x60' '0x61' '0x62' '0x63' 
+choices sentry3VisionParamNumMenu ' Color ' ' Blob ' 
+choices sentry3ColorMenu Black White Red Green Blue Yellow 
+choices sentry3ObjectsClassMenu '1  person' '2  bicycle' '3  car' '4  motorcycle' '5  airplane' '6  bus' '7  train' '8  truck' '9  boat' '10 traffic light' '11 fire hydrant' '12 stop sign' '13 parking meter' '14 bench' '15 bird' '16 cat' '17 dog' '18 horse' '19 sheep' '20 cow' '21 elephant' '22 bear' '23 zebra' '24 giraffe' '25 backpack' '26 umbrella' '27 handbag' '28 tie' '29 suitcase' '30 frisbee' '31 skis' '32 snowboard' '33 sports ball' '34 kite' '35 baseball bat' '36 baseball glove' '37 skateboard' '38 surfboard' '39 tennis racket' '40 bottle' '41 wine glass' '42 cup' '43 fork' '44 knife' '45 spoon' '46 bowl' '47 banana' '48 apple' '49 sandwich' '50 orange' '51 broccoli' '52 carrot' '53 hot dog' '54 pizza' '55 donut' '56 cake' '57 chair' '58 couch' '59 potted plant' '60 bed' '61 dining table' '62 toilet' '63 tv' '64 laptop' '65 mouse' '66 remote' '67 keyboard' '68 cell phone' '69 microwave' '70 oven' '71 toaster' '72 sink' '73 refrigerator' '74 book' '75 clock' '76 vase' '77 scissors' '78 teddy bear' '79 hair drier' '80 toothbrush' 
+choices sentry3HandPoseFingerStateMenu bent extended ignore 
+choices sentry3VisionStringMenu ' QrCode ' ' BarCode ' ' OCR ' ' LicensePlate ' 
+choices sentry3IndexMenu '#1' '#2' '#3' '#4' '#5' 
+choices sentry3VisionMenu ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' ' OCR ' ' HandPose ' ' LicensePlate ' 
+choices sentry3ObjInfoColorMenu label 'red CH value' 'green CH value' 'blue CH value' 
+choices sentry3CommModeMenu I2C Serial 
 description 'Sentry3 vision sensor library with I2C/UART support
 Supports color detection, blob detection, AprilTag, line detection, learning mode, qr，ocr, face detection, and Objects object detection
 '
-variables _sentry3_vision_list 
+variables _sentry3_vision_list _sentry3_llm_buffer _sentry3_llm_string_buffer _sentry3_llm_last_error 
 
   spec ' ' 'Sentry3 Begin' 'Initialize  Sentry3 _  port _ addr _' 'menu.sentry3IndexMenu menu.sentry3CommModeMenu menu.sentry3AddrMenu' '#1' 'I2C' '0x60'
   spec ' ' 'Sentry3 LedSetColor' 'Set  Sentry3 _  light color _ upon targets detection otherwise _ brightness(1-10) _' 'menu.sentry3IndexMenu menu.sentry3LedColorMenu menu.sentry3LedColorMenu num' '#1' 'Blue' 'Red' 1
@@ -33,30 +40,53 @@ variables _sentry3_vision_list
   spec ' ' 'Sentry3 VisionColorSetParam' 'Set  Sentry3 _  algo Color  x-coord _ y-coord _ width _ height _ paramset _' 'menu.sentry3IndexMenu num num num num num' '#1' 50 50 3 4 1
   spec ' ' 'Sentry3 VisionBlobSetParam' 'Set  Sentry3 _  algo Blob  min-width _ min-height _ color _ paramset _' 'menu.sentry3IndexMenu num num menu.sentry3ColorMenu num' '#1' 3 4 'Red' 1
   spec ' ' 'Sentry3 VisionSetParam' 'Set  Sentry3 _  algo _  _  ID _' 'menu.sentry3IndexMenu menu.sentry3OperaVisionMenu menu.sentry3OperaParamMenu num' '#1' ' Learning ' 'learn and assign' 1
+  space
   spec 'r' 'Sentry3 VisionDetectedCount' 'Sentry3 _  algo _  num of results' 'menu.sentry3IndexMenu menu.sentry3VisionMenu' '#1' ' Color '
   spec 'r' 'Sentry3 GetVisionObjColorValue' 'Sentry3 _  algo Color  _ of result _' 'menu.sentry3IndexMenu menu.sentry3ObjInfoColorMenu num' '#1' 'label' 1
   spec 'r' 'Sentry3 GetVisionObjValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentry3IndexMenu menu.sentry3VisionValueMenu menu.sentry3ObjInfoMenu num' '#1' ' Blob ' 'x-coord' 1
   spec 'r' 'Sentry3 GetVisionObjLineValue' 'Sentry3 _  algo Line   _ of result _' 'menu.sentry3IndexMenu menu.sentry3ObjInfoLineMenu num' '#1' 'x-coord of ending point' 1
   spec 'r' 'Sentry3 GetVisionObjStringValue' 'Sentry3 _  algo _  _ of result _' 'menu.sentry3IndexMenu menu.sentry3VisionStringMenu menu.sentry3ObjInfoQrMenu num' '#1' ' QrCode ' 'x-coord' 1
-  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  string of decoding result _' 'menu.sentry3IndexMenu menu.sentry3VisionStringMenu num' '#1' ' QrCode ' 1
+  spec 'r' 'Sentry3 GetString' 'Sentry3 _  algo _  decoded string of result _' 'menu.sentry3IndexMenu menu.sentry3VisionStringMenu num' '#1' ' QrCode ' 1
+  spec 'r' 'Sentry3 GetFaceAttributeValue' 'Sentry3 _  algo Face  attribute of result _' 'menu.sentry3IndexMenu num' '#1' 1
+  spec 'r' 'Sentry3 VisionDetectedFaceExpression' 'Sentry3 _  _ recognized  expression  _' 'menu.sentry3IndexMenu str menu.sentry3FaceExpressionMenu' '#1' 'facial attribute' ' Anger '
+  spec 'r' 'Sentry3 VisionDetectedEyeState' 'Sentry3 _  _ detected  _  _' 'menu.sentry3IndexMenu str menu.sentry3EyeSelectMenu menu.sentry3EyeStateMenu' '#1' 'facial attribute' ' both eyes ' ' open '
+  spec 'r' 'Sentry3 VisionDetectedHeadPose' 'Sentry3 _  _ detected  head  _' 'menu.sentry3IndexMenu str menu.sentry3HeadPoseMenu' '#1' 'facial attribute' ' facing forward '
+  spec 'r' 'Sentry3 VisionDetectedMouthState' 'Sentry3 _  _ detected  mouth  _' 'menu.sentry3IndexMenu str menu.sentry3MouthStateMenu' '#1' 'facial attribute' ' closed  '
   spec 'r' 'Sentry3 VisionDetectedColor' 'Sentry3 _  algo Color  recognized _ result _' 'menu.sentry3IndexMenu menu.sentry3ColorMenu num' '#1' 'Black' 1
   spec 'r' 'Sentry3 VisionDetectedBlob' 'Sentry3 _  algo Blob  detected _ blob result _' 'menu.sentry3IndexMenu menu.sentry3ColorMenu num' '#1' 'Red' 1
   spec 'r' 'Sentry3 VisionDetectedObjects' 'Sentry3 _  algo Objects  recognized _ result _' 'menu.sentry3IndexMenu menu.sentry3ObjectsClassMenu num' '#1' '1  person' 1
-  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu num' '#1' 'extended' 'extended' 'extended' 'extended' 'extended' 1
-  spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandPose  recognized gesture _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPosePresetMenu num' '#1' 'One' 1
+  spec 'r' 'Sentry3 VisionDetectedHandPoseCustom' 'Sentry3 _  algo HandPose  detected thumb _ index _ middle _ ring _ pinky _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu menu.sentry3HandPoseFingerStateMenu num' '#1' 'bent' 'bent' 'bent' 'bent' 'bent' 1
+  spec 'r' 'Sentry3 VisionDetectedHandPosePreset' 'Sentry3 _  algo HandPose  recognized _ result _' 'menu.sentry3IndexMenu menu.sentry3HandPosePresetMenu num' '#1' 'One' 1
+  space
+  spec ' ' 'Sentry3 LLM WiFiConfig' 'Set  Sentry3 _  connect to WiFi  SSID  _  Password  _' 'menu.sentry3IndexMenu str str' '#1' 'ssid' 'password'
+  spec ' ' 'Sentry3 LLM WiFiClose' 'Set  Sentry3 _  turn off WiFi' 'menu.sentry3IndexMenu' '#1'
+  spec ' ' 'Sentry3 LLM SetMode' 'Set  Sentry3 _  large model  run  _ mode' 'menu.sentry3IndexMenu menu.sentry3LLMModeMenu' '#1' ' Chat '
+  spec ' ' 'Sentry3 LLM SetModel' 'Set  Sentry3 _ large model  access  _' 'menu.sentry3IndexMenu str' '#1' 'qwen3.5-flash'
+  spec ' ' 'Sentry3 LLM SetAPIKey' 'Set  Sentry3 _  large model  API key  _' 'menu.sentry3IndexMenu str' '#1' 'your-key'
+  spec ' ' 'Sentry3 LLM SetSystemPrompt' 'Set  Sentry3 _  large model  system prompt  _' 'menu.sentry3IndexMenu str' '#1' 'You are helpful.'
+  spec ' ' 'Sentry3 LLM SetVoice' 'Set  Sentry3 _  large model  voice  _' 'menu.sentry3IndexMenu str' '#1' 'alloy'
+  spec ' ' 'Sentry3 LLM ChatCompletions' 'Set  Sentry3 _  large model  input text  _' 'menu.sentry3IndexMenu str' '#1' 'Hello Sentry'
+  spec ' ' 'Sentry3 LLM TextToSpeech' 'Set  Sentry3 _  large model  text  _  to speech' 'menu.sentry3IndexMenu str' '#1' 'Hello Sentry'
+  spec 'r' 'Sentry3 LLM ChatResult' 'Sentry3 _  large model  result text' 'menu.sentry3IndexMenu' '#1'
 
 to 'Sentry3 Begin' index_menu comm_mode address {
   local 'idx' ('_sentry3 get index from menu' index_menu)
   _sentry3_vision_list = ('[data:makeList]' ' Color ' ' Blob ' ' AprilTag ' ' Line ' ' Learning ' 'n' ' Face ' ' Objects ' ' QrCode ' ' BarCode ' 'n' ' OCR ' ' HandPose ' ' LicensePlate ')
-
-    if ('[vars:varExists]' '_sentry_comm_config_list') {
-      '_sentry comm initialize' idx (hexToInt address) comm_mode
-    } else {
-      sayIt 'Please import "Sentry Communication Protocol"'
-      waitMillis 500
-      stopTask
-    }
+  if ('[vars:varExists]' '_sentry_comm_config_list') {
+    '_sentry comm initialize' idx (hexToInt address) comm_mode
+  } else {
+    sayIt 'Please import "Sentry Communication Protocol"'
+    waitMillis 500
+    stopTask
+  }
   return
+}
+
+to 'Sentry3 GetFaceAttributeValue' index_menu obj_id {
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  local 'byteArrayData' 0
+  byteArrayData = ('_sentry comm read string' idx 7 obj_id)
+  return ('_sentry utf8 decode' byteArrayData)
 }
 
 to 'Sentry3 GetString' index_menu vision_type obj_id {
@@ -84,6 +114,116 @@ to 'Sentry3 GetVisionObjStringValue' index_menu vision_type obj_info obj_id {
 to 'Sentry3 GetVisionObjValue' index_menu vision_type obj_info obj_id {
   local 'idx' ('_sentry3 get index from menu' index_menu)
   return ('_sentry comm get value' idx ('_sentry3 get vision id' vision_type) obj_info obj_id)
+}
+
+to 'Sentry3 LLM ChatCompletions' index_menu text {
+  '_sentry3 llm send wifi json' index_menu ('[data:join]' '"text":"' text '"')
+  if (('[data:find]' 'ok' _sentry3_llm_last_error) == 0) {
+    _sentry3_llm_last_error = ''
+    return
+  }
+  local 'replyBA' ('_sentry3 llm read until terminator' 10 800)
+  _sentry3_llm_last_error = ('_sentry utf8 decode' replyBA)
+}
+
+to 'Sentry3 LLM ChatResult' index_menu {
+  return _sentry3_llm_last_error
+}
+
+to 'Sentry3 LLM EnableThinking' index_menu flag {
+  local 'flagStr' (ifExpression ('[data:find]' 'enable' flag) 'true' 'false')
+  return ('_sentry3 llm set raw' index_menu 'enable_thinking' flagStr)
+}
+
+to 'Sentry3 LLM SetAPIKey' index_menu api_key {
+  return ('_sentry3 llm set' index_menu 'api_key' api_key)
+}
+
+to 'Sentry3 LLM SetMode' index_menu mode {
+  local 'modeStr' 'chat'
+  if (mode == ' Image ') {
+    modeStr = 'image'
+  } (mode == ' Talk ') {
+    modeStr = 'talk'
+  } (mode == ' ASR ') {
+    modeStr = 'asr'
+  } (mode == ' TTS ') {
+    modeStr = 'tts'
+  }
+  if (('_sentry3 llm set' index_menu 'mode' modeStr) == 1) {
+    return 1
+  }
+  local 'tryCount' 0
+  repeatUntil (tryCount > 50) {
+    local 'wifiStr' ('_sentry3 llm read until terminator' 10 20)
+    if ((size wifiStr) > 0) {
+      _sentry3_llm_last_error = wifiStr
+      if (('[data:find]' 'connecting:' wifiStr) > 0) {
+      } else {
+        if (('[data:find]' 'ok:connected' wifiStr) > 0) {
+          return 0
+        } else {
+          return 1
+        }
+      }
+    } else {
+      tryCount = (tryCount + 1)
+      waitMillis 100
+    }
+  }
+  return 1
+}
+
+to 'Sentry3 LLM SetModel' index_menu model {
+  return ('_sentry3 llm set' index_menu 'model' model)
+}
+
+to 'Sentry3 LLM SetSystemPrompt' index_menu prompt {
+  return ('_sentry3 llm set' index_menu 'prompt' prompt)
+}
+
+to 'Sentry3 LLM SetVoice' index_menu voice {
+  return ('_sentry3 llm set' index_menu 'voice' voice)
+}
+
+to 'Sentry3 LLM TextToSpeech' index_menu text {
+  '_sentry3 llm send wifi json' index_menu ('[data:join]' '"text":"' text '","mode":"tts"')
+  if (('[data:find]' 'ok' _sentry3_llm_last_error) == 0) {
+    _sentry3_llm_last_error = ''
+    return
+  }
+  local 'replyBA' ('_sentry3 llm read until terminator' 10 500)
+  local 'replyStr' ('_sentry utf8 decode' replyBA)
+  _sentry3_llm_last_error = replyStr
+  if (('[data:find]' 'audio_start' replyStr) == 0) {
+    return
+  }
+  replyBA = ('_sentry3 llm read until terminator' 10 500)
+  replyStr = ('_sentry utf8 decode' replyBA)
+  _sentry3_llm_last_error = replyStr
+}
+
+to 'Sentry3 LLM WiFiClose' index_menu {
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  '_sentry comm wifi connect with mode' idx 'close'
+  return 0
+}
+
+to 'Sentry3 LLM WiFiConfig' index_menu ssid password {
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  forever {
+    if (1 == ('_sentry3 llm send wifi json' index_menu ('[data:join]' '"wifi_ssid":"' ssid '","wifi_password":"' password '"'))) {exitLoop}
+    waitMillis 200
+  }
+  forever {
+    if (1 == ('_sentry comm wifi connect with mode' idx 'cloud')) {exitLoop}
+    waitMillis 200
+  }
+  waitMillis 500
+  forever {
+    if ('_sentry comm wifi is connected' idx) {exitLoop}
+    waitMillis 500
+  }
 }
 
 to 'Sentry3 LedSetColor' index_menu detected_color undetected_color level {
@@ -136,6 +276,22 @@ to 'Sentry3 VisionDetectedCount' index_menu vision_type {
   return ('_sentry comm vision detected count' idx ('_sentry3 get vision id' vision_type))
 }
 
+to 'Sentry3 VisionDetectedEyeState' index_menu face_attr eye_select eye_state {
+  local 'eye_text' ('_sentry3 get eye state chinese' eye_state)
+  local 'side_text' ''
+  if (eye_select == ' left eye ') {
+    side_text = '左'
+  } (eye_select == ' right eye ') {
+    side_text = '右'
+  }
+  return (('[data:find]' ('[data:join]' side_text eye_text) face_attr) > 0)
+}
+
+to 'Sentry3 VisionDetectedFaceExpression' index_menu face_attr expression {
+  local 'chinese_expr' ('_sentry3 get expression chinese' expression)
+  return (('[data:find]' chinese_expr face_attr) > 0)
+}
+
 to 'Sentry3 VisionDetectedHandPoseCustom' index_menu thumb_state index_state middle_state ring_state pinky_state obj_id {
   local 'idx' ('_sentry3 get index from menu' index_menu)
   local 'label' ('_sentry comm get value' idx 13 'label' obj_id)
@@ -180,13 +336,23 @@ to 'Sentry3 VisionDetectedHandPosePreset' index_menu handpose_preset obj_id {
   return ((label & 31) == ('_sentry3_get_handpose_preset_value' handpose_preset))
 }
 
+to 'Sentry3 VisionDetectedHeadPose' index_menu face_attr head_pose {
+  local 'chinese_pose' ('_sentry3 get head pose chinese' head_pose)
+  return (('[data:find]' chinese_pose face_attr) > 0)
+}
+
+to 'Sentry3 VisionDetectedMouthState' index_menu face_attr mouth_state {
+  local 'chinese_mouth' ('_sentry3 get mouth state chinese' mouth_state)
+  return (('[data:find]' chinese_mouth face_attr) > 0)
+}
+
 to 'Sentry3 VisionDetectedObjects' index_menu Objects_class obj_id {
   local 'idx' ('_sentry3 get index from menu' index_menu)
   local 'spacePos' ('[data:find]' ' ' Objects_class)
   if (spacePos == 0) {
     return 0
   }
-  return (('_sentry comm get value' idx 8 'label' obj_id) == (('[data:convertType]' ('[data:copyFromTo]' Objects_class 1 (spacePos - 1)) 'number')))
+  return (('_sentry comm get value' idx 8 'label' obj_id) == ('[data:convertType]' ('[data:copyFromTo]' Objects_class 1 (spacePos - 1)) 'number'))
 }
 
 to 'Sentry3 VisionSetParam' index_menu vision_type opera_param param_num {
@@ -209,17 +375,61 @@ to 'Sentry3 VisionSetStatus' index_menu vision_sta vision_type {
   return ('_sentry comm vision set status' idx vision_sta ('_sentry3 get vision id' vision_type))
 }
 
-
-to '_sentry3 get index from menu' index_menu {
-
-  if (isType index_menu 'string') {
-    if ((at 1 index_menu) == '#') {
-      local 'index' ('[data:convertType]' (at 2 index_menu) 'number')
-      return (((index & 7) << 5) | 8)
-    }
+to '_sentry3 get expression chinese' expression {
+  if (expression == ' Anger ') {
+    return '愤怒'
+  } (expression == ' Disgust ') {
+    return '厌恶'
+  } (expression == ' Fear ') {
+    return '恐惧'
+  } (expression == ' Happiness ') {
+    return '开心'
+  } (expression == ' Neutral ') {
+    return '中性'
+  } (expression == ' Sadness ') {
+    return '悲伤'
+  } (expression == ' Surprise ') {
+    return '惊讶'
   }
-  
-  return 8
+  return expression
+}
+to '_sentry3 get eye state chinese' eye_state {
+  if (eye_state == ' open ') {
+    return '睁眼'
+  } (eye_state == ' closed ') {
+    return '闭眼'
+  } (eye_state == ' blinking ') {
+    return '眨眼'
+  }
+  return eye_state
+}
+
+to '_sentry3 get head pose chinese' head_pose {
+  if (head_pose == ' facing forward ') {
+    return '朝前'
+  } (head_pose == ' facing left ') {
+    return '朝左'
+  } (head_pose == ' facing right ') {
+    return '朝右'
+  } (head_pose == ' turning left ') {
+    return '向左转'
+  } (head_pose == ' turning right ') {
+    return '向右转'
+  } (head_pose == ' shaking ') {
+    return '摇头'
+  } (head_pose == ' nodding ') {
+    return '点头'
+  }
+  return head_pose
+}
+
+to '_sentry3 get mouth state chinese' mouth_state {
+  if (mouth_state == ' open  ') {
+    return '张嘴'
+  } (mouth_state == ' closed  ') {
+    return '闭嘴'
+  }
+  return mouth_state
 }
 
 to '_sentry3 get vision id' vision_type {
@@ -230,11 +440,77 @@ to '_sentry3 get vision id' vision_type {
   for i (size _sentry3_vision_list) {
     if (('[data:find]' vision_type (at i _sentry3_vision_list)) > 0) {return i}
   }
-  sayIt vision_type  id 'Error: not found!'
+  sayIt vision_type id 'Error: not found!'
   waitMicros 2000
   stopTask
   return 0
 }
+
+to '_sentry3 llm read until terminator' terminator timeoutSteps {
+  local 'buf' ('[data:newByteArray]' 0 0)
+  local 'count' 0
+  local 'found' 0
+  repeatUntil (count > timeoutSteps) {
+    local 'chunk' ('[serial:read]')
+    if ((size chunk) > 0) {
+      buf = ('[data:join]' buf chunk)
+      for i (size buf) {
+        local 'b' (at i buf)
+        if (or (b == 0) (b == terminator)) {
+          found = i
+          break
+        }
+      }
+      if (found > 0) {
+        return ('[data:copyFromTo]' buf 1 (found - 1))
+      }
+    } else {
+      waitMillis 100
+      count = (count + 1)
+    }
+  }
+  return buf
+}
+
+to '_sentry3 llm send wifi json' index_menu json_body {
+  local 'idx' ('_sentry3 get index from menu' index_menu)
+  '_sentry3 llm write string' ('[data:join]' 'wifi{' json_body '}')
+  local 'respBA' ('_sentry3 llm read until terminator' 10 20)
+  local 'respStr' ('_sentry utf8 decode' respBA)
+  _sentry3_llm_last_error = respStr
+  if (('[data:find]' 'ok' respStr) > 0) {
+    return 1
+  } else {
+    return 0
+  }
+}
+
+to '_sentry3 llm set' index_menu key value {
+  return ('_sentry3 llm send wifi json' index_menu ('[data:join]' '"' key '":"' value '"'))
+}
+
+to '_sentry3 llm set raw' index_menu key value {
+  return ('_sentry3 llm send wifi json' index_menu ('[data:join]' '"' key '":' value))
+}
+
+to '_sentry3 llm write string' s {
+  local 'chunk' ('[serial:read]')
+  local 'str_len' (size s)
+  local 'send_index' 1
+  local 'send_len' 32
+  '[serial:write]' 10
+  repeatUntil (send_index > str_len) {
+    if ((send_index + (send_len - 1)) < str_len) {
+      '[serial:write]' ('[data:copyFromTo]' s send_index (send_index + (send_len - 1)))
+      send_index = (send_index + send_len)
+    } else {
+      '[serial:write]' ('[data:copyFromTo]' s send_index str_len)
+      send_index = (str_len + 1)
+    }
+  }
+  '[serial:write]' 10
+}
+
 
 to '_sentry3_get_handpose_preset_value' handpose_preset {
   comment 'Return preset value directly based on preset name'
@@ -262,4 +538,13 @@ to '_sentry3_get_handpose_preset_value' handpose_preset {
     return 1
   }
   return -1
+}
+
+
+to '_sentry3 get index from menu' index_menu {
+  if (isType index_menu 'string') {if ((at 1 index_menu) == '#') {
+    local 'index' ('[data:convertType]' (at 2 index_menu) 'number')
+    return (((index & 7) << 5) | 8)
+  }}
+  return 8
 }
