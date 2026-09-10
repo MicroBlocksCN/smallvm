@@ -36,7 +36,7 @@ static void initRandomSeed(void); // forward reference
 static void stopRF(); // forward reference
 static void reservePinsForPSRAM(); // forward reference
 
-#if (defined(ARDUINO_SAMD_MKR1000) || defined(ESP32)) && !defined(ESP32_C3) && !defined(ESP32_C6)
+#if (defined(ARDUINO_SAMD_MKR1000) || defined(ESP32))
 	#include <I2S.h>
 	int I2SsampleRate = 16000;
 	#define HAS_I2S 1
@@ -1047,6 +1047,37 @@ void hardwareInit() {
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0};
 
+#elif defined(NEZHA_ESP32)
+	// Define NEZHA_ESP32 in the board's build flags to select this map.
+	// Elecfreaks Nezha ESP32. Pin map from their pinout spreadsheet (Attachment 4).
+	// The four RJ11 port pins, NeoPixel (RGB) pins, CD4052 UART port select pins, and
+	// audio amplifier enable pins are exposed to MicroBlocks.
+	// Other pins are reserved by the chip or used internally for on-board hardware.
+	//	RJ11 ports: 4,5 / 6,7 / 15,16 / 17,18
+	//	Three built in NeoPixels: 8
+	//	UART CD4052 port select: A 2, B 1
+	//	External I2C (RJ11): SCL 40, SDA 41
+	//	Internal I2C: SCL 38, SDA 39
+	//	User UART (outputs to CD4052 mux): TX 14, RX 21
+	//	TFT: CS 42, MOSI 10, SCLK 11, DC 12, RST 13, backlight 9
+	//	I2S: MCLK 3, BCLK 0, LRCK 47, SDO 48, SDI 45
+	//	Audio amp enable 46
+	//	Native USB: 19, 20
+	//	UART0 (internal; for flashing/debugging): TX 43, RX 44
+	//	35-37 are not connected (PSRAM). 0, 3, 45 and 46 are strapping pins.
+	#define BOARD_TYPE "NEZHA-ESP32-S3"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_LED -1 // RGB LED on 8, not a plain LED
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 0, 1, 1};
+
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
@@ -1435,6 +1466,8 @@ void hardwareInit() {
 		-1,
 		-1,
 	};
+
+	extern "C" void dueStopUSBSerial() { Serial.end(); }
 
 	static int duePWMPin(int pinNum) {
 		int result = -1; // default - no pin
@@ -2604,10 +2637,19 @@ extern "C" void ARDUINO_ISR_ATTR esp32_servo_IRQHandler() {
 }
 
 static void startESP32ServoTimer() {
-	esp32_servoTimer = timerBegin(0, 80, true); // divide 80 Mhz by 80, count up
+	// Use the highest timer this chip has. Board support libraries take timer 0
+	// (the CoCube sensor library calls timerBegin(0, 80, true) from its Init),
+	// and timerBegin() reconfigures a timer that is already in use without
+	// reporting it, so a fixed low number fails silently on those boards.
+	#if SOC_TIMER_GROUP_TOTAL_TIMERS > 3
+		esp32_servoTimer = timerBegin(3, 80, true); // group 1/timer 1
+	#else
+		esp32_servoTimer = timerBegin(0, 80, true); // chips with only two timers
+	#endif
+	esp32ServoTimerStarted = true;
+	if (!esp32_servoTimer) return; // timer unavailable; servos won't move but board won't crash
 	timerAttachInterrupt(esp32_servoTimer, &esp32_servo_IRQHandler, false);
 	timerAlarmEnable(esp32_servoTimer);
-	esp32ServoTimerStarted = true;
 }
 
 static void esp32_detachServo(int pin) {
@@ -2914,7 +2956,7 @@ OBJ primI2SWrite(int argCount, OBJ *args) {
 	int startTime = microsecs();
 	int timePerSample = (1000000 / I2SsampleRate);
 	int wakeTime = timePerSample * (startTime / timePerSample);
-	int sample = obj2int(args[0]);
+	int32_t sample = obj2int(args[0]);
 	I2S.write(sample);
 	I2S.write(sample);
 	taskSleepMicros((wakeTime - microsecs()) % timePerSample);
@@ -3495,7 +3537,7 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	}
 
 	extern "C" void deepSleep(int secs) {
-		uint64_t usecs = 1000000 * secs;
+		uint64_t usecs = 1000000 * (uint64_t) secs;
 		uint64_t maxSleep = ESP.deepSleepMax() - 10000;
 		if (usecs > maxSleep) usecs = maxSleep;
 		ESP.deepSleep(usecs);
