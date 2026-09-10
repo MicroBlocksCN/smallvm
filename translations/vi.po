@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2025-06-06 09:00+0200\n"
-"PO-Revision-Date: 2026-02-13 06:09+0000\n"
-"Last-Translator: Loc Huynh <huynhloc.contact@gmail.com>\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
+"Last-Translator: 梁帅 <jiangren1209@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/microblocks/"
 "ide/vi/>\n"
 "Language: vi\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -7786,3 +7786,7 @@ msgstr "giảm phạm vi"
 #. Script right-click context menu
 msgid "copy callable name"
 msgstr "sao chép tên có thể gọi được"
+
+#. CoCube library block
+msgid "wheels brake"
+msgstr "gãy bánh xe"

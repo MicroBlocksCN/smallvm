@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-30 06:26+0200\n"
-"PO-Revision-Date: 2026-07-07 20:01+0000\n"
-"Last-Translator: Miroslav Klimoš <miraklimos@gmail.com>\n"
+"PO-Revision-Date: 2026-08-21 11:36+0000\n"
+"Last-Translator: Miroslav Klimoš <miraklim@centrum.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/microblocks/ide/"
 "cs/>\n"
 "Language: cs\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -7242,3 +7242,103 @@ msgstr "rx pin _"
 #. About window info
 msgid "More info at %1"
 msgstr "Více info na %1"
+
+#. Ultrasound distance library block
+msgid "distance (cm) pin _"
+msgstr "vzdálenost (cm) pin _"
+
+#. Tiny OLED library block
+msgid "clear tiny OLED display"
+msgstr "smaž Tiny OLED displej"
+
+#. Tiny OLED library block
+msgid "draw circle center _ _ radius _ fill _ white _"
+msgstr "nakresli kružnici střed __ poloměr _ výplň _ bílá _"
+
+#. Tiny OLED library block
+msgid "draw image _ x _ y _"
+msgstr "nakresli obrázek _ x _ y _"
+
+#. Tiny OLED library block
+msgid "draw line from _ _ to _ _ white _"
+msgstr "nakresli přímku z _ _ do _ _ bílá _"
+
+#. Tiny OLED library block
+msgid "draw pixel x _ y _ white _"
+msgstr "nakresli bod x _ y _ bílá _"
+
+#. Tiny OLED library block
+msgid "draw rect x _ y _ w _ h _ fill _ white _"
+msgstr "nakresli obdélník x _ y _ š _ v _ bílá _"
+
+#. Tiny OLED library block
+msgid "draw string _ x _ y _ white _"
+msgstr "napiš text _ x _ y _ bílá _"
+
+#. Tiny OLED library block
+msgid "draw big string _ x _ y _ white _"
+msgstr "napiš velký text _ x _ y _ bílá _"
+
+#. Tiny OLED library block
+msgid "defer tiny OLED display updates"
+msgstr "odlož aktualizace Tiny OLED"
+
+#. Tiny OLED library block
+msgid "set tiny OLED brightness _"
+msgstr "nastav Tiny OLED jas _"
+
+#. Tiny OLED library block
+msgid "reset tiny OLED pin _"
+msgstr "reset Tiny OLED pin _"
+
+#. Tiny OLED library block
+msgid "show tiny OLED display updates"
+msgstr "zobraz aktualizace Tiny OLED"
+
+#. TFT Display library example
+msgid "aBitmap"
+msgstr "Bitmapa"
+
+#. Maqueen Car Kit library label
+msgid "Maqueen"
+msgstr "Maqueen"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen motor _ dir _ speed(0-255) _"
+msgstr "Maqueen motor _ směr _ rychlost (0-255)"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen stop motors _"
+msgstr "Maqueen zastav motor _"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen LED _ _"
+msgstr "Maqueen LED _ _"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen beep _ ms"
+msgstr "Maqueen pípnutí _ ms"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen line sensor _"
+msgstr "Maqueen senzor čáry _"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen sees line on left _ right _"
+msgstr "Maqueen vidí čáru vlevo _ vpravo _"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen distance (cm)"
+msgstr "Maqueen vzdálenost (cm)"
+
+#. Maqueen Car Kit library block
+msgid "Maqueen IR keycode"
+msgstr "Maqueen IR kód"
+
+#. Maqueen Car Kit library choice
+msgid "fwd"
+msgstr "vpřed"
+
+#. Maqueen Car Kit library choice
+msgid "bwd"
+msgstr "vzad"

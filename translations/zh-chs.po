@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 11:46+0200\n"
-"PO-Revision-Date: 2026-08-15 13:51+0000\n"
-"Last-Translator: Shuai Liang <sliang23@m.fudan.edu.cn>\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
+"Last-Translator: 梁帅 <jiangren1209@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/microblocks/ide/zh_Hans/>\n"
 "Language: zh-chs\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. Block in Control category
 msgid "by _"
@@ -6567,3 +6567,7 @@ msgstr "搜索块和变量..."
 #. Examples folder
 msgid "folder;Widgets"
 msgstr "组件"
+
+#. CoCube library block
+msgid "wheels brake"
+msgstr "电机刹车"

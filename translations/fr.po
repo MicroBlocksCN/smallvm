@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2026-06-03 08:52+0000\n"
-"Last-Translator: GM-327 <marzouk.ghazi@gmail.com>\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
+"Last-Translator: 梁帅 <jiangren1209@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/microblocks/ide/"
 "fr/>\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. "Output" blocks category label
 msgid "cat;Output"
@@ -8520,3 +8520,7 @@ msgstr "Lecteur MIDI"
 #. Library name
 msgid "Function Calls"
 msgstr "Appels de fonction"
+
+#. CoCube library block
+msgid "wheels brake"
+msgstr "freiner les roues"

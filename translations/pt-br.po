@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: interest@microblocks.fun\n"
 "POT-Creation-Date: 2024-10-28 16:36+0200\n"
-"PO-Revision-Date: 2026-08-15 13:51+0000\n"
-"Last-Translator: Allan Moreira <allan.moreira@gmail.com>\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
+"Last-Translator: 梁帅 <jiangren1209@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "microblocks/ide/pt_BR/>\n"
 "Language: pt-br\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. Block in Input category
 msgid "microseconds"
@@ -8860,3 +8860,36 @@ msgstr "ADC conectado"
 #. CoCube Module library block
 msgid "ADC _ voltage (mV)"
 msgstr "Tensão ADC _ (mV)"
+
+#. HTTP Client library block
+msgid "fetch URL _"
+msgstr "obter URL _"
+
+#. Octostudio communication library label
+msgid "OctoStudio"
+msgstr "OctoStudio"
+
+#. Octostudio communication library block
+msgid "group _"
+msgstr "grupo _"
+
+#. KidsIOT library choice. Move both motors at the same rate, but opposite to
+#. each other. If value is 50, motor A will move at speed 50 and motor B will
+#. move at speed -50. Useful for robots with wheels set at opposite sides.
+msgid "kiot;both opposite"
+msgstr "ambos, invertidos"
+
+#. KidsIOT library choice. Move both motors at the same rate, but opposite to
+#. each other. If value is 50, motor A will move at speed 50 and motor B will
+#. move at speed -50. Useful for robots with wheels set at opposite sides.
+#, fuzzy
+msgid "kiot;both, opposite"
+msgstr "ambos, invertidos"
+
+#. String in file picker and library dialogs
+msgid "That URL does not return a MicroBlocks library."
+msgstr "Essa URL não retorna uma biblioteca MicroBlocks."
+
+#. CoCube library block
+msgid "wheels brake"
+msgstr "frear rodas"
