@@ -1,6 +1,6 @@
 module CoCube
 author 'Liang Shuai'
-version 2 21
+version 2 22 
 depends Tone Display TFT '_Motors/PID' 'Robots/CoCube Module' '_Graphics and Displays/8 Bit Graphics' 
 tags 'cocube robot' 
 choices cocube_rotate_Menu 'cocube;left' 'cocube;right' 
@@ -31,7 +31,7 @@ v2.17 Modify the movement function on the map
 v2.18 Fix "_cocube_move_flag" variable missing
 v2.21 Add "CoCube track target" function
 '
-variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_flag _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_move_flag _cocube_target_x _cocube_target_y _cocube_target_speed
+variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _cocube_pid_flag _cocube_error_distance _cocube_error_y _cocube_error_x _cocube_target_angle _cocube_move_flag _cocube_target_x _cocube_target_y _cocube_target_speed 
 
   spec ' ' 'CoCube move for msecs' 'move _ at _ speed (0-50) for _ msecs' 'menu.cocube_move_Menu num num' 'cocube;forward' 40 1000
   spec ' ' 'CoCube rotate for msecs' 'rotate _ at _ speed (0-50) for _ msecs' 'menu.cocube_rotate_Menu num num' 'cocube;left' 30 1000
@@ -41,7 +41,7 @@ variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _co
   spec ' ' 'CoCube set wheel' 'set wheel left _ right _ (-50 to 50)' 'num num' 40 20
   space
   spec ' ' 'CoCube wheels stop' 'wheels stop'
-  spec ' ' 'CoCube wheels break' 'wheels break'
+  spec ' ' 'CoCube wheels break' 'wheels brake'
   space
   spec 'r' 'CoCube position_X' 'X position'
   spec 'r' 'CoCube position_Y' 'Y position'
@@ -64,7 +64,7 @@ variables _cocube_set_right_speed _cocube_set_left_speed _cocube_error_angle _co
   space
   spec 'r' 'CoCube battery percentage' 'battery percentage'
   advanced
-  spec ' ' 'CoCube track target' 'track target X _ Y _ at _ speed (0-50)' 'num num num' '0' '0' '40'
+  spec ' ' 'CoCube track target' 'track target X _ Y _ at _ speed (0-50)' 'num num num' 0 0 40
   spec ' ' '_cocube_track_target' '_cocube_track_target'
   space
   spec ' ' '_cocube_motors_speed' '_cocube_motors_speed left _ right _' 'num num' 10 10
@@ -203,7 +203,7 @@ to 'CoCube rotate by degree' direction speed degree {
           comment 'turn right'
           '_cocube_motors_speed' speed (0 - speed)
         } else {
-          comment 'motors break'
+          comment 'motors brake'
           'CoCube wheels break'
           exitLoop
         }
@@ -236,7 +236,7 @@ to 'CoCube rotate to angle' angle speed {
         comment 'turn right'
         '_cocube_motors_speed' abs_speed (0 - abs_speed)
       } else {
-        comment 'motors break'
+        comment 'motors brake'
         digitalWriteOp 9 true
         digitalWriteOp 10 true
         digitalWriteOp 26 true
@@ -286,6 +286,13 @@ to 'CoCube set wheel' speed_left speed_right {
     _cocube_set_right_speed = speed_right
     sendBroadcast '_cocube_pid_control'
   }
+}
+
+to 'CoCube track target' target_x target_y speed {
+  _cocube_target_x = target_x
+  _cocube_target_y = target_y
+  _cocube_target_speed = speed
+  sendBroadcast '_cocube_track_target'
 }
 
 to 'CoCube wheels break' {
@@ -386,13 +393,6 @@ to '_cocube_pid_control' {
   }
 }
 
-to 'CoCube track target' target_x target_y speed {
-  _cocube_target_x = target_x
-  _cocube_target_y = target_y
-  _cocube_target_speed = speed
-  sendBroadcast '_cocube_track_target'
-}
-
 to '_cocube_track_target' {
   _cocube_move_flag = (booleanConstant true)
   '_cocube_calculate_distance_error target_x _ target_y _' _cocube_target_x _cocube_target_y
@@ -413,3 +413,4 @@ to '_cocube_track_target' {
   }
   _cocube_move_flag = (booleanConstant false)
 }
+
