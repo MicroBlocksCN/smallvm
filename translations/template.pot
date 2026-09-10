@@ -5345,6 +5345,10 @@ msgid "wheels break"
 msgstr ""
 
 #. CoCube library block
+msgid "wheels brake"
+msgstr ""
+
+#. CoCube library block
 msgid "X position"
 msgstr ""
 
@@ -6563,6 +6567,12 @@ msgstr ""
 
 #. KidsIOT library choice
 msgid "kiot;rotation"
+msgstr ""
+
+#. KidsIOT library choice. Move both motors at the same rate, but opposite to
+#. each other. If value is 50, motor A will move at speed 50 and motor B will
+#. move at speed -50. Useful for robots with wheels set at opposite sides.
+msgid "kiot;both, opposite"
 msgstr ""
 
 #. KidsIOT library choice
@@ -8082,6 +8092,10 @@ msgstr ""
 
 #. String in file picker and library dialogs
 msgid "Server expects HTTPS, and MicroBlocks doesn't currently support it."
+msgstr ""
+
+#. String in file picker and library dialogs
+msgid "That URL does not return a MicroBlocks library."
 msgstr ""
 
 #. String in file picker and library dialogs
