@@ -1,0 +1,115 @@
+module 'JSON Encode' Data
+author MicroBlocks
+version 1 0
+description 'Convert a MicroBlocks list into a JSON string.
+Lists are encoded as JSON arrays; lists whose items are all
+two-item [key, value] lists are encoded as JSON objects.
+Numbers, strings, booleans, and nested lists are supported.
+'
+
+  spec 'r' 'list to JSON' 'list _ to JSON' 'auto' 'aList'
+  space
+  spec 'r' '_JSON encode value' '_JSON encode value _' 'auto' 0
+  spec 'r' '_JSON encode list' '_JSON encode list _' 'auto' 'aList'
+  spec 'r' '_JSON isEntryList' '_JSON isEntryList _' 'auto' 'aList'
+  spec 'r' '_JSON encode string' '_JSON encode string _' 'str' 'abc'
+  spec 'r' '_JSON twoDigitHex' '_JSON twoDigitHex _' 'num' 5
+  spec 'r' '_JSON backslash' '_JSON backslash'
+
+to '_JSON encode list' aList {
+  comment 'Encode a list as either a JSON object (if every item is a
+[key, value] pair) or a JSON array (otherwise).'
+  if ('_JSON isEntryList' aList) {
+    local 'parts' ('[data:makeList]')
+    for entry aList {
+      '[data:addLast]' ('[data:join]' ('_JSON encode string' ('[data:toString]' (at 1 entry))) ':' ('_JSON encode value' (at 2 entry))) parts
+    }
+    return ('[data:join]' '{' ('[data:joinStrings]' parts ',') '}')
+  } else {
+    local 'parts' ('[data:makeList]')
+    for item aList {
+      '[data:addLast]' ('_JSON encode value' item) parts
+    }
+    return ('[data:join]' '[' ('[data:joinStrings]' parts ',') ']')
+  }
+}
+
+to '_JSON backslash' {
+  comment 'Return a one-character string containing a single backslash.
+Built from its Unicode code point (92) to avoid escaping ambiguity
+in this .ubl source file.'
+  return ('[data:unicodeString]' 92)
+}
+
+to '_JSON encode string' s {
+  comment 'Return s as a double-quoted JSON string with the
+required characters escaped.'
+  local 'bs' ('_JSON backslash')
+  local 'result' ('[data:makeList]')
+  '[data:addLast]' '"' result
+  for i (size s) {
+    local 'ch' (at i s)
+    local 'code' ('[data:unicodeAt]' 1 ch)
+    if (ch == '"') {
+      '[data:addLast]' ('[data:join]' bs '"') result
+    } (ch == bs) {
+      '[data:addLast]' ('[data:join]' bs bs) result
+    } (code == 10) {
+      '[data:addLast]' ('[data:join]' bs 'n') result
+    } (code == 13) {
+      '[data:addLast]' ('[data:join]' bs 'r') result
+    } (code == 9) {
+      '[data:addLast]' ('[data:join]' bs 't') result
+    } (code < 32) {
+      comment 'Other control characters: encode as \u00XX'
+      '[data:addLast]' ('[data:join]' bs 'u00' ('_JSON twoDigitHex' code)) result
+    } else {
+      '[data:addLast]' ch result
+    }
+  }
+  '[data:addLast]' '"' result
+  return ('[data:joinStrings]' result '')
+}
+
+to '_JSON encode value' val {
+  comment 'Encode a single MicroBlocks value (number, string, boolean,
+or list) as a JSON value string.'
+  if (isType val 'list') {
+    return ('_JSON encode list' val)
+  } (isType val 'boolean') {
+    return (ifExpression val 'true' 'false')
+  } (isType val 'number') {
+    return ('[data:toString]' val)
+  } (isType val 'byte array') {
+    return ('_JSON encode list' ('[data:convertType]' val 'list'))
+  } else {
+    return ('_JSON encode string' ('[data:toString]' val))
+  }
+}
+
+to '_JSON twoDigitHex' n {
+  comment 'Return the two-digit hexadecimal representation of n (0-255).'
+  local 'digits' '0123456789ABCDEF'
+  return ('[data:join]' (at ((n / 16) + 1) digits) (at ((n % 16) + 1) digits))
+}
+
+to '_JSON isEntryList' aList {
+  comment 'Return true if aList is non-empty and every item is a
+two-item list [key, value], so it can be encoded as a JSON object.'
+  if ((size aList) == 0) {return false}
+  for item aList {
+    if (not (isType item 'list')) {return false}
+    if ((size item) != 2) {return false}
+  }
+  return true
+}
+
+to 'list to JSON' aList {
+  comment 'Convert a MicroBlocks list into a JSON string.
+A list of [key, value] pairs becomes a JSON object;
+any other list becomes a JSON array.'
+  if (not (isType aList 'list')) {
+    return ('_JSON encode value' aList)
+  }
+  return ('_JSON encode list' aList)
+}

@@ -1,0 +1,63 @@
+module 'TCP client' Comm
+author MicroBlocks
+version 1 0
+depends WiFi
+tags tcp socket network client
+description 'Open a raw TCP socket connection to a server and send/receive bytes or text. Unlike the HTTP Client library, no HTTP framing (request lines, headers) is added -- this is for talking to arbitrary TCP servers using your own protocol.
+'
+
+  spec ' ' 'connectToTCP' 'connect to TCP host _ : port _' 'str num' 'microblocks.fun' 80
+  spec 'r' '[net:tcpIsConnected]' 'is TCP connected?'
+  spec ' ' '[net:tcpClose]' 'TCP close'
+  space
+  spec ' ' '[net:tcpWrite]' 'TCP write _' 'auto' 'Hello!'
+  spec ' ' 'tcpWriteLine' 'TCP write line _' 'str' 'Hello!'
+  spec 'r' '[net:tcpRead]' 'TCP read : binary data _' 'bool' false
+  spec 'r' 'tcp read all' 'TCP read all : binary data _' 'bool' false
+
+to connectToTCP host optionalPort {
+  comment 'Connect to a TCP server. Returns true if the connection succeeded, false
+  otherwise. If the connection fails, shows an error bubble like the WiFi blocks do.'
+  local 'port' (argOrDefault 2 80)
+  if (not ('[net:hasWiFi]')) {
+    sayIt 'This board does not support WiFi'
+    return (booleanConstant false)
+  }
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Not connected to WiFi'
+    return (booleanConstant false)
+  }
+  '[net:tcpConnect]' host port
+  if (not ('[net:tcpIsConnected]')) {
+    sayIt 'Could not connect to' host ':' port
+    return (booleanConstant false)
+  }
+  return (booleanConstant true)
+}
+
+to tcpWriteLine text {
+  comment 'Write text to the TCP connection followed by a newline character (ASCII 10).
+  Useful for line-oriented text protocols, since typing \n inside a MicroBlocks
+  string is just the two characters backslash-n, not an actual newline byte.'
+  '[net:tcpWrite]' ('[data:join]' text ('[data:unicodeString]' 10))
+}
+
+to 'tcp read all' optionalBinary {
+  comment 'Read all data currently available from the TCP connection, waiting up to
+  half a second after the last received chunk for more data to arrive.'
+  local 'useBinary' (argOrDefault 1 (booleanConstant false))
+  local 'result' (ifExpression useBinary ('[data:asByteArray]' '') '')
+  local 'lastChunkTime' (millisOp)
+  repeatUntil (((millisOp) - lastChunkTime) > 500) {
+    local 'chunk' ('[net:tcpRead]' useBinary)
+    if ((size chunk) > 0) {
+      result = ('[data:join]' result chunk)
+      lastChunkTime = (millisOp)
+    }
+    if (not ('[net:tcpIsConnected]')) {
+      return result
+    }
+    waitMillis 20
+  }
+  return result
+}

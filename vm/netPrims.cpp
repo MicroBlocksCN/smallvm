@@ -711,6 +711,138 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
+// Raw TCP socket client
+//
+// Unlike the HTTP client above, these primitives send and receive raw bytes with no
+// HTTP framing (no request line, no headers). Useful for talking to arbitrary TCP
+// servers (e.g. custom protocols, other MicroBlocks boards, etc).
+
+static WiFiClient tcpClient;
+
+static OBJ primTCPConnect(int argCount, OBJ *args) {
+	// Connect to a TCP server. The port number is required.
+
+	if (NO_WIFI()) return fail(noWiFi);
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+
+	const char* host = obj2str(args[0]);
+	uint16_t port = isInt(args[1]) ? obj2int(args[1]) : atoi(obj2str(args[1]));
+
+	if (tcpClient.connected()) tcpClient.stop(); // in case previous connection is still active
+
+	const int timeoutMS = 3000;
+	int ok;
+
+	#if defined(ARDUINO_ARCH_ESP32)
+		// On ESP32, WiFiClient::connect() calls select() internally and blocks for the
+		// full duration of whatever timeout is in effect -- it does not return early or
+		// give us a chance to call processMessage() while it's waiting. The two-argument
+		// connect(host, port) uses _timeout, which is set by setTimeout(seconds) -- note
+		// the units are *seconds*, not milliseconds, so passing a millisecond value there
+		// (as the HTTP connect primitives above do) makes it block far longer than
+		// intended -- long enough that the IDE decides it has lost the board. Passing the
+		// timeout in milliseconds to the three-argument overload avoids that trap.
+		ok = tcpClient.connect(host, port, timeoutMS);
+	#else
+		// On other platforms (ESP8266, Pico, WiFi101) connect() is non-blocking/polled
+		// internally, so the traditional setTimeout-then-poll pattern is safe here.
+		uint32 start = millisecs();
+		tcpClient.setTimeout(timeoutMS);
+		ok = tcpClient.connect(host, port);
+		while (ok && !tcpClient.connected()) { // wait for connection to be fully established
+			processMessage(); // process messages now
+			uint32 now = millisecs();
+			uint32 elapsed = (now >= start) ? (now - start) : now; // handle clock wrap
+			if (elapsed > timeoutMS) break;
+			delay(1);
+		}
+	#endif
+
+	#if defined(ESP8266)
+		tcpClient.setNoDelay(true); // does not work on ESP32
+	#endif
+
+	if (!(ok && tcpClient.connected())) tcpClient.stop();
+	processMessage(); // process messages now
+	return falseObj;
+}
+
+static OBJ primTCPIsConnected(int argCount, OBJ *args) {
+	// Return true when connected to a TCP server. Continue to return true if more data
+	// is available even if the connection has been closed by the server.
+
+	if (NO_WIFI()) return fail(noWiFi);
+
+	return (tcpClient.connected() || tcpClient.available()) ? trueObj : falseObj;
+}
+
+static OBJ primTCPWrite(int argCount, OBJ *args) {
+	// Write a string or byte array to the TCP connection. Return the number of bytes written.
+
+	if (NO_WIFI()) return fail(noWiFi);
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!tcpClient.connected()) return int2obj(0);
+
+	OBJ data = args[0];
+	int byteCount = 0;
+	if (IS_TYPE(data, StringType)) {
+		char *s = obj2str(data);
+		byteCount = strlen(s);
+		tcpClient.write((const uint8_t *) s, byteCount);
+	} else if (IS_TYPE(data, ByteArrayType)) {
+		byteCount = BYTES(data);
+		tcpClient.write((const uint8_t *) &FIELD(data, 0), byteCount);
+	} else {
+		return fail(needsStringError);
+	}
+	return int2obj(byteCount);
+}
+
+static OBJ primTCPRead(int argCount, OBJ *args) {
+	// Read some data from the TCP connection, if any is available, otherwise return the
+	// empty string. If the optional argument is true, return a ByteArray instead of a string.
+
+	if (NO_WIFI()) return fail(noWiFi);
+
+	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	OBJ noData = useBinary ? (OBJ) &emptyByteArray : (OBJ) &noDataString;
+
+	uint8_t buf[800];
+
+	int avail = tcpClient.available();
+	if (!avail) {
+		if (!tcpClient.connected()) tcpClient.stop();
+		return noData;
+	}
+	if (avail > 800) avail = 800;
+
+	int byteCount = tcpClient.readBytes(buf, avail);
+	if (!byteCount) return noData;
+
+	OBJ result;
+	if (useBinary) {
+		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+		if (falseObj == result) return noData; // out of memory
+		if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
+		memcpy((uint8_t *) &FIELD(result, 0), buf, byteCount);
+	} else {
+		result = newString(byteCount);
+		if (falseObj == result) return noData; // out of memory
+		memcpy((uint8_t *) obj2str(result), buf, byteCount);
+	}
+
+	if (!tcpClient.connected() && (tcpClient.available() == 0)) tcpClient.stop();
+	return result;
+}
+
+static OBJ primTCPClose(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
+	tcpClient.stop();
+	return falseObj;
+}
+
 // UDP
 
 static WiFiUDP udp;
@@ -924,6 +1056,12 @@ static OBJ primHttpSecureConnect(int argCount, OBJ *args) { return fail(noWiFi);
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+
+static OBJ primTCPConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primTCPIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primTCPWrite(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primTCPRead(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primTCPClose(int argCount, OBJ *args) { return fail(noWiFi); }
 
 static OBJ primUDPStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primUDPStop(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -1397,6 +1535,12 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
+	{"tcpConnect", primTCPConnect},
+	{"tcpIsConnected", primTCPIsConnected},
+	{"tcpWrite", primTCPWrite},
+	{"tcpRead", primTCPRead},
+	{"tcpClose", primTCPClose},
 
 	{"udpStart", primUDPStart},
 	{"udpStop", primUDPStop},
