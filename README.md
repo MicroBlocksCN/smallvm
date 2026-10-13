@@ -128,6 +128,10 @@ plug in the board and run:
 
 Look at platformio.ini to see which boards are supported and what they are called.
 
+For M5Stack StickS3 pin mappings, supported features, power precautions, and
+build instructions, see [the StickS3 guide](docs/M5StickS3.md). Run its host
+tests with [`tests/sticks3/run.sh`](tests/sticks3/run.sh).
+
 ### Building with the Arduino IDE ###
 
 The MicroBlocks virtual machine can also be compiled and loaded onto a board using the

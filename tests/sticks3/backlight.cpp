@@ -1,4 +1,4 @@
-#include "../../vm/stickS3Backlight.h"
+#include "../../vm/boards/sticks3/backlight.h"
 int main() {
     ledcSetupFails = true;
     stickS3SetBacklight(10);

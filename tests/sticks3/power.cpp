@@ -1,6 +1,6 @@
 #include "Wire.h"
 MockWire Wire1;
-#include "../../vm/stickS3.h"
+#include "../../vm/boards/sticks3/power.h"
 int main() {
     Wire1.regs[6] = 0xff;
     Wire1.regs[0x16] = 0xff;

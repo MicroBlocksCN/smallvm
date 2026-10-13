@@ -58,6 +58,10 @@ of correct electrical operation. No device was flashed during development.
 
 ## Host verification
 
+Board-specific power, backlight and IMU helpers are in `vm/boards/sticks3/`.
+Host tests are in `tests/sticks3/`; their replacement Arduino and sensor
+headers are isolated in `tests/sticks3/mocks/` and used only by the test runner.
+
 Run `tests/sticks3/run.sh` with a C++11 compiler. The mocks exercise PM1
 read/modify/write failures, IMU initialization and range/read failures,
 retry timing (including clock wrap), axis/scale conversion, and backlight

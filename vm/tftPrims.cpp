@@ -116,8 +116,8 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 		}
 
 	#elif defined(M5_STICKS3)
-		#include "stickS3.h"
-		#include "stickS3Backlight.h"
+		#include "boards/sticks3/power.h"
+		#include "boards/sticks3/backlight.h"
 		void tftInit() {
 			if (!stickS3PowerInit()) {
 				outputString("StickS3 M5PM1 initialization failed");

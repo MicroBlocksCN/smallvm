@@ -5,7 +5,7 @@ static int accelStarted = false;
 static const int i2cTransferFailed = 35;
 static int errorCode = 0;
 static void fail(int error) { errorCode = error; }
-#include "../../vm/stickS3IMU.h"
+#include "../../vm/boards/sticks3/imu.h"
 static void reset() {
     stickIMU = BMI270{};
     stickIMUReady = stickIMURetryPending = false;
