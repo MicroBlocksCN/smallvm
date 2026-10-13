@@ -27,7 +27,10 @@
 
 // Override the default i2c pins on some boards
 
-#if defined(XRP_2350)
+#if defined(M5_STICKS3)
+	#define PIN_WIRE_SCL 10
+	#define PIN_WIRE_SDA 9
+#elif defined(XRP_2350)
 	#define PIN_WIRE_SCL 39
 	#define PIN_WIRE_SDA 38
 #elif defined(PICO_ED) || defined(XRP)
@@ -447,12 +450,20 @@ static OBJ primI2cSetPins(int argCount, OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
 	int pinSDA = obj2int(args[0]);
 	int pinSCL = obj2int(args[1]);
+	#if defined(M5_STICKS3)
+		pinSDA = mapDigitalPinNum(pinSDA);
+		pinSCL = mapDigitalPinNum(pinSCL);
+		if (pinSDA < 0 || pinSCL < 0 || pinSDA == pinSCL) return fail(primitiveNotImplemented);
+	#endif
 
 	#if defined(ARDUINO_ARCH_ESP32) || defined(NRF52_SERIES)
 		Wire.end();
 		Wire.setPins(pinSDA, pinSCL);
 		Wire.begin();
 		Wire.setClock(400000);
+		#if defined(M5_STICKS3)
+			wireStarted = true; // preserve explicit pins on subsequent I2C operations
+		#endif
 	#elif defined(ESP8266)
 		Wire.begin(pinSDA, pinSCL);
 		Wire.setClock(400000);
@@ -502,12 +513,19 @@ static OBJ primI2cSetPins(int argCount, OBJ *args) {
 	#define BitOrder int
 #endif
 
+#if defined(M5_STICKS3)
+static int stickSPISck = 5, stickSPIMiso = 6, stickSPIMosi = 7;
+#endif
 static int spiSpeed = 1000000;
 static int spiMode = SPI_MODE0;
 static BitOrder spiBitOrder = MSBFIRST;
 
 static void initSPI() {
-	#if defined(ARDUINO_ARCH_ESP32)
+	#if defined(M5_STICKS3)
+		setPinMode(stickSPIMiso, INPUT);
+		setPinMode(stickSPIMosi, OUTPUT);
+		setPinMode(stickSPISck, OUTPUT);
+	#elif defined(ARDUINO_ARCH_ESP32)
 		setPinMode(MISO, INPUT);
 		setPinMode(MOSI, OUTPUT);
 		setPinMode(SCK, OUTPUT);
@@ -533,7 +551,11 @@ static void initSPI() {
 			SPI.setMOSI(mapDigitalPinNum(14));
 		}
 	#endif
-	SPI.begin();
+	#if defined(M5_STICKS3)
+		SPI.begin(stickSPISck, stickSPIMiso, stickSPIMosi, -1); // Hat2: SCK, MISO, MOSI; FSPI host
+	#else
+		SPI.begin();
+	#endif
 	SPI.beginTransaction(SPISettings(spiSpeed, spiBitOrder, spiMode));
 }
 
@@ -619,6 +641,12 @@ OBJ primSPISetPins(int argCount, OBJ *args) {
 		int mosiPin = mapDigitalPinNum(obj2int(args[1]));
 		int misoPin = mapDigitalPinNum(obj2int(args[2]));
 
+		#if defined(M5_STICKS3)
+			if (clkPin < 0 || mosiPin < 0 || misoPin < 0) return fail(primitiveNotImplemented);
+			stickSPISck = clkPin;
+			stickSPIMosi = mosiPin;
+			stickSPIMiso = misoPin;
+		#endif
 		setPinMode(clkPin, OUTPUT);
 		setPinMode(mosiPin, OUTPUT);
 		setPinMode(misoPin, INPUT);
@@ -1074,6 +1102,10 @@ static int readTemperature() {
 	if (temp >= 32768) temp = temp - 65536; // negative
 	return 25 + (temp >> shift);
 }
+
+#elif defined(M5_STICKS3)
+
+#include "stickS3IMU.h"
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5STACK_Core2) || defined(M5Atom_S3_TFT) || \
 	defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(M5_ATOMS3) || defined(ARDUINO_M5Atom_Lite_ESP32)

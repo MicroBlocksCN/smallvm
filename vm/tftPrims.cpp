@@ -115,6 +115,28 @@ uint16_t bufferPixels[BUFFER_PIXELS_SIZE];
 			}
 		}
 
+	#elif defined(M5_STICKS3)
+		#include "stickS3.h"
+		#include "stickS3Backlight.h"
+		void tftInit() {
+			if (!stickS3PowerInit()) {
+				outputString("StickS3 M5PM1 initialization failed");
+				return;
+			}
+			// HSPI keeps the LCD independent of the external FSPI bus.
+			Arduino_DataBus *bus = new Arduino_ESP32SPI(45, 41, 40, 39, -1, HSPI);
+			tft = new Arduino_ST7789(bus, 21, 1, true, 135, 240, 52, 40, 53, 40);
+			if (!tft->begin()) {
+				outputString("tftInit() failed!");
+				return;
+			}
+			tftWidth = 240;
+			tftHeight = 135;
+			tftClear();
+			stickS3SetBacklight(10);
+			useTFT = true;
+		}
+
 	#elif defined(ARDUINO_M5Stick_Plus)
 		#define TFT_CS		5
 		#define TFT_DC		23
@@ -1052,7 +1074,9 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 	int brightness = obj2int(args[0]);
 	(void) (brightness); // reference var to suppress compiler warning
 
-	#if defined(ARDUINO_IOT_BUS)
+	#if defined(M5_STICKS3)
+		stickS3SetBacklight(brightness);
+	#elif defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);
 		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
 	#elif defined(COCUBE)

@@ -1224,6 +1224,24 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 		1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 0, 0};
 
+#elif defined(M5_STICKS3)
+	#define BOARD_TYPE "M5StickS3"
+	#define DIGITAL_PINS 49
+	#define ANALOG_PINS 20
+	#define TOTAL_PINS 49
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 11
+	#define PIN_BUTTON_B 12
+	#define PIN_LED -1
+	#define DEFAULT_TONE_PIN -1 // ES8311 speaker is not a GPIO buzzer
+	// Only official Hat2 and Grove GPIOs are available to generic I/O.
+	static char reservedPin[TOTAL_PINS] = {
+		1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 0, 0, 1, 1, 1, 1};
+
 #elif defined(ESP32_S3)
 	#define BOARD_TYPE "ESP32-S3"
 	#define DIGITAL_PINS 49
@@ -2115,7 +2133,12 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 
 #if defined(ESP32)
 
-	#define MAX_ESP32_CHANNELS 16
+	#if defined(M5_STICKS3)
+		// S3 has 8 channels. Reserve 6/7 (timer3) for the LCD backlight.
+		#define MAX_ESP32_CHANNELS 6
+	#else
+		#define MAX_ESP32_CHANNELS 16
+	#endif
 	int esp32Channels[MAX_ESP32_CHANNELS];
 
 	int pinAttached(int pin) {
