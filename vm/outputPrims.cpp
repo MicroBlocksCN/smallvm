@@ -916,6 +916,10 @@ static void initRMT(int pinNum) {
 }
 
 static void initNeoPixelPin(int pinNum) { // ESP32
+	#if defined(M5_STICKS3)
+		// No internal NeoPixel; GPIO48 is the internal I2C clock.
+		if (mapDigitalPinNum(pinNum) < 0) { neoPixelPinMask = 0; return; }
+	#endif
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(M5Atom_Matrix) || defined(M5Atom_Lite)
 			pinNum = 27; // internal NeoPixel pin
